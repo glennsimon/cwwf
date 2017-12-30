@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html>
+
+<!-- This page of sample code is intended to demonstrate how to use the JSON puzzle format described at www.xwordinfo.com.
+It can be freely used but please credit Jim Horne and xwordinfo.com and let me know if you end up using it.
+Email info {at} xwordinfo.com  -->
+
+<head>
+  <title>Crosswords WF</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="Mockup of Crosswords With Friends">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Disable tap highlight on IE -->
+  <meta name="msapplication-tap-highlight" content="no">
+
+  <!-- Web Application Manifest 
+  <link rel="manifest" href="manifest.json"> -->
+
+  <!-- Add to homescreen for Chrome on Android -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Friendly Chat">
+  <meta name="theme-color" content="#303F9F">
+
+  <!-- Add to homescreen for Safari on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Friendly Chat">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#303F9F">
+
+  <!-- Tile icon for Win8 -->
+  <meta name="msapplication-TileColor" content="#3372DF">
+  <meta name="msapplication-navbutton-color" content="#303F9F">
+
+  <!-- Material Design Lite 
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.orange-indigo.min.css">
+  <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script> -->
+
+  <!-- App Styling 
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en"> -->
+  <link rel="stylesheet" href="main.css"> 
+</head>
+
+<body>
+  <h1>Crosswords With Friends</h1>
+  <h2>Competitive crossword puzzle game</h2>
+  <p>Pick a date</p>
+  <select id='pickYear'>
+    <option value='year'>year</option>
+  </select>
+  <select id="pickMonth" disabled>
+    <option value='month'>month</option>
+  </select>
+  <select id="pickDay" disabled>
+    <option value='day'>day</option>
+  </select>
+
+  <h2 id="puzTitle"></h2>
+  <p id="puzAuthor"></p>
+  <div id="puzNotepad"></div>
+  <table id="puzTable"></table>
+  <div id="puzCopy" class="copy"></div>
+  <div class="clue" id="clue1"><div class="cluehead">Across</div><div id="across"></div></div>
+  <div class="clue" id="clue2"><div class="cluehead">Down</div><div id="down"></div></div>
+  <br style="clear:both" />
+  <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+body { 
+  font-family:Tahoma, Helvetica, Sans-Serif; 
+  padding-left:20px; 
+  background-color:#f6f6f6; 
+  font-size:14px; 
+}
+
+h2 { color:#00008B; }
+
+a { 
+  color:#0c519f; 
+  text-decoration:none; 
+}
+
+a:hover { 
+  color:#cc0000; 
+  text-decoration:underline; 
+}
+
+.links { 
+  margin-bottom:20px; 
+  font-size:12px; 
+}
+
+#puzNotepad { 
+  background-color: #ffffe0; 
+  width:800px; 
+  padding:4px; 
+  border:1px solid #808080; 
+  margin-bottom:8px; 
+  display:none; 
+}
+
+#puzTable { 
+  border-collapse:collapse; 
+  border-spacing: 0px; 
+}
+
+#puzTable td { 
+  width:26px; 
+  padding: 0px; 
+  text-align:center; 
+  font-size:12px; 
+  border:1px solid #000000; 
+  background-color:White; 
+}
+
+#puzTable td input {
+  width: 100%;
+  border: none;
+}
+
+#puzTable .black { 
+  background-color:Black; 
+}
+
+#puzTable .circle { 
+  background-color:yellow; 
+}
+
+#puzTable .shade { 
+  background-color: lightgray; 
+}
+
+.grid { 
+  font-size:8px; 
+  text-align:left; 
+  padding-left:1px; 
+  height:9px;
+  pointer-events: none;
+}
+
+.letter { 
+  height:17px; 
+  vertical-align:baseline; 
+  font-weight:bold; 
+  pointer-events: none;
+}
+
+.copy {  
+  font-size:11px; 
+  color:#303030; 
+  font-style:italic; 
+  margin-top:2px; 
+}
+
+.clue { 
+  float:left; 
+  background-color:#ffffff; 
+  padding: 8px; 
+  border: 1px solid #00008B; 
+  margin: 20px 20px 20px 0px; 
+  width:380px; font-size:12px; 
+  visibility:hidden; 
+}
+
+.cluehead { 
+  font-size:18px; 
+  background-color: #87CEFA; 
+  font-weight:bold; 
+  padding:4px; 
+  margin-bottom: 20px; 
+  border:1px solid #808080; 
+  text-align:center; 
+  letter-spacing:2px; 
+}
