@@ -15,10 +15,11 @@ var app = ((document) => {
   const clue1 = document.getElementById('clue1');
   const clue2 = document.getElementById('clue2');
 
-  let lastPickedCell = null;
+  let currentCell = null;
   let acrossWord = true;
   let currentPuzzle = null;
   let parsedPuzzle = null;
+  let columns = null;
 
   puzTitle.innerText = 'Select a date above to load puzzle';
   // This function takes the puzzle object returned from the fetch and displays a grid and clues.
@@ -50,6 +51,7 @@ var app = ((document) => {
           //cell.innerHTML = "<div class='grid'>" + gridNumber + "</div>" + "<div class='letter'>" + val + "</div>";  
           if (puzzle.circles && puzzle.circles[gridnumIndex] === 1) {  
             cell.className = puzzle.shadecircles ? "shade" : "circle";  
+            // TODO:  fix circles!
           }  
         }  
         gridnumIndex += 1;
@@ -86,13 +88,10 @@ var app = ((document) => {
     if (cell.className === 'black') {
       return;
     }
-    if (lastPickedCell && lastPickedCell === cell) {
+    if (currentCell && currentCell === cell) {
       acrossWord = !acrossWord;
     }
-    // lastPickedCell.style.backgroundColor = 'white';
-    // cell.style.backgroundColor = 'Yellow';
-    lastPickedCell = cell;
-    //selectEntry(cell);
+    currentCell = cell;
     if (acrossWord) {
       selectAcross(cell);
     } else {
@@ -103,14 +102,14 @@ var app = ((document) => {
   function selectAcross(cell) {
     let row = cell.parentElement.rowIndex;
     let col = cell.cellIndex;
-    let rowOffset = row * parsedPuzzle.cols;
-    let index = row * parsedPuzzle.cols + col;
+    let rowOffset = row * columns;
+    let index = row * columns + col;
 
     clearHighlights();
-    while (index > row * parsedPuzzle.cols && ! parsedPuzzle.grid[index - 1].black) {
+    while (index > row * columns && ! parsedPuzzle.grid[index - 1].black) {
       index--;
     }
-    while (index < (row + 1) * parsedPuzzle.cols && ! parsedPuzzle.grid[index].black) {
+    while (index < (row + 1) * columns && ! parsedPuzzle.grid[index].black) {
       let currentCol = index - rowOffset;
       let currentCell = cell.parentElement.children[currentCol];
 
@@ -122,7 +121,6 @@ var app = ((document) => {
   function selectDown(cell) {
     let row = cell.parentElement.rowIndex;
     let col = cell.cellIndex;
-    let columns = parsedPuzzle.cols;
     let index = row * columns + col;
 
     clearHighlights();
@@ -180,6 +178,7 @@ var app = ((document) => {
         parsedPuzzle.grid[i].clueNum = puzzle.gridnums[i] === 0 ? '' : puzzle.gridnums[i];
       }
     }
+    columns = puzzle.size.cols;
     // console.log(parsedPuzzle);
   }
   
@@ -254,5 +253,25 @@ var app = ((document) => {
   }
   
   initPicker(); 
+
+  document.addEventListener('keyup', enterLetter);
+
+  function enterLetter(event) {
+    if (currentCell) {
+      let row = currentCell.parentElement.rowIndex;
+      let col = currentCell.cellIndex;
+      let index = row * columns + col;
+
+      currentCell.innerText = event.key.toUpperCase();
+      clearHighlights();
+      if (acrossWord) {
+        currentCell = puzTable.firstChild.children[row].children[col + 1];
+        selectAcross(currentCell);
+      } else {
+        currentCell = puzTable.firstChild.children[row + 1].children[col];
+        selectDown(currentCell);
+      }
+    }
+  }
 
 })(document);
