@@ -20,6 +20,8 @@ var app = ((document) => {
   let currentPuzzle = null;
   let parsedPuzzle = null;
   let columns = null;
+  let currentClue = null;
+  let idxArray = [];
 
   puzTitle.innerText = 'Select a date above to load puzzle';
   // This function takes the puzzle object returned from the fetch and displays a grid and clues.
@@ -85,6 +87,8 @@ var app = ((document) => {
     // console.log(cell.cellIndex);
     // console.log(cell.parentElement.rowIndex);
     // console.log(event);
+
+    idxArray = [];
     if (cell.className === 'black') {
       return;
     }
@@ -108,14 +112,17 @@ var app = ((document) => {
     clearHighlights();
     while (index > row * columns && ! parsedPuzzle.grid[index - 1].black) {
       index--;
+      currentClue = parsedPuzzle.grid[index].clueNum;
     }
     while (index < (row + 1) * columns && ! parsedPuzzle.grid[index].black) {
       let currentCol = index - rowOffset;
       let currentCell = cell.parentElement.children[currentCol];
 
+      idxArray.push(index);
       currentCell.style.backgroundColor = currentCol !== col ? 'LightYellow' : 'Yellow';
       index++;
     }
+    // console.log(idxArray);
   }
 
   function selectDown(cell) {
@@ -124,16 +131,19 @@ var app = ((document) => {
     let index = row * columns + col;
 
     clearHighlights();
-    while (index > columns && ! parsedPuzzle.grid[index - columns].black) {
+    while (index >= columns && ! parsedPuzzle.grid[index - columns].black) {
       index -= columns;
+      currentClue = parsedPuzzle.grid[index].clueNum;
     }
     while (index < parsedPuzzle.rows * columns && ! parsedPuzzle.grid[index].black) {
       let currentRow = Math.floor(index / columns);
       let currentCell = puzTable.firstChild.children[currentRow].children[col];
 
+      idxArray.push(index);
       currentCell.style.backgroundColor = currentRow !== row ? 'LightYellow' : 'Yellow';
       index += columns;
     }
+    // console.log(idxArray);
   }
 
   function clearHighlights() {
@@ -176,6 +186,7 @@ var app = ((document) => {
       } else {
         parsedPuzzle.grid[i].value = puzzle.grid[i];
         parsedPuzzle.grid[i].clueNum = puzzle.gridnums[i] === 0 ? '' : puzzle.gridnums[i];
+        parsedPuzzle.grid[i].status = 'free';
       }
     }
     columns = puzzle.size.cols;
@@ -257,19 +268,31 @@ var app = ((document) => {
   document.addEventListener('keyup', enterLetter);
 
   function enterLetter(event) {
+    let letter = event.key;
+    if (! letter.match(/[a-zA-Z]/)) return;
     if (currentCell) {
       let row = currentCell.parentElement.rowIndex;
       let col = currentCell.cellIndex;
       let index = row * columns + col;
+      let nextCellIndex = idxArray.indexOf(index) + 1;
+      let localIdxArray = idxArray.slice(nextCellIndex).concat(idxArray.slice(0, nextCellIndex));
+      // console.log(idxArray);
+      // console.log(localIdxArray);
 
+      if (parsedPuzzle.grid[index].status === 'locked') {
+        alert('Sorry, that square is locked by a previous answer');
+        return;
+      }
       currentCell.innerText = event.key.toUpperCase();
-      clearHighlights();
-      if (acrossWord) {
-        currentCell = puzTable.firstChild.children[row].children[col + 1];
-        selectAcross(currentCell);
-      } else {
-        currentCell = puzTable.firstChild.children[row + 1].children[col];
-        selectDown(currentCell);
+      currentCell.style.backgroundColor = 'LightYellow';
+      for (var idx of localIdxArray) {
+        if (parsedPuzzle.grid[idx].status !== 'locked') {
+          row = Math.floor(idx / columns);
+          col = idx - row * columns;
+          currentCell = puzTable.firstChild.children[row].children[col];
+          currentCell.style.backgroundColor = 'Yellow';
+          break;
+        }
       }
     }
   }
