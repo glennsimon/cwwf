@@ -37,6 +37,7 @@ a:hover {
 }
 
 #puzTable td { 
+  position: relative;
   width:26px; 
   padding: 0px; 
   text-align:center; 
@@ -55,7 +56,10 @@ a:hover {
 }
 
 #puzTable .circle { 
-  background-color:yellow; 
+  /*background-color:yellow; */
+  border: 1px solid black;
+  border-radius: 50%;
+  height: 26px;
 }
 
 #puzTable .shade { 
@@ -63,18 +67,28 @@ a:hover {
 }
 
 .grid { 
-  font-size:8px; 
-  text-align:left; 
-  padding-left:1px; 
-  height:9px;
+  position: absolute;
+  top: 0;
+  left: 1px;
+  font-size: 8px; 
+  font-weight: bold;
+  text-align: left; 
+  height: 9px;
   pointer-events: none;
+  background-color: white;
 }
 
-.letter { 
-  height:17px; 
-  vertical-align:baseline; 
-  font-weight:bold; 
+.square { 
+  display: flex;
+  height: 26px; 
+  vertical-align: baseline; 
+  font-weight: bold; 
   pointer-events: none;
+  box-sizing: border-box;
+}
+
+.letter {
+  margin: auto;
 }
 
 .copy {  

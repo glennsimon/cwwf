@@ -49,11 +49,11 @@ var app = ((document) => {
         if (val === ".") {
           cell.className = "black";
         } else {
-          cell.innerHTML = "<div class='grid'>" + gridNumber + "</div>" + "<div class='letter'>"  + "</div>";  
+          cell.innerHTML = "<div class='square'><div class='letter'></div></div><div class='grid'>" + gridNumber + "</div>";  
           //cell.innerHTML = "<div class='grid'>" + gridNumber + "</div>" + "<div class='letter'>" + val + "</div>";  
           if (puzzle.circles && puzzle.circles[gridnumIndex] === 1) {  
-            cell.className = puzzle.shadecircles ? "shade" : "circle";  
-            // TODO:  fix circles!
+            // cell.className = puzzle.shadecircles ? "shade" : "circle";  
+            cell.firstChild.classList.add('circle');
           }  
         }  
         gridnumIndex += 1;
@@ -163,8 +163,8 @@ var app = ((document) => {
   function loadPuzzle() {
     clearPuzzle();
     document.getElementById("puzTitle").innerText = "Fetching data...";
-    //var url = './puzzles/' + yearPicker.value + '/' + monthPicker.value + '/' + dayPicker.value + '.json';
-    var url = './puzzles/1977/07/07.json';  //TODO:  remove for deployment and uncomment above line
+    // var url = './puzzles/' + yearPicker.value + '/' + monthPicker.value + '/' + dayPicker.value + '.json';
+    var url = './puzzles/2015/01/07.json';  //TODO:  remove for deployment and uncomment above line
     fetch(url).then((response) => {
       return response.json();
     }).then((obj) => {
@@ -269,13 +269,14 @@ var app = ((document) => {
 
   function enterLetter(event) {
     let letter = event.key;
-    if (! letter.match(/[a-zA-Z]/)) return;
+    if (! letter.match(/^[a-zA-Z]$/)) return;
     if (currentCell) {
       let row = currentCell.parentElement.rowIndex;
       let col = currentCell.cellIndex;
       let index = row * columns + col;
       let nextCellIndex = idxArray.indexOf(index) + 1;
       let localIdxArray = idxArray.slice(nextCellIndex).concat(idxArray.slice(0, nextCellIndex));
+      let letterDiv = document.createElement('div');
       // console.log(idxArray);
       // console.log(localIdxArray);
 
@@ -283,7 +284,9 @@ var app = ((document) => {
         alert('Sorry, that square is locked by a previous answer');
         return;
       }
-      currentCell.innerText = event.key.toUpperCase();
+      letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
+      letterDiv.classList.add('letter');
+      currentCell.firstChild.replaceChild(letterDiv, currentCell.firstChild.firstChild);
       currentCell.style.backgroundColor = 'LightYellow';
       for (var idx of localIdxArray) {
         if (parsedPuzzle.grid[idx].status !== 'locked') {
