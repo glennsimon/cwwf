@@ -45,27 +45,29 @@ Email info {at} xwordinfo.com  -->
 </head>
 
 <body>
-  <h1>Crosswords With Friends</h1>
-  <h2>Competitive crossword puzzle game</h2>
-  <p>Pick a date</p>
-  <select id='pickYear'>
-    <option value='year'>year</option>
-  </select>
-  <select id="pickMonth" disabled>
-    <option value='month'>month</option>
-  </select>
-  <select id="pickDay" disabled>
-    <option value='day'>day</option>
-  </select>
-
-  <h2 id="puzTitle"></h2>
-  <p id="puzAuthor"></p>
-  <div id="puzNotepad"></div>
-  <table id="puzTable"></table>
-  <div id="puzCopy" class="copy"></div>
-  <div class="clue" id="clue1"><div class="cluehead">Across</div><div id="across"></div></div>
-  <div class="clue" id="clue2"><div class="cluehead">Down</div><div id="down"></div></div>
-  <br style="clear:both" />
+  <div id='gridContainer'>
+    <div>Pick a date</div>
+    <select id='pickYear'>
+      <option value='year'>year</option>
+    </select>
+    <select id="pickMonth" disabled>
+      <option value='month'>month</option>
+    </select>
+    <select id="pickDay" disabled>
+      <option value='day'>day</option>
+    </select>
+    <h3 id="puzTitle"></h3>
+    <p id="puzAuthor"></p>
+    <table id="puzTable"></table>
+    <div id="puzCopy" class="copy"></div>
+  </div>
+  <div id='infoContainer'>
+    <div id="puzNotepad"></div>
+    <div id='clueContainer'>
+      <div id='acrossContainer'><h2>Across</h2><div id='acrossClues'></div></div>
+      <div id='downContainer'><h2>Down</h2><div id='downClues'></div></div>
+    </div>
+  </div>
   <script src="main.js"></script>
 </body>
 </html>

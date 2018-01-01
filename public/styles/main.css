@@ -1,11 +1,10 @@
 body { 
+  display: flex;
   font-family:Tahoma, Helvetica, Sans-Serif; 
   padding-left:20px; 
   background-color:#f6f6f6; 
   font-size:14px; 
 }
-
-h2 { color:#00008B; }
 
 a { 
   color:#0c519f; 
@@ -24,10 +23,8 @@ a:hover {
 
 #puzNotepad { 
   background-color: #ffffe0; 
-  width:800px; 
   padding:4px; 
   border:1px solid #808080; 
-  margin-bottom:8px; 
   display:none; 
 }
 
@@ -99,13 +96,8 @@ a:hover {
 }
 
 .clue { 
-  float:left; 
-  background-color:#ffffff; 
-  padding: 8px; 
-  border: 1px solid #00008B; 
-  margin: 20px 20px 20px 0px; 
-  width:380px; font-size:12px; 
-  visibility:hidden; 
+  display: flex;
+  padding-right: 10px;
 }
 
 .cluehead { 
@@ -117,4 +109,14 @@ a:hover {
   border:1px solid #808080; 
   text-align:center; 
   letter-spacing:2px; 
+}
+
+#clueContainer {
+  display: flex;
+  margin: 20px 10px; 
+  visibility:hidden; 
+}
+
+.padRight {
+  padding-right: 5px;
 }
