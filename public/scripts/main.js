@@ -1,6 +1,6 @@
 /* jshint esversion: 6 */
 
-var app = ((document) => {
+var app = (() => {
   'use strict';
   const yearPicker = document.getElementById('pickYear');
   const monthPicker = document.getElementById('pickMonth');
@@ -28,55 +28,56 @@ var app = ((document) => {
   // This function takes the puzzle object returned from the fetch and displays a grid and clues.
   // The HTML table exists ahead of time but rows and cells are created on the fly.
   
-  function showPuzzle(puzzle) {  
-    puzTitle.innerText = puzzle.title;
-    puzAuthor.innerText = "by " + puzzle.author;
-    puzCopy.innerHTML = "&copy; " + puzzle.copyright;
-  
-    var gridnumIndex = 0;
-    var clueIndex = 0;
-    var rowIndex, row, colIndex, cell, gridNumber, val;
-  
-    for (rowIndex = 0; rowIndex < puzzle.size.rows; rowIndex += 1) {
-      row = puzTable.insertRow(rowIndex);
-      for (colIndex = 0; colIndex < puzzle.size.cols; colIndex += 1) {
-        cell = row.insertCell(colIndex);
+  function showPuzzle() {  
+    let cellDim = getCellDim();
+    let tableDim = cellDim * parsedPuzzle.rows;
+    let gridIndex = 0;
+
+    if (puzTable.children) clearPuzzle();
+    puzTitle.innerText = parsedPuzzle.title;
+    puzAuthor.innerText = "by " + parsedPuzzle.author;
+    puzCopy.innerHTML = "&copy; " + parsedPuzzle.copyright;
+    for (let rowIndex = 0; rowIndex < parsedPuzzle.rows; rowIndex += 1) {
+      let row = puzTable.insertRow(rowIndex);
+      row.setAttribute('style', 'width:' + tableDim + 'px;');
+      for (let colIndex = 0; colIndex < parsedPuzzle.cols; colIndex += 1) {
+        let clueNumber = parsedPuzzle.grid[gridIndex].clueNum;
+        let cell = row.insertCell(colIndex);
+        let blackCell = parsedPuzzle.grid[gridIndex].black;
+
+        cell.setAttribute('style', 'width:' + cellDim + 'px; height:' + cellDim + 'px;');
         cell.addEventListener('click', cellClicked);
-        gridNumber = puzzle.gridnums[gridnumIndex];
-        if (gridNumber === 0) { // 0 means no grid number at this location
-          gridNumber = " ";
-        }
-        val = puzzle.grid[gridnumIndex];
-        if (val === ".") {
+        if (blackCell) {
           cell.className = "black";
         } else {
           let squareDiv = document.createElement('div');
           let letterDiv = document.createElement('div');
-          let gridDiv = document.createElement('div');
+          let clueNumDiv = document.createElement('div');
           squareDiv.classList.add('square');
           letterDiv.classList.add('letter');
-          gridDiv.classList.add('grid');
-          gridDiv.appendChild(document.createTextNode(gridNumber));
+          clueNumDiv.classList.add('clueNumber');
+          clueNumDiv.appendChild(document.createTextNode(clueNumber));
           squareDiv.appendChild(letterDiv);
           cell.appendChild(squareDiv);
-          cell.appendChild(gridDiv);
-          if (puzzle.circles && puzzle.circles[gridnumIndex] === 1) {  
+          cell.appendChild(clueNumDiv);
+          if (parsedPuzzle.grid[gridIndex].circle) {  
             cell.firstChild.classList.add('circle');
           }  
         }  
-        gridnumIndex += 1;
+        gridIndex += 1;
       }
     }
   
-    if (puzzle.notepad) {
+    if (parsedPuzzle.notepad) {
       var notepad = document.getElementById("puzNotepad");
-      notepad.innerHTML = "<b>Notepad:</b> " + puzzle.notepad;
+      notepad.setAttribute('style', 'width:' + tableDim + 'px;');
+      notepad.innerHTML = "<b>Notepad:</b> " + parsedPuzzle.notepad;
       notepad.style.display = "block";
     }
   
     document.getElementById('clueContainer').style.visibility = "visible";
 
-    for (let clue of puzzle.clues.across) {
+    for (let clue of parsedPuzzle.clues.across) {
       let clueDiv = document.createElement('div');
       let numDiv = document.createElement('div');
       let textDiv = document.createElement('div');
@@ -90,7 +91,7 @@ var app = ((document) => {
       across.appendChild(clueDiv);
     }
   
-    for (let clue of puzzle.clues.down) {
+    for (let clue of parsedPuzzle.clues.down) {
       let clueDiv = document.createElement('div');
       let numDiv = document.createElement('div');
       let textDiv = document.createElement('div');
@@ -103,6 +104,11 @@ var app = ((document) => {
       clueDiv.appendChild(textDiv);
       down.appendChild(clueDiv);
     }
+  }
+
+  function getCellDim() {
+    let gridContWidth = document.getElementById('gridContainer').getBoundingClientRect().width;
+    return Math.floor(0.9 * (gridContWidth / parsedPuzzle.rows));
   }
   
   function cellClicked(event) {
@@ -186,7 +192,7 @@ var app = ((document) => {
       let cellArray = row.children;
       for (let cell of cellArray) {
         if (cell.className !== 'black') {
-          cell.style.backgroundColor = 'white';
+          cell.removeAttribute('style');
         }
       }
     }
@@ -200,7 +206,6 @@ var app = ((document) => {
   
   // This function makes the AJAX call, waits for the response, turns it into a puzzle object and calls   showPuzzle()  
   function loadPuzzle() {
-    clearPuzzle();
     document.getElementById("puzTitle").innerText = "Fetching data...";
     // var url = './puzzles/' + yearPicker.value + '/' + monthPicker.value + '/' + dayPicker.value + '.json';
     var url = './puzzles/2015/01/07.json';  //TODO:  remove for deployment and uncomment above line
@@ -209,7 +214,7 @@ var app = ((document) => {
     }).then((obj) => {
       currentPuzzle = obj;
       parsePuzzle(obj);
-      showPuzzle(obj);
+      showPuzzle();
     });
   }
 
@@ -217,15 +222,25 @@ var app = ((document) => {
     parsedPuzzle = {};
     parsedPuzzle.cols = puzzle.size.cols;
     parsedPuzzle.rows = puzzle.size.rows;
+    parsedPuzzle.author = puzzle.author;
+    parsedPuzzle.clues = puzzle.clues;
+    parsedPuzzle.copyright = puzzle.copyright;
+    parsedPuzzle.date = puzzle.date;
+    parsedPuzzle.dow = puzzle.dow;
+    parsedPuzzle.editor = puzzle.editor;
+    parsedPuzzle.notepad = puzzle.notepad;
+    parsedPuzzle.title = puzzle.title;
     parsedPuzzle.grid = [];
     for (var i = 0; i < puzzle.grid.length; i++) {
       parsedPuzzle.grid[i] = {};
       if (puzzle.grid[i] === '.') {
         parsedPuzzle.grid[i].black = true;
       } else {
+        parsedPuzzle.grid[i].black = false;
         parsedPuzzle.grid[i].value = puzzle.grid[i];
         parsedPuzzle.grid[i].clueNum = puzzle.gridnums[i] === 0 ? '' : puzzle.gridnums[i];
         parsedPuzzle.grid[i].status = 'free';
+        parsedPuzzle.grid[i].circle = puzzle.circles[i] === 1 ? true : false;
       }
     }
     columns = puzzle.size.cols;
@@ -304,6 +319,7 @@ var app = ((document) => {
   initPicker(); 
 
   document.addEventListener('keyup', enterLetter);
+  window.addEventListener('resize', showPuzzle);
 
   function enterLetter(event) {
     let letter = event.key;
@@ -338,4 +354,4 @@ var app = ((document) => {
     }
   }
 
-})(document);
+})();
