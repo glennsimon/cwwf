@@ -10,11 +10,9 @@ var app = (() => {
   const puzAuthor = document.getElementById('puzAuthor');
   const puzCopy = document.getElementById('puzCopy');
   const puzNotepad = document.getElementById('puzNotepad');
-  const across = document.getElementById('acrossClues');
-  const down = document.getElementById('downClues');
+  const across = document.getElementById('acrossContainer');
+  const down = document.getElementById('downContainer');
   const clueContainer = document.getElementById('clueContainer');
-  const acrossClues = document.getElementById('acrossClues');
-  const downClues = document.getElementById('downClues');
   
   let currentCell = null;
   let acrossWord = true;
@@ -69,14 +67,17 @@ var app = (() => {
     }
   
     if (parsedPuzzle.notepad) {
-      var notepad = document.getElementById("puzNotepad");
-      notepad.setAttribute('style', 'width:' + tableDim + 'px;');
-      notepad.innerHTML = "<b>Notepad:</b> " + parsedPuzzle.notepad;
-      notepad.style.display = "block";
+      puzNotepad.setAttribute('style', 'width:' + tableDim + 'px;');
+      puzNotepad.innerHTML = "<b>Notepad:</b> " + parsedPuzzle.notepad;
+      puzNotepad.style.display = "block";
     }
   
     document.getElementById('clueContainer').style.visibility = "visible";
 
+    let headDiv = document.createElement('div');
+    headDiv.className = 'heading';
+    headDiv.innerHTML = 'Across';
+    across.appendChild(headDiv);
     for (let clue of parsedPuzzle.clues.across) {
       let clueDiv = document.createElement('div');
       let numDiv = document.createElement('div');
@@ -91,6 +92,10 @@ var app = (() => {
       across.appendChild(clueDiv);
     }
   
+    headDiv = document.createElement('div');
+    headDiv.className = 'heading';
+    headDiv.innerHTML = 'Down';
+    down.appendChild(headDiv);
     for (let clue of parsedPuzzle.clues.down) {
       let clueDiv = document.createElement('div');
       let numDiv = document.createElement('div');
@@ -143,7 +148,7 @@ var app = (() => {
       index--;
     }
     currentClue = parsedPuzzle.grid[index].clueNum;
-    for (let clue of acrossClues.children) {
+    for (let clue of across.children) {
       let numNode = clue.firstChild;
       if (numNode.textContent.slice(0, numNode.textContent.indexOf('.')) === currentClue.toString()) {
         clue.style.backgroundColor = 'Yellow';
@@ -169,7 +174,7 @@ var app = (() => {
       index -= columns;
     }
     currentClue = parsedPuzzle.grid[index].clueNum;
-    for (let clue of downClues.children) {
+    for (let clue of down.children) {
       let numNode = clue.firstChild;
       if (numNode.textContent.slice(0, numNode.textContent.indexOf('.')) === currentClue.toString()) {
         clue.style.backgroundColor = 'Yellow';
@@ -187,19 +192,22 @@ var app = (() => {
 
   function clearHighlights() {
     // console.log(puzTable.firstChild);
+    let cellDim = getCellDim();
     let rowArray = puzTable.firstChild.children;
+
     for (let row of rowArray) {
       let cellArray = row.children;
       for (let cell of cellArray) {
         if (cell.className !== 'black') {
           cell.removeAttribute('style');
+          cell.setAttribute('style', 'width:' + cellDim + 'px; height:' + cellDim + 'px;');
         }
       }
     }
-    for (let clue of acrossClues.children) {
+    for (let clue of across.children) {
       clue.removeAttribute('style');
     }
-    for (let clue of downClues.children) {
+    for (let clue of down.children) {
       clue.removeAttribute('style');
     }
   }
@@ -319,7 +327,31 @@ var app = (() => {
   initPicker(); 
 
   document.addEventListener('keyup', enterLetter);
-  window.addEventListener('resize', showPuzzle);
+  window.addEventListener('resize', resizePuzzle);
+
+  function resizePuzzle() {
+    // console.log(puzTable.firstChild);
+    let cellDim = getCellDim();
+    let tableDim = cellDim * parsedPuzzle.rows;
+    let rowArray = puzTable.firstChild.children;
+
+    for (let row of rowArray) {
+      row.removeAttribute('style');
+      row.setAttribute('style', 'width:' + tableDim + 'px;');
+      let cellArray = row.children;
+      for (let cell of cellArray) {
+        cell.removeAttribute('style');
+        cell.setAttribute('style', 'width:' + cellDim + 'px; height:' + cellDim + 'px;');
+      }
+    }
+    if (parsedPuzzle.notepad) {
+      puzNotepad.removeAttribute('style');
+      puzNotepad.setAttribute('style', 'width:' + tableDim + 'px;display:block;');
+    }
+    if (currentCell) {
+      if (acrossWord) {selectAcross(currentCell);} else {selectDown(currentCell);}
+    }
+  }
 
   function enterLetter(event) {
     let letter = event.key;
@@ -342,7 +374,7 @@ var app = (() => {
       letterDiv.classList.add('letter');
       currentCell.firstChild.replaceChild(letterDiv, currentCell.firstChild.firstChild);
       currentCell.style.backgroundColor = 'LightYellow';
-      for (var idx of localIdxArray) {
+      for (let idx of localIdxArray) {
         if (parsedPuzzle.grid[idx].status !== 'locked') {
           row = Math.floor(idx / columns);
           col = idx - row * columns;
