@@ -1,109 +1,65 @@
-/* COMMON */
-
-html {
-  box-sizing: border-box;
-}
-
-*, *:before, *:after {
-  box-sizing: inherit;
-}
-
 body { 
+  display: flex;
+  flex-direction: column;
   font-family: Tahoma, Helvetica, Sans-Serif; 
   background-color: #f6f6f6; 
   font-size: 14px; 
   box-sizing: border-box;
-  margin: 0;
 }
 
-.displayBlock {
-  display: block;
+a { 
+  color: #0c519f; 
+  text-decoration: none; 
 }
 
-.displayNone {
-  display: none;
+a:hover { 
+  color: #cc0000; 
+  text-decoration: underline; 
 }
-
-.currCellHighlight {
-  background-color: yellow;
-}
-
-.rangeHighlight {
-  background-color: lightyellow;
-}
-
-/* END COMMON */
-/* CLUES */
-
-.heading {
-  font-size: large;
-  font-weight: bold;
-  padding: 5px 0 5px;
-}
-
-.padRight {
-  padding-right: 5px;
-}
-
-.displayFlex {
-  display: flex;
-}
-
-.columnCount-2 {
-  position: relative;
-  height: calc(100% - 31.6px);
-  column-count: 2;
-  column-gap: 1em;
-  column-fill: auto;
-}
-
-.padding-5 {
-  padding: 5px;
-}
-
-/* END CLUES */
 
 .links { 
   margin-bottom: 20px; 
   font-size: 12px; 
 }
 
-/*#gridContainer {
-  height: calc(100vh - 10px);
+#gridContainer {
+  height: 100vh;
   align-self: stretch;
   flex-grow: 10;
-}*/
-
-.fullHeight {
-  height: calc(100vh - 10px);
 }
 
 #puzNotepad { 
   background-color: #ffffe0; 
   padding: 4px; 
   border: 1px solid #808080; 
+  display: none; 
 }
 
 #puzTable { 
   border-collapse: collapse; 
   border-spacing: 0px; 
-  background-color: white;
 }
 
 #puzTable td { 
   position: relative;
+  width: 26px; 
+  padding: 0px; 
+  text-align: center; 
+  font-size: 12px; 
   border: 1px solid #000000; 
+  background-color: white; 
 }
 
 #puzTable .black { 
   background-color: black; 
 }
 
-.circle { 
+#puzTable .circle { 
+  /*background-color:yellow; */
   border: 1px solid black;
   border-radius: 50%;
-  width: 100%;
-  height: 100%;
+  width: 95%;
+  height: 95%;
 }
 
 #puzTable .shade { 
@@ -135,16 +91,64 @@ body {
 }
 
 .copy {  
-  font-size: small; 
+  font-size: 11px; 
   color: #303030; 
   font-style: italic; 
-  padding-top: 2px 0 2px;
+  margin-top: 2px; 
+}
+
+.clue { 
+  display: flex;
+  padding-right: 10px;
+}
+
+.cluehead { 
+  font-size: 18px; 
+  background-color: #87CEFA; 
+  font-weight: bold; 
+  padding: 4px; 
+  margin-bottom: 20px; 
+  border: 1px solid #808080; 
+  text-align: center; 
+  letter-spacing: 2px; 
+}
+
+#clueContainer {
+  display: flex;
+  margin-left: 10px; 
+  visibility: hidden; 
+}
+
+#acrossContainer, #downContainer {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  height: calc(80vh - 8px);
+  width: 30vw;
+}
+
+#downContainer {
+  /*visibility: hidden;*/
+}
+
+.heading {
+  font-size: large;
+  font-weight: bold;
+  padding: 5px 0 5px;
 }
 
 #kbContainer {
   bottom: 100%;
   height: 20vh;
   /*visibility: hidden;*/
+}
+
+.padRight {
+  padding-right: 5px;
+}
+
+.displayFlex {
+  display: flex;
 }
 
 .flexDirCol {
@@ -173,10 +177,11 @@ body {
   flex-grow: 2;
 }
 
-.flexGrow-4 {
-  flex-grow: 4;
+.flexGrow-3 {
+  flex-grow: 3;
 }
 
 .kbButton {
-  margin: 3px;
+  padding: 3px;
+  height: 7vh;
 }

@@ -10,10 +10,9 @@ var app = (() => {
   const puzAuthor = document.getElementById('puzAuthor');
   const puzCopy = document.getElementById('puzCopy');
   const puzNotepad = document.getElementById('puzNotepad');
-  const acrossContainer = document.getElementById('acrossContainer');
-  const downContainer = document.getElementById('downContainer');
-  const acrossClues = document.getElementById('acrossClues');
-  const downClues = document.getElementById('downClues');
+  const across = document.getElementById('acrossContainer');
+  const down = document.getElementById('downContainer');
+  const clueContainer = document.getElementById('clueContainer');
   
   let currentCell = null;
   let acrossWord = true;
@@ -27,32 +26,24 @@ var app = (() => {
   // This function takes the puzzle object returned from the fetch and displays a grid and clues.
   // The HTML table exists ahead of time but rows and cells are created on the fly.
   
-  function showPuzzle() {
-    if (puzTable.children) clearPuzzle(); // clear previous puzzle if it exists
-
-    // initial estimate of element size used to determine cellDim -> tableDim -> puzzle size  
-    if (parsedPuzzle.notepad) {
-      puzNotepad.style.width = '300px';
-      puzNotepad.innerHTML = "<b>Notepad:</b> " + parsedPuzzle.notepad;
-      puzNotepad.classList.remove('displayNone');
-    }
-    if (parsedPuzzle.title) puzTitle.innerText = parsedPuzzle.title;
-    if (parsedPuzzle.author) puzAuthor.innerText = "by " + parsedPuzzle.author;
-    if (parsedPuzzle.copyright) puzCopy.innerHTML = "&copy; " + parsedPuzzle.copyright;
-    
+  function showPuzzle() {  
     let cellDim = getCellDim();
     let tableDim = cellDim * parsedPuzzle.rows;
     let gridIndex = 0;
+
+    if (puzTable.children) clearPuzzle();
+    puzTitle.innerText = parsedPuzzle.title;
+    puzAuthor.innerText = "by " + parsedPuzzle.author;
+    puzCopy.innerHTML = "&copy; " + parsedPuzzle.copyright;
     for (let rowIndex = 0; rowIndex < parsedPuzzle.rows; rowIndex += 1) {
       let row = puzTable.insertRow(rowIndex);
-      row.style.width = tableDim + 'px';
+      row.setAttribute('style', 'width:' + tableDim + 'px;');
       for (let colIndex = 0; colIndex < parsedPuzzle.cols; colIndex += 1) {
         let clueNumber = parsedPuzzle.grid[gridIndex].clueNum;
         let cell = row.insertCell(colIndex);
         let blackCell = parsedPuzzle.grid[gridIndex].black;
 
-        cell.style.width = cellDim + 'px';
-        cell.style.height = cellDim + 'px';
+        cell.setAttribute('style', 'width:' + cellDim + 'px; height:' + cellDim + 'px;');
         cell.addEventListener('click', cellClicked);
         if (blackCell) {
           cell.className = "black";
@@ -75,55 +66,54 @@ var app = (() => {
       }
     }
   
-    // reset width of notepad to width of the puzzle
     if (parsedPuzzle.notepad) {
-      puzNotepad.style.width = document.getElementById('puzTable').offsetWidth + 'px';
-    }
-
-    acrossContainer.classList.remove('displayNone');
-    downContainer.classList.remove('displayNone');
-
-    // create contents for across clues div
-    for (let clue of parsedPuzzle.clues.across) {
-      let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex');
-
-      let numDiv = document.createElement('div');
-      numDiv.appendChild(document.createTextNode(clue.slice(0, clue.indexOf('.') + 1)));
-      numDiv.classList.add('padRight');
-
-      let textDiv = document.createElement('div');
-      textDiv.appendChild(document.createTextNode(clue.slice(clue.indexOf('.') + 1)));
-      clueDiv.appendChild(numDiv);
-      clueDiv.appendChild(textDiv);
-      acrossClues.appendChild(clueDiv);
+      puzNotepad.setAttribute('style', 'width:' + tableDim + 'px;');
+      puzNotepad.innerHTML = "<b>Notepad:</b> " + parsedPuzzle.notepad;
+      puzNotepad.style.display = "block";
     }
   
-    // create contents for down clues div
-    for (let clue of parsedPuzzle.clues.down) {
-      let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex');
+    document.getElementById('clueContainer').style.visibility = "visible";
 
+    let headDiv = document.createElement('div');
+    headDiv.className = 'heading';
+    headDiv.innerHTML = 'Across';
+    across.appendChild(headDiv);
+    for (let clue of parsedPuzzle.clues.across) {
+      let clueDiv = document.createElement('div');
       let numDiv = document.createElement('div');
+      let textDiv = document.createElement('div');
+
+      clueDiv.classList.add('clue');
       numDiv.appendChild(document.createTextNode(clue.slice(0, clue.indexOf('.') + 1)));
       numDiv.classList.add('padRight');
-
-      let textDiv = document.createElement('div');
       textDiv.appendChild(document.createTextNode(clue.slice(clue.indexOf('.') + 1)));
       clueDiv.appendChild(numDiv);
       clueDiv.appendChild(textDiv);
-      downClues.appendChild(clueDiv);
+      across.appendChild(clueDiv);
+    }
+  
+    headDiv = document.createElement('div');
+    headDiv.className = 'heading';
+    headDiv.innerHTML = 'Down';
+    down.appendChild(headDiv);
+    for (let clue of parsedPuzzle.clues.down) {
+      let clueDiv = document.createElement('div');
+      let numDiv = document.createElement('div');
+      let textDiv = document.createElement('div');
+
+      clueDiv.classList.add('clue');
+      numDiv.appendChild(document.createTextNode(clue.slice(0, clue.indexOf('.') + 1)));
+      numDiv.classList.add('padRight');
+      textDiv.appendChild(document.createTextNode(clue.slice(clue.indexOf('.') + 1)));
+      clueDiv.appendChild(numDiv);
+      clueDiv.appendChild(textDiv);
+      down.appendChild(clueDiv);
     }
   }
 
   function getCellDim() {
-    let puzTableWidth = document.getElementById('gridContainer').offsetHeight;
-    for (let child of document.getElementById('gridContainer').children) {
-      if (child.nodeName.toLowerCase() === 'div') {
-        puzTableWidth -= child.offsetHeight;
-      }
-    }
-    return Math.floor(puzTableWidth / parsedPuzzle.rows);
+    let gridContWidth = document.getElementById('gridContainer').getBoundingClientRect().width;
+    return Math.floor(0.9 * (gridContWidth / parsedPuzzle.rows));
   }
   
   function cellClicked(event) {
@@ -158,10 +148,10 @@ var app = (() => {
       index--;
     }
     currentClue = parsedPuzzle.grid[index].clueNum;
-    for (let clue of acrossClues.children) {
+    for (let clue of across.children) {
       let numNode = clue.firstChild;
       if (numNode.textContent.slice(0, numNode.textContent.indexOf('.')) === currentClue.toString()) {
-        clue.classList.add('currCellHighlight');
+        clue.style.backgroundColor = 'Yellow';
       }
     }
     while (index < (row + 1) * columns && ! parsedPuzzle.grid[index].black) {
@@ -169,7 +159,7 @@ var app = (() => {
       let currentCell = cell.parentElement.children[currentCol];
 
       idxArray.push(index);
-      currentCell.classList.add(currentCol !== col ? 'rangeHighlight' : 'currCellHighlight');
+      currentCell.style.backgroundColor = currentCol !== col ? 'LightYellow' : 'Yellow';
       index++;
     }
   }
@@ -180,16 +170,14 @@ var app = (() => {
     let index = row * columns + col;
 
     clearHighlights();
-    // move to the first letter of the word
     while (index >= columns && ! parsedPuzzle.grid[index - columns].black) {
       index -= columns;
     }
-    // get the number of the clue number
     currentClue = parsedPuzzle.grid[index].clueNum;
-    for (let clue of downClues.children) {
+    for (let clue of down.children) {
       let numNode = clue.firstChild;
       if (numNode.textContent.slice(0, numNode.textContent.indexOf('.')) === currentClue.toString()) {
-        clue.classList.add('currCellHighlight');
+        clue.style.backgroundColor = 'Yellow';
       }
     }
     while (index < parsedPuzzle.rows * columns && ! parsedPuzzle.grid[index].black) {
@@ -197,7 +185,7 @@ var app = (() => {
       let currentCell = puzTable.firstChild.children[currentRow].children[col];
 
       idxArray.push(index);
-      currentCell.classList.add(currentRow !== row ? 'rangeHighlight' : 'currCellHighlight');
+      currentCell.style.backgroundColor = currentRow !== row ? 'LightYellow' : 'Yellow';
       index += columns;
     }
   }
@@ -208,18 +196,19 @@ var app = (() => {
     let rowArray = puzTable.firstChild.children;
 
     for (let row of rowArray) {
-      for (let cell of row.children) {
+      let cellArray = row.children;
+      for (let cell of cellArray) {
         if (cell.className !== 'black') {
-          cell.classList.remove('rangeHighlight');
-          cell.classList.remove('currCellHighlight');
+          cell.removeAttribute('style');
+          cell.setAttribute('style', 'width:' + cellDim + 'px; height:' + cellDim + 'px;');
         }
       }
     }
-    for (let clue of acrossClues.children) {
-      clue.classList.remove('currCellHighlight');
+    for (let clue of across.children) {
+      clue.removeAttribute('style');
     }
-    for (let clue of downClues.children) {
-      clue.classList.remove('currCellHighlight');
+    for (let clue of down.children) {
+      clue.removeAttribute('style');
     }
   }
   
@@ -274,12 +263,11 @@ var app = (() => {
       puzTable.deleteRow(--remRows);
     }
     puzAuthor.innerText = "";
-    puzNotepad.classList.add('displayNone');
+    puzNotepad.style.display = "none";
     puzCopy.innerHTML = "";
-    acrossContainer.classList.add('displayNone');
-    downContainer.classList.add('displayNone');
-    acrossClues.innerText = '';
-    downClues.innerText = '';
+    across.innerHTML = "";
+    down.innerHTML = "";
+    clueContainer.style.visibility = "hidden";
   }
   
   function initPicker() {
@@ -348,16 +336,17 @@ var app = (() => {
     let rowArray = puzTable.firstChild.children;
 
     for (let row of rowArray) {
-      row.style.width = tableDim + 'px';
+      row.removeAttribute('style');
+      row.setAttribute('style', 'width:' + tableDim + 'px;');
       let cellArray = row.children;
       for (let cell of cellArray) {
-        cell.style.width = cellDim + 'px';
-        cell.style.height = cellDim + 'px';
+        cell.removeAttribute('style');
+        cell.setAttribute('style', 'width:' + cellDim + 'px; height:' + cellDim + 'px;');
       }
     }
     if (parsedPuzzle.notepad) {
-      puzNotepad.style.width = tableDim + 'px';
-      puzNotepad.classList.remove('displayNone');
+      puzNotepad.removeAttribute('style');
+      puzNotepad.setAttribute('style', 'width:' + tableDim + 'px;display:block;');
     }
     if (currentCell) {
       if (acrossWord) {selectAcross(currentCell);} else {selectDown(currentCell);}
@@ -384,15 +373,13 @@ var app = (() => {
       letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
       letterDiv.classList.add('letter');
       currentCell.firstChild.replaceChild(letterDiv, currentCell.firstChild.firstChild);
-      currentCell.classList.remove('currCellHighlight');
-      currentCell.classList.add('rangeHighlight');
+      currentCell.style.backgroundColor = 'LightYellow';
       for (let idx of localIdxArray) {
         if (parsedPuzzle.grid[idx].status !== 'locked') {
           row = Math.floor(idx / columns);
           col = idx - row * columns;
           currentCell = puzTable.firstChild.children[row].children[col];
-          currentCell.classList.remove('rangeHighlight');
-          currentCell.classList.add('currCellHighlight');
+          currentCell.style.backgroundColor = 'Yellow';
           break;
         }
       }

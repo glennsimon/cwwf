@@ -45,8 +45,8 @@ Email info {at} xwordinfo.com  -->
 </head>
 
 <body>
-  <div id='appContainer' class='displayFlex'>
-    <div id='gridContainer'>
+  <div id='appContainer' class='displayFlex padding-5'>
+    <div id='gridContainer' class='fullHeight'>
       <div>Pick a date:&nbsp;
         <select id='pickYear'>
           <option value='year'>year</option>
@@ -58,19 +58,25 @@ Email info {at} xwordinfo.com  -->
           <option value='day'>day</option>
         </select>
       </div>
-      <h3 id='puzTitle'></h3>
+      <div id='puzTitle' class='heading'></div>
       <div id='puzAuthor'></div>
       <table id='puzTable'></table>
       <div id='puzCopy' class='copy'></div>
-      <div id='puzNotepad'></div>
+      <div id='puzNotepad' class='displayNone'></div>
     </div>
-    <div id='infoContainer'>
-      <div id='clueContainer' class='displayFlex'>
-        <div id='acrossContainer'></div>
-        <div id='downContainer'></div>
+    <div id='infoContainer' class='displayFlex flexDirCol'>
+      <div id='clueContainer' class='displayFlex flexGrow-1'>
+        <div id='acrossContainer' class='padding-5 displayNone'>
+          <div class="heading">Across</div>
+          <div id="acrossClues" class="columnCount-2"></div>
+        </div>
+        <div id="downContainer" class="padding-5 displayNone">
+          <div class="heading">Down</div>
+          <div id="downClues" class="columnCount-2"></div>
+        </div>
       </div>
       <div id='kbContainer' class='displayFlex flexDirCol'>
-         <div class='displayFlex flexCenter'>
+         <div class='displayFlex flexCenter flexGrow-1'>
            <button class='kbButton flexGrow-2'>Q</button>
            <button class='kbButton flexGrow-2'>W</button>
            <button class='kbButton flexGrow-2'>E</button>
@@ -82,7 +88,8 @@ Email info {at} xwordinfo.com  -->
            <button class='kbButton flexGrow-2'>O</button>
            <button class='kbButton flexGrow-2'>P</button>
          </div>
-         <div class='displayFlex flexCenter'>
+         <div class='displayFlex flexCenter flexGrow-1'>
+           <button class='kbButton flexGrow-1' disabled></button>
            <button class='kbButton flexGrow-2'>A</button>
            <button class='kbButton flexGrow-2'>S</button>
            <button class='kbButton flexGrow-2'>D</button>
@@ -92,9 +99,10 @@ Email info {at} xwordinfo.com  -->
            <button class='kbButton flexGrow-2'>J</button>
            <button class='kbButton flexGrow-2'>K</button>
            <button class='kbButton flexGrow-2'>L</button>
-           <button class='kbButton flexGrow-3'>enter</button>
+           <button class='kbButton flexGrow-1' disabled></button>
          </div>
-         <div class='displayFlex flexCenter'>
+         <div class='displayFlex flexCenter flexGrow-1'>
+           <button class='kbButton flexGrow-2'><-</button>
            <button class='kbButton flexGrow-2'>Z</button>
            <button class='kbButton flexGrow-2'>X</button>
            <button class='kbButton flexGrow-2'>C</button>
@@ -102,6 +110,7 @@ Email info {at} xwordinfo.com  -->
            <button class='kbButton flexGrow-2'>B</button>
            <button class='kbButton flexGrow-2'>N</button>
            <button class='kbButton flexGrow-2'>M</button>
+           <button class='kbButton flexGrow-4'>enter</button>
          </div>
       </div>
     </div>
