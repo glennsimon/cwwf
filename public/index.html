@@ -74,7 +74,7 @@ Email info {at} xwordinfo.com  -->
           <div id="downClues" class="columnCount-2"></div>
         </div>
       </div>
-      <div id='kbContainer' class='displayFlex flexDirCol'>
+      <div id='kbContainer' class='displayNone flexDirCol'>
          <div class='displayFlex flexCenter flexGrow-1'>
            <button class='kbButton flexGrow-2'>Q</button>
            <button class='kbButton flexGrow-2'>W</button>
@@ -114,7 +114,7 @@ Email info {at} xwordinfo.com  -->
       </div>
     </div>
   </div>
-  <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
+  <!-- <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
   <script>
     // Initialize Firebase
     var config = {
@@ -126,7 +126,12 @@ Email info {at} xwordinfo.com  -->
       messagingSenderId: "38205810024"
     };
     firebase.initializeApp(config);
-  </script>
+  </script> -->
+  <script src="/__/firebase/4.8.1/firebase-app.js"></script>
+  <script src="/__/firebase/4.8.1/firebase-auth.js"></script>
+  <script src="/__/firebase/4.8.1/firebase-storage.js"></script>
+  <!-- load Firebase SDK before loading this file -->
+  <script src="/__/firebase/init.js"></script>
   <script src='./scripts/main.js'></script>
 </body>
 </html>

@@ -14,6 +14,7 @@ var app = (() => {
   const downContainer = document.getElementById('downContainer');
   const acrossClues = document.getElementById('acrossClues');
   const downClues = document.getElementById('downClues');
+  const keyboard = document.getElementById('kbContainer');
   
   let currentCell = null;
   let acrossWord = true;
@@ -22,6 +23,7 @@ var app = (() => {
   let columns = null;
   let currentClue = null;
   let idxArray = [];
+  let puzDir = null;
 
   puzTitle.innerText = 'Select a date above to load puzzle';
   // This function takes the puzzle object returned from the fetch and displays a grid and clues.
@@ -80,6 +82,8 @@ var app = (() => {
       puzNotepad.style.width = document.getElementById('puzTable').offsetWidth + 'px';
     }
 
+    keyboard.classList.remove('displayNone');
+    keyboard.classList.add('displayFlex');
     acrossContainer.classList.remove('displayNone');
     downContainer.classList.remove('displayNone');
 
@@ -226,8 +230,10 @@ var app = (() => {
   // This function makes the AJAX call, waits for the response, turns it into a puzzle object and calls   showPuzzle()  
   function loadPuzzle() {
     document.getElementById("puzTitle").innerText = "Fetching data...";
+    let baseUrl = 'https://raw.githubusercontent.com/doshea/nyt_crosswords/master';
+    let url = `${baseUrl}/${yearPicker.value}/${monthPicker.value}/${dayPicker.value}.json`;
     // var url = './puzzles/' + yearPicker.value + '/' + monthPicker.value + '/' + dayPicker.value + '.json';
-    var url = './puzzles/2015/01/07.json';  //TODO:  remove for deployment and uncomment above line
+    // var url = './puzzles/2015/01/07.json';  //TODO:  remove for deployment and uncomment above line
     fetch(url).then((response) => {
       return response.json();
     }).then((obj) => {
@@ -259,7 +265,7 @@ var app = (() => {
         parsedPuzzle.grid[i].value = puzzle.grid[i];
         parsedPuzzle.grid[i].clueNum = puzzle.gridnums[i] === 0 ? '' : puzzle.gridnums[i];
         parsedPuzzle.grid[i].status = 'free';
-        parsedPuzzle.grid[i].circle = puzzle.circles[i] === 1 ? true : false;
+        parsedPuzzle.grid[i].circle = puzzle.circles && puzzle.circles[i] === 1 ? true : false;
       }
     }
     columns = puzzle.size.cols;
@@ -280,30 +286,45 @@ var app = (() => {
     downContainer.classList.add('displayNone');
     acrossClues.innerText = '';
     downClues.innerText = '';
+    keyboard.classList.remove('displayFlex');
+    keyboard.classList.add('displayNone');
   }
   
   function initPicker() {
-    populatePicker('year', yearPicker);
-    loadPuzzle(); //TODO: remove for deployment
+    // populatePicker('year', yearPicker);
+    fetch('./puzDir.json'). then(response => {
+      return response.json();
+    }).then(pd => {
+      puzDir = pd;
+      populatePicker(Object.getOwnPropertyNames(puzDir), yearPicker);
+    });
+    // loadPuzzle(); //TODO: remove for deployment
   }
   
-  function populatePicker(url, picker) {
+  function populatePicker(items, picker) {
     picker.value = picker.children[0].value;
     while (picker.children[1]) {
       picker.removeChild(picker.children[1]);
     }
-    fetch(url).then((response) => {
-      return response.json();
-    }).then((list) => {
-      //Create and append the options
-      for (var item of list) {
-        if (item.includes('.json')) item = item.slice(0, 2);
-        let option = document.createElement('option');
-        option.value = item;
-        option.text = item;
-        picker.appendChild(option);
-      }
+    items.sort();
+    items.forEach(item => {
+      if (item.includes('.json')) item = item.slice(0, 2);
+      let option = document.createElement('option');
+      option.value = item;
+      option.text = item;
+      picker.appendChild(option);
     });
+    // fetch(url).then((response) => {
+    //   console.log(response);
+    //   return response.json();
+    // }).then((list) => {
+    //   //Create and append the options
+    //   for (var item of list) {
+    //     if (item.includes('.json')) item = item.slice(0, 2);
+    //     
+    //     picker.appendChild(option);
+    //   }
+    // });
   }
   
   yearPicker.addEventListener('change', changeYear);
@@ -317,7 +338,7 @@ var app = (() => {
     dayPicker.disabled = true;
     clearPuzzle();
     if (yearPicker.value !== 'year') {
-      populatePicker(yearPicker.value, monthPicker);
+      populatePicker(Object.getOwnPropertyNames(puzDir[yearPicker.value]), monthPicker);
       monthPicker.disabled = false;
     }
   }
@@ -326,7 +347,7 @@ var app = (() => {
     dayPicker.disabled = true;
     clearPuzzle();
     if (monthPicker.value !== 'month') {
-      populatePicker(yearPicker.value + '/' + monthPicker.value, dayPicker);
+      populatePicker(puzDir[yearPicker.value][monthPicker.value], dayPicker);
       dayPicker.disabled = false;
     }
   }
