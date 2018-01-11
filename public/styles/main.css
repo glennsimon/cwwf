@@ -180,3 +180,11 @@ body {
 .kbButton {
   margin: 3px;
 }
+
+.colorSalmon {
+  background-color: Salmon;
+}
+
+.colorLightSkyBlue {
+  background-color: LightSkyBlue;
+}

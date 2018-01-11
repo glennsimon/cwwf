@@ -232,7 +232,6 @@ var app = (() => {
     document.getElementById("puzTitle").innerText = "Fetching data...";
     let baseUrl = 'https://raw.githubusercontent.com/doshea/nyt_crosswords/master';
     let url = `${baseUrl}/${yearPicker.value}/${monthPicker.value}/${dayPicker.value}.json`;
-    // var url = './puzzles/' + yearPicker.value + '/' + monthPicker.value + '/' + dayPicker.value + '.json';
     // var url = './puzzles/2015/01/07.json';  //TODO:  remove for deployment and uncomment above line
     fetch(url).then((response) => {
       return response.json();
@@ -359,9 +358,6 @@ var app = (() => {
   
   initPicker(); 
 
-  document.addEventListener('keyup', enterLetter);
-  window.addEventListener('resize', resizePuzzle);
-
   function resizePuzzle() {
     // console.log(puzTable.firstChild);
     let cellDim = getCellDim();
@@ -385,8 +381,18 @@ var app = (() => {
     }
   }
 
+  document.addEventListener('keyup', enterLetter);
+  window.addEventListener('resize', resizePuzzle);
+  keyboard.addEventListener('click', enterLetter);
+  document.getElementById('backSpace').addEventListener('click', undoEntry);
+  document.getElementById('enter').addEventListener('click', playWord);
+
+  function playWord() {
+    // TODO: implement function
+  }
+
   function enterLetter(event) {
-    let letter = event.key;
+    let letter = event.target.tagName === 'BUTTON' ? event.target.innerText : event.key;
     if (! letter.match(/^[a-zA-Z]$/)) return;
     if (currentCell) {
       let row = currentCell.parentElement.rowIndex;
@@ -403,6 +409,44 @@ var app = (() => {
         return;
       }
       letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
+      letterDiv.classList.add('letter');
+      currentCell.firstChild.replaceChild(letterDiv, currentCell.firstChild.firstChild);
+      currentCell.classList.remove('currCellHighlight');
+      currentCell.classList.add('rangeHighlight');
+      for (let idx of localIdxArray) {
+        if (parsedPuzzle.grid[idx].status !== 'locked') {
+          row = Math.floor(idx / columns);
+          col = idx - row * columns;
+          currentCell = puzTable.firstChild.children[row].children[col];
+          currentCell.classList.remove('rangeHighlight');
+          currentCell.classList.add('currCellHighlight');
+          break;
+        }
+      }
+    }
+  }
+
+  function undoEntry(event) {
+    if (currentCell) {
+      let row = currentCell.parentElement.rowIndex;
+      let col = currentCell.cellIndex;
+      let index = row * columns + col;
+      // reverse copy idxArray so we go backwards instead of forwards
+      let localIdxArray = [];
+      for (let i =0, j= idxArray.length; i > 0; i++, j--) {
+        localIdxArray[i] = idxArray[j - 1];
+      }
+      let nextCellIndex = idxArray.indexOf(index) - 1;
+      localIdxArray = idxArray.slice(nextCellIndex).concat(idxArray.slice(0, nextCellIndex));
+      let letterDiv = document.createElement('div');
+      // console.log(idxArray);
+      // console.log(localIdxArray);
+
+      if (parsedPuzzle.grid[index].status === 'locked') {
+        alert('Sorry, that square is locked by a previous answer');
+        return;
+      }
+      letterDiv.appendChild(document.createTextNode(''));
       letterDiv.classList.add('letter');
       currentCell.firstChild.replaceChild(letterDiv, currentCell.firstChild.firstChild);
       currentCell.classList.remove('currCellHighlight');
