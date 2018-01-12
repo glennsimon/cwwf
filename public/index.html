@@ -35,9 +35,10 @@ Email info {at} xwordinfo.com  -->
   <meta name="msapplication-navbutton-color" content="#303F9F">
 
   <!-- Material Design Lite -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.orange-indigo.min.css">
-  <script defer src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+  <!-- <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.orange-indigo.min.css"> -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+  <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 
   <!-- App Styling -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en"> 
@@ -45,49 +46,30 @@ Email info {at} xwordinfo.com  -->
 </head>
 
 <body>
+  <!-- The drawer is always open in large screens. The header is always shown,
+    even in small screens. -->
   <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
-    <header class="mdl-layout__header mdl-color--primary mdl-color-text--white">
+    <header class="mdl-layout__header">
       <div class="mdl-layout__header-row">
         <span class="mdl-layout-title">Xwords WF</span>
+        <div class="mdl-layout-spacer"></div>
+        <span class="mdl-chip__text">
+          <i class="material-icons">info_outline</i>
+        </span>
       </div>
     </header>
-    <div class="mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">empty drawer
-    <!-- <div class="jpdy-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
-      <header class="jpdy-drawer-header">
-        <img id="profilePic" src="images/user.jpg" class="jpdy-avatar" alt="profile picture">
-        <div class="jpdy-avatar-dropdown">
-          <span id="profileName">hello@example.com</span>
-          <div class="mdl-layout-spacer"></div>
-          <button id="accbtn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
-            <i class="material-icons" role="presentation">arrow_drop_down</i>
-            <span class="visuallyhidden">Accounts</span>
-          </button>
-          <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="accbtn">
-            <li class="mdl-menu__item">
-              <button id="authButton" class="mdl-button mdl-js-button mdl-js-ripple-effect">Login</button>
-            </li>
-          </ul>
-        </div>
-      </header>
+    <div class="mdl-layout__drawer">
       <nav class="jpdy-navigation mdl-navigation mdl-color--blue-grey-800">
-        <a class="mdl-navigation__link" href="#jpdy-game"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">home</i>Home</a>
-        <a class="mdl-navigation__link" href="#jpdy-scores"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">group</i>Player Scores</a>
-        <a class="mdl-navigation__link" href="#jpdy-prev-games"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">list</i>Past Games</a>
-        <a class="mdl-navigation__link" href="#jpdy-practice-nav"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">refresh</i>Practice</a>
-        <div class="mdl-layout-spacer"></div>
-      </nav> -->
-      <nav class="jpdy-navigation mdl-navigation mdl-color--blue-grey-800">
-        <div>Pick a date:&nbsp;
-          <select id='pickYear'>
-            <option value='year'>year</option>
-          </select>
-          <select id='pickMonth' disabled>
-            <option value='month'>month</option>
-          </select>
-          <select id='pickDay' disabled>
-            <option value='day'>day</option>
-          </select>
-        </div>
+        <div>Pick a date:&nbsp;</div>
+        <select id='pickYear'>
+          <option value='year'>year</option>
+        </select>
+        <select id='pickMonth' disabled>
+          <option value='month'>month</option>
+        </select>
+        <select id='pickDay' disabled>
+          <option value='day'>day</option>
+        </select>
         <div id='puzTitle' class='heading'></div>
         <div id='puzAuthor'></div>
         <div id='puzCopy' class='copy'></div>
@@ -95,62 +77,64 @@ Email info {at} xwordinfo.com  -->
       </nav>
     </div>
     <main class="mdl-layout__content mdl-color--grey-100">
-      <div id='gridContainer' class='fullHeight'>
-        
-        <table id='puzTable'></table>
-        
+      <div id='appContainer' class='page-content displayFlex flexDirCol initHeight'>
+        <table id='puzTable' class='fullWidth margin5pxAuto'></table>
+        <div id='clueCard' class="cardShadow flexGrow-1 displayNone">
+          <div class="fontSizeSmall padding0px5px">Clue:</div>
+          <div id='singleClue' class='padding0px5px'></div>
+        </div>
+        <div id='clueContainer' class='fullWidth displayNone'>
+          <div id='acrossContainer' class='padding-5 displayNone'>
+            <div class="heading">Across</div>
+            <div id="acrossClues" class="columnCount-2"></div>
+          </div>
+          <div id="downContainer" class="padding-5 displayNone">
+            <div class="heading">Down</div>
+            <div id="downClues" class="columnCount-2"></div>
+          </div>
+        </div>
+        <div id='kbContainer' class='displayNone flexDirCol'>
+          <div class='displayFlex flexCenter fullWidth flexGrow-1'>
+            <button class="kbButton width10pct">Q</button>
+            <button class="kbButton width10pct">W</button>
+            <button class="kbButton width10pct">E</button>
+            <button class="kbButton width10pct">R</button>
+            <button class="kbButton width10pct">T</button>
+            <button class="kbButton width10pct">Y</button>
+            <button class="kbButton width10pct">U</button>
+            <button class="kbButton width10pct">I</button>
+            <button class="kbButton width10pct">O</button>
+            <button class="kbButton width10pct">P</button>
+          </div>
+          <div class='displayFlex flexCenter fullWidth flexGrow-1'>
+            <div class='width5pct'></div>
+            <button class="kbButton width10pct">A</button>
+            <button class="kbButton width10pct">S</button>
+            <button class="kbButton width10pct">D</button>
+            <button class="kbButton width10pct">F</button>
+            <button class="kbButton width10pct">G</button>
+            <button class="kbButton width10pct">H</button>
+            <button class="kbButton width10pct">J</button>
+            <button class="kbButton width10pct">K</button>
+            <button class="kbButton width10pct">L</button>
+            <div class='width5pct'></div>
+          </div>
+          <div class='displayFlex flexCenter fullWidth flexGrow-1'>
+            <button id='backSpace' class="kbButton width10pct">
+              <i class="material-icons">arrow_back</i>
+            </button>
+            <button class="kbButton width10pct">Z</button>
+            <button class="kbButton width10pct">X</button>
+            <button class="kbButton width10pct">C</button>
+            <button class="kbButton width10pct">V</button>
+            <button class="kbButton width10pct">B</button>
+            <button class="kbButton width10pct">N</button>
+            <button class="kbButton width10pct">M</button>
+            <button id='enter' class="kbButton width20pct">enter</button>
+           </div>
+        </div>
       </div>
     </main>
-    <div id='infoContainer' class='displayFlex flexDirCol'>
-      <div id='clueContainer' class='displayFlex flexGrow-1'>
-        <div id='acrossContainer' class='padding-5 displayNone'>
-          <div class="heading">Across</div>
-          <div id="acrossClues" class="columnCount-2"></div>
-        </div>
-        <div id="downContainer" class="padding-5 displayNone">
-          <div class="heading">Down</div>
-          <div id="downClues" class="columnCount-2"></div>
-        </div>
-      </div>
-      <div id='kbContainer' class='displayNone flexDirCol'>
-         <div class='displayFlex flexCenter flexGrow-1'>
-           <button class='kbButton flexGrow-2'>Q</button>
-           <button class='kbButton flexGrow-2'>W</button>
-           <button class='kbButton flexGrow-2'>E</button>
-           <button class='kbButton flexGrow-2'>R</button>
-           <button class='kbButton flexGrow-2'>T</button>
-           <button class='kbButton flexGrow-2'>Y</button>
-           <button class='kbButton flexGrow-2'>U</button>
-           <button class='kbButton flexGrow-2'>I</button>
-           <button class='kbButton flexGrow-2'>O</button>
-           <button class='kbButton flexGrow-2'>P</button>
-         </div>
-         <div class='displayFlex flexCenter flexGrow-1'>
-           <button class='kbButton flexGrow-1' disabled></button>
-           <button class='kbButton flexGrow-2'>A</button>
-           <button class='kbButton flexGrow-2'>S</button>
-           <button class='kbButton flexGrow-2'>D</button>
-           <button class='kbButton flexGrow-2'>F</button>
-           <button class='kbButton flexGrow-2'>G</button>
-           <button class='kbButton flexGrow-2'>H</button>
-           <button class='kbButton flexGrow-2'>J</button>
-           <button class='kbButton flexGrow-2'>K</button>
-           <button class='kbButton flexGrow-2'>L</button>
-           <button class='kbButton flexGrow-1' disabled></button>
-         </div>
-         <div class='displayFlex flexCenter flexGrow-1'>
-           <button id='backSpace' class='kbButton flexGrow-2 colorSalmon'>&lt;</button>
-           <button class='kbButton flexGrow-2'>Z</button>
-           <button class='kbButton flexGrow-2'>X</button>
-           <button class='kbButton flexGrow-2'>C</button>
-           <button class='kbButton flexGrow-2'>V</button>
-           <button class='kbButton flexGrow-2'>B</button>
-           <button class='kbButton flexGrow-2'>N</button>
-           <button class='kbButton flexGrow-2'>M</button>
-           <button id='enter' class='kbButton flexGrow-4 colorLightSkyBlue'>enter</button>
-         </div>
-      </div>
-    </div>
   </div>
   <!-- <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
   <script>
@@ -170,6 +154,6 @@ Email info {at} xwordinfo.com  -->
   <script src="/__/firebase/4.8.1/firebase-storage.js"></script>
   <!-- load Firebase SDK before loading this file -->
   <script src="/__/firebase/init.js"></script>
-  <script src='./scripts/main.js'></script>
+  <script src='scripts/main.js'></script>
 </body>
 </html>

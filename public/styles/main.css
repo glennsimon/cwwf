@@ -16,6 +16,10 @@ body {
   margin: 0;
 }
 
+button {
+  font-size: 20px;
+}
+
 .displayBlock {
   display: block;
 }
@@ -61,6 +65,10 @@ body {
   padding: 5px;
 }
 
+.noPadding {
+  padding: 0;
+}
+
 /* END CLUES */
 
 .links { 
@@ -74,8 +82,8 @@ body {
   flex-grow: 10;
 }*/
 
-.fullHeight {
-  height: calc(100vh - 10px);
+.initHeight {
+  height: calc(100vh - 56px);
 }
 
 #puzNotepad { 
@@ -97,6 +105,11 @@ body {
 
 #puzTable .black { 
   background-color: black; 
+}
+
+#kbContainer {
+  bottom: 100%;
+  height: 20vh;
 }
 
 .circle { 
@@ -141,12 +154,6 @@ body {
   padding-top: 2px 0 2px;
 }
 
-#kbContainer {
-  bottom: 100%;
-  height: 20vh;
-  /*visibility: hidden;*/
-}
-
 .flexDirCol {
   flex-direction: column;
 }
@@ -178,7 +185,20 @@ body {
 }
 
 .kbButton {
-  margin: 3px;
+  margin: 1px;
+  padding: 0;
+}
+
+.width5pct {
+  width: 5%;
+}
+
+.width10pct {
+  width: 10%;
+}
+
+.width20pct {
+  width: 20%;
 }
 
 .colorSalmon {
@@ -187,4 +207,29 @@ body {
 
 .colorLightSkyBlue {
   background-color: LightSkyBlue;
+}
+
+.margin5pxAuto {
+  margin: 5px auto;
+}
+
+.fontSizeSmall {
+  font-size: small;
+}
+
+#clueCard {
+  background-color: white;
+  margin: 0 5px 2px;
+}
+
+.cardShadow {
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+}
+
+.padding2px5px {
+  padding: 2px 5px;
+}
+
+.padding0px5px {
+  padding: 0 5px;
 }

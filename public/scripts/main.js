@@ -14,6 +14,8 @@ var app = (() => {
   const downContainer = document.getElementById('downContainer');
   const acrossClues = document.getElementById('acrossClues');
   const downClues = document.getElementById('downClues');
+  const singleClue = document.getElementById('singleClue');
+  const clueCard = document.getElementById('clueCard');
   const keyboard = document.getElementById('kbContainer');
   
   let currentCell = null;
@@ -86,6 +88,7 @@ var app = (() => {
     keyboard.classList.add('displayFlex');
     acrossContainer.classList.remove('displayNone');
     downContainer.classList.remove('displayNone');
+    clueCard.classList.remove('displayNone');
 
     // create contents for across clues div
     for (let clue of parsedPuzzle.clues.across) {
@@ -121,12 +124,12 @@ var app = (() => {
   }
 
   function getCellDim() {
-    let puzTableWidth = document.getElementById('gridContainer').offsetHeight;
-    for (let child of document.getElementById('gridContainer').children) {
-      if (child.nodeName.toLowerCase() === 'div') {
-        puzTableWidth -= child.offsetHeight;
-      }
-    }
+    let puzTableWidth = document.getElementById('appContainer').offsetWidth;
+    // for (let child of document.getElementById('gridContainer').children) {
+    //   if (child.nodeName.toLowerCase() === 'div') {
+    //     puzTableWidth -= child.offsetHeight;
+    //   }
+    // }
     return Math.floor(puzTableWidth / parsedPuzzle.rows);
   }
   
@@ -166,6 +169,7 @@ var app = (() => {
       let numNode = clue.firstChild;
       if (numNode.textContent.slice(0, numNode.textContent.indexOf('.')) === currentClue.toString()) {
         clue.classList.add('currCellHighlight');
+        singleClue.innerText = clue.children[1].textContent;
       }
     }
     while (index < (row + 1) * columns && ! parsedPuzzle.grid[index].black) {
@@ -194,6 +198,7 @@ var app = (() => {
       let numNode = clue.firstChild;
       if (numNode.textContent.slice(0, numNode.textContent.indexOf('.')) === currentClue.toString()) {
         clue.classList.add('currCellHighlight');
+        singleClue.innerText = clue.children[1].textContent;
       }
     }
     while (index < parsedPuzzle.rows * columns && ! parsedPuzzle.grid[index].black) {
@@ -285,6 +290,8 @@ var app = (() => {
     downContainer.classList.add('displayNone');
     acrossClues.innerText = '';
     downClues.innerText = '';
+    clueCard.classList.add('displayNone');
+    singleClue.innerText='';
     keyboard.classList.remove('displayFlex');
     keyboard.classList.add('displayNone');
   }
