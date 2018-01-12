@@ -45,26 +45,62 @@ Email info {at} xwordinfo.com  -->
 </head>
 
 <body>
-  <header id='puzHeader
-  <div id='appContainer' class='displayFlex padding-5'>
-    <div id='gridContainer' class='fullHeight'>
-      <div>Pick a date:&nbsp;
-        <select id='pickYear'>
-          <option value='year'>year</option>
-        </select>
-        <select id='pickMonth' disabled>
-          <option value='month'>month</option>
-        </select>
-        <select id='pickDay' disabled>
-          <option value='day'>day</option>
-        </select>
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+    <header class="mdl-layout__header mdl-color--primary mdl-color-text--white">
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title">Xwords WF</span>
       </div>
-      <div id='puzTitle' class='heading'></div>
-      <div id='puzAuthor'></div>
-      <table id='puzTable'></table>
-      <div id='puzCopy' class='copy'></div>
-      <div id='puzNotepad' class='displayNone'></div>
+    </header>
+    <div class="mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">empty drawer
+    <!-- <div class="jpdy-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
+      <header class="jpdy-drawer-header">
+        <img id="profilePic" src="images/user.jpg" class="jpdy-avatar" alt="profile picture">
+        <div class="jpdy-avatar-dropdown">
+          <span id="profileName">hello@example.com</span>
+          <div class="mdl-layout-spacer"></div>
+          <button id="accbtn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+            <i class="material-icons" role="presentation">arrow_drop_down</i>
+            <span class="visuallyhidden">Accounts</span>
+          </button>
+          <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="accbtn">
+            <li class="mdl-menu__item">
+              <button id="authButton" class="mdl-button mdl-js-button mdl-js-ripple-effect">Login</button>
+            </li>
+          </ul>
+        </div>
+      </header>
+      <nav class="jpdy-navigation mdl-navigation mdl-color--blue-grey-800">
+        <a class="mdl-navigation__link" href="#jpdy-game"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">home</i>Home</a>
+        <a class="mdl-navigation__link" href="#jpdy-scores"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">group</i>Player Scores</a>
+        <a class="mdl-navigation__link" href="#jpdy-prev-games"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">list</i>Past Games</a>
+        <a class="mdl-navigation__link" href="#jpdy-practice-nav"><i class="mdl-color-text--blue-grey-400 material-icons" role="presentation">refresh</i>Practice</a>
+        <div class="mdl-layout-spacer"></div>
+      </nav> -->
+      <nav class="jpdy-navigation mdl-navigation mdl-color--blue-grey-800">
+        <div>Pick a date:&nbsp;
+          <select id='pickYear'>
+            <option value='year'>year</option>
+          </select>
+          <select id='pickMonth' disabled>
+            <option value='month'>month</option>
+          </select>
+          <select id='pickDay' disabled>
+            <option value='day'>day</option>
+          </select>
+        </div>
+        <div id='puzTitle' class='heading'></div>
+        <div id='puzAuthor'></div>
+        <div id='puzCopy' class='copy'></div>
+        <div id='puzNotepad' class='displayNone'></div>
+      </nav>
     </div>
+    <main class="mdl-layout__content mdl-color--grey-100">
+      <div id='gridContainer' class='fullHeight'>
+        
+        <table id='puzTable'></table>
+        
+      </div>
+    </main>
     <div id='infoContainer' class='displayFlex flexDirCol'>
       <div id='clueContainer' class='displayFlex flexGrow-1'>
         <div id='acrossContainer' class='padding-5 displayNone'>
