@@ -95,62 +95,61 @@ Email info {at} xwordinfo.com  -->
       </nav>
     </div>
     <main class="mdl-layout__content mdl-color--grey-100">
-      <div id='gridContainer' class='fullHeight'>
-        
-        <table id='puzTable'></table>
-        
+      <div id='appContainer' class='displayFlex flexDirCol fullHeight'>
+        <table id='puzTable' class='fullWidth'></table>
+        <div id='singleClue' class='fullWidth'></div>
+        <div id='clueContainer' class='fullWidth displayNone'>
+          <div id='acrossContainer' class='padding-5 displayNone'>
+            <div class="heading">Across</div>
+            <div id="acrossClues" class="columnCount-2"></div>
+          </div>
+          <div id="downContainer" class="padding-5 displayNone">
+            <div class="heading">Down</div>
+            <div id="downClues" class="columnCount-2"></div>
+          </div>
+        </div>
+        <div id='kbContainer' class='displayNone flexDirCol'>
+          <div class='displayFlex flexCenter flexGrow-1'>
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">Q</button>
+            <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">W</button>
+            <button class='kbButton flexGrow-2'>E</button>
+            <button class='kbButton flexGrow-2'>R</button>
+            <button class='kbButton flexGrow-2'>T</button>
+            <button class='kbButton flexGrow-2'>Y</button>
+            <button class='kbButton flexGrow-2'>U</button>
+            <button class='kbButton flexGrow-2'>I</button>
+            <button class='kbButton flexGrow-2'>O</button>
+            <button class='kbButton flexGrow-2'>P</button>
+          </div>
+          <div class='displayFlex flexCenter flexGrow-1'>
+            <button class='kbButton flexGrow-1' disabled></button>
+            <button class='kbButton flexGrow-2'>A</button>
+            <button class='kbButton flexGrow-2'>S</button>
+            <button class='kbButton flexGrow-2'>D</button>
+            <button class='kbButton flexGrow-2'>F</button>
+            <button class='kbButton flexGrow-2'>G</button>
+            <button class='kbButton flexGrow-2'>H</button>
+            <button class='kbButton flexGrow-2'>J</button>
+            <button class='kbButton flexGrow-2'>K</button>
+            <button class='kbButton flexGrow-2'>L</button>
+            <button class='kbButton flexGrow-1' disabled></button>
+          </div>
+          <div class='displayFlex flexCenter flexGrow-1'>
+            <button id='backSpace' class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+              <i class="material-icons">arrow back</i>
+            </button>
+            <button class='kbButton flexGrow-2'>Z</button>
+            <button class='kbButton flexGrow-2'>X</button>
+            <button class='kbButton flexGrow-2'>C</button>
+            <button class='kbButton flexGrow-2'>V</button>
+            <button class='kbButton flexGrow-2'>B</button>
+            <button class='kbButton flexGrow-2'>N</button>
+            <button class='kbButton flexGrow-2'>M</button>
+            <button id='enter' class='kbButton flexGrow-4 mdl-color--primary'>enter</button>
+           </div>
+        </div>
       </div>
     </main>
-    <div id='infoContainer' class='displayFlex flexDirCol'>
-      <div id='clueContainer' class='displayFlex flexGrow-1'>
-        <div id='acrossContainer' class='padding-5 displayNone'>
-          <div class="heading">Across</div>
-          <div id="acrossClues" class="columnCount-2"></div>
-        </div>
-        <div id="downContainer" class="padding-5 displayNone">
-          <div class="heading">Down</div>
-          <div id="downClues" class="columnCount-2"></div>
-        </div>
-      </div>
-      <div id='kbContainer' class='displayNone flexDirCol'>
-         <div class='displayFlex flexCenter flexGrow-1'>
-           <button class='kbButton flexGrow-2'>Q</button>
-           <button class='kbButton flexGrow-2'>W</button>
-           <button class='kbButton flexGrow-2'>E</button>
-           <button class='kbButton flexGrow-2'>R</button>
-           <button class='kbButton flexGrow-2'>T</button>
-           <button class='kbButton flexGrow-2'>Y</button>
-           <button class='kbButton flexGrow-2'>U</button>
-           <button class='kbButton flexGrow-2'>I</button>
-           <button class='kbButton flexGrow-2'>O</button>
-           <button class='kbButton flexGrow-2'>P</button>
-         </div>
-         <div class='displayFlex flexCenter flexGrow-1'>
-           <button class='kbButton flexGrow-1' disabled></button>
-           <button class='kbButton flexGrow-2'>A</button>
-           <button class='kbButton flexGrow-2'>S</button>
-           <button class='kbButton flexGrow-2'>D</button>
-           <button class='kbButton flexGrow-2'>F</button>
-           <button class='kbButton flexGrow-2'>G</button>
-           <button class='kbButton flexGrow-2'>H</button>
-           <button class='kbButton flexGrow-2'>J</button>
-           <button class='kbButton flexGrow-2'>K</button>
-           <button class='kbButton flexGrow-2'>L</button>
-           <button class='kbButton flexGrow-1' disabled></button>
-         </div>
-         <div class='displayFlex flexCenter flexGrow-1'>
-           <button id='backSpace' class='kbButton flexGrow-2 colorSalmon'>&lt;</button>
-           <button class='kbButton flexGrow-2'>Z</button>
-           <button class='kbButton flexGrow-2'>X</button>
-           <button class='kbButton flexGrow-2'>C</button>
-           <button class='kbButton flexGrow-2'>V</button>
-           <button class='kbButton flexGrow-2'>B</button>
-           <button class='kbButton flexGrow-2'>N</button>
-           <button class='kbButton flexGrow-2'>M</button>
-           <button id='enter' class='kbButton flexGrow-4 colorLightSkyBlue'>enter</button>
-         </div>
-      </div>
-    </div>
   </div>
   <!-- <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
   <script>
