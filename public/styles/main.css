@@ -16,8 +16,9 @@ body {
   margin: 0;
 }
 
-button {
+select {
   font-size: 20px;
+  margin: 0 10px;
 }
 
 .displayBlock {
@@ -42,7 +43,41 @@ button {
 .heading {
   font-size: large;
   font-weight: bold;
-  padding: 5px 0 5px;
+  padding: 10px;
+  text-align: center;
+  color: white;
+}
+
+.height40px {
+  height: 40px;
+}
+
+.height24px {
+  height: 24px;
+}
+
+.marginAutoTopBot {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.margin2px10px {
+  margin: 2px 10px;
+}
+
+.copy {  
+  font-size: small; 
+  color: lightgray; 
+  font-style: italic; 
+  padding: 2px 10px;
+}
+
+.author {
+  padding: 2px 10px;
+}
+
+.colorWhite {
+  color: white;
 }
 
 .padRight {
@@ -109,7 +144,7 @@ button {
 
 #kbContainer {
   bottom: 100%;
-  height: 20vh;
+  height: 15vh;
 }
 
 .circle { 
@@ -129,10 +164,9 @@ button {
   left: 1px;
   font-size: 8px; 
   font-weight: bold;
-  text-align: left; 
-  height: 9px;
   pointer-events: none;
   background-color: white;
+  line-height: 9px;
 }
 
 .square { 
@@ -145,13 +179,6 @@ button {
 
 .letter {
   margin: auto;
-}
-
-.copy {  
-  font-size: small; 
-  color: #303030; 
-  font-style: italic; 
-  padding-top: 2px 0 2px;
 }
 
 .flexDirCol {
@@ -184,17 +211,45 @@ button {
   flex-grow: 4;
 }
 
+.bgColorWhite {
+  background-color: white;
+}
+
 .kbButton {
-  margin: 1px;
-  padding: 0;
+  margin: 0.5%;
+  display: flex;
+  box-shadow: 0 4px 4px 0 rgba(0,0,0,.14), 0 6px 2px -4px rgba(0,0,0,.2), 0 2px 10px 0 rgba(0,0,0,.12);
+  border-radius: 5px;
+  box-sizing: border-box;
+  transition-duration: 0.2s;
+  transition-property: box-shadow;
+  /*transition-timing-function: cubic-bezier(0.4, 0, 1, 1);*/
+  will-change: box-shadow;
+}
+
+.kbButton:active {
+  box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+}
+
+#backspace {
+  background-color: rgba(255,64,129,.6);
+}
+
+#enter {
+  background-color: rgba(63,81,181,.6);
+}
+
+.buttonContents {
+  font-size: 14px;
+  margin: auto;
 }
 
 .width5pct {
   width: 5%;
 }
 
-.width10pct {
-  width: 10%;
+.width9pct {
+  width: 9%;
 }
 
 .width20pct {

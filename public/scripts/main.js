@@ -244,6 +244,7 @@ var app = (() => {
       currentPuzzle = obj;
       parsePuzzle(obj);
       showPuzzle();
+      toggleDrawer();
     });
   }
 
@@ -291,7 +292,7 @@ var app = (() => {
     acrossClues.innerText = '';
     downClues.innerText = '';
     clueCard.classList.add('displayNone');
-    singleClue.innerText='';
+    singleClue.innerText='Select in the puzzle to reveal clue';
     keyboard.classList.remove('displayFlex');
     keyboard.classList.add('displayNone');
   }
@@ -390,17 +391,32 @@ var app = (() => {
 
   document.addEventListener('keyup', enterLetter);
   window.addEventListener('resize', resizePuzzle);
-  keyboard.addEventListener('click', enterLetter);
-  document.getElementById('backSpace').addEventListener('click', undoEntry);
+  let keyList = keyboard.getElementsByClassName('kbButton');
+  for (let node of keyList) {
+    node.addEventListener('click', enterLetter);
+  }
+  document.getElementById('backspace').addEventListener('click', undoEntry);
   document.getElementById('enter').addEventListener('click', playWord);
+  document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
+
+  function toggleDrawer() {
+    document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
+  }
 
   function playWord() {
     // TODO: implement function
   }
 
   function enterLetter(event) {
-    let letter = event.target.tagName === 'BUTTON' ? event.target.innerText : event.key;
-    if (! letter.match(/^[a-zA-Z]$/)) return;
+    let letter = null;
+    if (event.target.classList[0] === 'kbButton') {
+      letter = event.target.children[0].innerText;
+    } else if (event.target.classList[0] === 'buttonContents') {
+      letter = event.target.innerText;
+    } else if (event.key) {
+      letter = event.key;
+    }
+    if (! letter || ! letter.match(/^[a-zA-Z]$/)) return;
     if (currentCell) {
       let row = currentCell.parentElement.rowIndex;
       let col = currentCell.cellIndex;

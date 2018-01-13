@@ -58,9 +58,15 @@ Email info {at} xwordinfo.com  -->
         </span>
       </div>
     </header>
-    <div class="mdl-layout__drawer">
-      <nav class="jpdy-navigation mdl-navigation mdl-color--blue-grey-800">
-        <div>Pick a date:&nbsp;</div>
+    <div id='drawer' class="mdl-layout__drawer mdl-color--blue-grey-800">
+      <div class='height40px displayFlex'>
+        <div class="mdl-layout-spacer"></div>
+        <div id='closeDrawer' class="">
+          <i class="material-icons height24px mdl-color-text--white padding-5">arrow_back</i>
+        </div>
+      </div>
+      <nav class="displayFlex flexDirCol jpdy-navigation mdl-navigation mdl-color--blue-grey-800">
+        <div class='colorWhite margin2px10px'>Pick a date:&nbsp;</div>
         <select id='pickYear'>
           <option value='year'>year</option>
         </select>
@@ -71,17 +77,17 @@ Email info {at} xwordinfo.com  -->
           <option value='day'>day</option>
         </select>
         <div id='puzTitle' class='heading'></div>
-        <div id='puzAuthor'></div>
+        <div id='puzAuthor' class='author colorWhite'></div>
         <div id='puzCopy' class='copy'></div>
         <div id='puzNotepad' class='displayNone'></div>
+        <div class="mdl-layout-spacer"></div>
       </nav>
     </div>
     <main class="mdl-layout__content mdl-color--grey-100">
       <div id='appContainer' class='page-content displayFlex flexDirCol initHeight'>
         <table id='puzTable' class='fullWidth margin5pxAuto'></table>
         <div id='clueCard' class="cardShadow flexGrow-1 displayNone">
-          <div class="fontSizeSmall padding0px5px">Clue:</div>
-          <div id='singleClue' class='padding0px5px'></div>
+          <div id='singleClue' class='padding0px5px'>Select in the puzzle to reveal clue</div>
         </div>
         <div id='clueContainer' class='fullWidth displayNone'>
           <div id='acrossContainer' class='padding-5 displayNone'>
@@ -95,42 +101,96 @@ Email info {at} xwordinfo.com  -->
         </div>
         <div id='kbContainer' class='displayNone flexDirCol'>
           <div class='displayFlex flexCenter fullWidth flexGrow-1'>
-            <button class="kbButton width10pct">Q</button>
-            <button class="kbButton width10pct">W</button>
-            <button class="kbButton width10pct">E</button>
-            <button class="kbButton width10pct">R</button>
-            <button class="kbButton width10pct">T</button>
-            <button class="kbButton width10pct">Y</button>
-            <button class="kbButton width10pct">U</button>
-            <button class="kbButton width10pct">I</button>
-            <button class="kbButton width10pct">O</button>
-            <button class="kbButton width10pct">P</button>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">Q</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">W</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">E</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">R</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">T</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">Y</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">U</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">I</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">O</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">P</div>
+            </div>
           </div>
           <div class='displayFlex flexCenter fullWidth flexGrow-1'>
             <div class='width5pct'></div>
-            <button class="kbButton width10pct">A</button>
-            <button class="kbButton width10pct">S</button>
-            <button class="kbButton width10pct">D</button>
-            <button class="kbButton width10pct">F</button>
-            <button class="kbButton width10pct">G</button>
-            <button class="kbButton width10pct">H</button>
-            <button class="kbButton width10pct">J</button>
-            <button class="kbButton width10pct">K</button>
-            <button class="kbButton width10pct">L</button>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">A</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">S</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">D</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">F</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">G</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">H</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">J</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">K</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">L</div>
+            </div>
             <div class='width5pct'></div>
           </div>
           <div class='displayFlex flexCenter fullWidth flexGrow-1'>
-            <button id='backSpace' class="kbButton width10pct">
-              <i class="material-icons">arrow_back</i>
-            </button>
-            <button class="kbButton width10pct">Z</button>
-            <button class="kbButton width10pct">X</button>
-            <button class="kbButton width10pct">C</button>
-            <button class="kbButton width10pct">V</button>
-            <button class="kbButton width10pct">B</button>
-            <button class="kbButton width10pct">N</button>
-            <button class="kbButton width10pct">M</button>
-            <button id='enter' class="kbButton width20pct">enter</button>
+            <div id='backspace' class="kbButton width9pct">
+              <i class="material-icons buttonContents">backspace</i>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">Z</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">X</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">C</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">V</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">B</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">N</div>
+            </div>
+            <div class="kbButton width9pct bgColorWhite">
+              <div class="buttonContents">M</div>
+            </div>
+            <div id='enter' class="kbButton width20pct">
+              <div class="buttonContents">enter</div>
+            </div>
            </div>
         </div>
       </div>
