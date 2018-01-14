@@ -17,6 +17,7 @@ var app = (() => {
   const singleClue = document.getElementById('singleClue');
   const clueCard = document.getElementById('clueCard');
   const keyboard = document.getElementById('kbContainer');
+  const screenToggle = document.getElementById('screenToggle');
   
   let currentCell = null;
   let acrossWord = true;
@@ -72,7 +73,7 @@ var app = (() => {
           cell.appendChild(squareDiv);
           cell.appendChild(clueNumDiv);
           if (parsedPuzzle.grid[gridIndex].circle) {  
-            cell.firstChild.classList.add('circle');
+            cell.children[0].classList.add('circle');
           }  
         }  
         gridIndex += 1;
@@ -80,9 +81,9 @@ var app = (() => {
     }
   
     // reset width of notepad to width of the puzzle
-    if (parsedPuzzle.notepad) {
-      puzNotepad.style.width = document.getElementById('puzTable').offsetWidth + 'px';
-    }
+    // if (parsedPuzzle.notepad) {
+    //   puzNotepad.style.width = document.getElementById('puzTable').offsetWidth + 'px';
+    // }
 
     keyboard.classList.remove('displayNone');
     keyboard.classList.add('displayFlex');
@@ -166,7 +167,7 @@ var app = (() => {
     }
     currentClue = parsedPuzzle.grid[index].clueNum;
     for (let clue of acrossClues.children) {
-      let numNode = clue.firstChild;
+      let numNode = clue.children[0];
       if (numNode.textContent.slice(0, numNode.textContent.indexOf('.')) === currentClue.toString()) {
         clue.classList.add('currCellHighlight');
         singleClue.innerText = clue.children[1].textContent;
@@ -195,7 +196,7 @@ var app = (() => {
     // get the number of the clue number
     currentClue = parsedPuzzle.grid[index].clueNum;
     for (let clue of downClues.children) {
-      let numNode = clue.firstChild;
+      let numNode = clue.children[0];
       if (numNode.textContent.slice(0, numNode.textContent.indexOf('.')) === currentClue.toString()) {
         clue.classList.add('currCellHighlight');
         singleClue.innerText = clue.children[1].textContent;
@@ -203,7 +204,7 @@ var app = (() => {
     }
     while (index < parsedPuzzle.rows * columns && ! parsedPuzzle.grid[index].black) {
       let currentRow = Math.floor(index / columns);
-      let currentCell = puzTable.firstChild.children[currentRow].children[col];
+      let currentCell = puzTable.children[0].children[currentRow].children[col];
 
       idxArray.push(index);
       currentCell.classList.add(currentRow !== row ? 'rangeHighlight' : 'currCellHighlight');
@@ -212,9 +213,9 @@ var app = (() => {
   }
 
   function clearHighlights() {
-    // console.log(puzTable.firstChild);
+    // console.log(puzTable.children[0]);
     let cellDim = getCellDim();
-    let rowArray = puzTable.firstChild.children;
+    let rowArray = puzTable.children[0].children;
 
     for (let row of rowArray) {
       for (let cell of row.children) {
@@ -364,13 +365,11 @@ var app = (() => {
     loadPuzzle(); 
   }
   
-  initPicker(); 
-
   function resizePuzzle() {
-    // console.log(puzTable.firstChild);
+    // console.log(puzTable.children[0]);
     let cellDim = getCellDim();
     let tableDim = cellDim * parsedPuzzle.rows;
-    let rowArray = puzTable.firstChild.children;
+    let rowArray = puzTable.children[0].children;
 
     for (let row of rowArray) {
       row.style.width = tableDim + 'px';
@@ -388,16 +387,6 @@ var app = (() => {
       if (acrossWord) {selectAcross(currentCell);} else {selectDown(currentCell);}
     }
   }
-
-  document.addEventListener('keyup', enterLetter);
-  window.addEventListener('resize', resizePuzzle);
-  let keyList = keyboard.getElementsByClassName('kbButton');
-  for (let node of keyList) {
-    node.addEventListener('click', enterLetter);
-  }
-  document.getElementById('backspace').addEventListener('click', undoEntry);
-  document.getElementById('enter').addEventListener('click', playWord);
-  document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
 
   function toggleDrawer() {
     document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
@@ -433,14 +422,14 @@ var app = (() => {
       }
       letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
       letterDiv.classList.add('letter');
-      currentCell.firstChild.replaceChild(letterDiv, currentCell.firstChild.firstChild);
+      currentCell.children[0].replaceChild(letterDiv, currentCell.children[0].children[0]);
       currentCell.classList.remove('currCellHighlight');
       currentCell.classList.add('rangeHighlight');
       for (let idx of localIdxArray) {
         if (parsedPuzzle.grid[idx].status !== 'locked') {
           row = Math.floor(idx / columns);
           col = idx - row * columns;
-          currentCell = puzTable.firstChild.children[row].children[col];
+          currentCell = puzTable.children[0].children[row].children[col];
           currentCell.classList.remove('rangeHighlight');
           currentCell.classList.add('currCellHighlight');
           break;
@@ -471,14 +460,14 @@ var app = (() => {
       }
       letterDiv.appendChild(document.createTextNode(''));
       letterDiv.classList.add('letter');
-      currentCell.firstChild.replaceChild(letterDiv, currentCell.firstChild.firstChild);
+      currentCell.children[0].replaceChild(letterDiv, currentCell.children[0].children[0]);
       currentCell.classList.remove('currCellHighlight');
       currentCell.classList.add('rangeHighlight');
       for (let idx of localIdxArray) {
         if (parsedPuzzle.grid[idx].status !== 'locked') {
           row = Math.floor(idx / columns);
           col = idx - row * columns;
-          currentCell = puzTable.firstChild.children[row].children[col];
+          currentCell = puzTable.children[0].children[row].children[col];
           currentCell.classList.remove('rangeHighlight');
           currentCell.classList.add('currCellHighlight');
           break;
@@ -486,5 +475,30 @@ var app = (() => {
       }
     }
   }
+
+  document.addEventListener('keyup', enterLetter);
+  window.addEventListener('resize', resizePuzzle);
+  let keyList = keyboard.getElementsByClassName('kbButton');
+  for (let node of keyList) {
+    node.addEventListener('click', enterLetter);
+  }
+  document.getElementById('backspace').addEventListener('click', undoEntry);
+  document.getElementById('enter').addEventListener('click', playWord);
+  document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
+  screenToggle.addEventListener('click', toggleScreen);
+
+  function toggleScreen() {
+    if (screenfull.enabled) {
+      screenfull.toggle();
+    }
+  }
+
+  if (screenfull.enabled) {
+    screenfull.on('change', () => {
+      screenToggle.innerText = screenfull.isFullscreen ? 'fullscreen_exit' : 'fullscreen';
+    });
+  }
+
+  initPicker(); 
 
 })();
