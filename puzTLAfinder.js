@@ -2,44 +2,61 @@
 
 const fs = require("fs");
 
-let stream = fs.createWriteStream('./TLAList.txt');
-let stream2 = fs.createWriteStream('./funkyCharList.txt');
-
-let funkyCharList = '';
+let stream = fs.createWriteStream('./BadEntryList.txt');
+let directory = {};
 
 stream.write('puzzles with TLAs:\n');
 
 let years = fs.readdirSync('./puzzles/');
 years.forEach(year => {
+  directory[year.toString()] = {};
   let months = fs.readdirSync('./puzzles/' + year.toString() + '/');
   months.forEach(month => {
+    directory[year.toString()][month.toString()] = [];
     let days = fs.readdirSync('./puzzles/' + year.toString() + '/' + month.toString() + '/');
     days.forEach(day => {
       let puzzle = fs.readFileSync('./puzzles/' + year.toString() + '/' + 
         month.toString() + '/' + day.toString(), 'utf8');
-      let jsonPuzzle = JSON.parse(puzzle);
+      let puzObject = JSON.parse(puzzle);
       // console.log(jsonPuzzle.date);
-      checkForTLAs(jsonPuzzle);
+      if (puzzleOK(puzObject)) {
+        directory[year.toString()][month.toString()].push(day);
+      }
     });
   });
 });
 
-function checkForTLAs(puzzle) { // puzzle is a JSON file
-  let count = 0;
-  puzzle.grid.forEach(entry => {
+function puzzleOK(puzObject) { // puzObject is a javascript object
+  let badLengthCount = 0;
+  let badCharCount = 0;
+  puzObject.grid.forEach(entry => {
     // console.log(entry);
     // console.log(entry.length);
     if (entry.length > 1) {
-      if (count < 1) stream.write(`${puzzle.date}\tTLAstring: ${entry}\n`);
-      count++;
-      console.log(`should return now, count = ${count}`);
-      return;
+      if (badLengthCount < 1) stream.write(`${puzObject.date}\tTLAstring: ${entry}\n`);
+      badLengthCount++;
     } else if (! entry.match(/[A-Z\.]+/)) {
-      if (count < 1 && funkyCharList.indexOf(entry) === -1) stream2.write(entry);
-      funkyCharList += entry;
-      count++;
-      return;
+      if (badCharCount < 1) stream.write(`${puzObject.date}\tTLAstring: ${entry}\n`);
+      badCharCount++;
     }
+  });
+  let rows = puzObject.size.rows;
+  let cols = puzObject.size.cols;
+  if (rows > 15 || cols > 15 || rows !== cols) {
+    stream.write(`${puzObject.date}\tsize issue: ${rows} x ${cols}\n`);
+    return false;
+  }
+  if (badCharCount > 0 || badLengthCount > 0) {
+    return false;
+  }
+  return true;
+}
+
+function writeFile() {
+  fs.writeFile('./puzDir.json', JSON.stringify(directory), (err) => {
+    if (err) throw err;
+    console.log('The file has been saved!');
   });
 }
 
+writeFile();
