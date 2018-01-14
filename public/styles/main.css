@@ -45,7 +45,6 @@ select {
   font-weight: bold;
   padding: 10px;
   text-align: center;
-  color: white;
 }
 
 .height40px {
@@ -117,6 +116,10 @@ select {
   flex-grow: 10;
 }*/
 
+#clueContainer {
+  align-self: stretch;
+}
+
 .initHeight {
   height: calc(100vh - 56px);
 }
@@ -125,6 +128,7 @@ select {
   background-color: #ffffe0; 
   padding: 4px; 
   border: 1px solid #808080; 
+  margin: 10px;
 }
 
 #puzTable { 
@@ -145,6 +149,20 @@ select {
 #kbContainer {
   bottom: 100%;
   height: 15vh;
+}
+
+#splash {
+  position: fixed;
+  width: 100%;
+  height: calc(100% - 56px);
+  align-content: center;
+  background-color: lightgray;
+  z-index: 1;
+}
+
+#splashImage {
+  width: 20%;
+  margin: auto;
 }
 
 .circle { 
@@ -188,6 +206,10 @@ select {
 .flexColumnWrap {
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.flexWrap {
   flex-wrap: wrap;
 }
 
@@ -256,6 +278,22 @@ select {
   width: 20%;
 }
 
+.width40pct {
+  width: 40%;
+}
+
+.width60pct {
+  width: 60%;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.puzzleWidth {
+  width: calc(100% - 10px);
+}
+
 .colorSalmon {
   background-color: Salmon;
 }
@@ -287,4 +325,50 @@ select {
 
 .padding0px5px {
   padding: 0 5px;
+}
+
+@media screen and (orientation: landscape) and (min-width: 800px) {
+  #puzTable {
+    width: 50%;
+  }
+
+  #clueContainer {
+    display: flex;
+    width: 50%;
+  }
+
+  #acrossContainer, #downContainer {
+    display: block;
+  }
+
+  #clueCard {
+    display: none;
+  }
+
+  #kbContainer {
+    height: 20vh;
+  }
+
+  .clueNumber { 
+    font-size: 10px; 
+    line-height: 12px;
+  }
+
+  .letter {
+    font-size: x-large;
+  }
+}
+
+@media screen and (orientation: portrait) and (min-width: 800px) {
+  #singleClue{
+    font-size: large;
+  }
+  .clueNumber { 
+    font-size: 12px; 
+    line-height: 14px;
+  }
+
+  .letter {
+    font-size: x-large;
+  }
 }

@@ -48,7 +48,7 @@ Email info {at} xwordinfo.com  -->
 <body>
   <!-- The drawer is always open in large screens. The header is always shown,
     even in small screens. -->
-  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-drawer mdl-layout--fixed-header">
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
     <header class="mdl-layout__header">
       <div class="mdl-layout__header-row">
         <span class="mdl-layout-title">Xwords WF</span>
@@ -76,7 +76,7 @@ Email info {at} xwordinfo.com  -->
         <select id='pickDay' disabled>
           <option value='day'>day</option>
         </select>
-        <div id='puzTitle' class='heading'></div>
+        <div id='puzTitle' class='heading colorWhite'></div>
         <div id='puzAuthor' class='author colorWhite'></div>
         <div id='puzCopy' class='copy'></div>
         <div id='puzNotepad' class='displayNone'></div>
@@ -84,12 +84,18 @@ Email info {at} xwordinfo.com  -->
       </nav>
     </div>
     <main class="mdl-layout__content mdl-color--grey-100">
-      <div id='appContainer' class='page-content displayFlex flexDirCol initHeight'>
-        <table id='puzTable' class='fullWidth margin5pxAuto'></table>
-        <div id='clueCard' class="cardShadow flexGrow-1 displayNone">
-          <div id='singleClue' class='padding0px5px'>Select in the puzzle to reveal clue</div>
+      <div id='appContainer' class='displayFlex flexWrap initHeight'>
+        <div id='splash'>
+          <div class='displayFlex flexDirCol flexCenter'>
+            <img id='splashImage' src='./images/touch/chrome-touch-icon-192x192.png' alt='logo' />
+            <div class='heading'>To begin, click the menu button in the upper left corner and select a puzzle</div>
+          </div>
         </div>
+        <table id='puzTable' class='puzzleWidth margin5pxAuto'></table>
         <div id='clueContainer' class='fullWidth displayNone'>
+          <div id='clueCard' class="cardShadow flexGrow-1">
+            <div id='singleClue' class='padding0px5px'>Select in the puzzle to reveal clue</div>
+          </div>
           <div id='acrossContainer' class='padding-5 displayNone'>
             <div class="heading">Across</div>
             <div id="acrossClues" class="columnCount-2"></div>
@@ -99,7 +105,7 @@ Email info {at} xwordinfo.com  -->
             <div id="downClues" class="columnCount-2"></div>
           </div>
         </div>
-        <div id='kbContainer' class='displayNone flexDirCol'>
+        <div id='kbContainer' class='fullWidth flexDirCol displayNone'>
           <div class='displayFlex flexCenter fullWidth flexGrow-1'>
             <div class="kbButton width9pct bgColorWhite">
               <div class="buttonContents">Q</div>
@@ -189,7 +195,7 @@ Email info {at} xwordinfo.com  -->
               <div class="buttonContents">M</div>
             </div>
             <div id='enter' class="kbButton width20pct">
-              <div class="buttonContents">enter</div>
+              <div class="buttonContents">ENTER</div>
             </div>
            </div>
         </div>

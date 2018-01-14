@@ -1,7 +1,6 @@
 /* jshint esversion: 6 */
 
 const fs = require("fs");
-const path = require('path');
 
 let stream = fs.createWriteStream('./TLAList.txt');
 let stream2 = fs.createWriteStream('./funkyCharList.txt');

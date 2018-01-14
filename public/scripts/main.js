@@ -10,14 +10,13 @@ var app = (() => {
   const puzAuthor = document.getElementById('puzAuthor');
   const puzCopy = document.getElementById('puzCopy');
   const puzNotepad = document.getElementById('puzNotepad');
-  const acrossContainer = document.getElementById('acrossContainer');
-  const downContainer = document.getElementById('downContainer');
+  const clueContainer = document.getElementById('clueContainer');
   const acrossClues = document.getElementById('acrossClues');
   const downClues = document.getElementById('downClues');
   const singleClue = document.getElementById('singleClue');
-  const clueCard = document.getElementById('clueCard');
   const keyboard = document.getElementById('kbContainer');
   const screenToggle = document.getElementById('screenToggle');
+  const splash = document.getElementById('splash');
   
   let currentCell = null;
   let acrossWord = true;
@@ -37,7 +36,7 @@ var app = (() => {
 
     // initial estimate of element size used to determine cellDim -> tableDim -> puzzle size  
     if (parsedPuzzle.notepad) {
-      puzNotepad.style.width = '300px';
+      // puzNotepad.style.width = '300px';
       puzNotepad.innerHTML = "<b>Notepad:</b> " + parsedPuzzle.notepad;
       puzNotepad.classList.remove('displayNone');
     }
@@ -87,9 +86,8 @@ var app = (() => {
 
     keyboard.classList.remove('displayNone');
     keyboard.classList.add('displayFlex');
-    acrossContainer.classList.remove('displayNone');
-    downContainer.classList.remove('displayNone');
-    clueCard.classList.remove('displayNone');
+    clueContainer.classList.remove('displayNone');
+    splash.classList.add('displayNone');
 
     // create contents for across clues div
     for (let clue of parsedPuzzle.clues.across) {
@@ -125,7 +123,7 @@ var app = (() => {
   }
 
   function getCellDim() {
-    let puzTableWidth = document.getElementById('appContainer').offsetWidth;
+    let puzTableWidth = puzTable.offsetWidth;
     // for (let child of document.getElementById('gridContainer').children) {
     //   if (child.nodeName.toLowerCase() === 'div') {
     //     puzTableWidth -= child.offsetHeight;
@@ -288,14 +286,11 @@ var app = (() => {
     puzAuthor.innerText = "";
     puzNotepad.classList.add('displayNone');
     puzCopy.innerHTML = "";
-    acrossContainer.classList.add('displayNone');
-    downContainer.classList.add('displayNone');
+    clueContainer.classList.add('displayNone');
+    splash.classList.remove('displayNone');
     acrossClues.innerText = '';
     downClues.innerText = '';
-    clueCard.classList.add('displayNone');
     singleClue.innerText='Select in the puzzle to reveal clue';
-    keyboard.classList.remove('displayFlex');
-    keyboard.classList.add('displayNone');
   }
   
   function initPicker() {
