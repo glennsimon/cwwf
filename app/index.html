@@ -96,11 +96,15 @@
         </nav>
       </div>
       <main class="mdl-layout__content mdl-color--grey-100">
+        <div id='gamesPanel' class='displayNone'>
+          <h1>This is the games panel</h1>
+        </div>
         <div id='appContainer' class='displayFlex flexWrap initHeight'>
           <div id='splash'>
             <div class='displayFlex flexDirCol flexCenter'>
               <img id='splashImage' src='./images/touch/chrome-touch-icon-192x192.png' alt='logo' />
               <div class='heading'>To begin, click the menu button in the upper left corner and select a puzzle</div>
+              <div id="firebaseui-auth-container"></div>
             </div>
           </div>
           <table id='puzTable' class='puzzleWidth margin5pxAuto'></table>
@@ -225,6 +229,9 @@
     <!-- build:js scripts/main.min.js -->
     <script src="./scripts/main.js"></script>
     <!-- endbuild -->
+
+    <script src="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.js"></script>
+    <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/2.5.1/firebaseui.css" />
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID
     <script>

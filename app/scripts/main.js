@@ -87,7 +87,6 @@
   const keyboard = document.getElementById('kbContainer');
   const screenToggle = document.getElementById('screenToggle');
   const splash = document.getElementById('splash');
-  const provider = new window.firebase.auth.GoogleAuthProvider();
 
   let currentCell = null;
   let acrossWord = true;
@@ -97,28 +96,8 @@
   let idxArray = [];
   let puzDir = null;
 
-  window.firebase.auth().signInWithRedirect(provider);
-
-  window.firebase.auth().getRedirectResult().then(function(result) {
-    if (result.credential) {
-      // This gives you a Google Access Token. You can use it to access the Google API.
-      var token = result.credential.accessToken;
-      // ...
-    }
-    // The signed-in user info.
-    var user = result.user;
-  }).catch(function(error) {
-    // Handle Errors here.
-    var errorCode = error.code;
-    var errorMessage = error.message;
-    // The email of the user's account used.
-    var email = error.email;
-    // The firebase.auth.AuthCredential type that was used.
-    var credential = error.credential;
-    // ...
-  });
-
   puzTitle.innerText = 'Select a date above to load puzzle';
+
   /**
    * This function takes the puzzle object returned from the fetch and displays a grid and clues.
    * The HTML table exists ahead of time but rows and cells are created on the fly.
