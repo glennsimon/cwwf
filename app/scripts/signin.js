@@ -11,47 +11,8 @@
     // Initialize the FirebaseUI Widget using Firebase.
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
 
-    // window.firebase.auth().signInWithRedirect(provider);
-
-    // window.firebase.auth().getRedirectResult().then(function(result) {
-    //   if (result.credential) {
-    //     // This gives you a Google Access Token. You can use it to access the Google API.
-    //     var token = result.credential.accessToken;
-    //     // ...
-    //   }
-    //   // The signed-in user info.
-    //   var user = result.user;
-    // }).catch(function(error) {
-    //   // Handle Errors here.
-    //   var errorCode = error.code;
-    //   var errorMessage = error.message;
-    //   // The email of the user's account used.
-    //   var email = error.email;
-    //   // The firebase.auth.AuthCredential type that was used.
-    //   var credential = error.credential;
-    //   // ...
-    // });
-
-    var uiConfig = {
-      callbacks: {
-        signInSuccess: function(currentUser, credential, redirectUrl) {
-          console.log(currentUser);
-          console.log(credential);
-          console.log(redirectUrl);
-          // User successfully signed in.
-          // Return type determines whether we continue the redirect automatically
-          // or whether we leave that to developer to handle.
-          return true;
-        },
-        uiShown: function() {
-          // The widget is rendered.
-          // Hide the loader.
-          document.getElementById('firebaseui-auth-container').style.display = 'none';
-        }
-      },
-      // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
-      signInFlow: 'popup',
-      signInSuccessUrl: './#games',
+    const uiConfig = {
+      signInSuccessUrl: './',
       signInOptions: [
         // Leave the lines as is for the providers you want to offer your users.
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
@@ -67,5 +28,48 @@
 
     // The start method will wait until the DOM is loaded.
     ui.start('#firebaseui-auth-container', uiConfig);
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        // User is signed in.
+        const displayName = user.displayName;
+        const email = user.email;
+        const emailVerified = user.emailVerified;
+        const photoURL = user.photoURL;
+        const uid = user.uid;
+        const phoneNumber = user.phoneNumber;
+        const providerData = user.providerData;
+        user.getIdToken().then(function(accessToken) {
+          document.getElementById('sign-in-status').textContent = 'Signed in';
+          document.getElementById('sign-in').textContent = 'Sign out';
+          document.getElementById('account-details').textContent = JSON.stringify({
+            displayName: displayName,
+            email: email,
+            emailVerified: emailVerified,
+            phoneNumber: phoneNumber,
+            photoURL: photoURL,
+            uid: uid,
+            accessToken: accessToken,
+            providerData: providerData
+          }, null, '  ');
+        });
+        document.getElementById('firebaseui-auth-container').classList.add('displayNone');
+        document.getElementById('sign-in').addEventListener('click', () => {
+          firebase.auth().signOut().then(() => {
+            // Sign-out successful.
+          }).catch(error => {
+            console.log(error);
+          });
+        });
+      } else {
+        // User is signed out.
+        document.getElementById('sign-in-status').textContent = 'Signed out';
+        document.getElementById('sign-in').textContent = 'Sign in';
+        document.getElementById('account-details').textContent = 'null';
+        document.getElementById('firebaseui-auth-container').classList.remove('displayNone');
+      }
+    }, function(error) {
+      console.log(error);
+    });
   }
 })();
