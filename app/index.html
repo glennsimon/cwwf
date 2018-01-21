@@ -104,7 +104,10 @@
             <div class='displayFlex flexDirCol flexCenter'>
               <img id='splashImage' src='./images/touch/chrome-touch-icon-192x192.png' alt='logo' />
               <div class='heading'>To begin, click the menu button in the upper left corner and select a puzzle</div>
+              <div id='sign-in-status'></div>
+              <button id='sign-in'></button>
               <div id="firebaseui-auth-container"></div>
+              <div id='account-details'></div>
             </div>
           </div>
           <table id='puzTable' class='puzzleWidth margin5pxAuto'></table>
@@ -220,9 +223,10 @@
     </div>
   
     <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-    <script src="/__/firebase/4.8.1/firebase-app.js"></script>
-    <script src="/__/firebase/4.8.1/firebase-auth.js"></script>
-    <script src="/__/firebase/4.8.1/firebase-storage.js"></script>
+    <script src="/__/firebase/4.9.0/firebase-app.js"></script>
+    <script src="/__/firebase/4.9.0/firebase-auth.js"></script>
+    <script src="/__/firebase/4.9.0/firebase-firestore.js"></script>
+    <script src="/__/firebase/4.9.0/firebase-database.js"></script>
     <!-- load Firebase SDK before loading this file -->
     <script src="/__/firebase/init.js"></script>
     <!-- <script src='./scripts/screenfull.js'></script> -->

@@ -476,6 +476,7 @@
 
   /** Resizes puzzle based on available space */
   function resizePuzzle() {
+    if (puzTable.children.length === 0) return;
     // console.log(puzTable.children[0]);
     let cellDim = getCellDim();
     let tableDim = cellDim * parsedPuzzle.rows;
