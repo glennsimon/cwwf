@@ -34,7 +34,7 @@ exports.onUserStatusChanged = functions.database
       if (status.lastChanged > eventStatus.lastChanged) return;
 
       // Otherwise, we convert the lastChanged field to a Date
-      eventStatus.lastChanged = new Date(eventStatus.lastChanged);
+      // eventStatus.lastChanged = new Date(eventStatus.lastChanged);
 
       // ... and write it to Firestore.
       return userStatusFirestoreRef.set(eventStatus);

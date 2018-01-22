@@ -70,22 +70,40 @@
           </span>
         </div>
       </header>
-      <div id='drawer' class="mdl-layout__drawer mdl-color--blue-grey-800">
-        <div class='height40px displayFlex'>
-          <div class="mdl-layout-spacer"></div>
-          <div id='closeDrawer' class="">
+
+      <div class="mdl-layout__drawer mdl-color--blue-grey-800 mdl-color-text--blue-grey-50">
+        <header class="drawerHeader">
+          <div id='closeDrawer' class='alignSelfEnd cursorPointer'>
             <i class="material-icons height24px mdl-color-text--white padding-5">arrow_back</i>
           </div>
-        </div>
+          <div id='picContainer'>
+            <div>
+              <img id="avatar" src="images/user.jpg" alt="profile picture">
+            </div>
+          </div>
+          <div class="displayFlex">
+            <span id="profileName">N. E. Person</span>
+            <div class="mdl-layout-spacer"></div>
+            <button id="accbtn" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon">
+              <i class="material-icons" role="presentation">arrow_drop_down</i>
+              <span class="visuallyhidden">Accounts</span>
+            </button>
+            <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect" for="accbtn">
+              <li class="mdl-menu__item">
+                <button id="authButton" class="mdl-button mdl-js-button mdl-js-ripple-effect">Login</button>
+              </li>
+            </ul>
+          </div>
+        </header>
         <nav class="displayFlex flexDirCol jpdy-navigation mdl-navigation mdl-color--blue-grey-800">
           <div class='colorWhite margin2px10px'>Pick a date:&nbsp;</div>
-          <select id='pickYear'>
+          <select id='pickYear' class='cursorPointer'>
             <option value='year'>year</option>
           </select>
-          <select id='pickMonth' disabled>
+          <select id='pickMonth' class='cursorPointer' disabled>
             <option value='month'>month</option>
           </select>
-          <select id='pickDay' disabled>
+          <select id='pickDay' class='cursorPointer' disabled>
             <option value='day'>day</option>
           </select>
           <div id='puzTitle' class='heading colorWhite'></div>
@@ -104,10 +122,7 @@
             <div class='displayFlex flexDirCol flexCenter'>
               <img id='splashImage' src='./images/touch/chrome-touch-icon-192x192.png' alt='logo' />
               <div class='heading'>To begin, click the menu button in the upper left corner and select a puzzle</div>
-              <div id='sign-in-status'></div>
-              <button id='sign-in'></button>
-              <div id="firebaseui-auth-container"></div>
-              <div id='account-details'></div>
+              <div id="firebaseuiAuthContainer"></div>
             </div>
           </div>
           <table id='puzTable' class='puzzleWidth margin5pxAuto'></table>
