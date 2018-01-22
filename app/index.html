@@ -73,10 +73,14 @@
 
       <div class="mdl-layout__drawer mdl-color--blue-grey-800 mdl-color-text--blue-grey-50">
         <header class="drawerHeader">
-          <div id='closeDrawer' class='alignSelfEnd'>
+          <div id='closeDrawer' class='alignSelfEnd cursorPointer'>
             <i class="material-icons height24px mdl-color-text--white padding-5">arrow_back</i>
           </div>
-          <img id="profilePic" src="images/user.jpg" class="avatar" alt="profile picture">
+          <div id='picContainer'>
+            <div>
+              <img id="avatar" src="images/user.jpg" alt="profile picture">
+            </div>
+          </div>
           <div class="displayFlex">
             <span id="profileName">N. E. Person</span>
             <div class="mdl-layout-spacer"></div>
@@ -93,13 +97,13 @@
         </header>
         <nav class="displayFlex flexDirCol jpdy-navigation mdl-navigation mdl-color--blue-grey-800">
           <div class='colorWhite margin2px10px'>Pick a date:&nbsp;</div>
-          <select id='pickYear'>
+          <select id='pickYear' class='cursorPointer'>
             <option value='year'>year</option>
           </select>
-          <select id='pickMonth' disabled>
+          <select id='pickMonth' class='cursorPointer' disabled>
             <option value='month'>month</option>
           </select>
-          <select id='pickDay' disabled>
+          <select id='pickDay' class='cursorPointer' disabled>
             <option value='day'>day</option>
           </select>
           <div id='puzTitle' class='heading colorWhite'></div>

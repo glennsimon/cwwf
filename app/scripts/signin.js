@@ -61,7 +61,7 @@
 
         document.getElementById('authButton').textContent = 'sign out';
         document.getElementById('profileName').textContent = user.displayName;
-        document.getElementById('profilePic').src = user.photoURL;
+        document.getElementById('avatar').src = user.photoURL;
 
         // Create a reference to this user's specific status node.
         // This is where we will store data about being online/offline.
@@ -93,7 +93,7 @@
         document.getElementById('firebaseuiAuthContainer')
           .classList.remove('displayNone');
         document.getElementById('profileName').textContent = 'N. E. Person';
-        document.getElementById('profilePic').src = 'images/user.jpg';
+        document.getElementById('avatar').src = 'images/user.jpg';
       }
     }, function(error) {
       console.log(error);

@@ -37,6 +37,10 @@ select {
   align-self: flex-end;
 }
 
+.cursorPointer {
+  cursor: pointer;
+}
+
 .drawerHeader {
   display: flex;
   box-sizing: border-box;
@@ -44,10 +48,31 @@ select {
   padding: 8px;
 }
 
-.avatar {
+#picContainer {
   width: 48px;
   height: 48px;
   border-radius: 50%;
+  overflow: hidden;
+}
+
+#picContainer div {
+  position: relative;
+  right: 50%;
+  text-align: center;
+  height: 100%;
+  width: 100%;
+}
+
+#picContainer div img {
+  height: 100%;
+  display: inline-block;
+  margin-right: -100%;
+}
+
+#avatar {
+  height: 100%;
+  width: auto;
+  margin: auto;
 }
 
 .displayNone {
@@ -61,6 +86,8 @@ select {
 .rangeHighlight {
   background-color: lightyellow;
 }
+
+
 
 
 
@@ -134,12 +161,16 @@ select {
 
 
 
+
+
 /* END CLUES */
 
 .links {
   margin-bottom: 20px;
   font-size: 12px;
 }
+
+
 
 
 
