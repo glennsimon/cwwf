@@ -7,6 +7,8 @@
   /** Initialize after document loads */
   function initApp() {
     let uid;
+    let userStatusDatabaseRef;
+    let userStatusFirestoreRef;
 
     const firebase = window.firebase;
     const firebaseui = window.firebaseui;
@@ -65,10 +67,8 @@
 
         // Create a reference to this user's specific status node.
         // This is where we will store data about being online/offline.
-        const userStatusDatabaseRef =
-          firebase.database().ref(`/status/${uid}`);
-        const userStatusFirestoreRef =
-          firebase.firestore().doc(`/status/${uid}`);
+        userStatusDatabaseRef = firebase.database().ref(`/status/${uid}`);
+        userStatusFirestoreRef = firebase.firestore().doc(`/status/${uid}`);
 
         firebase.database().ref('.info/connected').on('value', snapshot => {
           if (snapshot.val() === false) {
@@ -88,7 +88,6 @@
           .classList.add('displayNone');
       } else {
         // User is signed out.
-        uid = undefined;
         document.getElementById('authButton').textContent = 'sign in';
         document.getElementById('firebaseuiAuthContainer')
           .classList.remove('displayNone');
@@ -102,9 +101,13 @@
     document.getElementById('authButton').addEventListener('click', () => {
       document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
       if (uid) {
-        firebase.firestore().doc(`/status/${uid}`).set(isOfflineForFirestore);
-        firebase.auth().signOut().then(() => {
+        userStatusFirestoreRef.set(isOfflineForFirestore).then(() => {
+          firebase.auth().signOut();
+        }).then(() => {
           // Sign-out successful.
+          uid = undefined;
+          userStatusDatabaseRef = undefined;
+          userStatusFirestoreRef = undefined;
         }).catch(error => {
           console.log(error);
         });
