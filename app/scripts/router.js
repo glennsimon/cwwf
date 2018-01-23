@@ -17,13 +17,11 @@
      */
     function navigate() {
       if (location.hash === '#games') {
-        appContainer.classList.remove('displayFlex');
-        appContainer.classList.add('displayNone');
-        gamesPanel.classList.remove('displayNone');
+        appContainer.classList.add('slideOut');
+        gamesPanel.classList.add('slideIn');
       } else {
-        gamesPanel.classList.add('displayNone');
-        appContainer.classList.remove('displayNone');
-        appContainer.classList.add('displayFlex');
+        appContainer.classList.remove('slideOut');
+        gamesPanel.classList.remove('slideIn');
       }
     }
   }
