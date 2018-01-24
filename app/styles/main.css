@@ -99,7 +99,10 @@ select {
 .heading {
   font-size: large;
   font-weight: bold;
-  padding: 10px;
+  padding: 10px 0;
+}
+
+.textAlignCenter {
   text-align: center;
 }
 
@@ -185,7 +188,7 @@ select {
 }
 
 .initHeight {
-  height: calc(100vh - 56px);
+  height: 100%;
 }
 
 #puzNotepad {
@@ -218,7 +221,7 @@ select {
 #splash {
   position: fixed;
   width: 100%;
-  height: calc(100% - 56px);
+  height: 100%;
   align-content: center;
   background-color: lightgray;
   z-index: 1;
@@ -355,6 +358,7 @@ select {
 }
 
 #gamesPanel {
+  padding: 10px;
   transform: translate(100%, 0);
   transition: transform 0.3s ease;
 }
@@ -363,9 +367,13 @@ select {
   transform: translate(0, 0);
 }
 
+#appContainer {
+  transform: translate(0, 0);
+  transition: transform 0.3s ease;
+}
+
 #appContainer.slideOut {
   transform: translate(-100%, 0);
-  transition: transform 0.3s ease;
 }
 
 .posAbsolute {
