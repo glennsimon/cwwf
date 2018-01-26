@@ -383,21 +383,21 @@ select {
 
 #gamesPanel {
   padding: 10px;
+  transform: translate(0, 0);
+  transition: transform 0.3s ease;
+}
+
+#gamesPanel.slideOut {
+  transform: translate(-100%, 0);
+}
+
+#appContainer {
   transform: translate(100%, 0);
   transition: transform 0.3s ease;
 }
 
-#gamesPanel.slideIn {
+#appContainer.slideIn {
   transform: translate(0, 0);
-}
-
-#appContainer {
-  transform: translate(0, 0);
-  transition: transform 0.3s ease;
-}
-
-#appContainer.slideOut {
-  transform: translate(-100%, 0);
 }
 
 .posAbsolute {
@@ -453,7 +453,7 @@ select {
 
 @media screen and (min-width: 420px) {
   #gamesPanelContainer {
-    width: 400px;
+    max-width: 400px;
     margin-left: calc((100vw - 400px)/2);
   }
 }

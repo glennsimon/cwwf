@@ -16,15 +16,15 @@
      * Navigate based on hash change
      */
     function navigate() {
-      if (location.hash === '#games') {
-        appContainer.classList.add('slideOut');
-        gamesPanel.classList.add('slideIn');
+      if (location.hash === '#home') {
+        gamesPanel.classList.add('slideOut');
+        appContainer.classList.add('slideIn');
       } else {
-        appContainer.classList.remove('slideOut');
-        gamesPanel.classList.remove('slideIn');
+        gamesPanel.classList.remove('slideOut');
+        appContainer.classList.remove('slideIn');
       }
     }
 
-    location.hash = '#home';
+    location.hash = '#games';
   }
 })();
