@@ -17,8 +17,8 @@
     showModalButton.addEventListener('click', function() {
       dialog.showModal();
     });
-    // dialog.querySelector('.close').addEventListener('click', function() {
-    //   dialog.close();
-    // });
+    dialog.querySelector('.close').addEventListener('click', function() {
+      dialog.close();
+    });
   }
 })();

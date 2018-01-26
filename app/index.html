@@ -231,161 +231,225 @@
              </div>
           </div>
         </div>
-        <div id='gamesPanel' class='posAbsolute fullWidth displayFlex flexDirCol height100pct'>
-          <div class='heading textAlignCenter'>Games</div>
-          <button type='button' class='height64px mdl-button show-modal mdl-js-button mdl-button--raised mdl-button--accent'>
-            start a new game
-          </button>
-          <div class='overflowHidden overflowYScroll'>
-            <div class='heading'>Active games</div>
-            <ul id='activeGames' class='demo-list-two mdl-list'>
-              <li class='mdl-list__item mdl-list__item--two-line'>
-                <span class='mdl-list__item-primary-content'>
-                  <i class='material-icons mdl-list__item-avatar'>person</i>
-                  <span>Bryan Cranston</span>
-                  <span class='mdl-list__item-sub-title'>Their turn</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
-                </span>
-              </li>
-              <li class='mdl-list__item mdl-list__item--two-line'>
-                <span class='mdl-list__item-primary-content'>
-                  <i class='material-icons mdl-list__item-avatar'>person</i>
-                  <span>Aaron Paul</span>
-                  <span class='mdl-list__item-sub-title'>Your turn</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
-                </span>
-              </li>
-              <li class='mdl-list__item mdl-list__item--two-line'>
-                <span class='mdl-list__item-primary-content'>
-                  <i class='material-icons mdl-list__item-avatar'>person</i>
-                  <span>Bob Simon</span>
-                  <span class='mdl-list__item-sub-title'>Their turn</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
-                </span>
-              </li>
-              <li class='mdl-list__item mdl-list__item--two-line'>
-                <span class='mdl-list__item-primary-content'>
-                  <i class='material-icons mdl-list__item-avatar'>person</i>
-                  <span>Frank Prendergast</span>
-                  <span class='mdl-list__item-sub-title'>Your turn</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
-                </span>
-              </li>
-            </ul>
-            <div class='heading'>Past games</div>
-            <ul id='activeGames' class='demo-list-two mdl-list'>
-              <li class='mdl-list__item mdl-list__item--two-line'>
-                <span class='mdl-list__item-primary-content'>
-                  <i class='material-icons mdl-list__item-avatar'>person</i>
-                  <span>Bryan Cranston</span>
-                  <span class='mdl-list__item-sub-title'>They won</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play again</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>replay</i></a>
-                </span>
-              </li>
-              <li class='mdl-list__item mdl-list__item--two-line'>
-                <span class='mdl-list__item-primary-content'>
-                  <i class='material-icons mdl-list__item-avatar'>person</i>
-                  <span>Aaron Paul</span>
-                  <span class='mdl-list__item-sub-title'>They won</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play again</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>replay</i></a>
-                </span>
-              </li>
-              <li class='mdl-list__item mdl-list__item--two-line'>
-                <span class='mdl-list__item-primary-content'>
-                  <i class='material-icons mdl-list__item-avatar'>person</i>
-                  <span>John Hancock</span>
-                  <span class='mdl-list__item-sub-title'>You won!</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play again</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>replay</i></a>
-                </span>
-              </li>
-              <li class='mdl-list__item mdl-list__item--two-line'>
-                <span class='mdl-list__item-primary-content'>
-                  <i class='material-icons mdl-list__item-avatar'>person</i>
-                  <span>John Adams</span>
-                  <span class='mdl-list__item-sub-title'>You won!</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play again</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>replay</i></a>
-                </span>
-              </li>
+        <div id='gamesPanel' class='posAbsolute fullWidth height100pct'>
+          <div id='gamesPanelContainer' class='displayFlex flexDirCol height100pct'>
+            <div class='heading textAlignCenter'>Games</div>
+            <button type='button' class='height64px mdl-button show-modal mdl-js-button mdl-button--raised mdl-button--accent'>
+              start a new game
+            </button>
+            <div class='overflowYScroll'>
+              <div class='heading'>Active games</div>
+              <ul id='activeGames' class='demo-list-two mdl-list'>
+                <li class='mdl-list__item mdl-list__item--two-line'>
+                  <span class='mdl-list__item-primary-content'>
+                    <i class='material-icons mdl-list__item-avatar'>person</i>
+                    <span>Bryan Cranston</span>
+                    <span class='mdl-list__item-sub-title'>Their turn</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </li>
+                <li class='mdl-list__item mdl-list__item--two-line'>
+                  <span class='mdl-list__item-primary-content'>
+                    <i class='material-icons mdl-list__item-avatar'>person</i>
+                    <span>Aaron Paul</span>
+                    <span class='mdl-list__item-sub-title'>Your turn</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </li>
+                <li class='mdl-list__item mdl-list__item--two-line'>
+                  <span class='mdl-list__item-primary-content'>
+                    <i class='material-icons mdl-list__item-avatar'>person</i>
+                    <span>Bob Simon</span>
+                    <span class='mdl-list__item-sub-title'>Their turn</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </li>
+                <li class='mdl-list__item mdl-list__item--two-line'>
+                  <span class='mdl-list__item-primary-content'>
+                    <i class='material-icons mdl-list__item-avatar'>person</i>
+                    <span>Frank Prendergast</span>
+                    <span class='mdl-list__item-sub-title'>Your turn</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </li>
+              </ul>
+              <div class='heading'>Past games</div>
+              <ul id='activeGames' class='demo-list-two mdl-list'>
+                <li class='mdl-list__item mdl-list__item--two-line'>
+                  <span class='mdl-list__item-primary-content'>
+                    <i class='material-icons mdl-list__item-avatar'>person</i>
+                    <span>Bryan Cranston</span>
+                    <span class='mdl-list__item-sub-title'>They won</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play again</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>replay</i></a>
+                  </span>
+                </li>
+                <li class='mdl-list__item mdl-list__item--two-line'>
+                  <span class='mdl-list__item-primary-content'>
+                    <i class='material-icons mdl-list__item-avatar'>person</i>
+                    <span>Aaron Paul</span>
+                    <span class='mdl-list__item-sub-title'>They won</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play again</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>replay</i></a>
+                  </span>
+                </li>
+                <li class='mdl-list__item mdl-list__item--two-line'>
+                  <span class='mdl-list__item-primary-content'>
+                    <i class='material-icons mdl-list__item-avatar'>person</i>
+                    <span>John Hancock</span>
+                    <span class='mdl-list__item-sub-title'>You won!</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play again</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>replay</i></a>
+                  </span>
+                </li>
+                <li class='mdl-list__item mdl-list__item--two-line'>
+                  <span class='mdl-list__item-primary-content'>
+                    <i class='material-icons mdl-list__item-avatar'>person</i>
+                    <span>John Adams</span>
+                    <span class='mdl-list__item-sub-title'>You won!</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play again</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>replay</i></a>
+                  </span>
+                </li>
+              </ul>
             </div>
-          </ul>
+          </div>
         </div>
-        <dialog id='oppDialog' class='mdl-dialog'>
-          <!-- <div class='mdl-dialog__content'> -->
-            <div class='displayFlex'>
-              <a href='#games' class='alignSelfEnd'><i class='material-icons'>close</i></a>
-            </div>
+        <dialog id='oppDialog' class='mdl-dialog height80pct'>
+          <div class='displayFlex flexDirCol height100pct'>
+            <a href='#games' class='closeDialogPosition close'><i class='material-icons'>close</i></a>
             <div class='heading textAlignCenter'>Difficulty level</div>
-            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-1">
-              <input type="radio" id="option-1" class="mdl-radio__button" name="options" value="1" checked>
-              <span class="mdl-radio__label">EASY</span>
-            </label>
-            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-2">
-              <input type="radio" id="option-2" class="mdl-radio__button" name="options" value="2">
-              <span class="mdl-radio__label">MED</span>
-            </label>
-            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-3">
-              <input type="radio" id="option-3" class="mdl-radio__button" name="options" value="3">
-              <span class="mdl-radio__label">HARD</span>
-            </label>
+            <div class='displayFlex'>
+              <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect width33pct" for="option-1">
+                <input type="radio" id="option-1" class="mdl-radio__button" name="options" value="1" checked>
+                <span class="mdl-radio__label">EASY</span>
+              </label>
+              <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect width33pct" for="option-2">
+                <input type="radio" id="option-2" class="mdl-radio__button" name="options" value="2">
+                <span class="mdl-radio__label">MED</span>
+              </label>
+              <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect width33pct" for="option-3">
+                <input type="radio" id="option-3" class="mdl-radio__button" name="options" value="3">
+                <span class="mdl-radio__label">HARD</span>
+              </label>
+            </div>
             <div class='heading textAlignCenter'>Choose your opponent</div>
-            <div class="demo-list-action mdl-list">
-              <div class="mdl-list__item">
-                <span class="mdl-list__item-primary-content">
-                  <i class="material-icons mdl-list__item-avatar">person</i>
-                  <span>Bryan Cranston</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
-                </span>
-              </div>
-              <div class="mdl-list__item">
-                <span class="mdl-list__item-primary-content">
-                  <i class="material-icons mdl-list__item-avatar">person</i>
-                  <span>Aaron Paul</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
-                </span>
-              </div>
-              <div class="mdl-list__item">
-                <span class="mdl-list__item-primary-content">
-                  <i class="material-icons mdl-list__item-avatar">person</i>
-                  <span>Bob Odenkirk</span>
-                </span>
-                <span class='mdl-list__item-secondary-content'>
-                  <span class='mdl-list__item-secondary-info'>Play</span>
-                  <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
-                </span>
+            <div class='overflowYScroll'>
+              <div class="demo-list-action mdl-list">
+                <div class="mdl-list__item">
+                  <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-avatar">person</i>
+                    <span>Bryan Cranston</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </div>
+                <div class="mdl-list__item">
+                  <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-avatar">person</i>
+                    <span>Aaron Paul</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </div>
+                <div class="mdl-list__item">
+                  <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-avatar">person</i>
+                    <span>Bob Odenkirk</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </div>
+                <div class="mdl-list__item">
+                  <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-avatar">person</i>
+                    <span>Bryan Cranston</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </div>
+                <div class="mdl-list__item">
+                  <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-avatar">person</i>
+                    <span>Aaron Paul</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </div>
+                <div class="mdl-list__item">
+                  <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-avatar">person</i>
+                    <span>Bob Odenkirk</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </div>
+                <div class="mdl-list__item">
+                  <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-avatar">person</i>
+                    <span>Bryan Cranston</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </div>
+                <div class="mdl-list__item">
+                  <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-avatar">person</i>
+                    <span>Aaron Paul</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </div>
+                <div class="mdl-list__item">
+                  <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-avatar">person</i>
+                    <span>Bob Odenkirk</span>
+                  </span>
+                  <span class='mdl-list__item-secondary-content'>
+                    <span class='mdl-list__item-secondary-info'>Play</span>
+                    <a class='mdl-list__item-secondary-action' href='#'><i class='material-icons'>grid_on</i></a>
+                  </span>
+                </div>
               </div>
             </div>
-          <!-- </div> -->
-        </dialog>
+          </dialog>
+        </div>
       </main>
     </div>
   
