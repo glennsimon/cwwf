@@ -24,5 +24,7 @@
         gamesPanel.classList.remove('slideIn');
       }
     }
+
+    location.hash = '#home';
   }
 })();

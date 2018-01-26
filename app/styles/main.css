@@ -106,14 +106,6 @@ select {
   text-align: center;
 }
 
-.height40px {
-  height: 40px;
-}
-
-.height24px {
-  height: 24px;
-}
-
 .marginAutoTopBot {
   margin-top: auto;
   margin-bottom: auto;
@@ -185,10 +177,6 @@ select {
 
 #clueContainer {
   align-self: stretch;
-}
-
-.initHeight {
-  height: 100%;
 }
 
 #puzNotepad {
@@ -355,6 +343,34 @@ select {
 
 .fullWidth {
   width: 100%;
+}
+
+.height25vh {
+  height: 25vh;
+}
+
+.height40px {
+  height: 40px;
+}
+
+.height24px {
+  height: 24px;
+}
+
+.height100pct {
+  height: 100%;
+}
+
+.height64px {
+  height: 64px !important;
+}
+
+.overflowHidden {
+  overflow: hidden;
+}
+
+.overflowYScroll {
+  overflow-y: scroll;
 }
 
 #gamesPanel {
