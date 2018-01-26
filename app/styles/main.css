@@ -433,6 +433,17 @@ select {
   padding: 0 5px;
 }
 
+.alignRight {
+  text-align: right;
+}
+
+@media screen and (min-width: 470px) {
+  #gamesPanel {
+    width: 450px;
+    margin-left: calc((100vw - 450px)/2);
+  }
+}
+
 @media screen and (orientation: landscape) and (min-width: 800px) {
   #puzTable {
     width: 50%;
