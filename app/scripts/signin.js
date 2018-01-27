@@ -60,28 +60,40 @@
       if (user) {
         // User is signed in.
         uid = user.uid;
+        isOnlineForFirestore.displayName = user.displayName;
+        isOnlineForFirestore.photoURL = user.photoURL;
+        isOnlineForFirestore.providerId = user.providerData[0].providerId;
+        isOnlineForFirestore.uid = uid;
+        isOnlineForFirestore.privateData = {
+          email: user.email,
+          emailVerified: user.emailVerified,
+          phoneNumber: user.phoneNumber,
+          providerData: user.providerData,
+          providerId: user.providerId
+        };
 
         document.getElementById('authButton').textContent = 'sign out';
         document.getElementById('profileName').textContent = user.displayName;
-        document.getElementById('avatar').src = user.photoURL;
+        document.getElementById('avatar').src =
+          user.photoURL ? user.photoURL : 'images/avatar_circle_black.png';
 
         // Create a reference to this user's specific status node.
         // This is where we will store data about being online/offline.
-        userStatusDatabaseRef = firebase.database().ref(`/status/${uid}`);
-        userStatusFirestoreRef = firebase.firestore().doc(`/status/${uid}`);
+        userStatusDatabaseRef = firebase.database().ref(`/users/${uid}`);
+        userStatusFirestoreRef = firebase.firestore().doc(`/users/${uid}`);
 
         firebase.database().ref('.info/connected').on('value', snapshot => {
           if (snapshot.val() === false) {
             // Instead of simply returning, we'll also set Firestore's state
             // to "offline". This ensures that our Firestore cache is aware
             // of the switch to "offline."
-            userStatusFirestoreRef.set(isOfflineForFirestore);
+            userStatusFirestoreRef.set(isOfflineForFirestore, {merge: true});
             return;
           }
           userStatusDatabaseRef.onDisconnect()
             .set(isOfflineForDatabase).then(() => {
               userStatusDatabaseRef.set(isOnlineForDatabase);
-              userStatusFirestoreRef.set(isOnlineForFirestore);
+              userStatusFirestoreRef.set(isOnlineForFirestore, {merge: true});
             });
         });
         document.getElementById('firebaseuiAuthContainer')
@@ -92,7 +104,8 @@
         document.getElementById('firebaseuiAuthContainer')
           .classList.remove('displayNone');
         document.getElementById('profileName').textContent = 'N. E. Person';
-        document.getElementById('avatar').src = 'images/user.jpg';
+        document.getElementById('avatar')
+          .src = 'images/avatar_circle_black.png';
       }
     }, function(error) {
       console.log(error);
@@ -101,16 +114,17 @@
     document.getElementById('authButton').addEventListener('click', () => {
       document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
       if (uid) {
-        userStatusFirestoreRef.set(isOfflineForFirestore).then(() => {
-          firebase.auth().signOut();
-        }).then(() => {
-          // Sign-out successful.
-          uid = undefined;
-          userStatusDatabaseRef = undefined;
-          userStatusFirestoreRef = undefined;
-        }).catch(error => {
-          console.log(error);
-        });
+        userStatusFirestoreRef
+          .set(isOfflineForFirestore, {merge: true}).then(() => {
+            firebase.auth().signOut();
+          }).then(() => {
+            // Sign-out successful.
+            uid = undefined;
+            userStatusDatabaseRef = undefined;
+            userStatusFirestoreRef = undefined;
+          }).catch(error => {
+            console.log(error);
+          });
       }
     });
   }

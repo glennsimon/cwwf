@@ -25,6 +25,8 @@
       }
     }
 
-    location.hash = '#games';
+    if (location.hash !== '#games') {
+      location.hash = '#games';
+    }
   }
 })();

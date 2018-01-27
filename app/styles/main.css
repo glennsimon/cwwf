@@ -345,6 +345,10 @@ select {
   width: 60%;
 }
 
+.maxWidth400px {
+  max-width: 400px;
+}
+
 .fullWidth {
   width: 100%;
 }
@@ -379,6 +383,10 @@ select {
 
 .overflowYScroll {
   overflow-y: scroll;
+}
+
+.noOutline {
+  outline: none;
 }
 
 #gamesPanel {
