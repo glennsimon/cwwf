@@ -1,10 +1,11 @@
 users (coll):
 	<uid> (doc):
 		displayName: <display name> (field)
-		photoUrl: <photo url> (field)
-		state: 'online' || 'offline' (field)
 		friends: <Array of uid> (field)
 		games: <Array of all started game ids>
+		lastChanged: <timestamp>
+		photoUrl: <photo url> (field)
+		state: 'online' || 'offline' (field)
 		privateData (coll):
 			email: <email> (field)
 			emailVerified: true || false (field)
