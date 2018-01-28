@@ -16,7 +16,9 @@
      * Navigate based on hash change
      */
     function navigate() {
-      if (location.hash === '#home') {
+      if (location.hash === '#puzzle') {
+        setUpPuzzle();
+      } else if (location.hash === '#home') {
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
       } else {
@@ -25,8 +27,18 @@
       }
     }
 
-    if (location.hash !== '#games') {
-      location.hash = '#games';
+    // if (location.hash !== '#games') {
+    //   location.hash = '#games';
+    // }
+
+    /**
+     * Set up a puzzle based on the url query
+     */
+    function setUpPuzzle() {
+      let queryArray = location.search.slice(1).split('&');
+      queryArray.forEach(setting => {
+        console.log(setting);
+      });
     }
   }
 })();

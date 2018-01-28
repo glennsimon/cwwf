@@ -19,6 +19,7 @@
     let currentUser = firebase.auth().currentUser;
     let difficulty = 'medium';
     let dialogList = '';
+    let opponents = [];
 
     firebase.auth().onAuthStateChanged(user => {
       currentUser = user;
@@ -44,6 +45,8 @@
       }
     }
 
+    // this can be done more cleanly with a single listener on radio
+    // class objects and using the value parameter
     radioEasy.addEventListener('click', () => {
       difficulty = 'easy';
     });
@@ -73,21 +76,34 @@
    </span>
    <span class='mdl-list__item-secondary-content'>
      <span class='mdl-list__item-secondary-info'>Play</span>
-     <a class='mdl-list__item-secondary-action' 
-       href='?opp=${doc.data().uid}&difficulty=${difficulty}#puzzle'>
-         <i class='material-icons'>grid_on</i>
-     </a>
+     <div class='mdl-list__item-secondary-action'>
+       <i id='${doc.data().uid}' class='material-icons'>grid_on</i>
+     </div>
    </span>
  </li>
 `;
             }
+            opponents.push(doc.data().uid);
           });
           // console.log(dialogList);
           dialogListContainer.innerHTML = dialogList;
+          dialogListContainer.addEventListener('click', loadGame);
         })
         .catch(function(error) {
           console.error('Error getting documents: ', error);
         });
+    }
+
+    /**
+     * Load game based on user selection
+     * @param {Object} event Click event from dialogListContainer
+     */
+    function loadGame(event) {
+      if (opponents.includes(event.target.id)) {
+        console.log('currentUser.uid: ', currentUser.uid);
+        console.log('difficulty: ', difficulty);
+        console.log(event.target.id);
+      }
     }
   }
 
