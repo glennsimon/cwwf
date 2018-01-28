@@ -377,7 +377,7 @@
       }
     }
     columns = puzzle.size.cols;
-    // console.log(parsedPuzzle);
+    console.log(parsedPuzzle);
   }
 
   /** Removes puzzle from DOM */
