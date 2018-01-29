@@ -72,9 +72,9 @@ const puzzleWorker = (function() {
       });
   }
 
-  const yearPicker = document.getElementById('pickYear');
-  const monthPicker = document.getElementById('pickMonth');
-  const dayPicker = document.getElementById('pickDay');
+  // const yearPicker = document.getElementById('pickYear');
+  // const monthPicker = document.getElementById('pickMonth');
+  // const dayPicker = document.getElementById('pickDay');
   const puzTitle = document.getElementById('puzTitle');
   const puzTable = document.getElementById('puzTable');
   const puzAuthor = document.getElementById('puzAuthor');
@@ -94,7 +94,7 @@ const puzzleWorker = (function() {
   let columns = null;
   let currentClue = null;
   let idxArray = [];
-  let puzDir = null;
+  // let puzDir = null;
 
   puzTitle.innerText = 'Select a date above to load puzzle';
 
@@ -328,7 +328,7 @@ const puzzleWorker = (function() {
   }
 
   /**
-   * This function fetches a puzle based on the user's selection and then
+   * This function fetches a puzzle based on the user's selection and then
    * calls functions to format and display the puzzle
    * @param {Object} paramObject Object with competitors and puzzle difficulty
    */
@@ -371,13 +371,38 @@ const puzzleWorker = (function() {
         return obj;
       }).then(obj => {
         parsePuzzle(obj);
-        savePuzzle();
+        saveNewPuzzle();
         showPuzzle();
       }).catch(error => {
         console.error('Error fetching puzzle: ', error);
       });
     }).catch(error => {
       console.error('Error fetching puzzle date: ', error);
+    });
+  }
+
+  /**
+   * This function fetches an active puzzle based on the user's selection
+   * and then calls functions to format and display the puzzle
+   * @param {String} puzzleId Firestore game (puzzle) id
+   */
+  function fetchPuzzle(puzzleId) {
+    document.getElementById('puzTitle').innerText = 'Fetching data...';
+
+    const db = window.firebase.firestore();
+    const docRef = db.collection('games').doc(puzzleId);
+
+    docRef.get().then(doc => {
+      if (doc.exists) {
+        // console.log('Document data:', doc.data());
+        parsedPuzzle = doc.data();
+        showPuzzle();
+      } else {
+        // doc.data() will be undefined in this case
+        console.error('No such game!');
+      }
+    }).catch(function(error) {
+      console.error('Error getting puzzle: ', error);
     });
   }
 
@@ -430,11 +455,19 @@ const puzzleWorker = (function() {
     console.log(parsedPuzzle);
   }
 
-  /** Saves puzzle to firebase */
-  function savePuzzle() {
+  /** Saves new puzzle to firebase */
+  function saveNewPuzzle() {
     const db = window.firebase.firestore();
 
-    db.collection('games').add(parsedPuzzle).then(docRef => {
+    let game = {};
+    game.initiator = parsedPuzzle.initiator.uid;
+    game.opponent = parsedPuzzle.opponent.uid;
+    game.start = window.firebase.database.ServerValue.TIMESTAMP;
+    game.status = 'started';
+    game.puzzle = parsePuzzle;
+    game.winner = null;
+    game.nextTurn = parsedPuzzle.initiator.uid;
+    db.collection('games').add(game).then(docRef => {
       console.log('parsedPuzzle written to firestore with docRef: ', docRef);
     }).catch(error => {
       console.error('Error writing file to firestore: ', error);
@@ -460,80 +493,79 @@ const puzzleWorker = (function() {
   }
 
   /** Initialize values in year selector drop-down */
-  function initPicker() {
-    fetch('./puzDir.json').then(response => {
-      return response.json();
-    }).then(pd => {
-      puzDir = pd;
-      populatePicker(Object.getOwnPropertyNames(puzDir), yearPicker);
-    });
-    // loadPuzzle(); //TODO: remove for deployment
-  }
+  // function initPicker() {
+  //   fetch('./puzDir.json').then(response => {
+  //     return response.json();
+  //   }).then(pd => {
+  //     puzDir = pd;
+  //     populatePicker(Object.getOwnPropertyNames(puzDir), yearPicker);
+  //   });
+  // }
 
   /**
    * Populates values in drop-down selector (picker)
    * @param {Array} items Array of values for the picker choices
    * @param {Object} picker Selector object, could be yearPicker, monthPicker, or dayPicker
    */
-  function populatePicker(items, picker) {
-    picker.value = picker.children[0].value;
-    while (picker.children[1]) {
-      picker.removeChild(picker.children[1]);
-    }
-    items.sort();
-    items.forEach(item => {
-      // if item is '<day>.json', get rid of the '.json'
-      item = item.split('.')[0];
-      let option = document.createElement('option');
-      option.value = item;
-      option.text = item;
-      picker.appendChild(option);
-    });
-  }
+  // function populatePicker(items, picker) {
+  //   picker.value = picker.children[0].value;
+  //   while (picker.children[1]) {
+  //     picker.removeChild(picker.children[1]);
+  //   }
+  //   items.sort();
+  //   items.forEach(item => {
+  //     // if item is '<day>.json', get rid of the '.json'
+  //     item = item.split('.')[0];
+  //     let option = document.createElement('option');
+  //     option.value = item;
+  //     option.text = item;
+  //     picker.appendChild(option);
+  //   });
+  // }
 
-  yearPicker.addEventListener('change', changeYear);
-  monthPicker.addEventListener('change', changeMonth);
-  dayPicker.addEventListener('change', changeDay);
+  // yearPicker.addEventListener('change', changeYear);
+  // monthPicker.addEventListener('change', changeMonth);
+  // dayPicker.addEventListener('change', changeDay);
 
   /**
    * When user selects a different year, clears puzzle and sets up
    * monthPicker values for the new year
    */
-  function changeYear() {
-    monthPicker.value = 'month';
-    monthPicker.disabled = true;
-    dayPicker.value = 'day';
-    dayPicker.disabled = true;
-    clearPuzzle();
-    if (yearPicker.value !== 'year') {
-      populatePicker(
-        Object.getOwnPropertyNames(puzDir[yearPicker.value]), monthPicker
-      );
-      monthPicker.disabled = false;
-    }
-  }
+  // function changeYear() {
+  //   monthPicker.value = 'month';
+  //   monthPicker.disabled = true;
+  //   dayPicker.value = 'day';
+  //   dayPicker.disabled = true;
+  //   clearPuzzle();
+  //   if (yearPicker.value !== 'year') {
+  //     populatePicker(
+  //       Object.getOwnPropertyNames(puzDir[yearPicker.value]), monthPicker
+  //     );
+  //     monthPicker.disabled = false;
+  //   }
+  // }
 
   /**
    * When user selects a different month, clears puzzle and sets up
    * dayPicker values for the new month
    */
-  function changeMonth() {
-    dayPicker.disabled = true;
-    clearPuzzle();
-    if (monthPicker.value !== 'month') {
-      populatePicker(puzDir[yearPicker.value][monthPicker.value], dayPicker);
-      dayPicker.disabled = false;
-    }
-  }
+  // function changeMonth() {
+  //   dayPicker.disabled = true;
+  //   clearPuzzle();
+  //   if (monthPicker.value !== 'month') {
+  //     populatePicker(puzDir[yearPicker.value][monthPicker.value], dayPicker);
+  //     dayPicker.disabled = false;
+  //   }
+  // }
 
   /**
    * When user selects a different day, clears puzzle and calls function
    * to load the new puzzle
    */
-  function changeDay() {
-    clearPuzzle();
-    loadPuzzle();
-  }
+  // function changeDay() {
+  //   clearPuzzle();
+  //   loadPuzzle();
+  // }
 
   /** Resizes puzzle based on available space */
   function resizePuzzle() {
@@ -696,10 +728,17 @@ const puzzleWorker = (function() {
     });
   }
 
+  /** Init in case we need it */
+  function init() {
+    console.log('The dude abides!');
+  }
+
   return {
-    initPicker: initPicker,
-    loadPuzzle: loadPuzzle
+    // initPicker: initPicker,
+    init: init,
+    loadPuzzle: loadPuzzle,
+    fetchPuzzle: fetchPuzzle
   };
 })();
 
-puzzleWorker.initPicker();
+puzzleWorker.init();
