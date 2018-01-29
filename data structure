@@ -64,7 +64,6 @@ Puzzle object:
 	// above is generic puzzle info, below is game-play data
 	initiator: {
 		uid: <uid>,
-		displayName: user.displayName,
 		color: <color string>,
 		score: <number>,
 		squaresWon: [
@@ -75,7 +74,6 @@ Puzzle object:
 	},
 	opponent: {
 		uid: <uid>,
-		displayName: user.displayName,
 		color: <color string>,
 		score: <number>,
 		squaresWon: [

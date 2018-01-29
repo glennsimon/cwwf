@@ -99,11 +99,17 @@
      * @param {Object} event Click event from dialogListContainer
      */
     function loadGame(event) {
+      location.hash = '#puzzle';
       if (opponents.includes(event.target.id)) {
         console.log('currentUser.uid: ', currentUser.uid);
         console.log('difficulty: ', difficulty);
         console.log(event.target.id);
       }
+      window.puzzleWorker.loadPuzzle({
+        initiator: currentUser.uid,
+        opponent: event.target.id,
+        difficulty: difficulty
+      });
     }
   }
 

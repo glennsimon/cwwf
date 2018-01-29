@@ -9,6 +9,7 @@
     const querySelector = document.querySelector.bind(document);
     const appContainer = querySelector('#appContainer');
     const gamesPanel = querySelector('#gamesPanel');
+    const dialog = querySelector('#oppDialog');
 
     window.addEventListener('hashchange', navigate);
 
@@ -17,13 +18,12 @@
      */
     function navigate() {
       if (location.hash === '#puzzle') {
-        setUpPuzzle();
+        dialog.close();
+        gamesPanel.classList.add('slideOut');
+        appContainer.classList.add('slideIn');
       } else if (location.hash === '#home') {
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
-      } else {
-        gamesPanel.classList.remove('slideOut');
-        appContainer.classList.remove('slideIn');
       }
     }
 
@@ -34,11 +34,11 @@
     /**
      * Set up a puzzle based on the url query
      */
-    function setUpPuzzle() {
-      let queryArray = location.search.slice(1).split('&');
-      queryArray.forEach(setting => {
-        console.log(setting);
-      });
-    }
+    // function setUpPuzzle() {
+    //   let queryArray = location.search.slice(1).split('&');
+    //   queryArray.forEach(setting => {
+    //     console.log(setting);
+    //   });
+    // }
   }
 })();

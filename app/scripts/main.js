@@ -17,7 +17,7 @@
  *
  */
 /* eslint-env es6, browser */
-(function() {
+const puzzleWorker = (function() {
   'use strict';
 
   // Check to make sure service workers are supported in the current browser,
@@ -330,19 +330,54 @@
   /**
    * This function fetches a puzle based on the user's selection and then
    * calls functions to format and display the puzzle
+   * @param {Object} paramObject Object with competitors and puzzle difficulty
    */
-  function loadPuzzle() {
+  function loadPuzzle(paramObject) {
     document.getElementById('puzTitle').innerText = 'Fetching data...';
-    let baseUrl = 'https://raw.githubusercontent.com/doshea/nyt_crosswords/master';
-    let url = `${baseUrl}/${yearPicker.value}/` +
-      `${monthPicker.value}/${dayPicker.value}.json`;
-    // var url = './puzzles/2015/01/07.json';  //TODO:  remove for deployment and uncomment above line
-    fetch(url).then(response => {
+
+    const initiator = paramObject.initiator;
+    const opponent = paramObject.opponent;
+    const difficulty = paramObject.difficulty;
+
+    let directory = 'puzDirMed.json';
+    let year = '1976';
+    let month = '01';
+    let day = '01';
+
+    if (difficulty === 'hard') {
+      directory = 'puzDirHard.json';
+    } else if (difficulty === 'easy') {
+      directory = 'puzDirEasy.json';
+    }
+
+    fetch(directory).then(response => {
       return response.json();
-    }).then(obj => {
-      parsePuzzle(obj);
-      showPuzzle();
-      toggleDrawer();
+    }).then(dir => {
+      const years = Object.getOwnPropertyNames(dir);
+      year = years[Math.floor(Math.random() * years.length)];
+      const months = Object.getOwnPropertyNames(dir[year]);
+      month = months[Math.floor(Math.random() * months.length)];
+      const days = dir[year][month];
+      day = days[Math.floor(Math.random() * days.length)];
+    }).then(() => {
+      let baseUrl = 'https://raw.githubusercontent.com/doshea/nyt_crosswords/master';
+      let url = `${baseUrl}/${year}/${month}/${day}`;
+      fetch(url).then(response => {
+        return response.json();
+      }).then(obj => {
+        obj.initiator = initiator;
+        obj.opponent = opponent;
+        obj.difficulty = difficulty;
+        return obj;
+      }).then(obj => {
+        parsePuzzle(obj);
+        savePuzzle();
+        showPuzzle();
+      }).catch(error => {
+        console.error('Error fetching puzzle: ', error);
+      });
+    }).catch(error => {
+      console.error('Error fetching puzzle date: ', error);
     });
   }
 
@@ -376,8 +411,34 @@
         parsedPuzzle.grid[i].circle = puzzle.circles && puzzle.circles[i] === 1;
       }
     }
+    parsedPuzzle.initiator = {};
+    parsedPuzzle.initiator.uid = puzzle.initiator;
+    parsedPuzzle.initiator.score = 0;
+    parsedPuzzle.initiator.errors = 0;
+    parsedPuzzle.initiator.squaresWon = [];
+    parsedPuzzle.initiator.score = 0;
+    parsedPuzzle.initiator.color = 'red';
+    parsedPuzzle.opponent = {};
+    parsedPuzzle.opponent.uid = puzzle.opponent;
+    parsedPuzzle.opponent.score = 0;
+    parsedPuzzle.opponent.errors = 0;
+    parsedPuzzle.opponent.squaresWon = [];
+    parsedPuzzle.opponent.score = 0;
+    parsedPuzzle.opponent.color = 'blue';
+    parsedPuzzle.difficulty = puzzle.difficulty;
     columns = puzzle.size.cols;
     console.log(parsedPuzzle);
+  }
+
+  /** Saves puzzle to firebase */
+  function savePuzzle() {
+    const db = window.firebase.firestore();
+
+    db.collection('games').add(parsedPuzzle).then(docRef => {
+      console.log('parsedPuzzle written to firestore with docRef: ', docRef);
+    }).catch(error => {
+      console.error('Error writing file to firestore: ', error);
+    });
   }
 
   /** Removes puzzle from DOM */
@@ -400,7 +461,7 @@
 
   /** Initialize values in year selector drop-down */
   function initPicker() {
-    fetch('./puzDir.json'). then(response => {
+    fetch('./puzDir.json').then(response => {
       return response.json();
     }).then(pd => {
       puzDir = pd;
@@ -635,5 +696,10 @@
     });
   }
 
-  initPicker();
+  return {
+    initPicker: initPicker,
+    loadPuzzle: loadPuzzle
+  };
 })();
+
+puzzleWorker.initPicker();
