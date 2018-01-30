@@ -28,7 +28,7 @@
 
     firebase.auth().onAuthStateChanged(user => {
       currentUser = user;
-      fillLists();
+      // fillLists();
     });
 
     if (!dialog.showModal) {
@@ -62,69 +62,83 @@
       difficulty = 'hard';
     });
 
-    /** Fill dialog list with possible opponents */
-    function fillLists() {
-      if (currentUser) {
-        firebase.firestore().collection('users').get().then(snapshot => {
-          if (!snapshot.exists) {
-            console.warn('No users exist yet.');
-            return;
-          }
-          allUsers = snapshot;
-          snapshot.forEach(doc => {
-            // doc.data() is never undefined for query doc snapshots
-            // console.log(doc.id, ' => ', doc.data());
-            if (doc.id !== currentUser.uid) {
-              dialogList +=
+    firebase.firestore().collection('users').onSnapshot(snapshot => {
+      if (!currentUser) return;
+      dialogListContainer.innerHTML = '';
+      dialogListContainer.removeEventListener('click', loadNewGame);
+      dialogList = '';
+      if (snapshot.empty) {
+        console.warn('No users exist yet.');
+        return;
+      }
+      let usersObj = {};
+      snapshot.docs.forEach(doc => {
+        const uid = doc.id;
+        const user = doc.data();
+        usersObj[uid] = user;
+        // doc.data() is never undefined for query doc snapshots
+        // console.log(doc.id, ' => ', doc.data());
+        if (uid !== currentUser.uid) {
+          dialogList +=
 `<li class='mdl-list__item mdl-list__item--two-line'>
    <span class='mdl-list__item-primary-content'>
      <i class='material-icons mdl-list__item-avatar'>person</i>
-     <span>${doc.data().displayName}</span>
+     <span>${user.displayName}</span>
      <span class='mdl-list__item-sub-title'>
-       ${doc.data().providerId.split('.')[0]}
+       ${user.providerId.split('.')[0]}
      </span>
    </span>
    <span class='mdl-list__item-secondary-content'>
      <span class='mdl-list__item-secondary-info'>Play</span>
      <div class='mdl-list__item-secondary-action'>
-       <i id='${doc.data().uid}' class='material-icons'>grid_on</i>
+       <i id='${uid}' class='material-icons'>grid_on</i>
      </div>
    </span>
  </li>
 `;
-            }
-            // Using opponent uid as id for i element. loadNewGame() checks
-            // click target by checking if opponents includes i element id.
-            opponents.push(doc.data().uid);
-          });
-          // console.log(dialogList);
-          dialogListContainer.innerHTML = dialogList;
-          dialogListContainer.addEventListener('click', loadNewGame);
-        }).catch(function(error) {
-          console.error('Error getting users: ', error);
-        });
+        }
+        // Using opponent uid as id for i element. loadNewGame() checks
+        // click target by checking if opponents includes i element id.
+        opponents.push(uid);
+      });
+      allUsers = usersObj;
+      // console.log(dialogList);
+      dialogListContainer.innerHTML = dialogList;
+      dialogListContainer.addEventListener('click', loadNewGame);
+    }, error => {
+      console.error('Error getting users: ', error);
+    });
 
-        firebase.firestore().collection('games').get().then(snapshot => {
-          if (!snapshot.exists) {
-            console.warn('No games exist yet.');
-            return;
-          }
-          snapshot.forEach(doc => {
-            // doc.data() is never undefined for query doc snapshots
-            // console.log(doc.id, ' => ', doc.data());
-            if (doc.status === 'started' &&
-              (doc.initiator === currentUser.uid ||
-               doc.opponent === currentUser.uid)) {
-              let myOpponent = doc.initiator === currentUser.uid ?
-                allUsers[doc.opponent].displayName :
-                allUsers[doc.initiator].displayName;
-              activeGamesList +=
+    // firebase.firestore().collection('games').get().then(snapshot => {
+    firebase.firestore().collection('games').onSnapshot(snapshot => {
+      if (!currentUser) return;
+      activeGamesContainer.innerHTML = 'No active games yet. Start one!';
+      pastGamesContainer.innerHTML = 'No completed games yet';
+      activeGamesContainer.removeEventListener('click', loadActiveGame);
+      pastGamesContainer.removeEventListener('click', loadNewGame);
+      activeGamesList = '';
+      pastGamesList = '';
+      if (snapshot.empty) {
+        console.warn('No games exist yet.');
+        return;
+      }
+      snapshot.docs.forEach(doc => {
+        // doc.data() is never undefined for query doc snapshots
+        // console.log(doc.id, ' => ', doc.data());
+        const game = doc.data();
+        if (game.status === 'started' &&
+          (game.initiator === currentUser.uid ||
+           game.opponent === currentUser.uid)) {
+          let myOpponent = game.initiator === currentUser.uid ?
+            allUsers[game.opponent].displayName :
+            allUsers[game.initiator].displayName;
+          activeGamesList +=
 `<li class='mdl-list__item mdl-list__item--two-line'>
   <span class='mdl-list__item-primary-content'>
     <i class='material-icons mdl-list__item-avatar'>person</i>
     <span>${myOpponent}</span>
     <span class='mdl-list__item-sub-title'>
-      ${currentUser.uid === doc.nextTurn ? 'Your' : 'Their'} turn
+      ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
     </span>
   </span>
   <span class='mdl-list__item-secondary-content'>
@@ -134,22 +148,22 @@
     </div>
   </span>
 </li>`;
-            } else if (doc.initiator === currentUser.uid ||
-                       doc.opponent === currentUser.uid) {
-              let myOpponent = doc.initiator === currentUser.uid ?
-                allUsers[doc.opponent].displayName :
-                allUsers[doc.initiator].displayName;
-              let result;
-              if (doc.result === 'finished') {
-                result = currentUser.uid === doc.winner ?
-                  'You won!!' :
-                  'They won';
-              } else if (doc.result === 'abandoned') {
-                result = 'Game abandoned';
-              } else {
-                result = 'They cancelled';
-              }
-              pastGamesList +=
+        } else if (game.initiator === currentUser.uid ||
+                   game.opponent === currentUser.uid) {
+          let myOpponent = game.initiator === currentUser.uid ?
+            allUsers[game.opponent].displayName :
+            allUsers[game.initiator].displayName;
+          let result;
+          if (game.result === 'finished') {
+            result = currentUser.uid === game.winner ?
+              'You won!!' :
+              'They won';
+          } else if (game.result === 'abandoned') {
+            result = 'Game abandoned';
+          } else {
+            result = 'They cancelled';
+          }
+          pastGamesList +=
 `<li class='mdl-list__item mdl-list__item--two-line'>
   <span class='mdl-list__item-primary-content'>
     <i class='material-icons mdl-list__item-avatar'>person</i>
@@ -159,22 +173,22 @@
   <span class='mdl-list__item-secondary-content'>
     <span class='mdl-list__item-secondary-info'>Play again</span>
     <div class='mdl-list__item-secondary-action'>
-      <i id='${doc.opponent}' class='material-icons'>replay</i>
+      <i id='${game.opponent}' class='material-icons'>replay</i>
     </div>
   </span>
 </li>`;
-            }
-          });
-          // console.log(dialogList);
-          activeGamesContainer.innerHTML = activeGamesList;
-          pastGamesContainer.innerHTML = pastGamesList;
-          activeGamesContainer.addEventListener('click', loadActiveGame);
-          pastGamesContainer.addEventListener('click', loadNewGame);
-        }).catch(function(error) {
-          console.error('Error getting games: ', error);
-        });
-      }
-    }
+        }
+      });
+      // console.log(dialogList);
+      activeGamesContainer.innerHTML = activeGamesList;
+      pastGamesContainer.innerHTML = pastGamesList;
+      activeGamesContainer.addEventListener('click', loadActiveGame);
+      pastGamesContainer.addEventListener('click', loadNewGame);
+    }, error => {
+      console.error('Error getting games: ', error);
+    });
+    // }
+    // }
 
     /**
      * Load game based on user selection
@@ -199,11 +213,7 @@
      * @param {Object} event Click event from dialogListContainer
      */
     function loadActiveGame(event) {
-      window.puzzleWorker.fetchPuzzle({
-        initiator: currentUser.uid,
-        opponent: event.target.id,
-        difficulty: difficulty
-      });
+      window.puzzleWorker.fetchPuzzle(event.target.id);
       location.hash = '#puzzle';
     }
   }

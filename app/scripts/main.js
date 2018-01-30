@@ -395,7 +395,7 @@ const puzzleWorker = (function() {
     docRef.get().then(doc => {
       if (doc.exists) {
         // console.log('Document data:', doc.data());
-        parsedPuzzle = doc.data();
+        parsedPuzzle = doc.data().puzzle;
         showPuzzle();
       } else {
         // doc.data() will be undefined in this case
@@ -464,7 +464,7 @@ const puzzleWorker = (function() {
     game.opponent = parsedPuzzle.opponent.uid;
     game.start = window.firebase.database.ServerValue.TIMESTAMP;
     game.status = 'started';
-    game.puzzle = parsePuzzle;
+    game.puzzle = parsedPuzzle;
     game.winner = null;
     game.nextTurn = parsedPuzzle.initiator.uid;
     db.collection('games').add(game).then(docRef => {

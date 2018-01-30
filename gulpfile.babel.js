@@ -182,7 +182,7 @@ gulp.task('serve', ['scripts', 'styles'], () => {
 });
 
 // Build and serve the output from the dist build
-gulp.task('serve:dist', ['default'], () =>
+gulp.task('serve:dist', ['default'], () => 
   browserSync({
     notify: false,
     logPrefix: 'WSK',

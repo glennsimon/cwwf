@@ -21,9 +21,9 @@
         dialog.close();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
-      } else if (location.hash === '#home') {
-        gamesPanel.classList.add('slideOut');
-        appContainer.classList.add('slideIn');
+      } else if (location.hash === '#games') {
+        gamesPanel.classList.remove('slideOut');
+        appContainer.classList.remove('slideIn');
       }
     }
 
