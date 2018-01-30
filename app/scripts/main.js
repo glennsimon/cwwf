@@ -335,8 +335,6 @@ const puzzleWorker = (function() {
   function loadPuzzle(paramObject) {
     document.getElementById('puzTitle').innerText = 'Fetching data...';
 
-    const initiator = paramObject.initiator;
-    const opponent = paramObject.opponent;
     const difficulty = paramObject.difficulty;
 
     let directory = 'puzDirMed.json';
@@ -365,13 +363,8 @@ const puzzleWorker = (function() {
       fetch(url).then(response => {
         return response.json();
       }).then(obj => {
-        obj.initiator = initiator;
-        obj.opponent = opponent;
-        obj.difficulty = difficulty;
-        return obj;
-      }).then(obj => {
         parsePuzzle(obj);
-        saveNewPuzzle();
+        saveNewPuzzle(paramObject);
         showPuzzle();
       }).catch(error => {
         console.error('Error fetching puzzle: ', error);
@@ -436,37 +429,41 @@ const puzzleWorker = (function() {
         parsedPuzzle.grid[i].circle = puzzle.circles && puzzle.circles[i] === 1;
       }
     }
-    parsedPuzzle.initiator = {};
-    parsedPuzzle.initiator.uid = puzzle.initiator;
-    parsedPuzzle.initiator.score = 0;
-    parsedPuzzle.initiator.errors = 0;
-    parsedPuzzle.initiator.squaresWon = [];
-    parsedPuzzle.initiator.score = 0;
-    parsedPuzzle.initiator.color = 'red';
-    parsedPuzzle.opponent = {};
-    parsedPuzzle.opponent.uid = puzzle.opponent;
-    parsedPuzzle.opponent.score = 0;
-    parsedPuzzle.opponent.errors = 0;
-    parsedPuzzle.opponent.squaresWon = [];
-    parsedPuzzle.opponent.score = 0;
-    parsedPuzzle.opponent.color = 'blue';
-    parsedPuzzle.difficulty = puzzle.difficulty;
     columns = puzzle.size.cols;
     console.log(parsedPuzzle);
   }
 
-  /** Saves new puzzle to firebase */
-  function saveNewPuzzle() {
+  /** Saves new puzzle to firebase
+   * @param {Object} paramObject Id and difficulty object passed to loadPuzzle from games.js
+   */
+  function saveNewPuzzle(paramObject) {
     const db = window.firebase.firestore();
+    const initiatorUid = paramObject.initiator.uid;
+    const iDisplayName = paramObject.initiator.displayName;
+    const opponentUid = paramObject.opponent.uid;
+    const oDisplayName = paramObject.opponent.displayName;
 
     let game = {};
-    game.initiator = parsedPuzzle.initiator.uid;
-    game.opponent = parsedPuzzle.opponent.uid;
+    game.initiator = {};
+    game.initiator.uid = initiatorUid;
+    game.initiator.displayName = iDisplayName;
+    game.initiator.bgColor = 'red';
+    game.initiator.score = 0;
+    game.initiator.squaresWon = [];
+    game.initiator.errors = 0;
+    game.opponent = {};
+    game.opponent.uid = opponentUid;
+    game.opponent.displayName = oDisplayName;
+    game.opponent.bgColor = 'blue';
+    game.opponent.score = 0;
+    game.opponent.squaresWon = [];
+    game.opponent.errors = 0;
+    game.difficulty = paramObject.difficulty;
     game.start = window.firebase.database.ServerValue.TIMESTAMP;
     game.status = 'started';
     game.puzzle = parsedPuzzle;
     game.winner = null;
-    game.nextTurn = parsedPuzzle.initiator.uid;
+    game.nextTurn = initiatorUid;
     db.collection('games').add(game).then(docRef => {
       console.log('parsedPuzzle written to firestore with docRef: ', docRef);
     }).catch(error => {

@@ -127,11 +127,11 @@
         // console.log(doc.id, ' => ', doc.data());
         const game = doc.data();
         if (game.status === 'started' &&
-          (game.initiator === currentUser.uid ||
-           game.opponent === currentUser.uid)) {
-          let myOpponent = game.initiator === currentUser.uid ?
-            allUsers[game.opponent].displayName :
-            allUsers[game.initiator].displayName;
+          (game.initiator.uid === currentUser.uid ||
+           game.opponent.uid === currentUser.uid)) {
+          let myOpponent = game.initiator.uid === currentUser.uid ?
+            game.opponent.displayName :
+            game.initiator.displayName;
           activeGamesList +=
 `<li class='mdl-list__item mdl-list__item--two-line'>
   <span class='mdl-list__item-primary-content'>
@@ -150,9 +150,9 @@
 </li>`;
         } else if (game.initiator === currentUser.uid ||
                    game.opponent === currentUser.uid) {
-          let myOpponent = game.initiator === currentUser.uid ?
-            allUsers[game.opponent].displayName :
-            allUsers[game.initiator].displayName;
+          let myOpponent = game.initiator.uid === currentUser.uid ?
+            game.opponent.displayName :
+            game.initiator.displayName;
           let result;
           if (game.result === 'finished') {
             result = currentUser.uid === game.winner ?
@@ -173,7 +173,7 @@
   <span class='mdl-list__item-secondary-content'>
     <span class='mdl-list__item-secondary-info'>Play again</span>
     <div class='mdl-list__item-secondary-action'>
-      <i id='${game.opponent}' class='material-icons'>replay</i>
+      <i id='${game.opponent.uid}' class='material-icons'>replay</i>
     </div>
   </span>
 </li>`;
@@ -201,8 +201,14 @@
       //   console.log(event.target.id);
       // }
       window.puzzleWorker.loadPuzzle({
-        initiator: currentUser.uid,
-        opponent: event.target.id,
+        initiator: {
+          uid: currentUser.uid,
+          displayName: currentUser.displayName
+        },
+        opponent: {
+          uid: event.target.id,
+          displayName: allUsers[event.target.id].displayName
+        },
         difficulty: difficulty
       });
       location.hash = '#puzzle';
