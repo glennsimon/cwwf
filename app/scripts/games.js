@@ -154,11 +154,11 @@
             game.opponent.displayName :
             game.initiator.displayName;
           let result;
-          if (game.result === 'finished') {
+          if (game.status === 'finished') {
             result = currentUser.uid === game.winner ?
               'You won!!' :
               'They won';
-          } else if (game.result === 'abandoned') {
+          } else if (game.status === 'abandoned') {
             result = 'Game abandoned';
           } else {
             result = 'They cancelled';
