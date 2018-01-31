@@ -9,9 +9,9 @@
     const querySelector = document.querySelector.bind(document);
     const dialog = querySelector('#oppDialog');
     const startGameButton = querySelector('#startGameButton');
-    const radioEasy = querySelector('#radioEasy');
-    const radioMed = querySelector('#radioMed');
-    const radioHard = querySelector('#radioHard');
+    // const radioEasy = querySelector('#radioEasy');
+    // const radioMed = querySelector('#radioMed');
+    // const radioHard = querySelector('#radioHard');
     const dialogListContainer = querySelector('#dialogList');
     const activeGamesContainer = querySelector('#activeGamesContainer');
     const pastGamesContainer = querySelector('#pastGamesContainer');
@@ -19,7 +19,7 @@
     const firebase = window.firebase;
 
     let currentUser = firebase.auth().currentUser;
-    let difficulty = 'medium';
+    // let difficulty = 'medium';
     let dialogList = '';
     let activeGamesList = '';
     let pastGamesList = '';
@@ -52,15 +52,15 @@
 
     // this can be done more cleanly with a single listener on radio
     // class objects and using the value parameter
-    radioEasy.addEventListener('click', () => {
-      difficulty = 'easy';
-    });
-    radioMed.addEventListener('click', () => {
-      difficulty = 'medium';
-    });
-    radioHard.addEventListener('click', () => {
-      difficulty = 'hard';
-    });
+    // radioEasy.addEventListener('click', () => {
+    //   difficulty = 'easy';
+    // });
+    // radioMed.addEventListener('click', () => {
+    //   difficulty = 'medium';
+    // });
+    // radioHard.addEventListener('click', () => {
+    //   difficulty = 'hard';
+    // });
 
     firebase.firestore().collection('users').onSnapshot(snapshot => {
       if (!currentUser) return;
@@ -180,8 +180,12 @@
         }
       });
       // console.log(dialogList);
-      activeGamesContainer.innerHTML = activeGamesList;
-      pastGamesContainer.innerHTML = pastGamesList;
+      activeGamesContainer.innerHTML =
+        activeGamesList === '' ?
+          'No active games yet. Start one!' :
+          activeGamesList;
+      pastGamesContainer.innerHTML =
+        pastGamesList === '' ? 'No completed games yet' : pastGamesList;
       activeGamesContainer.addEventListener('click', loadActiveGame);
       pastGamesContainer.addEventListener('click', loadNewGame);
     }, error => {
@@ -200,6 +204,12 @@
       //   console.log('difficulty: ', difficulty);
       //   console.log(event.target.id);
       // }
+      let difficulty =
+        querySelector('#radioMed').hasAttribute('checked') ? 'medium' : 'easy';
+      difficulty =
+        querySelector('#radioHard').hasAttribute('checked') ?
+          'hard' : difficulty;
+
       window.puzzleWorker.loadPuzzle({
         initiator: {
           uid: currentUser.uid,

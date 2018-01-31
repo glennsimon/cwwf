@@ -473,7 +473,7 @@ const puzzleWorker = (function() {
 
   /** Removes puzzle from DOM */
   function clearPuzzle() {
-    puzTitle.innerText = 'Select a date above to load puzzle';
+    puzTitle.innerText = 'Puzzle info will appear here';
     // clear out old puzzle and clues
     let remRows = puzTable.rows.length;
     while (remRows > 0) {
