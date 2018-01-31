@@ -10,7 +10,7 @@ const Firestore = require('@google-cloud/firestore');
 // detects authentication from the environment.
 const firestore = new Firestore();
 
-// Create a new function which is triggered on changes to /status/{uid}
+// Create a new function which is triggered on changes to /users/{uid}
 // Note: This is a Realtime Database trigger, *not* Cloud Firestore.
 exports.onUserStatusChanged = functions.database
   .ref('/users/{uid}').onUpdate(event => {

@@ -21,7 +21,7 @@
         dialog.close();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
-      } else if (location.hash === '#home') {
+      } else if (location.hash === '#signin') {
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
       } else if (location.hash === '#games') {
@@ -30,9 +30,11 @@
       }
     }
 
-    // if (location.hash !== '#games') {
-    //   location.hash = '#games';
-    // }
+    if (location.hash !== '#games') {
+      location.hash = '#games';
+      // gamesPanel.classList.remove('slideOut');
+      // appContainer.classList.remove('slideIn');
+    }
 
     /**
      * Set up a puzzle based on the url query

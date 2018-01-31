@@ -46,7 +46,7 @@
         dialog.showModal();
       } else {
         // user is not logged in
-        location.hash = '#home';
+        location.hash = '#signin';
       }
     }
 
@@ -148,8 +148,8 @@
     </div>
   </span>
 </li>`;
-        } else if (game.initiator === currentUser.uid ||
-                   game.opponent === currentUser.uid) {
+        } else if (game.initiator.uid === currentUser.uid ||
+                   game.opponent.uid === currentUser.uid) {
           let myOpponent = game.initiator.uid === currentUser.uid ?
             game.opponent.displayName :
             game.initiator.displayName;
