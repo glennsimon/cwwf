@@ -37,6 +37,6 @@ exports.onUserStatusChanged = functions.database
       eventStatus.lastChanged = new Date(eventStatus.lastChanged);
 
       // ... and write it to Firestore.
-      return userStatusFirestoreRef.set(eventStatus);
+      return userStatusFirestoreRef.set(eventStatus, {merge: true});
     });
   });
