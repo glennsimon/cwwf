@@ -25,6 +25,7 @@
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
       } else if (location.hash === '#games') {
+        window.puzzleGames.subscribe();
         gamesPanel.classList.remove('slideOut');
         appContainer.classList.remove('slideIn');
       }
@@ -32,18 +33,6 @@
 
     if (location.hash !== '#games') {
       location.hash = '#games';
-      // gamesPanel.classList.remove('slideOut');
-      // appContainer.classList.remove('slideIn');
     }
-
-    /**
-     * Set up a puzzle based on the url query
-     */
-    // function setUpPuzzle() {
-    //   let queryArray = location.search.slice(1).split('&');
-    //   queryArray.forEach(setting => {
-    //     console.log(setting);
-    //   });
-    // }
   }
 })();

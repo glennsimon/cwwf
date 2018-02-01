@@ -6,15 +6,18 @@
 
   /** Initialize after document loads */
   function initApp() {
-    let uid;
-    let userStatusDatabaseRef;
-    let userStatusFirestoreRef;
-
+    const authButton = document.getElementById('authButton');
+    const authContainer = document.getElementById('firebaseuiAuthContainer');
+    const profileName = document.getElementById('profileName');
+    const avatar = document.getElementById('avatar');
     const firebase = window.firebase;
     const firebaseui = window.firebaseui;
     // const db = firebase.firestore;
     // Initialize the FirebaseUI Widget using Firebase.
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
+    let uid;
+    let userStatusDatabaseRef;
+    let userStatusFirestoreRef;
 
     const uiConfig = {
       signInSuccessUrl: './',
@@ -72,9 +75,9 @@
           providerId: user.providerId
         };
 
-        document.getElementById('authButton').textContent = 'sign out';
-        document.getElementById('profileName').textContent = user.displayName;
-        document.getElementById('avatar').src =
+        authButton.textContent = 'sign out';
+        profileName.textContent = user.displayName;
+        avatar.src =
           user.photoURL ? user.photoURL : 'images/avatar_circle_black.png';
 
         // Create a reference to this user's specific status node.
@@ -96,24 +99,22 @@
               userStatusFirestoreRef.set(isOnlineForFirestore, {merge: true});
             });
         });
-        document.getElementById('firebaseuiAuthContainer')
-          .classList.add('displayNone');
+        authContainer.classList.add('displayNone');
       } else {
         // User is signed out.
-        document.getElementById('authButton').textContent = 'sign in';
-        document.getElementById('firebaseuiAuthContainer')
-          .classList.remove('displayNone');
-        document.getElementById('profileName').textContent = 'N. E. Person';
-        document.getElementById('avatar')
-          .src = 'images/avatar_circle_black.png';
+        authButton.textContent = 'sign in';
+        authContainer.classList.remove('displayNone');
+        profileName.textContent = 'N. E. Person';
+        avatar.src = 'images/avatar_circle_black.png';
       }
     }, function(error) {
       console.log(error);
     });
 
-    document.getElementById('authButton').addEventListener('click', () => {
+    authButton.addEventListener('click', () => {
       document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
-      if (uid) {
+      if (authButton.textContent === 'sign out') {
+        window.puzzleGames.clearLists();
         userStatusFirestoreRef
           .set(isOfflineForFirestore, {merge: true}).then(() => {
             firebase.auth().signOut();

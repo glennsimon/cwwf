@@ -255,6 +255,7 @@ const puzzleWorker = (function() {
       if (clueNumStr === currentClue.toString()) {
         clue.classList.add('currCellHighlight');
         singleClue.innerText = clue.children[1].textContent;
+        break;
       }
     }
     while (index < (row + 1) * columns && !parsedPuzzle.grid[index].black) {
@@ -366,6 +367,7 @@ const puzzleWorker = (function() {
         parsePuzzle(obj);
         saveNewPuzzle(paramObject);
         showPuzzle();
+        location.hash = '#puzzle';
       }).catch(error => {
         console.error('Error fetching puzzle: ', error);
       });
@@ -389,6 +391,7 @@ const puzzleWorker = (function() {
       if (doc.exists) {
         // console.log('Document data:', doc.data());
         parsedPuzzle = doc.data().puzzle;
+        columns = parsedPuzzle.cols;
         showPuzzle();
       } else {
         // doc.data() will be undefined in this case
@@ -488,81 +491,6 @@ const puzzleWorker = (function() {
     downClues.innerText = '';
     singleClue.innerText = 'Select in the puzzle to reveal clue';
   }
-
-  /** Initialize values in year selector drop-down */
-  // function initPicker() {
-  //   fetch('./puzDir.json').then(response => {
-  //     return response.json();
-  //   }).then(pd => {
-  //     puzDir = pd;
-  //     populatePicker(Object.getOwnPropertyNames(puzDir), yearPicker);
-  //   });
-  // }
-
-  /**
-   * Populates values in drop-down selector (picker)
-   * @param {Array} items Array of values for the picker choices
-   * @param {Object} picker Selector object, could be yearPicker, monthPicker, or dayPicker
-   */
-  // function populatePicker(items, picker) {
-  //   picker.value = picker.children[0].value;
-  //   while (picker.children[1]) {
-  //     picker.removeChild(picker.children[1]);
-  //   }
-  //   items.sort();
-  //   items.forEach(item => {
-  //     // if item is '<day>.json', get rid of the '.json'
-  //     item = item.split('.')[0];
-  //     let option = document.createElement('option');
-  //     option.value = item;
-  //     option.text = item;
-  //     picker.appendChild(option);
-  //   });
-  // }
-
-  // yearPicker.addEventListener('change', changeYear);
-  // monthPicker.addEventListener('change', changeMonth);
-  // dayPicker.addEventListener('change', changeDay);
-
-  /**
-   * When user selects a different year, clears puzzle and sets up
-   * monthPicker values for the new year
-   */
-  // function changeYear() {
-  //   monthPicker.value = 'month';
-  //   monthPicker.disabled = true;
-  //   dayPicker.value = 'day';
-  //   dayPicker.disabled = true;
-  //   clearPuzzle();
-  //   if (yearPicker.value !== 'year') {
-  //     populatePicker(
-  //       Object.getOwnPropertyNames(puzDir[yearPicker.value]), monthPicker
-  //     );
-  //     monthPicker.disabled = false;
-  //   }
-  // }
-
-  /**
-   * When user selects a different month, clears puzzle and sets up
-   * dayPicker values for the new month
-   */
-  // function changeMonth() {
-  //   dayPicker.disabled = true;
-  //   clearPuzzle();
-  //   if (monthPicker.value !== 'month') {
-  //     populatePicker(puzDir[yearPicker.value][monthPicker.value], dayPicker);
-  //     dayPicker.disabled = false;
-  //   }
-  // }
-
-  /**
-   * When user selects a different day, clears puzzle and calls function
-   * to load the new puzzle
-   */
-  // function changeDay() {
-  //   clearPuzzle();
-  //   loadPuzzle();
-  // }
 
   /** Resizes puzzle based on available space */
   function resizePuzzle() {
@@ -734,7 +662,8 @@ const puzzleWorker = (function() {
     // initPicker: initPicker,
     init: init,
     loadPuzzle: loadPuzzle,
-    fetchPuzzle: fetchPuzzle
+    fetchPuzzle: fetchPuzzle,
+    clearPuzzle: clearPuzzle
   };
 })();
 

@@ -42,7 +42,7 @@ Player object:
 	errors: <number>
 }
 
-Puzzle object:
+ParsedPuzzle object:
 
 {
 	author: "Alfio Micci",
