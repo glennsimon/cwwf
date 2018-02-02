@@ -18,7 +18,6 @@ const puzzleGames = (function() {
   let activeGamesHtml = '';
   let pastGamesHtml = '';
   let allUsers = {};
-  let opponents = [];
   let pastGames = {};
 
   firebase.auth().onAuthStateChanged(user => {
@@ -103,9 +102,6 @@ const puzzleGames = (function() {
  </li>
 `;
       }
-      // Using opponent uid as id for i element. loadNewGame() checks
-      // click target by checking if opponents includes i element id.
-      opponents.push(uid);
     });
     allUsers = usersObj;
     // console.log(dialogList);
@@ -222,11 +218,6 @@ const puzzleGames = (function() {
    * @param {Object} event Click event from dialogListContainer
    */
   function loadNewGame(event) {
-    // if (opponents.includes(event.target.id)) {
-    //   console.log('currentUser.uid: ', currentUser.uid);
-    //   console.log('difficulty: ', difficulty);
-    //   console.log(event.target.id);
-    // }
     let difficulty =
       querySelector('#radioMed').hasAttribute('checked') ? 'medium' : 'easy';
     difficulty =
