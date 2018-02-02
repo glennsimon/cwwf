@@ -255,7 +255,7 @@ const puzzleGames = (function() {
   function loadActiveGame(event) {
     window.puzzleWorker.fetchPuzzle(event.target.id);
     // unsubscribe();
-    location.hash = '#puzzle';
+    // location.hash = '#puzzle';
   }
 
   /** Clear lists on games view */

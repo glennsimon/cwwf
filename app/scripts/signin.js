@@ -123,6 +123,11 @@
             uid = undefined;
             userStatusDatabaseRef = undefined;
             userStatusFirestoreRef = undefined;
+            document.getElementById('puzTable').classList.add('displayNone');
+            document.getElementById('clueContainer')
+              .classList.add('displayNone');
+            document.getElementById('kbContainer').classList.add('displayNone');
+            document.getElementById('splash').classList.remove('displayNone');
           }).catch(error => {
             console.log(error);
           });

@@ -393,6 +393,7 @@ const puzzleWorker = (function() {
         parsedPuzzle = doc.data().puzzle;
         columns = parsedPuzzle.cols;
         showPuzzle();
+        location.hash = '#puzzle';
       } else {
         // doc.data() will be undefined in this case
         console.error('No such game!');
