@@ -10,6 +10,10 @@
     const authContainer = document.getElementById('firebaseuiAuthContainer');
     const profileName = document.getElementById('profileName');
     const avatar = document.getElementById('avatar');
+    const puzTable = document.getElementById('puzTable');
+    const clueContainer = document.getElementById('clueContainer');
+    const kbContainer = document.getElementById('kbContainer');
+    const splash = document.getElementById('splash');
     const firebase = window.firebase;
     const firebaseui = window.firebaseui;
     // const db = firebase.firestore;
@@ -123,14 +127,19 @@
             uid = undefined;
             userStatusDatabaseRef = undefined;
             userStatusFirestoreRef = undefined;
-            document.getElementById('puzTable').classList.add('displayNone');
-            document.getElementById('clueContainer')
-              .classList.add('displayNone');
-            document.getElementById('kbContainer').classList.add('displayNone');
-            document.getElementById('splash').classList.remove('displayNone');
+            puzTable.classList.add('displayNone');
+            clueContainer.classList.add('displayNone');
+            kbContainer.classList.add('displayNone');
+            splash.classList.remove('displayNone');
           }).catch(error => {
             console.log(error);
           });
+      } else {
+        puzTable.classList.add('displayNone');
+        clueContainer.classList.add('displayNone');
+        kbContainer.classList.add('displayNone');
+        splash.classList.remove('displayNone');
+        location.hash = '#signin';
       }
     });
   }
