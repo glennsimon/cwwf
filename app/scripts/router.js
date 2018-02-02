@@ -19,9 +19,11 @@
     function navigate() {
       if (location.hash === '#puzzle') {
         dialog.close();
+        window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
       } else if (location.hash === '#signin') {
+        window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
       } else if (location.hash === '#games') {

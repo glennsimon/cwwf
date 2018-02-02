@@ -15,10 +15,11 @@ const puzzleGames = (function() {
   let currentUser = firebase.auth().currentUser;
   // let difficulty = 'medium';
   let dialogList = '';
-  let activeGamesList = '';
-  let pastGamesList = '';
+  let activeGamesHtml = '';
+  let pastGamesHtml = '';
   let allUsers = {};
   let opponents = [];
+  let pastGames = {};
 
   firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
@@ -30,7 +31,7 @@ const puzzleGames = (function() {
   }
   startGameButton.addEventListener('click', initNewGame);
   dialog.querySelector('.close').addEventListener('click', () => {
-    unsubscribe();
+    // unsubscribe();
     dialog.close();
   });
 
@@ -85,7 +86,7 @@ const puzzleGames = (function() {
       // console.log(doc.id, ' => ', doc.data());
       if (uid !== currentUser.uid) {
         dialogList +=
-          `<li class='mdl-list__item mdl-list__item--two-line'>
+`<li class='mdl-list__item mdl-list__item--two-line'>
    <span class='mdl-list__item-primary-content'>
      <i class='material-icons mdl-list__item-avatar'>person</i>
      <span>${user.displayName}</span>
@@ -121,9 +122,9 @@ const puzzleGames = (function() {
     activeGamesContainer.innerHTML = 'No active games yet. Start one!';
     pastGamesContainer.innerHTML = 'No completed games yet';
     activeGamesContainer.removeEventListener('click', loadActiveGame);
-    pastGamesContainer.removeEventListener('click', loadNewGame);
-    activeGamesList = '';
-    pastGamesList = '';
+    pastGamesContainer.removeEventListener('click', replayOpponent);
+    activeGamesHtml = '';
+    pastGamesHtml = '';
     if (snapshot.empty) {
       console.warn('No games exist yet.');
       return;
@@ -136,13 +137,12 @@ const puzzleGames = (function() {
         (game.initiator.uid === currentUser.uid ||
           game.opponent.uid === currentUser.uid)) {
         let myOpponent = game.initiator.uid === currentUser.uid ?
-          game.opponent.displayName :
-          game.initiator.displayName;
-        activeGamesList +=
-          `<li class='mdl-list__item mdl-list__item--two-line'>
+          game.opponent : game.initiator;
+        activeGamesHtml +=
+`<li class='mdl-list__item mdl-list__item--two-line'>
   <span class='mdl-list__item-primary-content'>
     <i class='material-icons mdl-list__item-avatar'>person</i>
-    <span>${myOpponent}</span>
+    <span>${myOpponent.displayName}</span>
     <span class='mdl-list__item-sub-title'>
       ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
     </span>
@@ -157,8 +157,11 @@ const puzzleGames = (function() {
       } else if (game.initiator.uid === currentUser.uid ||
         game.opponent.uid === currentUser.uid) {
         let myOpponent = game.initiator.uid === currentUser.uid ?
-          game.opponent.displayName :
-          game.initiator.displayName;
+          game.opponent : game.initiator;
+        pastGames[doc.id] = {};
+        pastGames[doc.id].uid = myOpponent.uid;
+        pastGames[doc.id].displayName = myOpponent.displayName;
+        pastGames[doc.id].difficulty = game.difficulty;
         let result;
         if (game.status === 'finished') {
           result = currentUser.uid === game.winner ?
@@ -169,17 +172,17 @@ const puzzleGames = (function() {
         } else {
           result = 'They cancelled';
         }
-        pastGamesList +=
-          `<li class='mdl-list__item mdl-list__item--two-line'>
+        pastGamesHtml +=
+`<li class='mdl-list__item mdl-list__item--two-line'>
   <span class='mdl-list__item-primary-content'>
     <i class='material-icons mdl-list__item-avatar'>person</i>
-    <span>${myOpponent}</span>
+    <span>${myOpponent.displayName}</span>
     <span class='mdl-list__item-sub-title'>${result}</span>
   </span>
   <span class='mdl-list__item-secondary-content'>
     <span class='mdl-list__item-secondary-info'>Play again</span>
     <div class='mdl-list__item-secondary-action'>
-      <i id='${game.opponent.uid}' class='material-icons'>replay</i>
+      <i id='${doc.id}' class='material-icons'>replay</i>
     </div>
   </span>
 </li>`;
@@ -187,13 +190,31 @@ const puzzleGames = (function() {
     });
     // console.log(dialogList);
     activeGamesContainer.innerHTML =
-      activeGamesList === '' ?
+      activeGamesHtml === '' ?
         'No active games yet. Start one!' :
-        activeGamesList;
+        activeGamesHtml;
     pastGamesContainer.innerHTML =
-      pastGamesList === '' ? 'No completed games yet' : pastGamesList;
+      pastGamesHtml === '' ? 'No completed games yet' : pastGamesHtml;
     activeGamesContainer.addEventListener('click', loadActiveGame);
-    pastGamesContainer.addEventListener('click', loadNewGame);
+    pastGamesContainer.addEventListener('click', replayOpponent);
+  }
+
+  /**
+   * Load game based on user selection
+   * @param {Object} event Click event from list container i element
+   */
+  function replayOpponent(event) {
+    window.puzzleWorker.loadPuzzle({
+      initiator: {
+        uid: currentUser.uid,
+        displayName: currentUser.displayName
+      },
+      opponent: {
+        uid: pastGames[event.target.id].uid,
+        displayName: pastGames[event.target.id].displayName
+      },
+      difficulty: pastGames[event.target.id].difficulty
+    });
   }
 
   /**
@@ -223,7 +244,7 @@ const puzzleGames = (function() {
       },
       difficulty: difficulty
     });
-    unsubscribe();
+    // unsubscribe();
     // location.hash = '#puzzle';
   }
 
@@ -233,7 +254,7 @@ const puzzleGames = (function() {
    */
   function loadActiveGame(event) {
     window.puzzleWorker.fetchPuzzle(event.target.id);
-    unsubscribe();
+    // unsubscribe();
     location.hash = '#puzzle';
   }
 
@@ -260,4 +281,4 @@ const puzzleGames = (function() {
   };
 })();
 
-puzzleGames.init();
+puzzleGames.subscribe();
