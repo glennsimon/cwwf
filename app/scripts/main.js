@@ -17,7 +17,7 @@
  *
  */
 /* eslint-env es6, browser */
-const puzzleWorker = (function() {
+const puzzleWorker = (function(document, window) {
   'use strict';
 
   // Check to make sure service workers are supported in the current browser,
@@ -666,6 +666,6 @@ const puzzleWorker = (function() {
     fetchPuzzle: fetchPuzzle,
     clearPuzzle: clearPuzzle
   };
-})();
+})(document, window);
 
 puzzleWorker.init();

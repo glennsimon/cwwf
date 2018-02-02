@@ -1,5 +1,5 @@
 /* eslint-env es6, browser */
-const puzzleGames = (function() {
+const puzzleGames = (function(document, window) {
   const querySelector = document.querySelector.bind(document);
   const dialog = querySelector('#oppDialog');
   const startGameButton = querySelector('#startGameButton');
@@ -270,6 +270,6 @@ const puzzleGames = (function() {
     unsubscribe: unsubscribe,
     clearLists: clearLists
   };
-})();
+})(document, window);
 
 puzzleGames.subscribe();
