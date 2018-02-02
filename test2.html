@@ -1,0 +1,48 @@
+<html>
+<head>
+	<style type="text/css">
+		.button {
+			display: flex;
+			background-color: pink;
+			box-shadow: 0 4px 4px 0 rgba(0,0,0,.14), 0 6px 2px -4px rgba(0,0,0,.2), 0 2px 10px 0 rgba(0,0,0,.12);
+			border-radius: 5px;
+			width: 40px;
+			height: 40px;
+			box-sizing: border-box;
+			transition-duration: 0.2s;
+			transition-property: box-shadow;
+			transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+			will-change: box-shadow;
+		}
+
+		.button:active {
+			box-shadow: 0 2px 2px 0 rgba(0,0,0,.14), 0 3px 1px -2px rgba(0,0,0,.2), 0 1px 5px 0 rgba(0,0,0,.12);
+		}
+
+		.buttonContents {
+			font-size: 16px;
+			margin: auto;
+		}
+	</style>
+</head>
+<body>
+	<button id='myButton'>&lt;</button>
+	<div id='coolButton' class="button">
+		<div class="buttonContents">A</div>
+	</div>
+  <div id='output'></div>
+	<script type="text/javascript">
+/* eslint-env es6, browser */
+window.addEventListener('hashchange', function() {
+  console.log('location.hash: ', location.hash);
+  document.getElementById('output').innerText = 'location.hash: ' + location.hash;
+});
+document.getElementById('myButton').addEventListener('click', function() {
+  location.hash = '#hashwithpound';
+});
+document.getElementById('coolButton').addEventListener('click', function() {
+  location.hash = 'hashnopound';
+});
+	</script>
+</body>
+</html>
