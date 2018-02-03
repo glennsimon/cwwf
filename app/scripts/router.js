@@ -18,7 +18,11 @@
      */
     function navigate() {
       if (location.hash === '#puzzle') {
-        dialog.close();
+        try {
+          dialog.close();
+        } catch(err) {
+          // do nothing, error occurs if dialog is not open
+        }
         window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');

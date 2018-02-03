@@ -214,7 +214,7 @@ const puzzleWorker = (function(document, window) {
    * @param {Event} event Mouse click or screen touch event
    */
   function cellClicked(event) {
-    let cell = event.srcElement;
+    let cell = event.target;
     // console.log(cell.cellIndex);
     // console.log(cell.parentElement.rowIndex);
     // console.log(event);
