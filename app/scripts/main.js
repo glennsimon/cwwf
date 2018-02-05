@@ -381,6 +381,11 @@ const puzzleWorker = (function(document, window) {
     let month = '01';
     let day = '01';
 
+    // Stop listening for previous puzzle changes
+    if (puzzleId) {
+      db.collection('games').doc(puzzleId).onSnapshot(() => {});
+    }
+
     if (difficulty === 'hard') {
       directory = 'puzDirHard.json';
     } else if (difficulty === 'easy') {
@@ -417,31 +422,29 @@ const puzzleWorker = (function(document, window) {
   /**
    * This function fetches an active puzzle based on the user's selection
    * and then calls functions to format and display the puzzle
-   * @param {String} puzId Firestore game (puzzle) id
+   * @param {String} newPuzzleId Firestore game (puzzle) id
    */
-  function fetchPuzzle(puzId) {
+  function fetchPuzzle(newPuzzleId) {
     document.getElementById('puzTitle').innerText = 'Fetching data...';
 
     const db = window.firebase.firestore();
-    const docRef = db.collection('games').doc(puzId);
+    const docRef = db.collection('games').doc(newPuzzleId);
 
-    docRef.get().then(doc => {
-      if (doc.exists) {
-        // console.log('Document data:', doc.data());
-        game = doc.data();
-        // game.puzzle = doc.data().puzzle;
-        myOpponentUid = game.initiator.uid === currentUser.uid ?
-          game.opponent.uid : game.initiator.uid;
-        columns = game.puzzle.cols;
-        myTurn = game.nextTurn !== myOpponentUid;
-        puzzleId = puzId;
-        showPuzzle();
-        location.hash = '#puzzle';
-      } else {
-        // doc.data() will be undefined in this case
-        console.error('No such game!');
-      }
-    }).catch(function(error) {
+    // Stop listening for previous puzzle changes
+    if (puzzleId) {
+      db.collection('games').doc(puzzleId).onSnapshot(() => {});
+    }
+
+    docRef.onSnapshot(doc => {
+      game = doc.data();
+      myOpponentUid = game.initiator.uid === currentUser.uid ?
+        game.opponent.uid : game.initiator.uid;
+      columns = game.puzzle.cols;
+      myTurn = game.nextTurn !== myOpponentUid;
+      puzzleId = newPuzzleId;
+      showPuzzle();
+      location.hash = '#puzzle';
+    }, error => {
       console.error('Error getting puzzle: ', error);
     });
   }
@@ -507,13 +510,20 @@ const puzzleWorker = (function(document, window) {
     game.opponent.squaresWon = [];
     game.opponent.errors = 0;
     game.difficulty = paramObject.difficulty;
-    game.start = window.firebase.firestore.FieldValue.serverTimestamp();
+    game.start = firebase.firestore.FieldValue.serverTimestamp();
     game.status = 'started';
     game.winner = null;
     game.nextTurn = initiatorUid;
     db.collection('games').add(game).then(docRef => {
       console.log('game written to firestore with docRef: ', docRef);
       puzzleId = docRef;
+      db.collection('games').doc(puzzleId).onSnapshot(doc => {
+        game = doc.data();
+        myTurn = game.nextTurn !== myOpponentUid;
+        showPuzzle();
+      }, error => {
+        console.error('Error getting puzzle: ', error);
+      });
     }).catch(error => {
       console.error('Error writing file to firestore: ', error);
     });
@@ -531,10 +541,7 @@ const puzzleWorker = (function(document, window) {
   function clearPuzzle() {
     puzTitle.innerText = 'Puzzle info will appear here';
     // clear out old puzzle and clues
-    let remRows = puzTable.rows.length;
-    while (remRows > 0) {
-      puzTable.deleteRow(--remRows);
-    }
+    puzTable.innerHTML = '';
     puzAuthor.innerText = '';
     puzNotepad.classList.add('displayNone');
     puzCopy.innerHTML = '';
@@ -604,6 +611,7 @@ const puzzleWorker = (function(document, window) {
   function setCellStatus(index, gridElement) {
     let playerPos = game.initiator.uid === currentUser.uid ?
       'initiator' : 'opponent';
+    if (gridElement.status === 'locked') return gridElement;
     if (gridElement.guess === gridElement.value) {
       gridElement.bgColor = game[playerPos].bgColor;
       gridElement.status = 'locked';
