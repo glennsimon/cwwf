@@ -254,6 +254,18 @@ select {
   margin: auto;
 }
 
+.bgTransRed {
+  background-color: rgba(255, 0 , 0, 0.5);
+}
+
+.bgTransBlue {
+  background-color: rgba(0, 0, 255, 0.5);
+}
+
+.bgTransGray {
+  background-color: rgba(100, 100, 100, 0.5);
+}
+
 .flexDirCol {
   flex-direction: column;
 }
