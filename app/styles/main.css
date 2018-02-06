@@ -19,7 +19,7 @@ html {
 body {
   font-family: Tahoma, Helvetica, Sans-Serif;
   background-color: #f6f6f6;
-  font-size: 14px;
+  font-size: 3.5vw;
   box-sizing: border-box;
   margin: 0;
 }
@@ -87,19 +87,14 @@ select {
   background-color: gold;
 }
 
-
-
-
-
 /* END COMMON */
 
 
 /* CLUES */
 
 .heading {
-  font-size: large;
   font-weight: bold;
-  padding: 10px 0;
+  padding: 0 0 10px;
 }
 
 .textAlignCenter {
@@ -233,12 +228,12 @@ select {
 
 .clueNumber {
   position: absolute;
-  top: 0;
+  top: 1px;
   left: 1px;
-  font-size: 8px;
+  font-size: 2vw;
   font-weight: bold;
   pointer-events: none;
-  background-color: white;
+  background-color: transparent;
   line-height: 9px;
 }
 
@@ -248,10 +243,6 @@ select {
   font-weight: bold;
   pointer-events: none;
   box-sizing: border-box;
-}
-
-.letter {
-  margin: auto;
 }
 
 .bgTransRed {
@@ -336,8 +327,7 @@ select {
   background-color: rgba(63, 81, 181, .6);
 }
 
-.buttonContents {
-  font-size: 14px;
+.marginAuto {
   margin: auto;
 }
 
@@ -466,6 +456,7 @@ select {
 
 #clueCard {
   background-color: white;
+  padding: 5px;
   margin: 0 5px 2px;
 }
 
@@ -491,21 +482,46 @@ select {
   right: 10px;
 }
 
-@media screen and (min-width: 420px) {
-  #gamesPanelContainer {
-    max-width: 400px;
-    margin-left: calc((100vw - 400px)/2);
+@media screen and (min-aspect-ratio: 18/25) {
+  body {
+    font-size: 2.5vh;
+  }
+
+  .clueNumber {
+    font-size: 1.4vh;
+  }
+
+  #puzTable {
+    width: 70vh;
+  }
+
+  #clueContainer {
+    width: 70vh;
+    margin: auto;
+  }
+
+  #kbContainer {
+    width: 70vh;
+    margin: auto;
   }
 }
 
-@media screen and (orientation: landscape) and (min-width: 800px) {
+@media screen and (min-aspect-ratio: 4/3) {
+  body {
+    font-size: 1.4vw;
+  }
+
+  .clueNumber {
+    font-size: 0.8vw;
+  }
+
   #puzTable {
-    width: 40%;
+    width: 45vw;
   }
 
   #clueContainer {
     display: flex;
-    width: 60%;
+    width: 50vw;
   }
 
   #acrossContainer,
@@ -520,27 +536,17 @@ select {
   #kbContainer {
     height: 20vh;
   }
-
-  .clueNumber {
-    font-size: 10px;
-    line-height: 12px;
-  }
-
-  .letter {
-    font-size: x-large;
-  }
 }
 
-@media screen and (orientation: portrait) and (min-width: 800px) {
-  #singleClue {
-    font-size: large;
-  }
-  .clueNumber {
-    font-size: 12px;
-    line-height: 14px;
+@media screen and (min-aspect-ratio: 14/9) {
+  #puzTable {
+    width: 40vw;
   }
 
-  .letter {
-    font-size: x-large;
+  #clueContainer {
+    display: flex;
+    width: 55vw;
   }
-}
+
+  
+ }

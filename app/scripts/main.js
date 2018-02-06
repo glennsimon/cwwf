@@ -158,7 +158,7 @@ const puzzleWorker = (function(document, window) {
           let letterDiv = document.createElement('div');
           let clueNumDiv = document.createElement('div');
           squareDiv.classList.add('square');
-          letterDiv.classList.add('letter');
+          letterDiv.classList.add('marginAuto');
           if (game.puzzle.grid[gridIndex].status === 'locked') {
             cell.classList.add(game.puzzle.grid[gridIndex].bgColor);
             letterDiv.innerText = game.puzzle.grid[gridIndex].guess;
@@ -656,13 +656,17 @@ const puzzleWorker = (function(document, window) {
     let letter = null;
     if (event.target.classList[0] === 'kbButton') {
       letter = event.target.children[0].innerText;
-    } else if (event.target.classList[0] === 'buttonContents') {
+    } else if (event.target.innerText.match(/^[a-zA-Z]$/)) {
       letter = event.target.innerText;
     } else if (event.key) {
       letter = event.key;
     }
     if (letter.toLowerCase() === 'backspace') {
       undoEntry();
+      return;
+    }
+    if (letter.toLowerCase() === 'enter') {
+      playWord();
       return;
     }
     if (!letter || !letter.match(/^[a-zA-Z]$/)) return;
@@ -683,7 +687,7 @@ const puzzleWorker = (function(document, window) {
       }
       game.puzzle.grid[index].guess = letter.toUpperCase();
       letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
-      letterDiv.classList.add('letter');
+      letterDiv.classList.add('marginAuto');
       currentCell
         .children[0]
         .replaceChild(letterDiv, currentCell.children[0].children[0]);
@@ -729,7 +733,7 @@ const puzzleWorker = (function(document, window) {
         return;
       }
       letterDiv.appendChild(document.createTextNode(''));
-      letterDiv.classList.add('letter');
+      letterDiv.classList.add('marginAuto');
       currentCell
         .children[0]
         .replaceChild(letterDiv, currentCell.children[0].children[0]);
