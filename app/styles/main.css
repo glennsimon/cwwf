@@ -351,6 +351,10 @@ select {
   width: 40%;
 }
 
+.width50pct {
+  width: 50%;
+}
+
 .width60pct {
   width: 60%;
 }
@@ -482,6 +486,13 @@ select {
   right: 10px;
 }
 
+@media screen and (min-width: 420px) {
+  #gamesPanelContainer {
+    max-width: 400px;
+    margin-left: calc((100vw - 400px)/2);
+  }
+}
+
 @media screen and (min-aspect-ratio: 18/25) {
   body {
     font-size: 2.5vh;
@@ -521,12 +532,17 @@ select {
 
   #clueContainer {
     display: flex;
+    height: 45vw;
     width: 50vw;
   }
 
   #acrossContainer,
   #downContainer {
     display: block;
+  }
+
+  #acrossClues, #downClues {
+    height: 100%;
   }
 
   #clueCard {
@@ -544,9 +560,8 @@ select {
   }
 
   #clueContainer {
+    height: 40vw;
     display: flex;
     width: 55vw;
   }
-
-  
  }

@@ -161,12 +161,14 @@ const puzzleWorker = (function(document, window) {
           letterDiv.classList.add('marginAuto');
           if (game.puzzle.grid[gridIndex].status === 'locked') {
             cell.classList.add(game.puzzle.grid[gridIndex].bgColor);
-            letterDiv.innerText = game.puzzle.grid[gridIndex].guess;
+            // letterDiv.innerText = game.puzzle.grid[gridIndex].guess;
           }
-          if (game.puzzle.grid[gridIndex].bgColor === 'bgTransGray') {
-            cell.classList.add('bgTransGray');
-            letterDiv.innerText = game.puzzle.grid[gridIndex].guess;
-          }
+          // if (game.puzzle.grid[gridIndex].bgColor === 'bgTransGray') {
+          //   cell.classList.add('bgTransGray');
+          //   letterDiv.innerText = game.puzzle.grid[gridIndex].guess;
+          // }
+          let guess = game.puzzle.grid[gridIndex].guess;
+          letterDiv.innerText = guess ? guess : '';
           clueNumDiv.classList.add('clueNumber');
           clueNumDiv.appendChild(document.createTextNode(clueNumber));
           squareDiv.appendChild(letterDiv);
@@ -188,7 +190,7 @@ const puzzleWorker = (function(document, window) {
     // create contents for across clues div
     for (let clue of game.puzzle.clues.across) {
       let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex');
+      clueDiv.classList.add('displayFlex', 'width50pct');
 
       let numDiv = document.createElement('div');
       numDiv.appendChild(
@@ -208,7 +210,7 @@ const puzzleWorker = (function(document, window) {
     // create contents for down clues div
     for (let clue of game.puzzle.clues.down) {
       let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex');
+      clueDiv.classList.add('displayFlex', 'width50pct');
 
       let numDiv = document.createElement('div');
       numDiv.appendChild(
@@ -640,7 +642,7 @@ const puzzleWorker = (function(document, window) {
       game[playerPos].score += 1;
       game[playerPos].squaresWon.push(index);
     } else {
-      gridElement.bgColor = 'bgTransGray';
+      // gridElement.bgColor = 'bgTransGray';
       game[playerPos].errors += 1;
       game[playerPos].score -= 1;
     }
