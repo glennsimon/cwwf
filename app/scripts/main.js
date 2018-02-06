@@ -713,12 +713,13 @@ const puzzleWorker = (function(document, window) {
       let index = row * columns + col;
       // reverse copy idxArray so we go backwards instead of forwards
       let localIdxArray = [];
-      for (let i = 0, j = idxArray.length; i > 0; i++, j--) {
+      for (let i = 0, j = idxArray.length; i < idxArray.length; i++, j--) {
         localIdxArray[i] = idxArray[j - 1];
       }
-      let nextCellIndex = idxArray.indexOf(index) - 1;
+      let nextCellIndex = localIdxArray.indexOf(index) + 1;
       localIdxArray =
-        idxArray.slice(nextCellIndex).concat(idxArray.slice(0, nextCellIndex));
+        localIdxArray.slice(nextCellIndex)
+          .concat(localIdxArray.slice(0, nextCellIndex));
       let letterDiv = document.createElement('div');
       // console.log(idxArray);
       // console.log(localIdxArray);
