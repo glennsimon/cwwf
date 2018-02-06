@@ -3,6 +3,8 @@ const puzzleGames = (function(document, window) {
   const querySelector = document.querySelector.bind(document);
   const dialog = querySelector('#oppDialog');
   const startGameButton = querySelector('#startGameButton');
+  const headerSignin = querySelector('#headerSignin');
+  const turnIndicator = querySelector('#turnIndicator');
   // const radioEasy = querySelector('#radioEasy');
   // const radioMed = querySelector('#radioMed');
   // const radioHard = querySelector('#radioHard');
@@ -23,12 +25,23 @@ const puzzleGames = (function(document, window) {
   firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
     // fillLists();
+    if (user) {
+      headerSignin.classList.add('displayNone');
+    } else {
+      headerSignin.classList.remove('displayNone');
+      turnIndicator.classList.add('displayNone');
+    }
   });
 
   if (!dialog.showModal) {
     dialogPolyfill.registerDialog(dialog);
   }
+
   startGameButton.addEventListener('click', initNewGame);
+  headerSignin.addEventListener('click', () => {
+    location.hash = '#signin';
+  });
+
   dialog.querySelector('.close').addEventListener('click', () => {
     // unsubscribe();
     dialog.close();

@@ -84,7 +84,7 @@ select {
 }
 
 .rangeHighlight {
-  background-color: lightyellow;
+  background-color: gold;
 }
 
 
@@ -262,6 +262,14 @@ select {
   background-color: rgba(0, 0, 255, 0.5);
 }
 
+.fontTransRed {
+  color: rgba(255, 0 , 0, 0.5);
+}
+
+.fontTransBlue {
+  color: rgba(0, 0, 255, 0.5);
+}
+
 .bgTransGray {
   background-color: rgba(100, 100, 100, 0.5);
 }
@@ -389,6 +397,10 @@ select {
   height: 64px !important;
 }
 
+.spacer40px {
+  width: 40px;
+}
+
 .overflowHidden {
   overflow: hidden;
 }
@@ -444,6 +456,14 @@ select {
   font-size: small;
 }
 
+.fontSizeLarge {
+  font-size: large;
+}
+
+.fontSizeXLarge {
+  font-size: x-large;
+}
+
 #clueCard {
   background-color: white;
   margin: 0 5px 2px;
@@ -480,12 +500,12 @@ select {
 
 @media screen and (orientation: landscape) and (min-width: 800px) {
   #puzTable {
-    width: 50%;
+    width: 40%;
   }
 
   #clueContainer {
     display: flex;
-    width: 50%;
+    width: 60%;
   }
 
   #acrossContainer,

@@ -87,6 +87,12 @@ const puzzleWorker = (function(document, window) {
   const keyboard = document.getElementById('kbContainer');
   const screenToggle = document.getElementById('screenToggle');
   const splash = document.getElementById('splash');
+  const turnId = document.getElementById('turnId');
+  const scores = document.getElementById('scores');
+  const myName = document.getElementById('myName');
+  const oppName = document.getElementById('oppName');
+  const myScore = document.getElementById('myScore');
+  const oppScore = document.getElementById('oppScore');
   const firebase = window.firebase;
   const db = firebase.firestore();
 
@@ -218,6 +224,20 @@ const puzzleWorker = (function(document, window) {
       clueDiv.appendChild(textDiv);
       downClues.appendChild(clueDiv);
     }
+
+    scores.classList.remove('displayNone');
+    let me = currentUser.uid === game.initiator.uid ?
+      game.initiator : game.opponent;
+    let they = currentUser.uid === game.initiator.uid ?
+      game.opponent : game.initiator;
+    myName.innerText = me.displayName.slice(0,
+      me.displayName.indexOf(' ') > 10 ? 10 : me.displayName.indexOf(' '));
+    oppName.innerText = they.displayName.slice(0,
+      they.displayName.indexOf(' ') > 10 ? 10 : they.displayName.indexOf(' '));
+    myScore.innerText = me.score;
+    oppScore.innerText = they.score;
+    myName.classList.add(me.bgColor.replace('bg', 'font'));
+    oppName.classList.add(they.bgColor.replace('bg', 'font'));
   }
 
   /**
@@ -291,7 +311,7 @@ const puzzleWorker = (function(document, window) {
     for (let clue of acrossClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
-        clue.classList.add('currCellHighlight');
+        clue.classList.add('rangeHighlight');
         singleClue.innerText = clue.children[1].textContent;
         break;
       }
@@ -328,7 +348,7 @@ const puzzleWorker = (function(document, window) {
     for (let clue of downClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
-        clue.classList.add('currCellHighlight');
+        clue.classList.add('rangeHighlight');
         singleClue.innerText = clue.children[1].textContent;
       }
     }
@@ -359,10 +379,10 @@ const puzzleWorker = (function(document, window) {
       }
     }
     for (let clue of acrossClues.children) {
-      clue.classList.remove('currCellHighlight');
+      clue.classList.remove('rangeHighlight');
     }
     for (let clue of downClues.children) {
-      clue.classList.remove('currCellHighlight');
+      clue.classList.remove('rangeHighlight');
     }
   }
 
@@ -441,6 +461,7 @@ const puzzleWorker = (function(document, window) {
         game.opponent.uid : game.initiator.uid;
       columns = game.puzzle.cols;
       myTurn = game.nextTurn !== myOpponentUid;
+      turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
       puzzleId = newPuzzleId;
       showPuzzle();
       location.hash = '#puzzle';
@@ -520,6 +541,7 @@ const puzzleWorker = (function(document, window) {
       db.collection('games').doc(puzzleId).onSnapshot(doc => {
         game = doc.data();
         myTurn = game.nextTurn !== myOpponentUid;
+        turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
         showPuzzle();
       }, error => {
         console.error('Error getting puzzle: ', error);
@@ -638,6 +660,10 @@ const puzzleWorker = (function(document, window) {
       letter = event.target.innerText;
     } else if (event.key) {
       letter = event.key;
+    }
+    if (letter.toLowerCase() === 'backspace') {
+      undoEntry();
+      return;
     }
     if (!letter || !letter.match(/^[a-zA-Z]$/)) return;
     if (currentCell) {

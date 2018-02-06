@@ -65,6 +65,14 @@
         <div class='mdl-layout__header-row'>
           <span class='mdl-layout-title'>Xwords WF</span>
           <div class='mdl-layout-spacer'></div>
+          <div id='turnIndicator' class='fontSizeSmall textAlignCenter displayNone'>
+            <div id='turnId'>YOUR</div>
+            <div>TURN</div>
+          </div>
+          <span>
+            <i id='headerSignin' class='material-icons'>fingerprint</i>
+          </span>
+          <div class='spacer40px'></div>
           <span>
             <i id='screenToggle' class='material-icons'>fullscreen</i>
           </span>
@@ -95,6 +103,19 @@
             </ul>
           </div>
         </header>
+        <div id='scores' class='displayNone'>
+          <div class="textAlignCenter heading">SCORES</div>
+          <div class="displayFlex">
+            <div class='flexGrow-1'>
+              <div id="myName" class='textAlignCenter heading'>Jill</div>
+              <div id="myScore" class='textAlignCenter fontSizeXLarge'>25</div>
+            </div>
+            <div class='flexGrow-1'>
+              <div id="oppName" class='textAlignCenter heading'>Bill</div>
+              <div id="oppScore" class='textAlignCenter fontSizeXLarge'>30</div>
+            </div>
+          </div>
+        </div>
         <nav class='displayFlex flexDirCol jpdy-navigation mdl-navigation mdl-color--blue-grey-800'>
           <div id='puzTitle' class='heading textAlignCenter colorWhite'></div>
           <div id='puzAuthor' class='author colorWhite'></div>
@@ -114,8 +135,10 @@
           </div>
           <table id='puzTable' class='puzzleWidth margin5pxAuto'></table>
           <div id='clueContainer' class='fullWidth displayNone'>
-            <div id='clueCard' class='cardShadow flexGrow-1'>
-              <div id='singleClue' class='padding0px5px'>Select in the puzzle to reveal clue</div>
+            <div id='clueCard' class='cardShadow displayFlex flexDirCol'>
+              <div id='singleClue' class='padding0px5px flexGrow-1'>
+                Select in the puzzle to reveal clue
+              </div>
             </div>
             <div id='acrossContainer' class='padding-5 displayNone'>
               <div class='heading'>Across</div>

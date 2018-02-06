@@ -8,6 +8,7 @@
   function initApp() {
     const querySelector = document.querySelector.bind(document);
     const appContainer = querySelector('#appContainer');
+    const turnIndicator = querySelector('#turnIndicator');
     const gamesPanel = querySelector('#gamesPanel');
     const dialog = querySelector('#oppDialog');
 
@@ -26,14 +27,17 @@
         window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
+        turnIndicator.classList.remove('displayNone');
       } else if (location.hash === '#signin') {
         window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
+        turnIndicator.classList.add('displayNone');
       } else if (location.hash === '#games') {
         window.puzzleGames.subscribe();
         gamesPanel.classList.remove('slideOut');
         appContainer.classList.remove('slideIn');
+        turnIndicator.classList.add('displayNone');
       }
     }
 
