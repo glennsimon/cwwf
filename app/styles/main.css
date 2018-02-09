@@ -48,14 +48,14 @@ select {
   padding: 8px;
 }
 
-#picContainer {
-  width: 48px;
-  height: 48px;
+.picContainer {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   overflow: hidden;
 }
 
-#picContainer div {
+.picContainer div {
   position: relative;
   right: 50%;
   text-align: center;
@@ -63,13 +63,14 @@ select {
   width: 100%;
 }
 
-#picContainer div img {
+.picContainer div img {
   height: 100%;
   display: inline-block;
   margin-right: -100%;
+  vertical-align: unset;
 }
 
-#avatar {
+.photoCrop {
   height: 100%;
   width: auto;
   margin: auto;

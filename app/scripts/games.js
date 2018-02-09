@@ -97,10 +97,20 @@ const puzzleGames = (function(document, window) {
       // doc.data() is never undefined for query doc snapshots
       // console.log(doc.id, ' => ', doc.data());
       if (uid !== currentUser.uid) {
+        let avatar =
+          `<i class='material-icons mdl-list__item-avatar'>person</i>`;
+        if (user.photoURL) {
+          avatar =
+`<span class='picContainer material-icons mdl-list__item-avatar'>
+  <div>
+    <img class='photoCrop' src='${user.photoURL}' alt='profile picture'>
+  </div>
+</span>`;
+        }
         dialogList +=
 `<li class='mdl-list__item mdl-list__item--two-line'>
    <span class='mdl-list__item-primary-content'>
-     <i class='material-icons mdl-list__item-avatar'>person</i>
+     ${avatar}
      <span>${user.displayName}</span>
      <span class='mdl-list__item-sub-title'>
        ${user.providerId.split('.')[0]}
@@ -112,8 +122,7 @@ const puzzleGames = (function(document, window) {
        <i id='${uid}' class='material-icons'>grid_on</i>
      </div>
    </span>
- </li>
-`;
+ </li>`;
       }
     });
     allUsers = usersObj;
@@ -142,27 +151,37 @@ const puzzleGames = (function(document, window) {
       // doc.data() is never undefined for query doc snapshots
       // console.log(doc.id, ' => ', doc.data());
       const game = doc.data();
+      let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
       if (game.status === 'started' &&
         (game.initiator.uid === currentUser.uid ||
           game.opponent.uid === currentUser.uid)) {
         let myOpponent = game.initiator.uid === currentUser.uid ?
           game.opponent : game.initiator;
+        let opponentPhoto = allUsers[myOpponent.uid].photoURL;
+        if (opponentPhoto) {
+          avatar =
+`<span class='picContainer material-icons mdl-list__item-avatar'>
+  <div>
+    <img class='photoCrop' src='${opponentPhoto}' alt='profile picture'>
+  </div>
+</span>`;
+        }
         activeGamesHtml +=
 `<li class='mdl-list__item mdl-list__item--two-line'>
-  <span class='mdl-list__item-primary-content'>
-    <i class='material-icons mdl-list__item-avatar'>person</i>
-    <span>${myOpponent.displayName}</span>
-    <span class='mdl-list__item-sub-title'>
-      ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
-    </span>
-  </span>
-  <span class='mdl-list__item-secondary-content'>
-    <span class='mdl-list__item-secondary-info'>Play</span>
-    <div class='mdl-list__item-secondary-action'>
-      <i id='${doc.id}' class='material-icons'>grid_on</i>
-    </div>
-  </span>
-</li>`;
+   <span class='mdl-list__item-primary-content'>
+     ${avatar}
+     <span>${myOpponent.displayName}</span>
+     <span class='mdl-list__item-sub-title'>
+       ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
+     </span>
+   </span>
+   <span class='mdl-list__item-secondary-content'>
+     <span class='mdl-list__item-secondary-info'>Play</span>
+     <div class='mdl-list__item-secondary-action'>
+       <i id='${doc.id}' class='material-icons'>grid_on</i>
+     </div>
+   </span>
+ </li>`;
       } else if (game.initiator.uid === currentUser.uid ||
         game.opponent.uid === currentUser.uid) {
         let myOpponent = game.initiator.uid === currentUser.uid ?
@@ -181,20 +200,29 @@ const puzzleGames = (function(document, window) {
         } else {
           result = 'They cancelled';
         }
+        let opponentPhoto = allUsers[myOpponent.uid].photoURL;
+        if (opponentPhoto) {
+          avatar =
+`<span class='picContainer material-icons mdl-list__item-avatar'>
+  <div>
+    <img class='photoCrop' src='${opponentPhoto}' alt='profile picture'>
+  </div>
+</span>`;
+        }
         pastGamesHtml +=
 `<li class='mdl-list__item mdl-list__item--two-line'>
-  <span class='mdl-list__item-primary-content'>
-    <i class='material-icons mdl-list__item-avatar'>person</i>
-    <span>${myOpponent.displayName}</span>
-    <span class='mdl-list__item-sub-title'>${result}</span>
-  </span>
-  <span class='mdl-list__item-secondary-content'>
-    <span class='mdl-list__item-secondary-info'>Play again</span>
-    <div class='mdl-list__item-secondary-action'>
-      <i id='${doc.id}' class='material-icons'>replay</i>
-    </div>
-  </span>
-</li>`;
+   <span class='mdl-list__item-primary-content'>
+     ${avatar}
+     <span>${myOpponent.displayName}</span>
+     <span class='mdl-list__item-sub-title'>${result}</span>
+   </span>
+   <span class='mdl-list__item-secondary-content'>
+     <span class='mdl-list__item-secondary-info'>Play again</span>
+     <div class='mdl-list__item-secondary-action'>
+       <i id='${doc.id}' class='material-icons'>replay</i>
+     </div>
+   </span>
+ </li>`;
       }
     });
     // console.log(dialogList);
