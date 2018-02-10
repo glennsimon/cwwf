@@ -123,6 +123,7 @@ const puzzleWorker = (function(document, window) {
     if (puzTable.children) {
       clearPuzzle();
     }
+    idxArray = [];
     // initial estimate of element size used to determine cellDim -> tableDim -> puzzle size
     if (game.puzzle.notepad) {
       // puzNotepad.style.width = '300px';
@@ -270,10 +271,11 @@ const puzzleWorker = (function(document, window) {
     if (!idxArray.includes(index)) {
       clearLetters();
     }
-    idxArray = [];
     if (currentCell && currentCell === cell) {
+      clearLetters();
       acrossWord = !acrossWord;
     }
+    idxArray = [];
     currentCell = cell;
     if (acrossWord) {
       selectAcross(cell);
