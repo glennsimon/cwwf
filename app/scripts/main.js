@@ -229,18 +229,30 @@ const puzzleWorker = (function(document, window) {
     }
 
     scores.classList.remove('displayNone');
-    let me = currentUser.uid === game.initiator.uid ?
-      game.initiator : game.opponent;
-    let they = currentUser.uid === game.initiator.uid ?
-      game.opponent : game.initiator;
-    myName.innerText = me.displayName.slice(0,
-      me.displayName.indexOf(' ') > 10 ? 10 : me.displayName.indexOf(' '));
-    oppName.innerText = they.displayName.slice(0,
-      they.displayName.indexOf(' ') > 10 ? 10 : they.displayName.indexOf(' '));
-    myScore.innerText = me.score;
-    oppScore.innerText = they.score;
-    myName.classList.add(me.bgColor.replace('bg', 'font'));
-    oppName.classList.add(they.bgColor.replace('bg', 'font'));
+    let me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
+    let they = me === 'initiator' ? 'opponent' : 'initiator';
+    myName.innerText = game[me].displayName.slice(0,
+      game[me].displayName.indexOf(' ') > 10 ?
+        10 : game[me].displayName.indexOf(' '));
+    oppName.innerText = game[they].displayName.slice(0,
+      game[they].displayName.indexOf(' ') > 10 ?
+        10 : game[they].displayName.indexOf(' '));
+    myScore.innerText = game[me].score;
+    oppScore.innerText = game[they].score;
+    myName.classList.add(game[me].bgColor.replace('bg', 'font'));
+    oppName.classList.add(game[they].bgColor.replace('bg', 'font'));
+    if (game.emptySquares === 0) {
+      let result = 'YOU WON!!';
+      if (game[me].score > game[they].score) {
+        game.winner = game[me].uid;
+      } else {
+        game.winner = game[they].uid;
+        result = 'You lost';
+      }
+      game.status = 'finished';
+      window.puzzleGames.showReplayDialog(game, result);
+      savePuzzle();
+    }
   }
 
   /**
@@ -461,11 +473,15 @@ const puzzleWorker = (function(document, window) {
 
     docRef.onSnapshot(doc => {
       game = doc.data();
-      myOpponentUid = game.initiator.uid === currentUser.uid ?
-        game.opponent.uid : game.initiator.uid;
-      columns = game.puzzle.cols;
-      myTurn = game.nextTurn !== myOpponentUid;
-      turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
+      if (game.status === 'started') {
+        myOpponentUid = game.initiator.uid === currentUser.uid ?
+          game.opponent.uid : game.initiator.uid;
+        columns = game.puzzle.cols;
+        myTurn = game.nextTurn !== myOpponentUid;
+        turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
+      } else {
+        turnId.innerText = 'NO';
+      }
       puzzleId = newPuzzleId;
       showPuzzle();
       location.hash = '#puzzle';
@@ -479,10 +495,13 @@ const puzzleWorker = (function(document, window) {
    * @param {Object} puzzle Puzzle object returned from fetch
    */
   function parsePuzzle(puzzle) {
+    const rows = puzzle.size.rows;
+    const cols = puzzle.size.cols;
     game = {};
+    game.emptySquares = rows * cols;
     game.puzzle = {};
-    game.puzzle.cols = puzzle.size.cols;
-    game.puzzle.rows = puzzle.size.rows;
+    game.puzzle.cols = cols;
+    game.puzzle.rows = rows;
     game.puzzle.author = puzzle.author;
     game.puzzle.clues = puzzle.clues;
     game.puzzle.copyright = puzzle.copyright;
@@ -496,6 +515,7 @@ const puzzleWorker = (function(document, window) {
       game.puzzle.grid[i] = {};
       if (puzzle.grid[i] === '.') {
         game.puzzle.grid[i].black = true;
+        game.emptySquares--;
       } else {
         game.puzzle.grid[i].black = false;
         game.puzzle.grid[i].value = puzzle.grid[i];
@@ -506,7 +526,7 @@ const puzzleWorker = (function(document, window) {
           puzzle.circles && puzzle.circles[i] === 1;
       }
     }
-    columns = puzzle.size.cols;
+    columns = cols;
     console.log(game.puzzle);
   }
 
@@ -639,6 +659,7 @@ const puzzleWorker = (function(document, window) {
       'initiator' : 'opponent';
     if (gridElement.status === 'locked') return gridElement;
     if (gridElement.guess === gridElement.value) {
+      game.emptySquares--;
       gridElement.bgColor = game[playerPos].bgColor;
       gridElement.status = 'locked';
       game[playerPos].score += 1;

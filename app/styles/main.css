@@ -477,6 +477,10 @@ select {
   padding: 0 5px;
 }
 
+.padding0 {
+  padding: 0 !important;
+}
+
 .alignRight {
   text-align: right;
 }
@@ -535,6 +539,7 @@ select {
     display: flex;
     height: 45vw;
     width: 50vw;
+    font-size: 1vw;
   }
 
   #acrossContainer,
@@ -543,7 +548,7 @@ select {
   }
 
   #acrossClues, #downClues {
-    height: 100%;
+    height: calc(100% - 30px);
   }
 
   #clueCard {

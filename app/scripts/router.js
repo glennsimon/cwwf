@@ -10,7 +10,7 @@
     const appContainer = querySelector('#appContainer');
     const turnIndicator = querySelector('#turnIndicator');
     const gamesPanel = querySelector('#gamesPanel');
-    const dialog = querySelector('#oppDialog');
+    const gamesDialog = querySelector('#gamesDialog');
 
     window.addEventListener('hashchange', navigate);
 
@@ -20,9 +20,9 @@
     function navigate() {
       if (location.hash === '#puzzle') {
         try {
-          dialog.close();
+          gamesDialog.close();
         } catch(err) {
-          // do nothing, error occurs if dialog is not open
+          // do nothing, error occurs if gamesDialog is not open
         }
         window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');

@@ -264,10 +264,14 @@
         </div>
       </main>
     </div>
-    <dialog id='oppDialog' class='mdl-dialog height80pct'>
-      <div class='displayFlex flexDirCol height100pct'>
-        <a href='#games' class='closeDialogPosition close noOutline'><i class='material-icons'>close</i></a>
-        <div class='heading textAlignCenter'>Difficulty level</div>
+    <dialog id='gamesDialog' class='mdl-dialog height80pct'>
+      <div class='mdl-dialog__content displayFlex flexDirCol'>
+        <a href='#games' class='closeDialogPosition close noOutline'>
+          <i class='material-icons'>close</i>
+        </a>
+        <div id='gameOverHeading' class='heading textAlignCenter displayNone'>Game Over</div>
+        <div id='winMessage' class='textAlignCenter fontSizeXLarge displayNone'></div>
+        <div id='difficultyHeading' class='heading textAlignCenter'>Difficulty level</div>
         <div class='displayFlex'>
           <label class='mdl-radio mdl-js-radio mdl-js-ripple-effect width33pct' for='radioEasy'>
             <input type='radio' id='radioEasy' class='mdl-radio__button' name='difficulty' value='easy' checked>
@@ -282,8 +286,8 @@
             <span class='mdl-radio__label'>HARD</span>
           </label>
         </div>
-        <div class='heading textAlignCenter'>Choose your opponent</div>
-        <div class='overflowYScroll'>
+        <div id='opponentHeading' class='heading textAlignCenter'>Choose your opponent</div>
+        <div id='opponentList' class='overflowYScroll'>
           <ul id='dialogList' class='demo-list-action mdl-list'>
             Empty list
           </ul>
