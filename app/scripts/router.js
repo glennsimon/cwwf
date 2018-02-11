@@ -20,9 +20,12 @@
     function navigate() {
       if (location.hash === '#puzzle') {
         try {
-          gamesDialog.close();
+          let replayButton = querySelector('#replayButton');
+          if (!replayButton) {
+            gamesDialog.close();
+          }
         } catch(err) {
-          // do nothing, error occurs if gamesDialog is not open
+          // do nothing, error OK
         }
         window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');
@@ -34,6 +37,11 @@
         appContainer.classList.add('slideIn');
         turnIndicator.classList.add('displayNone');
       } else if (location.hash === '#games') {
+        try {
+          gamesDialog.close();
+        } catch (err) {
+          // do nothing, error OK
+        }
         window.puzzleGames.subscribe();
         gamesPanel.classList.remove('slideOut');
         appContainer.classList.remove('slideIn');

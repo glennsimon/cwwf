@@ -93,6 +93,7 @@ const puzzleWorker = (function(document, window) {
   const oppName = document.getElementById('oppName');
   const myScore = document.getElementById('myScore');
   const oppScore = document.getElementById('oppScore');
+  const logo = document.getElementById('logo');
   const firebase = window.firebase;
   const db = firebase.firestore();
 
@@ -110,6 +111,10 @@ const puzzleWorker = (function(document, window) {
   firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
     // fillLists();
+  });
+
+  logo.addEventListener('click', () => {
+    location.hash = '#games';
   });
 
   puzTitle.innerText = 'Select a date above to load puzzle';
