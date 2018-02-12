@@ -246,6 +246,30 @@ select {
   box-sizing: border-box;
 }
 
+.border2pxTop {
+  border-top: 2px solid gold !important;
+}
+
+.border2pxBottom {
+  border-bottom: 2px solid gold !important;
+}
+
+.border2pxLeft {
+  border-left: 2px solid gold  !important;
+}
+
+.border2pxRight {
+  border-right: 2px solid gold !important;
+}
+
+.border2pxTop {
+  border-top: 2px solid black;
+}
+
+.border2pxTop {
+  border-top: 2px solid black;
+}
+
 .bgTransRed {
   background-color: rgba(255, 0 , 0, 0.5);
 }

@@ -107,6 +107,7 @@ const puzzleWorker = (function(document, window) {
   let idxArray = [];
   let puzzleId = null;
   let myTurn = null;
+  let clueNumIndices = {};
 
   firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
@@ -129,6 +130,7 @@ const puzzleWorker = (function(document, window) {
       clearPuzzle();
     }
     idxArray = [];
+    clueNumIndices = {};
     // initial estimate of element size used to determine cellDim -> tableDim -> puzzle size
     if (game.puzzle.notepad) {
       // puzNotepad.style.width = '300px';
@@ -163,7 +165,6 @@ const puzzleWorker = (function(document, window) {
           cell.classList.add('cursorPointer');
           let squareDiv = document.createElement('div');
           let letterDiv = document.createElement('div');
-          let clueNumDiv = document.createElement('div');
           squareDiv.classList.add('square');
           letterDiv.classList.add('marginAuto');
           if (game.puzzle.grid[gridIndex].status === 'locked') {
@@ -176,11 +177,15 @@ const puzzleWorker = (function(document, window) {
           // }
           let guess = game.puzzle.grid[gridIndex].guess;
           letterDiv.innerText = guess ? guess : '';
-          clueNumDiv.classList.add('clueNumber');
-          clueNumDiv.appendChild(document.createTextNode(clueNumber));
           squareDiv.appendChild(letterDiv);
           cell.appendChild(squareDiv);
-          cell.appendChild(clueNumDiv);
+          if (clueNumber !== '') {
+            clueNumIndices[clueNumber.toString()] = gridIndex;
+            let clueNumDiv = document.createElement('div');
+            clueNumDiv.classList.add('clueNumber');
+            clueNumDiv.appendChild(document.createTextNode(clueNumber));
+            cell.appendChild(clueNumDiv);
+          }
           if (game.puzzle.grid[gridIndex].circle) {
             cell.children[0].classList.add('circle');
           }
@@ -197,20 +202,22 @@ const puzzleWorker = (function(document, window) {
     // create contents for across clues div
     for (let clue of game.puzzle.clues.across) {
       let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex', 'width50pct');
+      clueDiv.classList.add('displayFlex', 'width50pct', 'cursorPointer');
 
       let numDiv = document.createElement('div');
       numDiv.appendChild(
         document.createTextNode(clue.slice(0, clue.indexOf('.') + 1))
       );
-      numDiv.classList.add('padRight');
+      numDiv.classList.add('padRight', 'cursorPointer');
 
       let textDiv = document.createElement('div');
       textDiv.appendChild(
         document.createTextNode(clue.slice(clue.indexOf('.') + 1))
       );
+      textDiv.classList.add('cursorPointer');
       clueDiv.appendChild(numDiv);
       clueDiv.appendChild(textDiv);
+      // clueDiv.addEventListener('click', acrossClueClick);
       acrossClues.appendChild(clueDiv);
     }
 
@@ -223,15 +230,47 @@ const puzzleWorker = (function(document, window) {
       numDiv.appendChild(
         document.createTextNode(clue.slice(0, clue.indexOf('.') + 1))
       );
-      numDiv.classList.add('padRight');
+      numDiv.classList.add('padRight', 'cursorPointer');
 
       let textDiv = document.createElement('div');
       textDiv.appendChild(
         document.createTextNode(clue.slice(clue.indexOf('.') + 1))
       );
+      textDiv.classList.add('cursorPointer');
       clueDiv.appendChild(numDiv);
       clueDiv.appendChild(textDiv);
       downClues.appendChild(clueDiv);
+    }
+
+    acrossClues.addEventListener('click', event => {
+      if (event.target.innerText !== '') {
+        clueClicked(event, 'across');
+      }
+    });
+
+    downClues.addEventListener('click', event => {
+      if (event.target.innerText !== '') {
+        clueClicked(event, 'down');
+      }
+    });
+
+    /**
+     * When clue is clicked, this event fires
+     * @param {Event} event Mouse click or screen touch event
+     * @param {string} direction Clue direction (across or down)
+     */
+    function clueClicked(event, direction) {
+      let clueNumberText = event.target.parentElement.firstChild.innerText;
+      clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
+      let cellIndex = clueNumIndices[clueNumberText];
+      let row = Math.floor(cellIndex / columns);
+      let col = cellIndex - row * columns;
+      let cell = puzTable.firstChild.children[row].children[col];
+      if (direction === 'across') {
+        selectAcross(cell);
+      } else {
+        selectDown(cell);
+      }
     }
 
     scores.classList.remove('displayNone');
@@ -338,16 +377,20 @@ const puzzleWorker = (function(document, window) {
         break;
       }
     }
+    let currentCol = index - rowOffset;
+    let currentCell = cell.parentElement.children[currentCol];
+    currentCell.classList.add('border2pxLeft');
     while (index < (row + 1) * columns && !game.puzzle.grid[index].black) {
-      let currentCol = index - rowOffset;
-      let currentCell = cell.parentElement.children[currentCol];
-
+      currentCol = index - rowOffset;
+      currentCell = cell.parentElement.children[currentCol];
+      currentCell.classList.add('border2pxTop', 'border2pxBottom');
       idxArray.push(index);
       currentCell.classList.add(
         currentCol === col ? 'currCellHighlight' : 'rangeHighlight'
       );
       index++;
     }
+    currentCell.classList.add('border2pxRight');
   }
 
   /**
@@ -374,17 +417,21 @@ const puzzleWorker = (function(document, window) {
         singleClue.innerText = clue.children[1].textContent;
       }
     }
+    let currentRow = Math.floor(index / columns);
+    let currentCell = puzTable.children[0].children[currentRow].children[col];
+    currentCell.classList.add('border2pxTop');
     while (index < game.puzzle.rows * columns &&
       !game.puzzle.grid[index].black) {
-      let currentRow = Math.floor(index / columns);
-      let currentCell = puzTable.children[0].children[currentRow].children[col];
-
+      currentRow = Math.floor(index / columns);
+      currentCell = puzTable.children[0].children[currentRow].children[col];
+      currentCell.classList.add('border2pxLeft', 'border2pxRight');
       idxArray.push(index);
       currentCell.classList.add(
         currentRow === row ? 'currCellHighlight' : 'rangeHighlight'
       );
       index += columns;
     }
+    currentCell.classList.add('border2pxBottom');
   }
 
   /** Removes clue cell highlighting from all cells */
@@ -395,8 +442,14 @@ const puzzleWorker = (function(document, window) {
     for (let row of rowArray) {
       for (let cell of row.children) {
         if (cell.className !== 'black') {
-          cell.classList.remove('rangeHighlight');
-          cell.classList.remove('currCellHighlight');
+          cell.classList.remove(
+            'rangeHighlight',
+            'currCellHighlight',
+            'border2pxBottom',
+            'border2pxRight',
+            'border2pxLeft',
+            'border2pxTop'
+          );
         }
       }
     }
@@ -599,8 +652,8 @@ const puzzleWorker = (function(document, window) {
     puzCopy.innerHTML = '';
     clueContainer.classList.add('displayNone');
     splash.classList.remove('displayNone');
-    acrossClues.innerText = '';
-    downClues.innerText = '';
+    acrossClues.innerHTML = '';
+    downClues.innerHTML = '';
     singleClue.innerText = 'Select in the puzzle to reveal clue';
   }
 
