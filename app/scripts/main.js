@@ -160,6 +160,7 @@ const puzzleWorker = (function(document, window) {
         if (blackCell) {
           cell.className = 'black';
         } else {
+          cell.classList.add('cursorPointer');
           let squareDiv = document.createElement('div');
           let letterDiv = document.createElement('div');
           let clueNumDiv = document.createElement('div');

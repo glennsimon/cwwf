@@ -63,7 +63,7 @@
     <div class='mdl-layout mdl-js-layout mdl-layout--fixed-header'>
       <header class='mdl-layout__header'>
         <div class='mdl-layout__header-row'>
-          <img id='logo' src="images/xswordsLogo.png" alt="Crossed swords logo" height="40" width="40">
+          <img id='logo' src="images/xswordsLogo.png" alt="Crossed swords logo" height="40" width="40" class='cursorPointer'>
           <div class='spacer20px'></div>
           <span class='mdl-layout-title'>CrosSwords</span>
           <div class='mdl-layout-spacer'></div>
@@ -76,7 +76,7 @@
           </span>
           <div class='spacer20px'></div>
           <span>
-            <i id='screenToggle' class='material-icons'>fullscreen</i>
+            <i id='screenToggle' class='material-icons cursorPointer'>fullscreen</i>
           </span>
         </div>
       </header>
@@ -268,9 +268,9 @@
     </div>
     <dialog id='gamesDialog' class='mdl-dialog height80pct'>
       <div class='mdl-dialog__content displayFlex flexDirCol'>
-        <a href='#games' class='closeDialogPosition close noOutline'>
+        <div class='closeDialogPosition close noOutline cursorPointer'>
           <i class='material-icons'>close</i>
-        </a>
+        </div>
         <div id='gameOverHeading' class='heading textAlignCenter displayNone'>Game Over</div>
         <div id='winMessage' class='textAlignCenter fontSizeXLarge displayNone'></div>
         <div id='difficultyHeading' class='heading textAlignCenter'>Difficulty level</div>

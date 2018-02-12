@@ -138,7 +138,7 @@ const puzzleGames = (function(document, window) {
    <span class='mdl-list__item-secondary-content'>
      <span class='mdl-list__item-secondary-info'>Play</span>
      <div class='mdl-list__item-secondary-action'>
-       <i id='${uid}' class='material-icons'>grid_on</i>
+       <i id='${uid}' class='material-icons cursorPointer'>grid_on</i>
      </div>
    </span>
  </li>`;
@@ -196,7 +196,7 @@ const puzzleGames = (function(document, window) {
    <span class='mdl-list__item-secondary-content'>
      <span class='mdl-list__item-secondary-info'>Play</span>
      <div class='mdl-list__item-secondary-action'>
-       <i id='${doc.id}' class='material-icons'>grid_on</i>
+       <i id='${doc.id}' class='material-icons cursorPointer'>grid_on</i>
      </div>
    </span>
  </li>`;
@@ -226,7 +226,8 @@ const puzzleGames = (function(document, window) {
 </span>`;
         }
         pastGamesHtml +=
-`<li id='${doc.id}' class='mdl-list__item mdl-list__item--two-line'>
+`<li id='${doc.id}' class='mdl-list__item mdl-list__item--two-line\
+ cursorPointer'>
    <span class='mdl-list__item-primary-content'>
      ${avatar}
      <span>${myOpponent.displayName}</span>
@@ -303,7 +304,8 @@ const puzzleGames = (function(document, window) {
       replayButton = document.createElement('button');
       replayButton.setAttribute('id', 'replayButton');
       replayButton.classList.add('mdl-button', 'mdl-js-button',
-        'mdl-button--raised', 'mdl-js-ripple-effect', 'mdl-button--accent');
+        'mdl-button--raised', 'mdl-js-ripple-effect',
+        'mdl-button--accent', 'cursorPointer');
       replayButton.innerText = 'Play Again!';
       gamesDialog.firstChild.appendChild(replayButton);
       replayButton.addEventListener('click', replayOpponent);
@@ -334,10 +336,6 @@ const puzzleGames = (function(document, window) {
       });
       gamesDialog.close();
     }
-
-    // replayButtonClicked = event => {
-    //   replayOpponent(event, pastGames[eventTarget.id]);
-    // };
   }
 
   /**
