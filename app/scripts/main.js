@@ -96,6 +96,7 @@ const puzzleWorker = (function(document, window) {
   const logo = document.getElementById('logo');
   const firebase = window.firebase;
   const db = firebase.firestore();
+  const messaging = firebase.messaging();
 
   let currentUser = firebase.auth().currentUser;
   let myOpponentUid = null;
@@ -108,6 +109,19 @@ const puzzleWorker = (function(document, window) {
   let puzzleId = null;
   let myTurn = null;
   let clueNumIndices = {};
+
+  messaging.requestPermission().then(() => {
+    return messaging.getToken();
+  }).then(token => {
+    // TODO: actually, you want to send token to server - functions?
+    console.log(token);
+  }).catch(err => {
+    console.log('User denied messaging', err);
+  });
+
+  messaging.onMessage(payload => {
+    console.log('onMessage: ', payload);
+  });
 
   firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
