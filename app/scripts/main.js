@@ -620,7 +620,7 @@ const puzzleWorker = (function(document, window) {
     game.nextTurn = initiatorUid;
     db.collection('games').add(game).then(docRef => {
       console.log('game written to firestore with docRef: ', docRef);
-      puzzleId = docRef;
+      puzzleId = docRef.id;
       db.collection('games').doc(puzzleId).onSnapshot(doc => {
         game = doc.data();
         myTurn = game.nextTurn !== myOpponentUid;

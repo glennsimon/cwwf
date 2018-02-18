@@ -10,8 +10,8 @@ const puzzleGames = (function(document, window) {
   const opponentHeading = querySelector('#opponentHeading');
   const opponentList = querySelector('#opponentList');
   // const radioEasy = querySelector('#radioEasy');
-  // const radioMed = querySelector('#radioMed');
-  // const radioHard = querySelector('#radioHard');
+  const radioMed = querySelector('#radioMed');
+  const radioHard = querySelector('#radioHard');
   const dialogListContainer = querySelector('#dialogList');
   const activeGamesContainer = querySelector('#activeGamesContainer');
   const pastGamesContainer = querySelector('#pastGamesContainer');
@@ -24,7 +24,7 @@ const puzzleGames = (function(document, window) {
   let activeGamesHtml = '';
   let pastGamesHtml = '';
   let allUsers = {};
-  let pastGames = {};
+  // let pastGames = {};
   // holder variable for function
 
   firebase.auth().onAuthStateChanged(user => {
@@ -214,8 +214,8 @@ const puzzleGames = (function(document, window) {
         } else {
           result = 'Game cancelled';
         }
-        pastGames[doc.id] = {};
-        pastGames[doc.id].difficulty = game.difficulty;
+        // pastGames[doc.id] = {};
+        // pastGames[doc.id].difficulty = game.difficulty;
         let opponentPhoto = allUsers[myOpponent.uid].photoURL;
         if (opponentPhoto) {
           avatar =
@@ -266,9 +266,10 @@ const puzzleGames = (function(document, window) {
    */
   function loadNewGame(event) {
     let difficulty =
-      querySelector('#radioMed').hasAttribute('checked') ? 'medium' : 'easy';
+      radioMed.parentElement.classList.contains('is-checked') ?
+        'medium' : 'easy';
     difficulty =
-      querySelector('#radioHard').hasAttribute('checked') ?
+      radioHard.parentElement.classList.contains('is-checked') ?
         'hard' : difficulty;
 
     window.puzzleWorker.loadPuzzle({
@@ -315,9 +316,10 @@ const puzzleGames = (function(document, window) {
     /** Load game based on user selection */
     function replayOpponent() {
       let difficulty =
-        querySelector('#radioMed').hasAttribute('checked') ? 'medium' : 'easy';
+        radioMed.parentElement.classList.contains('is-checked') ?
+          'medium' : 'easy';
       difficulty =
-        querySelector('#radioHard').hasAttribute('checked') ?
+        radioHard.parentElement.classList.contains('is-checked') ?
           'hard' : difficulty;
 
       let they = currentUser.uid === game.initiator.uid ?
