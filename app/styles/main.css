@@ -126,6 +126,10 @@ select {
   color: white;
 }
 
+.colorLightGray {
+  color: lightGray;
+}
+
 .padRight {
   padding-right: 5px;
 }

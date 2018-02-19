@@ -65,6 +65,16 @@ ParsedPuzzle object:
 	date: <date published string, format m/d/yyyy>,
 	dow: <day of week (ex: Thursday)>,
 	editor: <name of editor string>,
+	completedClues: {
+		across: [
+			<clue number>,
+			...
+		],
+		down: [
+			<clue number>,
+			...
+		]
+	}
 	grid: [
 		{
 			black: true || false, 

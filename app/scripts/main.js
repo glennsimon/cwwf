@@ -201,21 +201,31 @@ const puzzleWorker = (function(document, window) {
     clueContainer.classList.remove('displayNone');
     splash.classList.add('displayNone');
 
+    if (!game.puzzle.completedClues) {
+      game.puzzle.completedClues = {};
+      game.puzzle.completedClues.across = [];
+      game.puzzle.completedClues.down = [];
+    }
+
     // create contents for across clues div
     for (let clue of game.puzzle.clues.across) {
+      let parsedClue = clue.split('.');
+      let clueNumber = parseInt(parsedClue[0], 10);
+      let clueRef = parsedClue[0] + '.';
+      let clueText = parsedClue.slice(1).join('.');
       let clueDiv = document.createElement('div');
       clueDiv.classList.add('displayFlex', 'width50pct', 'cursorPointer');
+      clueDiv.id = 'across' + clueNumber;
+      if (game.puzzle.completedClues.across.includes(clueNumber)) {
+        clueDiv.classList.add('colorLightGray');
+      }
 
       let numDiv = document.createElement('div');
-      numDiv.appendChild(
-        document.createTextNode(clue.slice(0, clue.indexOf('.') + 1))
-      );
+      numDiv.appendChild(document.createTextNode(clueRef));
       numDiv.classList.add('padRight', 'cursorPointer');
 
       let textDiv = document.createElement('div');
-      textDiv.appendChild(
-        document.createTextNode(clue.slice(clue.indexOf('.') + 1))
-      );
+      textDiv.appendChild(document.createTextNode(clueText));
       textDiv.classList.add('cursorPointer');
       clueDiv.appendChild(numDiv);
       clueDiv.appendChild(textDiv);
@@ -225,19 +235,23 @@ const puzzleWorker = (function(document, window) {
 
     // create contents for down clues div
     for (let clue of game.puzzle.clues.down) {
+      let parsedClue = clue.split('.');
+      let clueNumber = parseInt(parsedClue[0], 10);
+      let clueRef = parsedClue[0] + '.';
+      let clueText = parsedClue.slice(1).join('.');
       let clueDiv = document.createElement('div');
       clueDiv.classList.add('displayFlex', 'width50pct');
+      clueDiv.id = 'down' + clueNumber;
+      if (game.puzzle.completedClues.down.includes(clueNumber)) {
+        clueDiv.classList.add('colorLightGray');
+      }
 
       let numDiv = document.createElement('div');
-      numDiv.appendChild(
-        document.createTextNode(clue.slice(0, clue.indexOf('.') + 1))
-      );
+      numDiv.appendChild(document.createTextNode(clueRef));
       numDiv.classList.add('padRight', 'cursorPointer');
 
       let textDiv = document.createElement('div');
-      textDiv.appendChild(
-        document.createTextNode(clue.slice(clue.indexOf('.') + 1))
-      );
+      textDiv.appendChild(document.createTextNode(clueText));
       textDiv.classList.add('cursorPointer');
       clueDiv.appendChild(numDiv);
       clueDiv.appendChild(textDiv);
@@ -593,6 +607,9 @@ const puzzleWorker = (function(document, window) {
     game.puzzle.editor = puzzle.editor;
     game.puzzle.notepad = puzzle.notepad;
     game.puzzle.title = puzzle.title;
+    game.puzzle.completedClues = {};
+    game.puzzle.completedClues.across = [];
+    game.puzzle.completedClues.down = [];
     game.puzzle.grid = [];
     for (var i = 0; i < puzzle.grid.length; i++) {
       game.puzzle.grid[i] = {};
@@ -724,6 +741,11 @@ const puzzleWorker = (function(document, window) {
       savePuzzle();
       return;
     }
+    let direction = acrossWord ? 'across' : 'down';
+    let clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
+    game.puzzle.completedClues[direction].push(clueNumber);
+    document.getElementById(direction + clueNumber)
+      .classList.add('colorLightGray');
     for (let index of idxArray) {
       let gridElement = game.puzzle.grid[index];
       game.puzzle.grid[index] = setCellStatus(index, gridElement);
