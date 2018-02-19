@@ -118,11 +118,13 @@ const puzzleWorker = (function(document, window) {
     location.hash = '#games';
   });
 
-  puzTitle.innerText = 'Select a date above to load puzzle';
+  puzTitle.innerText = 'No puzzle loaded';
 
   /**
-   * This function takes the puzzle object returned from the fetch and displays a grid and clues.
-   * The HTML table exists ahead of time but rows and cells are created on the fly.
+   * This function takes the puzzle object returned from the fetch and displays
+   * a grid and clues. The HTML table element is a placeholder and the rows and
+   * cells are created on the fly. The fetched puzzle is stored as an object in
+   * the variable "game".
    */
   function showPuzzle() {
     // clear previous puzzle if it exists
@@ -354,6 +356,39 @@ const puzzleWorker = (function(document, window) {
   }
 
   /**
+   * Returns an array of indices of cells that make up a word block in
+   * the current puzzle.
+   * @param {Object} cell Cell in puzzle
+   * @param {string} direction Direction (across or down)
+   * @return {array} Array of indices that make up a word block
+   */
+  function getWordBlock(cell, direction) {
+    let row = cell.parentElement.rowIndex;
+    let col = cell.cellIndex;
+    let index = row * columns + col;
+    let indexArray = [];
+    if (direction === 'across') {
+      while (index > row * columns && !game.puzzle.grid[index - 1].black) {
+        index--;
+      }
+      while (index < (row + 1) * columns && !game.puzzle.grid[index].black) {
+        indexArray.push(index);
+        index++;
+      }
+    } else {
+      while (index >= columns && !game.puzzle.grid[index - columns].black) {
+        index -= columns;
+      }
+      while (index < game.puzzle.rows * columns &&
+        !game.puzzle.grid[index].black) {
+        indexArray.push(index);
+        index += columns;
+      }
+    }
+    return indexArray;
+  }
+
+  /**
    * Highlights an across clue and location in puzzle based on which cell
    * the user clicks
    * @param {Object} cell Cell the user clicked
@@ -365,10 +400,8 @@ const puzzleWorker = (function(document, window) {
     let index = row * columns + col;
 
     clearHighlights();
-    while (index > row * columns && !game.puzzle.grid[index - 1].black) {
-      index--;
-    }
-    currentClue = game.puzzle.grid[index].clueNum;
+    idxArray = getWordBlock(cell, 'across');
+    currentClue = game.puzzle.grid[idxArray[0]].clueNum;
     for (let clue of acrossClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
@@ -380,15 +413,12 @@ const puzzleWorker = (function(document, window) {
     let currentCol = index - rowOffset;
     let currentCell = cell.parentElement.children[currentCol];
     currentCell.classList.add('border2pxLeft');
-    while (index < (row + 1) * columns && !game.puzzle.grid[index].black) {
-      currentCol = index - rowOffset;
+    for (let idx of idxArray) {
+      currentCol = idx - rowOffset;
       currentCell = cell.parentElement.children[currentCol];
       currentCell.classList.add('border2pxTop', 'border2pxBottom');
-      idxArray.push(index);
-      currentCell.classList.add(
-        currentCol === col ? 'currCellHighlight' : 'rangeHighlight'
-      );
-      index++;
+      currentCell.classList.add(currentCol === col ?
+        'currCellHighlight' : 'rangeHighlight');
     }
     currentCell.classList.add('border2pxRight');
   }
@@ -404,12 +434,9 @@ const puzzleWorker = (function(document, window) {
     let index = row * columns + col;
 
     clearHighlights();
-    // move to the first letter of the word
-    while (index >= columns && !game.puzzle.grid[index - columns].black) {
-      index -= columns;
-    }
+    idxArray = getWordBlock(cell, 'down');
     // get the number of the clue number
-    currentClue = game.puzzle.grid[index].clueNum;
+    currentClue = game.puzzle.grid[idxArray[0]].clueNum;
     for (let clue of downClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
@@ -420,16 +447,13 @@ const puzzleWorker = (function(document, window) {
     let currentRow = Math.floor(index / columns);
     let currentCell = puzTable.children[0].children[currentRow].children[col];
     currentCell.classList.add('border2pxTop');
-    while (index < game.puzzle.rows * columns &&
-      !game.puzzle.grid[index].black) {
-      currentRow = Math.floor(index / columns);
+    for (let idx of idxArray) {
+      currentRow = Math.floor(idx / columns);
       currentCell = puzTable.children[0].children[currentRow].children[col];
       currentCell.classList.add('border2pxLeft', 'border2pxRight');
-      idxArray.push(index);
       currentCell.classList.add(
         currentRow === row ? 'currCellHighlight' : 'rangeHighlight'
       );
-      index += columns;
     }
     currentCell.classList.add('border2pxBottom');
   }
@@ -694,13 +718,15 @@ const puzzleWorker = (function(document, window) {
   /** Play currentUser's turn. Executed when the player clicks the enter button */
   function playWord() {
     if (!myTurn) return;
+    if (!checkIfCorrect(idxArray)) {
+      game.nextTurn = myOpponentUid;
+      myTurn = !myTurn;
+      savePuzzle();
+      return;
+    }
     for (let index of idxArray) {
       let gridElement = game.puzzle.grid[index];
-      if (gridElement.guess && gridElement.guess !== '') {
-        game.puzzle.grid[index] = setCellStatus(index, gridElement);
-      } else {
-        return;
-      }
+      game.puzzle.grid[index] = setCellStatus(index, gridElement);
     }
     game.nextTurn = myOpponentUid;
     myTurn = !myTurn;
@@ -708,27 +734,61 @@ const puzzleWorker = (function(document, window) {
   }
 
   /**
+   * Checks if array of cells is filled in correctly
+   * @param {array} indexArray Array of cell indices
+   * @return {boolean} true if correct, false otherwise
+   */
+  function checkIfCorrect(indexArray) {
+    for (let index of indexArray) {
+      let gridElement = game.puzzle.grid[index];
+      if (gridElement.guess !== gridElement.value) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Sets values for gridElement based on currentUser play
    * @param {number} index index of cell
-   * @param {Object} gridElement game.puzzle grid array instance
-   * @return {number} gridElement updated grid element
+   * @param {Object} gridElement game.puzzle grid array object
+   * @return {Object} Updated grid element object
    */
   function setCellStatus(index, gridElement) {
-    let playerPos = game.initiator.uid === currentUser.uid ?
+    let player = game.initiator.uid === currentUser.uid ?
       'initiator' : 'opponent';
-    if (gridElement.status === 'locked') return gridElement;
-    if (gridElement.guess === gridElement.value) {
-      game.emptySquares--;
-      gridElement.bgColor = game[playerPos].bgColor;
-      gridElement.status = 'locked';
-      game[playerPos].score += 1;
-      game[playerPos].squaresWon.push(index);
-    } else {
-      // gridElement.bgColor = 'bgTransGray';
-      game[playerPos].errors += 1;
-      game[playerPos].score -= 1;
+    if (gridElement.status === 'locked') {
+      game[player].score += 1;
+      return gridElement;
     }
+    game[player].score += scoreCell(index);
+    game[player].squaresWon.push(index);
+    game.emptySquares--;
+    gridElement.bgColor = game[player].bgColor;
+    gridElement.status = 'locked';
     return gridElement;
+  }
+
+  /**
+   * Adds to score if orthogonal word is completed by this play
+   * @param {number} index index of cell
+   * @return {number} additional score due to completion of orthogonal word
+   */
+  function scoreCell(index) {
+    const row = Math.floor(index / columns);
+    const col = index - row * columns;
+    const cell = puzTable.children[0].children[row].children[col];
+    const wordBlock = getWordBlock(cell, acrossWord ? 'down' : 'across');
+    let addedScore = 0;
+
+    for (let idx of wordBlock) {
+      if (idx === index || game.puzzle.grid[idx].status === 'locked') {
+        addedScore += 1;
+      } else {
+        return 1;
+      }
+    }
+    return addedScore;
   }
 
   /**
@@ -745,11 +805,11 @@ const puzzleWorker = (function(document, window) {
     } else if (event.key) {
       letter = event.key;
     }
-    if (letter.toLowerCase() === 'backspace') {
+    if (letter && letter.toLowerCase() === 'backspace') {
       undoEntry();
       return;
     }
-    if (letter.toLowerCase() === 'enter') {
+    if (letter && letter.toLowerCase() === 'enter') {
       playWord();
       return;
     }
