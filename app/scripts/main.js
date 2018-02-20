@@ -426,7 +426,8 @@ const puzzleWorker = (function(document, window) {
     }
     let currentCol = index - rowOffset;
     let currentCell = cell.parentElement.children[currentCol];
-    currentCell.classList.add('border2pxLeft');
+    cell.parentElement.children[idxArray[0] - rowOffset]
+      .classList.add('border2pxLeft');
     for (let idx of idxArray) {
       currentCol = idx - rowOffset;
       currentCell = cell.parentElement.children[currentCol];
@@ -434,7 +435,8 @@ const puzzleWorker = (function(document, window) {
       currentCell.classList.add(currentCol === col ?
         'currCellHighlight' : 'rangeHighlight');
     }
-    currentCell.classList.add('border2pxRight');
+    cell.parentElement.children[idxArray[idxArray.length - 1] - rowOffset]
+      .classList.add('border2pxRight');
   }
 
   /**
@@ -460,7 +462,8 @@ const puzzleWorker = (function(document, window) {
     }
     let currentRow = Math.floor(index / columns);
     let currentCell = puzTable.children[0].children[currentRow].children[col];
-    currentCell.classList.add('border2pxTop');
+    puzTable.children[0].children[Math.floor(idxArray[0] / columns)]
+      .children[col].classList.add('border2pxTop');
     for (let idx of idxArray) {
       currentRow = Math.floor(idx / columns);
       currentCell = puzTable.children[0].children[currentRow].children[col];
@@ -469,7 +472,9 @@ const puzzleWorker = (function(document, window) {
         currentRow === row ? 'currCellHighlight' : 'rangeHighlight'
       );
     }
-    currentCell.classList.add('border2pxBottom');
+    puzTable.children[0]
+      .children[Math.floor(idxArray[idxArray.length - 1] / columns)]
+      .children[col].classList.add('border2pxBottom');
   }
 
   /** Removes clue cell highlighting from all cells */

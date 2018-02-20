@@ -266,14 +266,6 @@ select {
   border-right: 2px solid gold !important;
 }
 
-.border2pxTop {
-  border-top: 2px solid black;
-}
-
-.border2pxTop {
-  border-top: 2px solid black;
-}
-
 .bgTransRed {
   background-color: rgba(255, 0 , 0, 0.5);
 }
