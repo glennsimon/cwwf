@@ -72,7 +72,7 @@
             <div>TURN</div>
           </div>
           <span>
-            <i id='headerSignin' class='material-icons'>fingerprint</i>
+            <i id='headerSignin' class='material-icons cursorPointer'>fingerprint</i>
           </span>
           <div class='spacer20px'></div>
           <span>
@@ -249,16 +249,16 @@
         <div id='gamesPanel' class='posAbsolute fullWidth height100pct'>
           <div id='gamesPanelContainer' class='displayFlex flexDirCol height100pct'>
             <div class='heading textAlignCenter'>Games</div>
-            <button id='startGameButton' type='button' class='height64px mdl-button mdl-js-button mdl-button--raised mdl-button--accent'>
+            <button id='startGameButton' type='button' class='minHt36px mdl-button mdl-js-button mdl-button--raised mdl-button--accent'>
               start a new game
             </button>
             <div class='overflowYScroll'>
-              <div class='heading'>Active games</div>
-              <ul id='activeGamesContainer' class='demo-list-two mdl-list'>
+              <div class='padding10px fontWeightBold'>Active games</div>
+              <ul id='activeGamesContainer' class='demo-list-two mdl-list webkitMargin0'>
                 You must sign in to see your active games
               </ul>
-              <div class='heading'>Past games</div>
-              <ul id='pastGamesContainer' class='demo-list-two mdl-list'>
+              <div class='padding10px fontWeightBold'>Past games</div>
+              <ul id='pastGamesContainer' class='demo-list-two mdl-list webkitMargin0'>
                 You must sign in to see your completed games
               </ul>
             </div>
@@ -288,7 +288,9 @@
             <span class='mdl-radio__label'>HARD</span>
           </label>
         </div>
-        <div id='opponentHeading' class='heading textAlignCenter'>Choose your opponent</div>
+        <div id='opponentHeading' class='padding10px fontWeightBold textAlignCenter'>
+          Choose your opponent
+        </div>
         <div id='opponentList' class='overflowYScroll'>
           <ul id='dialogList' class='demo-list-action mdl-list'>
             Empty list

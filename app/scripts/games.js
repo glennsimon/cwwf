@@ -135,10 +135,10 @@ const puzzleGames = (function(document, window) {
        ${user.providerId.split('.')[0]}
      </span>
    </span>
-   <span class='mdl-list__item-secondary-content'>
+   <span id='${uid}' class='mdl-list__item-secondary-content cursorPointer'>
      <span class='mdl-list__item-secondary-info'>Play</span>
      <div class='mdl-list__item-secondary-action'>
-       <i id='${uid}' class='material-icons cursorPointer'>grid_on</i>
+       <i class='material-icons'>grid_on</i>
      </div>
    </span>
  </li>`;
@@ -193,10 +193,10 @@ const puzzleGames = (function(document, window) {
        ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
      </span>
    </span>
-   <span class='mdl-list__item-secondary-content'>
+   <span id='${doc.id}' class='mdl-list__item-secondary-content cursorPointer'>
      <span class='mdl-list__item-secondary-info'>Play</span>
      <div class='mdl-list__item-secondary-action'>
-       <i id='${doc.id}' class='material-icons cursorPointer'>grid_on</i>
+       <i class='material-icons'>grid_on</i>
      </div>
    </span>
  </li>`;
@@ -345,8 +345,15 @@ const puzzleGames = (function(document, window) {
    * @param {Object} event Click event from dialogListContainer
    */
   function loadActiveGame(event) {
-    if (event.target.nodeName.toLowerCase() !== 'i') return;
-    window.puzzleWorker.fetchPuzzle(event.target.id);
+    let target = event.target.parentElement;
+    if (target.id === '') {
+      window.puzzleWorker.fetchPuzzle(target.parentElement.id);
+    } else {
+      window.puzzleWorker.fetchPuzzle(target.id);
+    }
+    // if (event.target.nodeName.toLowerCase() !== 'span' ||
+    //   event.target.id === '') return;
+    // window.puzzleWorker.fetchPuzzle(event.target.parentElement.id);
     // unsubscribe();
     // location.hash = '#puzzle';
   }
