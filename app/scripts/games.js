@@ -265,6 +265,10 @@ const puzzleGames = (function(document, window) {
    * @param {Object} event Click event from dialogListContainer
    */
   function loadNewGame(event) {
+    let target = event.target.parentElement;
+    if (target.id === '') {
+      target = target.parentElement;
+    }
     let difficulty =
       radioMed.parentElement.classList.contains('is-checked') ?
         'medium' : 'easy';
@@ -278,8 +282,8 @@ const puzzleGames = (function(document, window) {
         displayName: currentUser.displayName
       },
       opponent: {
-        uid: event.target.id,
-        displayName: allUsers[event.target.id].displayName
+        uid: target.id,
+        displayName: allUsers[target.id].displayName
       },
       difficulty: difficulty
     });
