@@ -419,6 +419,7 @@ const puzzleWorker = (function(document, window) {
     for (let clue of acrossClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
+        acrossClues.scrollTop = clue.offsetTop - 100;
         clue.classList.add('rangeHighlight');
         singleClue.innerText = clue.children[1].textContent;
         break;
@@ -456,6 +457,7 @@ const puzzleWorker = (function(document, window) {
     for (let clue of downClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
+        downClues.scrollTop = clue.offsetTop - 100;
         clue.classList.add('rangeHighlight');
         singleClue.innerText = clue.children[1].textContent;
       }
