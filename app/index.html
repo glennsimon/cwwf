@@ -65,7 +65,7 @@
         <div class='mdl-layout__header-row'>
           <img id='logo' src="images/xswordsLogo.png" alt="Crossed swords logo" height="40" width="40" class='cursorPointer'>
           <div class='spacer20px'></div>
-          <span class='mdl-layout-title'>CrosSwords</span>
+          <span id='title' class='mdl-layout-title displayNone'>CrosSwords</span>
           <div class='mdl-layout-spacer'></div>
           <div id='turnIndicator' class='fontSizeSmall textAlignCenter displayNone'>
             <div id='turnId'>YOUR</div>
@@ -142,13 +142,15 @@
                 Select in the puzzle to reveal clue
               </div>
             </div>
-            <div id='acrossContainer' class='padding-5 flexGrow-1 displayNone'>
-              <div class='heading'>Across</div>
-              <div id='acrossClues' class='flexColumnWrap'></div>
-            </div>
-            <div id='downContainer' class='padding-5 flexGrow-1 displayNone'>
-              <div class='heading'>Down</div>
-              <div id='downClues' class='flexColumnWrap'></div>
+            <div class='displayFlex flexGrow-1'>
+              <div id='acrossContainer' class='padding-5 displayNone'>
+                <div class='heading'>Across</div>
+                <div id='acrossClues' class='overflowYScroll'></div> <!-- class='flexColumnWrap'></div> -->
+              </div>
+              <div id='downContainer' class='padding-5 displayNone'>
+                <div class='heading'>Down</div>
+                <div id='downClues' class='overflowYScroll'></div> <!-- class='flexColumnWrap'></div> -->
+              </div>
             </div>
           </div>
           <div id='kbContainer' class='fullWidth flexDirCol displayNone'>

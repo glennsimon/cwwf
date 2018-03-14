@@ -214,7 +214,7 @@ const puzzleWorker = (function(document, window) {
       let clueRef = parsedClue[0] + '.';
       let clueText = parsedClue.slice(1).join('.');
       let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex', 'width50pct', 'cursorPointer');
+      clueDiv.classList.add('displayFlex', 'cursorPointer'); // , 'width50pct'
       clueDiv.id = 'across' + clueNumber;
       if (game.puzzle.completedClues.across.includes(clueNumber)) {
         clueDiv.classList.add('colorLightGray');
@@ -240,7 +240,7 @@ const puzzleWorker = (function(document, window) {
       let clueRef = parsedClue[0] + '.';
       let clueText = parsedClue.slice(1).join('.');
       let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex', 'width50pct');
+      clueDiv.classList.add('displayFlex', 'cursorPointer'); //, 'width50pct'
       clueDiv.id = 'down' + clueNumber;
       if (game.puzzle.completedClues.down.includes(clueNumber)) {
         clueDiv.classList.add('colorLightGray');

@@ -182,9 +182,9 @@ select {
   flex-grow: 10;
 }*/
 
-#clueContainer {
+/*#clueContainer {
   align-self: stretch;
-}
+}*/
 
 #puzNotepad {
   background-color: #ffffe0;
@@ -555,10 +555,6 @@ select {
 }
 
 @media screen and (min-aspect-ratio: 4/3) {
-  body {
-    font-size: 1.4vw;
-  }
-
   .clueNumber {
     font-size: 0.8vw;
   }
@@ -571,11 +567,11 @@ select {
     display: flex;
     height: 45vw;
     width: 50vw;
-    font-size: 1vw;
   }
 
   #acrossContainer,
   #downContainer {
+    width: 50%;
     display: block;
   }
 
@@ -590,16 +586,39 @@ select {
   #kbContainer {
     height: 20vh;
   }
+
+  #title {
+    display: block;
+  }
 }
 
 @media screen and (min-aspect-ratio: 14/9) {
+  #clueContainer {
+    height: 70%;
+    display: flex;
+    width: 50vw;
+  }
+
+  #kbContainer {
+    height: 25%;
+    width: 50vw;
+  }
+
+  #appContainer {
+    flex-direction: column;
+  }
+ }
+
+ @media screen and (min-aspect-ratio: 2/1) {
   #puzTable {
-    width: 40vw;
+    width: 35vw;
   }
 
   #clueContainer {
-    height: 40vw;
-    display: flex;
-    width: 55vw;
+    width: 60vw;
+  }
+
+  #kbContainer {
+    width: 60vw;
   }
  }
