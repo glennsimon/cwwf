@@ -419,8 +419,12 @@ const puzzleWorker = (function(document, window) {
     for (let clue of acrossClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
-        acrossClues.scrollTop = clue.offsetTop - 100;
-        clue.classList.add('rangeHighlight');
+        acrossClues.scrollBy({
+          top: (clue.offsetTop - 100) - acrossClues.scrollTop,
+          left: 0,
+          behavior: 'smooth'
+        });
+        clue.classList.add('rangeHighlight', 'cluePop');
         singleClue.innerText = clue.children[1].textContent;
         break;
       }
@@ -457,8 +461,12 @@ const puzzleWorker = (function(document, window) {
     for (let clue of downClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
-        downClues.scrollTop = clue.offsetTop - 100;
-        clue.classList.add('rangeHighlight');
+        downClues.scrollBy({
+          top: (clue.offsetTop - 100) - downClues.scrollTop,
+          left: 0,
+          behavior: 'smooth'
+        });
+        clue.classList.add('rangeHighlight', 'cluePop');
         singleClue.innerText = clue.children[1].textContent;
       }
     }
@@ -499,10 +507,10 @@ const puzzleWorker = (function(document, window) {
       }
     }
     for (let clue of acrossClues.children) {
-      clue.classList.remove('rangeHighlight');
+      clue.classList.remove('rangeHighlight', 'cluePop');
     }
     for (let clue of downClues.children) {
-      clue.classList.remove('rangeHighlight');
+      clue.classList.remove('rangeHighlight', 'cluePop');
     }
   }
 

@@ -491,6 +491,11 @@ select {
   font-size: x-large;
 }
 
+.cluePop {
+  font-size: larger;
+  padding: 5px 0;
+}
+
 #clueCard {
   background-color: white;
   padding: 5px;
