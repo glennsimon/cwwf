@@ -419,12 +419,12 @@ const puzzleWorker = (function(document, window) {
     for (let clue of acrossClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
+        clue.classList.add('rangeHighlight', 'cluePop');
         acrossClues.scrollBy({
           top: (clue.offsetTop - 100) - acrossClues.scrollTop,
           left: 0,
           behavior: 'smooth'
         });
-        clue.classList.add('rangeHighlight', 'cluePop');
         singleClue.innerText = clue.children[1].textContent;
         break;
       }
@@ -461,12 +461,12 @@ const puzzleWorker = (function(document, window) {
     for (let clue of downClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
+        clue.classList.add('rangeHighlight', 'cluePop');
         downClues.scrollBy({
           top: (clue.offsetTop - 100) - downClues.scrollTop,
           left: 0,
           behavior: 'smooth'
         });
-        clue.classList.add('rangeHighlight', 'cluePop');
         singleClue.innerText = clue.children[1].textContent;
       }
     }
@@ -815,7 +815,8 @@ const puzzleWorker = (function(document, window) {
     const row = Math.floor(index / columns);
     const col = index - row * columns;
     const cell = puzTable.children[0].children[row].children[col];
-    const wordBlock = getWordBlock(cell, acrossWord ? 'down' : 'across');
+    const direction = acrossWord ? 'down' : 'across';
+    const wordBlock = getWordBlock(cell, direction);
     let addedScore = 0;
 
     for (let idx of wordBlock) {
@@ -825,6 +826,8 @@ const puzzleWorker = (function(document, window) {
         return 1;
       }
     }
+    let clueNumber = game.puzzle.grid[wordBlock[0]].clueNum;
+    game.puzzle.completedClues[direction].push(clueNumber);
     return addedScore;
   }
 
