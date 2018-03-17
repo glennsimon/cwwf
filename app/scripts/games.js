@@ -9,7 +9,7 @@ const puzzleGames = (function(document, window) {
   const winMessage = querySelector('#winMessage');
   const opponentHeading = querySelector('#opponentHeading');
   const opponentList = querySelector('#opponentList');
-  // const radioEasy = querySelector('#radioEasy');
+  const radioEasy = querySelector('#radioEasy');
   const radioMed = querySelector('#radioMed');
   const radioHard = querySelector('#radioHard');
   const dialogListContainer = querySelector('#dialogList');
@@ -47,10 +47,16 @@ const puzzleGames = (function(document, window) {
     location.hash = '#signin';
   });
 
-  gamesDialog.querySelector('.close').addEventListener('click', () => {
-    // unsubscribe();
+  gamesDialog.querySelector('.close').addEventListener('click',
+    closeGamesDialog);
+
+  /** Reset radio buttons and close dialog */
+  function closeGamesDialog() {
+    radioMed.removeAttribute('checked');
+    radioHard.removeAttribute('checked');
+    radioEasy.setAttribute('checked', true);
     gamesDialog.close();
-  });
+  }
 
   /** Start a new game or send user to the login page */
   function initNewGame() {
@@ -315,6 +321,13 @@ const puzzleGames = (function(document, window) {
       gamesDialog.firstChild.appendChild(replayButton);
       replayButton.addEventListener('click', replayOpponent);
     }
+    if (game.difficulty === 'medium') {
+      radioEasy.removeAttribute('checked');
+      radioMed.setAttribute('checked', true);
+    } else if (game.difficulty === 'hard') {
+      radioEasy.removeAttribute('checked');
+      radioHard.setAttribute('checked', true);
+    }
     if (!gamesDialog.open) gamesDialog.showModal();
 
     /** Load game based on user selection */
@@ -340,7 +353,8 @@ const puzzleGames = (function(document, window) {
         },
         difficulty: difficulty
       });
-      gamesDialog.close();
+      // gamesDialog.close();
+      closeGamesDialog();
     }
   }
 

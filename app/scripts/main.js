@@ -270,25 +270,6 @@ const puzzleWorker = (function(document, window) {
       }
     });
 
-    /**
-     * When clue is clicked, this event fires
-     * @param {Event} event Mouse click or screen touch event
-     * @param {string} direction Clue direction (across or down)
-     */
-    function clueClicked(event, direction) {
-      let clueNumberText = event.target.parentElement.firstChild.innerText;
-      clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
-      let cellIndex = clueNumIndices[clueNumberText];
-      let row = Math.floor(cellIndex / columns);
-      let col = cellIndex - row * columns;
-      let cell = puzTable.firstChild.children[row].children[col];
-      if (direction === 'across') {
-        selectAcross(cell);
-      } else {
-        selectDown(cell);
-      }
-    }
-
     scores.classList.remove('displayNone');
     scores.classList.add('displayFlex');
     let me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
@@ -320,6 +301,25 @@ const puzzleWorker = (function(document, window) {
       game.status = 'finished';
       window.puzzleGames.showReplayDialog(game, result);
       savePuzzle();
+    }
+  }
+
+  /**
+   * When clue is clicked, this event fires
+   * @param {Event} event Mouse click or screen touch event
+   * @param {string} direction Clue direction (across or down)
+   */
+  function clueClicked(event, direction) {
+    let clueNumberText = event.target.parentElement.firstChild.innerText;
+    clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
+    let cellIndex = clueNumIndices[clueNumberText];
+    let row = Math.floor(cellIndex / columns);
+    let col = cellIndex - row * columns;
+    let cell = puzTable.firstChild.children[row].children[col];
+    if (direction === 'across') {
+      selectAcross(cell);
+    } else {
+      selectDown(cell);
     }
   }
 
