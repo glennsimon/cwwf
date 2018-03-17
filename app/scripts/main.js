@@ -214,7 +214,7 @@ const puzzleWorker = (function(document, window) {
       let clueRef = parsedClue[0] + '.';
       let clueText = parsedClue.slice(1).join('.');
       let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex', 'cursorPointer'); // , 'width50pct'
+      clueDiv.classList.add('displayFlex', 'cursorPointer');
       clueDiv.id = 'across' + clueNumber;
       if (game.puzzle.completedClues.across.includes(clueNumber)) {
         clueDiv.classList.add('colorLightGray');
@@ -240,7 +240,7 @@ const puzzleWorker = (function(document, window) {
       let clueRef = parsedClue[0] + '.';
       let clueText = parsedClue.slice(1).join('.');
       let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex', 'cursorPointer'); //, 'width50pct'
+      clueDiv.classList.add('displayFlex', 'cursorPointer');
       clueDiv.id = 'down' + clueNumber;
       if (game.puzzle.completedClues.down.includes(clueNumber)) {
         clueDiv.classList.add('colorLightGray');
@@ -290,14 +290,21 @@ const puzzleWorker = (function(document, window) {
     }
 
     scores.classList.remove('displayNone');
+    scores.classList.add('displayFlex');
     let me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
     let they = me === 'initiator' ? 'opponent' : 'initiator';
-    myName.innerText = game[me].displayName.slice(0,
-      game[me].displayName.indexOf(' ') > 10 ?
-        10 : game[me].displayName.indexOf(' '));
-    oppName.innerText = game[they].displayName.slice(0,
-      game[they].displayName.indexOf(' ') > 10 ?
-        10 : game[they].displayName.indexOf(' '));
+    let myNickname = game[me].displayName;
+    let oppNickname = game[they].displayName;
+
+    myNickname = myNickname.indexOf(' ') === -1 ? myNickname :
+      myNickname.slice(0, myNickname.indexOf(' '));
+    myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
+    myName.innerText = myNickname;
+    oppNickname = oppNickname.indexOf(' ') === -1 ? oppNickname :
+      oppNickname.slice(0, oppNickname.indexOf(' '));
+    oppNickname =
+      oppNickname.length > 8 ? oppNickname.slice(0, 8) : oppNickname;
+    oppName.innerText = oppNickname;
     myScore.innerText = game[me].score;
     oppScore.innerText = game[they].score;
     myName.classList.add(game[me].bgColor.replace('bg', 'font'));
@@ -590,10 +597,19 @@ const puzzleWorker = (function(document, window) {
           game.opponent.uid : game.initiator.uid;
         columns = game.puzzle.cols;
         myTurn = game.nextTurn !== myOpponentUid;
-        turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
-      } else {
-        turnId.innerText = 'NO';
+        // turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
+        scores.children[0].classList.remove(myTurn ?
+          'bgColorTransWhite' : 'bgColorTransGold');
+        scores.children[0].classList.add(myTurn ?
+          'bgColorTransGold' : 'bgColorTransWhite');
+        scores.children[2].classList.remove(myTurn ?
+          'bgColorTransGold' : 'bgColorTransWhite');
+        scores.children[2].classList.add(myTurn ?
+          'bgColorTransWhite' : 'bgColorTransGold');
       }
+      // else {
+        // turnId.innerText = 'NO';
+      // }
       puzzleId = newPuzzleId;
       showPuzzle();
       location.hash = '#puzzle';
