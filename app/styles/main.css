@@ -17,9 +17,9 @@ html {
 }
 
 body {
-  font-family: Tahoma, Helvetica, Sans-Serif;
+  font-family: "Roboto", "Helvetica", "Arial", Sans-Serif;
   background-color: #f6f6f6;
-  font-size: 3.5vw;
+  font-size: 16px;
   box-sizing: border-box;
   margin: 0;
 }
@@ -111,6 +111,10 @@ select {
   margin: 2px 10px;
 }
 
+.margin0px5px {
+  margin: 0 5px;
+}
+
 .copy {
   font-size: small;
   color: lightgray;
@@ -124,6 +128,10 @@ select {
 
 .colorWhite {
   color: white;
+}
+
+.colorLightGray {
+  color: lightGray;
 }
 
 .padRight {
@@ -146,11 +154,18 @@ select {
   padding: 5px;
 }
 
+.padding10px {
+  padding: 10px;
+}
+
 .noPadding {
   padding: 0;
 }
 
-
+.webkitMargin0 {
+  -webkit-margin-before: 0;
+  -webkit-margin-after: 0;
+}
 
 
 
@@ -171,9 +186,9 @@ select {
   flex-grow: 10;
 }*/
 
-#clueContainer {
+/*#clueContainer {
   align-self: stretch;
-}
+}*/
 
 #puzNotepad {
   background-color: #ffffe0;
@@ -238,6 +253,10 @@ select {
   line-height: 9px;
 }
 
+.fontWeightBold {
+  font-weight: bold;
+}
+
 .square {
   display: flex;
   vertical-align: baseline;
@@ -260,14 +279,6 @@ select {
 
 .border2pxRight {
   border-right: 2px solid gold !important;
-}
-
-.border2pxTop {
-  border-top: 2px solid black;
-}
-
-.border2pxTop {
-  border-top: 2px solid black;
 }
 
 .bgTransRed {
@@ -328,6 +339,14 @@ select {
   background-color: white;
 }
 
+.bgColorTransWhite {
+  background-color: #ffffff55;
+}
+
+.bgColorTransGold {
+  background-color: #ffd700dd;
+}
+
 .kbButton {
   margin: 0.5%;
   display: flex;
@@ -385,6 +404,10 @@ select {
   width: 60%;
 }
 
+.width60px {
+  width: 60px;
+}
+
 .maxWidth400px {
   max-width: 400px;
 }
@@ -413,8 +436,8 @@ select {
   height: 100%;
 }
 
-.height64px {
-  height: 64px !important;
+.minHt36px {
+  min-height: 36px;
 }
 
 .spacer20px {
@@ -484,6 +507,11 @@ select {
   font-size: x-large;
 }
 
+.cluePop {
+  font-size: larger;
+  padding: 5px 0;
+}
+
 #clueCard {
   background-color: white;
   padding: 5px;
@@ -548,10 +576,6 @@ select {
 }
 
 @media screen and (min-aspect-ratio: 4/3) {
-  body {
-    font-size: 1.4vw;
-  }
-
   .clueNumber {
     font-size: 0.8vw;
   }
@@ -564,11 +588,11 @@ select {
     display: flex;
     height: 45vw;
     width: 50vw;
-    font-size: 1vw;
   }
 
   #acrossContainer,
   #downContainer {
+    width: 50%;
     display: block;
   }
 
@@ -583,16 +607,39 @@ select {
   #kbContainer {
     height: 20vh;
   }
+
+  #title {
+    display: block;
+  }
 }
 
 @media screen and (min-aspect-ratio: 14/9) {
+  #clueContainer {
+    height: 70%;
+    display: flex;
+    width: 50vw;
+  }
+
+  #kbContainer {
+    height: 25%;
+    width: 50vw;
+  }
+
+  #appContainer {
+    flex-direction: column;
+  }
+ }
+
+ @media screen and (min-aspect-ratio: 2/1) {
   #puzTable {
-    width: 40vw;
+    width: 35vw;
   }
 
   #clueContainer {
-    height: 40vw;
-    display: flex;
-    width: 55vw;
+    width: 60vw;
+  }
+
+  #kbContainer {
+    width: 60vw;
   }
  }

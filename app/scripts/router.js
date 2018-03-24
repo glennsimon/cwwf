@@ -8,9 +8,9 @@
   function initApp() {
     const querySelector = document.querySelector.bind(document);
     const appContainer = querySelector('#appContainer');
-    const turnIndicator = querySelector('#turnIndicator');
     const gamesPanel = querySelector('#gamesPanel');
     const gamesDialog = querySelector('#gamesDialog');
+    const scores = querySelector('#scores');
 
     window.addEventListener('hashchange', navigate);
 
@@ -30,12 +30,14 @@
         window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
-        turnIndicator.classList.remove('displayNone');
+        // turnIndicator.classList.remove('displayNone');
       } else if (location.hash === '#signin') {
         window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
-        turnIndicator.classList.add('displayNone');
+        // turnIndicator.classList.add('displayNone');
+        scores.classList.remove('displayFlex');
+        scores.classList.add('displayNone');
       } else if (location.hash === '#games') {
         try {
           gamesDialog.close();
@@ -45,7 +47,9 @@
         window.puzzleGames.subscribe();
         gamesPanel.classList.remove('slideOut');
         appContainer.classList.remove('slideIn');
-        turnIndicator.classList.add('displayNone');
+        // turnIndicator.classList.add('displayNone');
+        scores.classList.remove('displayFlex');
+        scores.classList.add('displayNone');
       }
     }
 

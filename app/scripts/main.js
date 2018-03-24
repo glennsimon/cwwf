@@ -132,11 +132,13 @@ const puzzleWorker = (function(document, window) {
     location.hash = '#games';
   });
 
-  puzTitle.innerText = 'Select a date above to load puzzle';
+  puzTitle.innerText = 'No puzzle loaded';
 
   /**
-   * This function takes the puzzle object returned from the fetch and displays a grid and clues.
-   * The HTML table exists ahead of time but rows and cells are created on the fly.
+   * This function takes the puzzle object returned from the fetch and displays
+   * a grid and clues. The HTML table element is a placeholder and the rows and
+   * cells are created on the fly. The fetched puzzle is stored as an object in
+   * the variable "game".
    */
   function showPuzzle() {
     // clear previous puzzle if it exists
@@ -213,21 +215,31 @@ const puzzleWorker = (function(document, window) {
     clueContainer.classList.remove('displayNone');
     splash.classList.add('displayNone');
 
+    if (!game.puzzle.completedClues) {
+      game.puzzle.completedClues = {};
+      game.puzzle.completedClues.across = [];
+      game.puzzle.completedClues.down = [];
+    }
+
     // create contents for across clues div
     for (let clue of game.puzzle.clues.across) {
+      let parsedClue = clue.split('.');
+      let clueNumber = parseInt(parsedClue[0], 10);
+      let clueRef = parsedClue[0] + '.';
+      let clueText = parsedClue.slice(1).join('.');
       let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex', 'width50pct', 'cursorPointer');
+      clueDiv.classList.add('displayFlex', 'cursorPointer');
+      clueDiv.id = 'across' + clueNumber;
+      if (game.puzzle.completedClues.across.includes(clueNumber)) {
+        clueDiv.classList.add('colorLightGray');
+      }
 
       let numDiv = document.createElement('div');
-      numDiv.appendChild(
-        document.createTextNode(clue.slice(0, clue.indexOf('.') + 1))
-      );
+      numDiv.appendChild(document.createTextNode(clueRef));
       numDiv.classList.add('padRight', 'cursorPointer');
 
       let textDiv = document.createElement('div');
-      textDiv.appendChild(
-        document.createTextNode(clue.slice(clue.indexOf('.') + 1))
-      );
+      textDiv.appendChild(document.createTextNode(clueText));
       textDiv.classList.add('cursorPointer');
       clueDiv.appendChild(numDiv);
       clueDiv.appendChild(textDiv);
@@ -237,19 +249,23 @@ const puzzleWorker = (function(document, window) {
 
     // create contents for down clues div
     for (let clue of game.puzzle.clues.down) {
+      let parsedClue = clue.split('.');
+      let clueNumber = parseInt(parsedClue[0], 10);
+      let clueRef = parsedClue[0] + '.';
+      let clueText = parsedClue.slice(1).join('.');
       let clueDiv = document.createElement('div');
-      clueDiv.classList.add('displayFlex', 'width50pct');
+      clueDiv.classList.add('displayFlex', 'cursorPointer');
+      clueDiv.id = 'down' + clueNumber;
+      if (game.puzzle.completedClues.down.includes(clueNumber)) {
+        clueDiv.classList.add('colorLightGray');
+      }
 
       let numDiv = document.createElement('div');
-      numDiv.appendChild(
-        document.createTextNode(clue.slice(0, clue.indexOf('.') + 1))
-      );
+      numDiv.appendChild(document.createTextNode(clueRef));
       numDiv.classList.add('padRight', 'cursorPointer');
 
       let textDiv = document.createElement('div');
-      textDiv.appendChild(
-        document.createTextNode(clue.slice(clue.indexOf('.') + 1))
-      );
+      textDiv.appendChild(document.createTextNode(clueText));
       textDiv.classList.add('cursorPointer');
       clueDiv.appendChild(numDiv);
       clueDiv.appendChild(textDiv);
@@ -268,34 +284,22 @@ const puzzleWorker = (function(document, window) {
       }
     });
 
-    /**
-     * When clue is clicked, this event fires
-     * @param {Event} event Mouse click or screen touch event
-     * @param {string} direction Clue direction (across or down)
-     */
-    function clueClicked(event, direction) {
-      let clueNumberText = event.target.parentElement.firstChild.innerText;
-      clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
-      let cellIndex = clueNumIndices[clueNumberText];
-      let row = Math.floor(cellIndex / columns);
-      let col = cellIndex - row * columns;
-      let cell = puzTable.firstChild.children[row].children[col];
-      if (direction === 'across') {
-        selectAcross(cell);
-      } else {
-        selectDown(cell);
-      }
-    }
-
     scores.classList.remove('displayNone');
+    scores.classList.add('displayFlex');
     let me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
     let they = me === 'initiator' ? 'opponent' : 'initiator';
-    myName.innerText = game[me].displayName.slice(0,
-      game[me].displayName.indexOf(' ') > 10 ?
-        10 : game[me].displayName.indexOf(' '));
-    oppName.innerText = game[they].displayName.slice(0,
-      game[they].displayName.indexOf(' ') > 10 ?
-        10 : game[they].displayName.indexOf(' '));
+    let myNickname = game[me].displayName;
+    let oppNickname = game[they].displayName;
+
+    myNickname = myNickname.indexOf(' ') === -1 ? myNickname :
+      myNickname.slice(0, myNickname.indexOf(' '));
+    myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
+    myName.innerText = myNickname;
+    oppNickname = oppNickname.indexOf(' ') === -1 ? oppNickname :
+      oppNickname.slice(0, oppNickname.indexOf(' '));
+    oppNickname =
+      oppNickname.length > 8 ? oppNickname.slice(0, 8) : oppNickname;
+    oppName.innerText = oppNickname;
     myScore.innerText = game[me].score;
     oppScore.innerText = game[they].score;
     myName.classList.add(game[me].bgColor.replace('bg', 'font'));
@@ -311,6 +315,25 @@ const puzzleWorker = (function(document, window) {
       game.status = 'finished';
       window.puzzleGames.showReplayDialog(game, result);
       savePuzzle();
+    }
+  }
+
+  /**
+   * When clue is clicked, this event fires
+   * @param {Event} event Mouse click or screen touch event
+   * @param {string} direction Clue direction (across or down)
+   */
+  function clueClicked(event, direction) {
+    let clueNumberText = event.target.parentElement.firstChild.innerText;
+    clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
+    let cellIndex = clueNumIndices[clueNumberText];
+    let row = Math.floor(cellIndex / columns);
+    let col = cellIndex - row * columns;
+    let cell = puzTable.firstChild.children[row].children[col];
+    if (direction === 'across') {
+      selectAcross(cell);
+    } else {
+      selectDown(cell);
     }
   }
 
@@ -368,6 +391,39 @@ const puzzleWorker = (function(document, window) {
   }
 
   /**
+   * Returns an array of indices of cells that make up a word block in
+   * the current puzzle.
+   * @param {Object} cell Cell in puzzle
+   * @param {string} direction Direction (across or down)
+   * @return {array} Array of indices that make up a word block
+   */
+  function getWordBlock(cell, direction) {
+    let row = cell.parentElement.rowIndex;
+    let col = cell.cellIndex;
+    let index = row * columns + col;
+    let indexArray = [];
+    if (direction === 'across') {
+      while (index > row * columns && !game.puzzle.grid[index - 1].black) {
+        index--;
+      }
+      while (index < (row + 1) * columns && !game.puzzle.grid[index].black) {
+        indexArray.push(index);
+        index++;
+      }
+    } else {
+      while (index >= columns && !game.puzzle.grid[index - columns].black) {
+        index -= columns;
+      }
+      while (index < game.puzzle.rows * columns &&
+        !game.puzzle.grid[index].black) {
+        indexArray.push(index);
+        index += columns;
+      }
+    }
+    return indexArray;
+  }
+
+  /**
    * Highlights an across clue and location in puzzle based on which cell
    * the user clicks
    * @param {Object} cell Cell the user clicked
@@ -379,32 +435,34 @@ const puzzleWorker = (function(document, window) {
     let index = row * columns + col;
 
     clearHighlights();
-    while (index > row * columns && !game.puzzle.grid[index - 1].black) {
-      index--;
-    }
-    currentClue = game.puzzle.grid[index].clueNum;
+    idxArray = getWordBlock(cell, 'across');
+    currentClue = game.puzzle.grid[idxArray[0]].clueNum;
     for (let clue of acrossClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
-        clue.classList.add('rangeHighlight');
+        clue.classList.add('rangeHighlight', 'cluePop');
+        acrossClues.scrollBy({
+          top: (clue.offsetTop - 100) - acrossClues.scrollTop,
+          left: 0,
+          behavior: 'smooth'
+        });
         singleClue.innerText = clue.children[1].textContent;
         break;
       }
     }
     let currentCol = index - rowOffset;
     let currentCell = cell.parentElement.children[currentCol];
-    currentCell.classList.add('border2pxLeft');
-    while (index < (row + 1) * columns && !game.puzzle.grid[index].black) {
-      currentCol = index - rowOffset;
+    cell.parentElement.children[idxArray[0] - rowOffset]
+      .classList.add('border2pxLeft');
+    for (let idx of idxArray) {
+      currentCol = idx - rowOffset;
       currentCell = cell.parentElement.children[currentCol];
       currentCell.classList.add('border2pxTop', 'border2pxBottom');
-      idxArray.push(index);
-      currentCell.classList.add(
-        currentCol === col ? 'currCellHighlight' : 'rangeHighlight'
-      );
-      index++;
+      currentCell.classList.add(currentCol === col ?
+        'currCellHighlight' : 'rangeHighlight');
     }
-    currentCell.classList.add('border2pxRight');
+    cell.parentElement.children[idxArray[idxArray.length - 1] - rowOffset]
+      .classList.add('border2pxRight');
   }
 
   /**
@@ -418,34 +476,36 @@ const puzzleWorker = (function(document, window) {
     let index = row * columns + col;
 
     clearHighlights();
-    // move to the first letter of the word
-    while (index >= columns && !game.puzzle.grid[index - columns].black) {
-      index -= columns;
-    }
+    idxArray = getWordBlock(cell, 'down');
     // get the number of the clue number
-    currentClue = game.puzzle.grid[index].clueNum;
+    currentClue = game.puzzle.grid[idxArray[0]].clueNum;
     for (let clue of downClues.children) {
       let clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
-        clue.classList.add('rangeHighlight');
+        clue.classList.add('rangeHighlight', 'cluePop');
+        downClues.scrollBy({
+          top: (clue.offsetTop - 100) - downClues.scrollTop,
+          left: 0,
+          behavior: 'smooth'
+        });
         singleClue.innerText = clue.children[1].textContent;
       }
     }
     let currentRow = Math.floor(index / columns);
     let currentCell = puzTable.children[0].children[currentRow].children[col];
-    currentCell.classList.add('border2pxTop');
-    while (index < game.puzzle.rows * columns &&
-      !game.puzzle.grid[index].black) {
-      currentRow = Math.floor(index / columns);
+    puzTable.children[0].children[Math.floor(idxArray[0] / columns)]
+      .children[col].classList.add('border2pxTop');
+    for (let idx of idxArray) {
+      currentRow = Math.floor(idx / columns);
       currentCell = puzTable.children[0].children[currentRow].children[col];
       currentCell.classList.add('border2pxLeft', 'border2pxRight');
-      idxArray.push(index);
       currentCell.classList.add(
         currentRow === row ? 'currCellHighlight' : 'rangeHighlight'
       );
-      index += columns;
     }
-    currentCell.classList.add('border2pxBottom');
+    puzTable.children[0]
+      .children[Math.floor(idxArray[idxArray.length - 1] / columns)]
+      .children[col].classList.add('border2pxBottom');
   }
 
   /** Removes clue cell highlighting from all cells */
@@ -468,10 +528,10 @@ const puzzleWorker = (function(document, window) {
       }
     }
     for (let clue of acrossClues.children) {
-      clue.classList.remove('rangeHighlight');
+      clue.classList.remove('rangeHighlight', 'cluePop');
     }
     for (let clue of downClues.children) {
-      clue.classList.remove('rangeHighlight');
+      clue.classList.remove('rangeHighlight', 'cluePop');
     }
   }
 
@@ -551,10 +611,19 @@ const puzzleWorker = (function(document, window) {
           game.opponent.uid : game.initiator.uid;
         columns = game.puzzle.cols;
         myTurn = game.nextTurn !== myOpponentUid;
-        turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
-      } else {
-        turnId.innerText = 'NO';
+        // turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
+        scores.children[0].classList.remove(myTurn ?
+          'bgColorTransWhite' : 'bgColorTransGold');
+        scores.children[0].classList.add(myTurn ?
+          'bgColorTransGold' : 'bgColorTransWhite');
+        scores.children[2].classList.remove(myTurn ?
+          'bgColorTransGold' : 'bgColorTransWhite');
+        scores.children[2].classList.add(myTurn ?
+          'bgColorTransWhite' : 'bgColorTransGold');
       }
+      // else {
+        // turnId.innerText = 'NO';
+      // }
       puzzleId = newPuzzleId;
       showPuzzle();
       location.hash = '#puzzle';
@@ -583,6 +652,9 @@ const puzzleWorker = (function(document, window) {
     game.puzzle.editor = puzzle.editor;
     game.puzzle.notepad = puzzle.notepad;
     game.puzzle.title = puzzle.title;
+    game.puzzle.completedClues = {};
+    game.puzzle.completedClues.across = [];
+    game.puzzle.completedClues.down = [];
     game.puzzle.grid = [];
     for (var i = 0; i < puzzle.grid.length; i++) {
       game.puzzle.grid[i] = {};
@@ -634,7 +706,7 @@ const puzzleWorker = (function(document, window) {
     game.nextTurn = initiatorUid;
     db.collection('games').add(game).then(docRef => {
       console.log('game written to firestore with docRef: ', docRef);
-      puzzleId = docRef;
+      puzzleId = docRef.id;
       db.collection('games').doc(puzzleId).onSnapshot(doc => {
         game = doc.data();
         myTurn = game.nextTurn !== myOpponentUid;
@@ -708,13 +780,20 @@ const puzzleWorker = (function(document, window) {
   /** Play currentUser's turn. Executed when the player clicks the enter button */
   function playWord() {
     if (!myTurn) return;
+    if (!checkIfCorrect(idxArray)) {
+      game.nextTurn = myOpponentUid;
+      myTurn = !myTurn;
+      savePuzzle();
+      return;
+    }
+    let direction = acrossWord ? 'across' : 'down';
+    let clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
+    game.puzzle.completedClues[direction].push(clueNumber);
+    document.getElementById(direction + clueNumber)
+      .classList.add('colorLightGray');
     for (let index of idxArray) {
       let gridElement = game.puzzle.grid[index];
-      if (gridElement.guess && gridElement.guess !== '') {
-        game.puzzle.grid[index] = setCellStatus(index, gridElement);
-      } else {
-        return;
-      }
+      game.puzzle.grid[index] = setCellStatus(index, gridElement);
     }
     game.nextTurn = myOpponentUid;
     myTurn = !myTurn;
@@ -722,27 +801,64 @@ const puzzleWorker = (function(document, window) {
   }
 
   /**
+   * Checks if array of cells is filled in correctly
+   * @param {array} indexArray Array of cell indices
+   * @return {boolean} true if correct, false otherwise
+   */
+  function checkIfCorrect(indexArray) {
+    for (let index of indexArray) {
+      let gridElement = game.puzzle.grid[index];
+      if (gridElement.guess !== gridElement.value) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Sets values for gridElement based on currentUser play
    * @param {number} index index of cell
-   * @param {Object} gridElement game.puzzle grid array instance
-   * @return {number} gridElement updated grid element
+   * @param {Object} gridElement game.puzzle grid array object
+   * @return {Object} Updated grid element object
    */
   function setCellStatus(index, gridElement) {
-    let playerPos = game.initiator.uid === currentUser.uid ?
+    let player = game.initiator.uid === currentUser.uid ?
       'initiator' : 'opponent';
-    if (gridElement.status === 'locked') return gridElement;
-    if (gridElement.guess === gridElement.value) {
-      game.emptySquares--;
-      gridElement.bgColor = game[playerPos].bgColor;
-      gridElement.status = 'locked';
-      game[playerPos].score += 1;
-      game[playerPos].squaresWon.push(index);
-    } else {
-      // gridElement.bgColor = 'bgTransGray';
-      game[playerPos].errors += 1;
-      game[playerPos].score -= 1;
+    if (gridElement.status === 'locked') {
+      game[player].score += 1;
+      return gridElement;
     }
+    game[player].score += scoreCell(index);
+    game[player].squaresWon.push(index);
+    game.emptySquares--;
+    gridElement.bgColor = game[player].bgColor;
+    gridElement.status = 'locked';
     return gridElement;
+  }
+
+  /**
+   * Adds to score if orthogonal word is completed by this play
+   * @param {number} index index of cell
+   * @return {number} additional score due to completion of orthogonal word
+   */
+  function scoreCell(index) {
+    const row = Math.floor(index / columns);
+    const col = index - row * columns;
+    const cell = puzTable.children[0].children[row].children[col];
+    const direction = acrossWord ? 'down' : 'across';
+    const wordBlock = getWordBlock(cell, direction);
+    let addedScore = 0;
+
+    for (let idx of wordBlock) {
+      if (idx === index || game.puzzle.grid[idx].status === 'locked') {
+        addedScore += 1;
+      } else {
+        return 1;
+      }
+    }
+    let clueNumber = game.puzzle.grid[wordBlock[0]].clueNum;
+    game.puzzle.completedClues[direction].push(clueNumber);
+    return addedScore;
   }
 
   /**
@@ -759,11 +875,11 @@ const puzzleWorker = (function(document, window) {
     } else if (event.key) {
       letter = event.key;
     }
-    if (letter.toLowerCase() === 'backspace') {
+    if (letter && letter.toLowerCase() === 'backspace') {
       undoEntry();
       return;
     }
-    if (letter.toLowerCase() === 'enter') {
+    if (letter && letter.toLowerCase() === 'enter') {
       playWord();
       return;
     }

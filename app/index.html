@@ -65,14 +65,25 @@
         <div class='mdl-layout__header-row'>
           <img id='logo' src="images/xswordsLogo.png" alt="Crossed swords logo" height="40" width="40" class='cursorPointer'>
           <div class='spacer20px'></div>
-          <span class='mdl-layout-title'>CrosSwords</span>
+          <span id='title' class='mdl-layout-title displayNone'>CrosSwords</span>
           <div class='mdl-layout-spacer'></div>
-          <div id='turnIndicator' class='fontSizeSmall textAlignCenter displayNone'>
+          <div id='scores' class='displayNone'>
+            <div class='flexGrow-1 margin0px5px width60px bgColorTransWhite'>
+              <div id="myName" class='textAlignCenter overflowHidden'>Jill</div>
+              <div id="myScore" class='textAlignCenter'>25</div>
+            </div>
+            <div class='marginAuto'>vs.</div>
+            <div class='flexGrow-1 margin0px5px width60px bgColorTransWhite'>
+              <div id="oppName" class='textAlignCenter overflowHidden'>Bill</div>
+              <div id="oppScore" class='textAlignCenter'>30</div>
+            </div>
+          </div>
+          <!-- <div id='turnIndicator' class='fontSizeSmall textAlignCenter displayNone'>
             <div id='turnId'>YOUR</div>
             <div>TURN</div>
-          </div>
+          </div> -->
           <span>
-            <i id='headerSignin' class='material-icons'>fingerprint</i>
+            <i id='headerSignin' class='material-icons cursorPointer'>fingerprint</i>
           </span>
           <div class='spacer20px'></div>
           <span>
@@ -105,7 +116,7 @@
             </ul>
           </div>
         </header>
-        <div id='scores' class='displayNone'>
+        <!-- <div id='scores' class='displayNone'>
           <div class="textAlignCenter heading">SCORES</div>
           <div class="displayFlex">
             <div class='flexGrow-1'>
@@ -117,7 +128,7 @@
               <div id="oppScore" class='textAlignCenter fontSizeXLarge'>30</div>
             </div>
           </div>
-        </div>
+        </div> -->
         <nav class='displayFlex flexDirCol jpdy-navigation mdl-navigation mdl-color--blue-grey-800'>
           <div id='puzTitle' class='heading textAlignCenter colorWhite'></div>
           <div id='puzAuthor' class='author colorWhite'></div>
@@ -142,13 +153,15 @@
                 Select in the puzzle to reveal clue
               </div>
             </div>
-            <div id='acrossContainer' class='padding-5 flexGrow-1 displayNone'>
-              <div class='heading'>Across</div>
-              <div id='acrossClues' class='flexColumnWrap'></div>
-            </div>
-            <div id='downContainer' class='padding-5 flexGrow-1 displayNone'>
-              <div class='heading'>Down</div>
-              <div id='downClues' class='flexColumnWrap'></div>
+            <div class='displayFlex flexGrow-1'>
+              <div id='acrossContainer' class='padding-5 displayNone'>
+                <div class='heading'>Across</div>
+                <div id='acrossClues' class='overflowYScroll'></div> <!-- class='flexColumnWrap'></div> -->
+              </div>
+              <div id='downContainer' class='padding-5 displayNone'>
+                <div class='heading'>Down</div>
+                <div id='downClues' class='overflowYScroll'></div> <!-- class='flexColumnWrap'></div> -->
+              </div>
             </div>
           </div>
           <div id='kbContainer' class='fullWidth flexDirCol displayNone'>
@@ -249,16 +262,16 @@
         <div id='gamesPanel' class='posAbsolute fullWidth height100pct'>
           <div id='gamesPanelContainer' class='displayFlex flexDirCol height100pct'>
             <div class='heading textAlignCenter'>Games</div>
-            <button id='startGameButton' type='button' class='height64px mdl-button mdl-js-button mdl-button--raised mdl-button--accent'>
+            <button id='startGameButton' type='button' class='minHt36px mdl-button mdl-js-button mdl-button--raised mdl-button--accent'>
               start a new game
             </button>
             <div class='overflowYScroll'>
-              <div class='heading'>Active games</div>
-              <ul id='activeGamesContainer' class='demo-list-two mdl-list'>
+              <div class='padding10px fontWeightBold'>Active games</div>
+              <ul id='activeGamesContainer' class='demo-list-two mdl-list webkitMargin0'>
                 You must sign in to see your active games
               </ul>
-              <div class='heading'>Past games</div>
-              <ul id='pastGamesContainer' class='demo-list-two mdl-list'>
+              <div class='padding10px fontWeightBold'>Past games</div>
+              <ul id='pastGamesContainer' class='demo-list-two mdl-list webkitMargin0'>
                 You must sign in to see your completed games
               </ul>
             </div>
@@ -288,7 +301,9 @@
             <span class='mdl-radio__label'>HARD</span>
           </label>
         </div>
-        <div id='opponentHeading' class='heading textAlignCenter'>Choose your opponent</div>
+        <div id='opponentHeading' class='padding10px fontWeightBold textAlignCenter'>
+          Choose your opponent
+        </div>
         <div id='opponentList' class='overflowYScroll'>
           <ul id='dialogList' class='demo-list-action mdl-list'>
             Empty list

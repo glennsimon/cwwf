@@ -9,9 +9,9 @@ const puzzleGames = (function(document, window) {
   const winMessage = querySelector('#winMessage');
   const opponentHeading = querySelector('#opponentHeading');
   const opponentList = querySelector('#opponentList');
-  // const radioEasy = querySelector('#radioEasy');
-  // const radioMed = querySelector('#radioMed');
-  // const radioHard = querySelector('#radioHard');
+  const radioEasy = querySelector('#radioEasy');
+  const radioMed = querySelector('#radioMed');
+  const radioHard = querySelector('#radioHard');
   const dialogListContainer = querySelector('#dialogList');
   const activeGamesContainer = querySelector('#activeGamesContainer');
   const pastGamesContainer = querySelector('#pastGamesContainer');
@@ -24,7 +24,7 @@ const puzzleGames = (function(document, window) {
   let activeGamesHtml = '';
   let pastGamesHtml = '';
   let allUsers = {};
-  let pastGames = {};
+  // let pastGames = {};
   // holder variable for function
 
   firebase.auth().onAuthStateChanged(user => {
@@ -47,10 +47,16 @@ const puzzleGames = (function(document, window) {
     location.hash = '#signin';
   });
 
-  gamesDialog.querySelector('.close').addEventListener('click', () => {
-    // unsubscribe();
+  gamesDialog.querySelector('.close').addEventListener('click',
+    closeGamesDialog);
+
+  /** Reset radio buttons and close dialog */
+  function closeGamesDialog() {
+    radioMed.removeAttribute('checked');
+    radioHard.removeAttribute('checked');
+    radioEasy.setAttribute('checked', true);
     gamesDialog.close();
-  });
+  }
 
   /** Start a new game or send user to the login page */
   function initNewGame() {
@@ -135,10 +141,10 @@ const puzzleGames = (function(document, window) {
        ${user.providerId.split('.')[0]}
      </span>
    </span>
-   <span class='mdl-list__item-secondary-content'>
+   <span id='${uid}' class='mdl-list__item-secondary-content cursorPointer'>
      <span class='mdl-list__item-secondary-info'>Play</span>
      <div class='mdl-list__item-secondary-action'>
-       <i id='${uid}' class='material-icons cursorPointer'>grid_on</i>
+       <i class='material-icons'>grid_on</i>
      </div>
    </span>
  </li>`;
@@ -193,10 +199,10 @@ const puzzleGames = (function(document, window) {
        ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
      </span>
    </span>
-   <span class='mdl-list__item-secondary-content'>
+   <span id='${doc.id}' class='mdl-list__item-secondary-content cursorPointer'>
      <span class='mdl-list__item-secondary-info'>Play</span>
      <div class='mdl-list__item-secondary-action'>
-       <i id='${doc.id}' class='material-icons cursorPointer'>grid_on</i>
+       <i class='material-icons'>grid_on</i>
      </div>
    </span>
  </li>`;
@@ -214,8 +220,8 @@ const puzzleGames = (function(document, window) {
         } else {
           result = 'Game cancelled';
         }
-        pastGames[doc.id] = {};
-        pastGames[doc.id].difficulty = game.difficulty;
+        // pastGames[doc.id] = {};
+        // pastGames[doc.id].difficulty = game.difficulty;
         let opponentPhoto = allUsers[myOpponent.uid].photoURL;
         if (opponentPhoto) {
           avatar =
@@ -265,10 +271,15 @@ const puzzleGames = (function(document, window) {
    * @param {Object} event Click event from dialogListContainer
    */
   function loadNewGame(event) {
+    let target = event.target.parentElement;
+    if (target.id === '') {
+      target = target.parentElement;
+    }
     let difficulty =
-      querySelector('#radioMed').hasAttribute('checked') ? 'medium' : 'easy';
+      radioMed.parentElement.classList.contains('is-checked') ?
+        'medium' : 'easy';
     difficulty =
-      querySelector('#radioHard').hasAttribute('checked') ?
+      radioHard.parentElement.classList.contains('is-checked') ?
         'hard' : difficulty;
 
     window.puzzleWorker.loadPuzzle({
@@ -277,8 +288,8 @@ const puzzleGames = (function(document, window) {
         displayName: currentUser.displayName
       },
       opponent: {
-        uid: event.target.id,
-        displayName: allUsers[event.target.id].displayName
+        uid: target.id,
+        displayName: allUsers[target.id].displayName
       },
       difficulty: difficulty
     });
@@ -310,14 +321,22 @@ const puzzleGames = (function(document, window) {
       gamesDialog.firstChild.appendChild(replayButton);
       replayButton.addEventListener('click', replayOpponent);
     }
+    if (game.difficulty === 'medium') {
+      radioEasy.removeAttribute('checked');
+      radioMed.setAttribute('checked', true);
+    } else if (game.difficulty === 'hard') {
+      radioEasy.removeAttribute('checked');
+      radioHard.setAttribute('checked', true);
+    }
     if (!gamesDialog.open) gamesDialog.showModal();
 
     /** Load game based on user selection */
     function replayOpponent() {
       let difficulty =
-        querySelector('#radioMed').hasAttribute('checked') ? 'medium' : 'easy';
+        radioMed.parentElement.classList.contains('is-checked') ?
+          'medium' : 'easy';
       difficulty =
-        querySelector('#radioHard').hasAttribute('checked') ?
+        radioHard.parentElement.classList.contains('is-checked') ?
           'hard' : difficulty;
 
       let they = currentUser.uid === game.initiator.uid ?
@@ -334,7 +353,8 @@ const puzzleGames = (function(document, window) {
         },
         difficulty: difficulty
       });
-      gamesDialog.close();
+      // gamesDialog.close();
+      closeGamesDialog();
     }
   }
 
@@ -343,8 +363,15 @@ const puzzleGames = (function(document, window) {
    * @param {Object} event Click event from dialogListContainer
    */
   function loadActiveGame(event) {
-    if (event.target.nodeName.toLowerCase() !== 'i') return;
-    window.puzzleWorker.fetchPuzzle(event.target.id);
+    let target = event.target.parentElement;
+    if (target.id === '') {
+      window.puzzleWorker.fetchPuzzle(target.parentElement.id);
+    } else {
+      window.puzzleWorker.fetchPuzzle(target.id);
+    }
+    // if (event.target.nodeName.toLowerCase() !== 'span' ||
+    //   event.target.id === '') return;
+    // window.puzzleWorker.fetchPuzzle(event.target.parentElement.id);
     // unsubscribe();
     // location.hash = '#puzzle';
   }
