@@ -53,7 +53,8 @@ exports.updateUser = functions.firestore
     const previousValue = event.data.previous.data();
 
     if (newValue.nextTurn !== previousValue.nextTurn) {
-      return notifyPlayer(newValue.nextTurn);
+      notifyPlayer(newValue.nextTurn);
+      return 'success!';
     }
     return 'no change';
   });
@@ -71,7 +72,7 @@ function notifyPlayer(uid) {
       const notification = {
         title: 'Your turn!',
         body: 'Your opponent has played their turn',
-        icon: './logo.png',
+        icon: 'favicon.ico',
         click_action: 'https://xwordswf.firebaseapp.com'
       };
       const postData = JSON.stringify({
