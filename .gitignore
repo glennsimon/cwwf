@@ -3,3 +3,7 @@
 dist/
 .tmp
 app.yaml
+**/service-account.json
+**/temp.txt
+**/notify.js
+**/server-key.txt

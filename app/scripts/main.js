@@ -24,7 +24,8 @@ const puzzleWorker = (function(document, window) {
   // and that the current page is accessed from a secure origin. Using a
   // service worker from an insecure origin will trigger JS console errors. See
   // http://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features
-  var isLocalhost = Boolean(window.location.hostname === 'localhost' ||
+  var isLocalhost = Boolean(
+    window.location.hostname === 'localhost' ||
     // [::1] is the IPv6 localhost address.
     window.location.hostname === '[::1]' ||
     // 127.0.0.1/8 is considered localhost for IPv4.
@@ -33,9 +34,12 @@ const puzzleWorker = (function(document, window) {
     )
   );
 
-  if ('serviceWorker' in navigator &&
-    (window.location.protocol === 'https:' || isLocalhost)) {
-    navigator.serviceWorker.register('service-worker.js')
+  if (
+    'serviceWorker' in navigator &&
+    (window.location.protocol === 'https:' || isLocalhost)
+  ) {
+    navigator.serviceWorker
+      .register('service-worker.js')
       .then(function(registration) {
         // updatefound is fired if service-worker.js changes.
         registration.onupdatefound = function() {
@@ -58,8 +62,9 @@ const puzzleWorker = (function(document, window) {
                   break;
 
                 case 'redundant':
-                  throw new Error('The installing ' +
-                    'service worker became redundant.');
+                  throw new Error(
+                    'The installing service worker became redundant.'
+                  );
 
                 default:
                   // Ignore
@@ -67,7 +72,8 @@ const puzzleWorker = (function(document, window) {
             };
           }
         };
-      }).catch(function(e) {
+      })
+      .catch(function(e) {
         console.error('Error during service worker registration:', e);
       });
   }
@@ -110,14 +116,38 @@ const puzzleWorker = (function(document, window) {
   let myTurn = null;
   let clueNumIndices = {};
 
-  messaging.requestPermission().then(() => {
-    return messaging.getToken();
-  }).then(token => {
-    // TODO: actually, you want to send token to server - functions?
-    console.log(token);
-  }).catch(err => {
-    console.log('User denied messaging', err);
+  // Add the public key generated from the console here.
+  messaging.usePublicVapidKey(
+    'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4wB4x' +
+    '-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak'
+  );
+
+  // Callback fired if Instance ID token is updated.
+  messaging.onTokenRefresh(function() {
+    messaging
+      .getToken()
+      .then(function(refreshedToken) {
+        console.log('Token refreshed.');
+        // Send Instance ID token to app server.
+        sendTokenToServer(refreshedToken);
+      })
+      .catch(function(err) {
+        console.log('Unable to retrieve refreshed token ', err);
+      });
   });
+
+  /**
+   * Send cloud messaging token to server
+   * @param {string} token Cloud messaging token
+   */
+  function sendTokenToServer(token) {
+    if (currentUser) {
+      const userStatusFirestoreRef = firebase
+        .firestore()
+        .doc(`/users/${currentUser.uid}`);
+      userStatusFirestoreRef.set({msgToken: token}, {merge: true});
+    }
+  }
 
   messaging.onMessage(payload => {
     console.log('onMessage: ', payload);
@@ -125,7 +155,18 @@ const puzzleWorker = (function(document, window) {
 
   firebase.auth().onAuthStateChanged(user => {
     currentUser = user;
-    // fillLists();
+    messaging
+      .requestPermission()
+      .then(() => {
+        return messaging.getToken();
+      })
+      .then(token => {
+        console.log('Permission granted. Token: ', token);
+        sendTokenToServer(token);
+      })
+      .catch(err => {
+        console.log('User denied messaging', err);
+      });
   });
 
   logo.addEventListener('click', () => {
@@ -153,13 +194,13 @@ const puzzleWorker = (function(document, window) {
       puzNotepad.innerHTML = `<b>Notepad:</b>${game.puzzle.notepad}`;
       puzNotepad.classList.remove('displayNone');
     }
-    puzTitle.innerText = game.puzzle.title ?
-      game.puzzle.title : 'Untitled';
-    puzAuthor.innerText =
-      `by ${game.puzzle.author ? game.puzzle.author : 'Anonymous'}`;
-    puzCopy.innerHTML =
-      game.puzzle.copyright ?
-        `&copy; ${game.puzzle.copyright}` : '';
+    puzTitle.innerText = game.puzzle.title ? game.puzzle.title : 'Untitled';
+    puzAuthor.innerText = `by ${
+      game.puzzle.author ? game.puzzle.author : 'Anonymous'
+    }`;
+    puzCopy.innerHTML = game.puzzle.copyright ?
+      `&copy; ${game.puzzle.copyright}` :
+      '';
 
     let cellDim = getCellDim();
     let tableDim = cellDim * game.puzzle.rows;
@@ -291,11 +332,15 @@ const puzzleWorker = (function(document, window) {
     let myNickname = game[me].displayName;
     let oppNickname = game[they].displayName;
 
-    myNickname = myNickname.indexOf(' ') === -1 ? myNickname :
+    myNickname =
+      myNickname.indexOf(' ') === -1 ?
+      myNickname :
       myNickname.slice(0, myNickname.indexOf(' '));
     myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
     myName.innerText = myNickname;
-    oppNickname = oppNickname.indexOf(' ') === -1 ? oppNickname :
+    oppNickname =
+      oppNickname.indexOf(' ') === -1 ?
+      oppNickname :
       oppNickname.slice(0, oppNickname.indexOf(' '));
     oppNickname =
       oppNickname.length > 8 ? oppNickname.slice(0, 8) : oppNickname;
@@ -385,8 +430,10 @@ const puzzleWorker = (function(document, window) {
       game.puzzle.grid[index].guess = '';
       let row = Math.floor(index / columns);
       let col = index - row * columns;
-      puzTable.firstChild.children[row].children[col]
-        .firstChild.firstChild.innerText = '';
+      puzTable.firstChild.children[row].children[
+          col
+        ].firstChild.firstChild.innerText =
+        '';
     }
   }
 
@@ -414,8 +461,10 @@ const puzzleWorker = (function(document, window) {
       while (index >= columns && !game.puzzle.grid[index - columns].black) {
         index -= columns;
       }
-      while (index < game.puzzle.rows * columns &&
-        !game.puzzle.grid[index].black) {
+      while (
+        index < game.puzzle.rows * columns &&
+        !game.puzzle.grid[index].black
+      ) {
         indexArray.push(index);
         index += columns;
       }
@@ -442,7 +491,7 @@ const puzzleWorker = (function(document, window) {
       if (clueNumStr === currentClue.toString()) {
         clue.classList.add('rangeHighlight', 'cluePop');
         acrossClues.scrollBy({
-          top: (clue.offsetTop - 100) - acrossClues.scrollTop,
+          top: clue.offsetTop - 100 - acrossClues.scrollTop,
           left: 0,
           behavior: 'smooth'
         });
@@ -452,17 +501,20 @@ const puzzleWorker = (function(document, window) {
     }
     let currentCol = index - rowOffset;
     let currentCell = cell.parentElement.children[currentCol];
-    cell.parentElement.children[idxArray[0] - rowOffset]
-      .classList.add('border2pxLeft');
+    cell.parentElement.children[idxArray[0] - rowOffset].classList.add(
+      'border2pxLeft'
+    );
     for (let idx of idxArray) {
       currentCol = idx - rowOffset;
       currentCell = cell.parentElement.children[currentCol];
       currentCell.classList.add('border2pxTop', 'border2pxBottom');
-      currentCell.classList.add(currentCol === col ?
-        'currCellHighlight' : 'rangeHighlight');
+      currentCell.classList.add(
+        currentCol === col ? 'currCellHighlight' : 'rangeHighlight'
+      );
     }
-    cell.parentElement.children[idxArray[idxArray.length - 1] - rowOffset]
-      .classList.add('border2pxRight');
+    cell.parentElement.children[
+      idxArray[idxArray.length - 1] - rowOffset
+    ].classList.add('border2pxRight');
   }
 
   /**
@@ -484,7 +536,7 @@ const puzzleWorker = (function(document, window) {
       if (clueNumStr === currentClue.toString()) {
         clue.classList.add('rangeHighlight', 'cluePop');
         downClues.scrollBy({
-          top: (clue.offsetTop - 100) - downClues.scrollTop,
+          top: clue.offsetTop - 100 - downClues.scrollTop,
           left: 0,
           behavior: 'smooth'
         });
@@ -493,8 +545,9 @@ const puzzleWorker = (function(document, window) {
     }
     let currentRow = Math.floor(index / columns);
     let currentCell = puzTable.children[0].children[currentRow].children[col];
-    puzTable.children[0].children[Math.floor(idxArray[0] / columns)]
-      .children[col].classList.add('border2pxTop');
+    puzTable.children[0].children[Math.floor(idxArray[0] / columns)].children[
+      col
+    ].classList.add('border2pxTop');
     for (let idx of idxArray) {
       currentRow = Math.floor(idx / columns);
       currentCell = puzTable.children[0].children[currentRow].children[col];
@@ -503,9 +556,9 @@ const puzzleWorker = (function(document, window) {
         currentRow === row ? 'currCellHighlight' : 'rangeHighlight'
       );
     }
-    puzTable.children[0]
-      .children[Math.floor(idxArray[idxArray.length - 1] / columns)]
-      .children[col].classList.add('border2pxBottom');
+    puzTable.children[0].children[
+      Math.floor(idxArray[idxArray.length - 1] / columns)
+    ].children[col].classList.add('border2pxBottom');
   }
 
   /** Removes clue cell highlighting from all cells */
@@ -552,7 +605,10 @@ const puzzleWorker = (function(document, window) {
 
     // Stop listening for previous puzzle changes
     if (puzzleId) {
-      db.collection('games').doc(puzzleId).onSnapshot(() => {});
+      db
+        .collection('games')
+        .doc(puzzleId)
+        .onSnapshot(() => {});
     }
 
     if (difficulty === 'hard') {
@@ -561,31 +617,39 @@ const puzzleWorker = (function(document, window) {
       directory = 'puzDirEasy.json';
     }
 
-    fetch(directory).then(response => {
-      return response.json();
-    }).then(dir => {
-      const years = Object.getOwnPropertyNames(dir);
-      year = years[Math.floor(Math.random() * years.length)];
-      const months = Object.getOwnPropertyNames(dir[year]);
-      month = months[Math.floor(Math.random() * months.length)];
-      const days = dir[year][month];
-      day = days[Math.floor(Math.random() * days.length)];
-    }).then(() => {
-      let baseUrl = 'https://raw.githubusercontent.com/doshea/nyt_crosswords/master';
-      let url = `${baseUrl}/${year}/${month}/${day}`;
-      fetch(url).then(response => {
+    fetch(directory)
+      .then(response => {
         return response.json();
-      }).then(obj => {
-        parsePuzzle(obj);
-        saveNewPuzzle(paramObject);
-        showPuzzle();
-        location.hash = '#puzzle';
-      }).catch(error => {
-        console.error('Error fetching puzzle: ', error);
+      })
+      .then(dir => {
+        const years = Object.getOwnPropertyNames(dir);
+        year = years[Math.floor(Math.random() * years.length)];
+        const months = Object.getOwnPropertyNames(dir[year]);
+        month = months[Math.floor(Math.random() * months.length)];
+        const days = dir[year][month];
+        day = days[Math.floor(Math.random() * days.length)];
+      })
+      .then(() => {
+        let baseUrl =
+          'https://raw.githubusercontent.com/doshea/nyt_crosswords/master';
+        let url = `${baseUrl}/${year}/${month}/${day}`;
+        fetch(url)
+          .then(response => {
+            return response.json();
+          })
+          .then(obj => {
+            parsePuzzle(obj);
+            saveNewPuzzle(paramObject);
+            showPuzzle();
+            location.hash = '#puzzle';
+          })
+          .catch(error => {
+            console.error('Error fetching puzzle: ', error);
+          });
+      })
+      .catch(error => {
+        console.error('Error fetching puzzle date: ', error);
       });
-    }).catch(error => {
-      console.error('Error fetching puzzle date: ', error);
-    });
   }
 
   /**
@@ -601,35 +665,47 @@ const puzzleWorker = (function(document, window) {
 
     // Stop listening for previous puzzle changes
     if (puzzleId) {
-      db.collection('games').doc(puzzleId).onSnapshot(() => {});
+      db
+        .collection('games')
+        .doc(puzzleId)
+        .onSnapshot(() => {});
     }
 
-    docRef.onSnapshot(doc => {
-      game = doc.data();
-      if (game.status === 'started') {
-        myOpponentUid = game.initiator.uid === currentUser.uid ?
-          game.opponent.uid : game.initiator.uid;
-        columns = game.puzzle.cols;
-        myTurn = game.nextTurn !== myOpponentUid;
-        // turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
-        scores.children[0].classList.remove(myTurn ?
-          'bgColorTransWhite' : 'bgColorTransGold');
-        scores.children[0].classList.add(myTurn ?
-          'bgColorTransGold' : 'bgColorTransWhite');
-        scores.children[2].classList.remove(myTurn ?
-          'bgColorTransGold' : 'bgColorTransWhite');
-        scores.children[2].classList.add(myTurn ?
-          'bgColorTransWhite' : 'bgColorTransGold');
-      }
-      // else {
+    docRef.onSnapshot(
+      doc => {
+        game = doc.data();
+        if (game.status === 'started') {
+          myOpponentUid =
+            game.initiator.uid === currentUser.uid ?
+            game.opponent.uid :
+            game.initiator.uid;
+          columns = game.puzzle.cols;
+          myTurn = game.nextTurn !== myOpponentUid;
+          // turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
+          scores.children[0].classList.remove(
+            myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
+          );
+          scores.children[0].classList.add(
+            myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
+          );
+          scores.children[2].classList.remove(
+            myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
+          );
+          scores.children[2].classList.add(
+            myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
+          );
+        }
+        // else {
         // turnId.innerText = 'NO';
-      // }
-      puzzleId = newPuzzleId;
-      showPuzzle();
-      location.hash = '#puzzle';
-    }, error => {
-      console.error('Error getting puzzle: ', error);
-    });
+        // }
+        puzzleId = newPuzzleId;
+        showPuzzle();
+        location.hash = '#puzzle';
+      },
+      error => {
+        console.error('Error getting puzzle: ', error);
+      }
+    );
   }
 
   /**
@@ -667,8 +743,7 @@ const puzzleWorker = (function(document, window) {
         game.puzzle.grid[i].clueNum =
           puzzle.gridnums[i] === 0 ? '' : puzzle.gridnums[i];
         game.puzzle.grid[i].status = 'free';
-        game.puzzle.grid[i].circle =
-          puzzle.circles && puzzle.circles[i] === 1;
+        game.puzzle.grid[i].circle = puzzle.circles && puzzle.circles[i] === 1;
       }
     }
     columns = cols;
@@ -704,26 +779,39 @@ const puzzleWorker = (function(document, window) {
     game.status = 'started';
     game.winner = null;
     game.nextTurn = initiatorUid;
-    db.collection('games').add(game).then(docRef => {
-      console.log('game written to firestore with docRef: ', docRef);
-      puzzleId = docRef.id;
-      db.collection('games').doc(puzzleId).onSnapshot(doc => {
-        game = doc.data();
-        myTurn = game.nextTurn !== myOpponentUid;
-        turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
-        showPuzzle();
-      }, error => {
-        console.error('Error getting puzzle: ', error);
+    db
+      .collection('games')
+      .add(game)
+      .then(docRef => {
+        console.log('game written to firestore with docRef: ', docRef);
+        puzzleId = docRef.id;
+        db
+          .collection('games')
+          .doc(puzzleId)
+          .onSnapshot(
+            doc => {
+              game = doc.data();
+              myTurn = game.nextTurn !== myOpponentUid;
+              turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
+              showPuzzle();
+            },
+            error => {
+              console.error('Error getting puzzle: ', error);
+            }
+          );
+      })
+      .catch(error => {
+        console.error('Error writing file to firestore: ', error);
       });
-    }).catch(error => {
-      console.error('Error writing file to firestore: ', error);
-    });
   }
 
   /** Saves puzzle to firebase */
   function savePuzzle() {
-    db.collection('games').doc(puzzleId)
-      .set(game, {merge: true}).catch(error => {
+    db
+      .collection('games')
+      .doc(puzzleId)
+      .set(game, {merge: true})
+      .catch(error => {
         console.error('Error saving to firebase: ', error);
       });
   }
@@ -789,7 +877,8 @@ const puzzleWorker = (function(document, window) {
     let direction = acrossWord ? 'across' : 'down';
     let clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
     game.puzzle.completedClues[direction].push(clueNumber);
-    document.getElementById(direction + clueNumber)
+    document
+      .getElementById(direction + clueNumber)
       .classList.add('colorLightGray');
     for (let index of idxArray) {
       let gridElement = game.puzzle.grid[index];
@@ -822,8 +911,8 @@ const puzzleWorker = (function(document, window) {
    * @return {Object} Updated grid element object
    */
   function setCellStatus(index, gridElement) {
-    let player = game.initiator.uid === currentUser.uid ?
-      'initiator' : 'opponent';
+    let player =
+      game.initiator.uid === currentUser.uid ? 'initiator' : 'opponent';
     if (gridElement.status === 'locked') {
       game[player].score += 1;
       return gridElement;
@@ -889,8 +978,9 @@ const puzzleWorker = (function(document, window) {
       let col = currentCell.cellIndex;
       let index = row * columns + col;
       let nextCellIndex = idxArray.indexOf(index) + 1;
-      let localIdxArray =
-        idxArray.slice(nextCellIndex).concat(idxArray.slice(0, nextCellIndex));
+      let localIdxArray = idxArray
+        .slice(nextCellIndex)
+        .concat(idxArray.slice(0, nextCellIndex));
       let letterDiv = document.createElement('div');
       // console.log(idxArray);
       // console.log(localIdxArray);
@@ -902,9 +992,10 @@ const puzzleWorker = (function(document, window) {
       game.puzzle.grid[index].guess = letter.toUpperCase();
       letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
       letterDiv.classList.add('marginAuto');
-      currentCell
-        .children[0]
-        .replaceChild(letterDiv, currentCell.children[0].children[0]);
+      currentCell.children[0].replaceChild(
+        letterDiv,
+        currentCell.children[0].children[0]
+      );
       currentCell.classList.remove('currCellHighlight');
       currentCell.classList.add('rangeHighlight');
       for (let idx of localIdxArray) {
@@ -935,9 +1026,9 @@ const puzzleWorker = (function(document, window) {
         localIdxArray[i] = idxArray[j - 1];
       }
       let nextCellIndex = localIdxArray.indexOf(index) + 1;
-      localIdxArray =
-        localIdxArray.slice(nextCellIndex)
-          .concat(localIdxArray.slice(0, nextCellIndex));
+      localIdxArray = localIdxArray
+        .slice(nextCellIndex)
+        .concat(localIdxArray.slice(0, nextCellIndex));
       let letterDiv = document.createElement('div');
       // console.log(idxArray);
       // console.log(localIdxArray);
@@ -948,9 +1039,10 @@ const puzzleWorker = (function(document, window) {
       }
       letterDiv.appendChild(document.createTextNode(''));
       letterDiv.classList.add('marginAuto');
-      currentCell
-        .children[0]
-        .replaceChild(letterDiv, currentCell.children[0].children[0]);
+      currentCell.children[0].replaceChild(
+        letterDiv,
+        currentCell.children[0].children[0]
+      );
       currentCell.classList.remove('currCellHighlight');
       currentCell.classList.add('rangeHighlight');
       for (let idx of localIdxArray) {
@@ -988,8 +1080,9 @@ const puzzleWorker = (function(document, window) {
 
   if (window.screenfull.enabled) {
     window.screenfull.on('change', () => {
-      screenToggle.innerText =
-        window.screenfull.isFullscreen ? 'fullscreen_exit' : 'fullscreen';
+      screenToggle.innerText = window.screenfull.isFullscreen ?
+        'fullscreen_exit' :
+        'fullscreen';
     });
   }
 

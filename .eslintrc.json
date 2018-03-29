@@ -8,5 +8,8 @@
         "space-after-keywords": 0,
         "space-before-keywords": 0,
         "curly": [0, "multi"]
+    },
+    "globals": {
+        "importScripts": true
     }
 }

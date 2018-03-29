@@ -4,7 +4,7 @@ const puzzleGames = (function(document, window) {
   const gamesDialog = querySelector('#gamesDialog');
   const startGameButton = querySelector('#startGameButton');
   const headerSignin = querySelector('#headerSignin');
-  const turnIndicator = querySelector('#turnIndicator');
+  // const turnIndicator = querySelector('#turnIndicator');
   const gameOverHeading = querySelector('#gameOverHeading');
   const winMessage = querySelector('#winMessage');
   const opponentHeading = querySelector('#opponentHeading');
@@ -34,7 +34,7 @@ const puzzleGames = (function(document, window) {
       headerSignin.classList.add('displayNone');
     } else {
       headerSignin.classList.remove('displayNone');
-      turnIndicator.classList.add('displayNone');
+      // turnIndicator.classList.add('displayNone');
     }
   });
 

@@ -1,9 +1,12 @@
+/* eslint-env es6 */
 const functions = require('firebase-functions');
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 const Firestore = require('@google-cloud/firestore');
+const fs = require('fs');
+const https = require('https');
 
 // Since this code will be running in the Cloud Functions enviornment
 // we call initialize Firestore without any arguments because it
@@ -37,6 +40,71 @@ exports.onUserStatusChanged = functions.database
       eventStatus.lastChanged = new Date(eventStatus.lastChanged);
 
       // ... and write it to Firestore.
-      return userStatusFirestoreRef.set(eventStatus, {merge: true});
+      return userStatusFirestoreRef.set(eventStatus, { merge: true });
     });
   });
+
+exports.updateUser = functions.firestore
+  .document('games/{gameId}')
+  .onUpdate(event => {
+    const newValue = event.data.data();
+    const previousValue = event.data.previous.data();
+
+    if (newValue.nextTurn !== previousValue.nextTurn) {
+      notifyPlayer(newValue.nextTurn);
+    }
+  });
+
+/**
+ * Sends notification to player
+ * @param {string} uid uid of player
+ */
+function notifyPlayer(uid) {
+  functions.firestore.document(`users/${uid}`).get().then(doc => {
+    return doc.data().msgToken;
+  }).then(toKey => {
+    if (toKey) {
+      const serverKey = fs.readFileSync('./server-key.txt');
+      const notification = {
+        title: 'Your turn!',
+        body: 'Your opponent has played their turn',
+        icon: 'favicon.ico',
+        click_action: 'https://xwordswf.firebaseapp.com'
+      };
+      const postData = JSON.stringify({
+        notification: notification,
+        to: toKey
+      });
+      const options = {
+        hostname: 'fcm.googleapis.com',
+        path: '/fcm/send',
+        method: 'POST',
+        headers: {
+          'Authorization': 'key=' + serverKey.trim(),
+          'Content-Type': 'application/json'
+        }
+      };
+      const req = https.request(options, res => {
+        console.log(`STATUS: ${res.statusCode}`);
+        console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
+        res.setEncoding('utf8');
+        res.on('data', chunk => {
+          console.log(`BODY: ${chunk}`);
+        });
+        res.on('end', () => {
+          console.log('No more data in response.');
+        });
+      });
+
+      req.on('error', e => {
+        console.error(`problem with request: ${e.message}`);
+      });
+
+      // write data to request body
+      req.write(postData);
+      req.end();
+    }
+  }).catch(error => {
+    console.error('Error: ', error);
+  });
+}

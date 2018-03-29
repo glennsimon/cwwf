@@ -1,5 +1,5 @@
-importScripts('/__/firebase/4.9.0/firebase-app.js');
-importScripts('/__/firebase/4.9.0/firebase-messaging.js');
+importScripts('/__/firebase/4.12.0/firebase-app.js');
+importScripts('/__/firebase/4.12.0/firebase-messaging.js');
 importScripts('/__/firebase/init.js');
 
 const messaging = firebase.messaging();
