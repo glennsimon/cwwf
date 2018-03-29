@@ -64,7 +64,7 @@ function notifyPlayer(uid) {
     return doc.data().msgToken;
   }).then(toKey => {
     if (toKey) {
-      const serverKey = fs.readFileSync('./server-key.txt');
+      const serverKey = fs.readFileSync('./server-key.txt', 'utf8');
       const notification = {
         title: 'Your turn!',
         body: 'Your opponent has played their turn',
