@@ -41,6 +41,8 @@ exports.onUserStatusChanged = functions.database
 
       // ... and write it to Firestore.
       return userStatusFirestoreRef.set(eventStatus, { merge: true });
+    }).catch(err => {
+      console.error('Error: ', err);
     });
   });
 
@@ -51,8 +53,9 @@ exports.updateUser = functions.firestore
     const previousValue = event.data.previous.data();
 
     if (newValue.nextTurn !== previousValue.nextTurn) {
-      notifyPlayer(newValue.nextTurn);
+      return notifyPlayer(newValue.nextTurn);
     }
+    return 'no change';
   });
 
 /**
@@ -68,7 +71,7 @@ function notifyPlayer(uid) {
       const notification = {
         title: 'Your turn!',
         body: 'Your opponent has played their turn',
-        icon: 'favicon.ico',
+        icon: './logo.png',
         click_action: 'https://xwordswf.firebaseapp.com'
       };
       const postData = JSON.stringify({
