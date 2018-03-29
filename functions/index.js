@@ -60,7 +60,7 @@ exports.updateUser = functions.firestore
  * @param {string} uid uid of player
  */
 function notifyPlayer(uid) {
-  firestore.document(`users/${uid}`).get().then(doc => {
+  firestore.doc(`users/${uid}`).get().then(doc => {
     return doc.data().msgToken;
   }).then(toKey => {
     if (toKey) {
