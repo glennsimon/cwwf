@@ -103,7 +103,9 @@ function notifyPlayer(uid) {
       // write data to request body
       req.write(postData);
       req.end();
+      return 'function complete';
     }
+    return 'no user key available';
   }).catch(error => {
     console.error('Error: ', error);
   });
