@@ -181,7 +181,8 @@ const puzzleGames = (function(document, window) {
           game.opponent.uid === currentUser.uid)) {
         let myOpponent = game.initiator.uid === currentUser.uid ?
           game.opponent : game.initiator;
-        let opponentPhoto = allUsers[myOpponent.uid].photoURL;
+        let opponentPhoto = allUsers[myOpponent.uid] &&
+          allUsers[myOpponent.uid].photoURL;
         if (opponentPhoto) {
           avatar =
 `<span class='picContainer material-icons mdl-list__item-avatar'>
@@ -222,7 +223,8 @@ const puzzleGames = (function(document, window) {
         }
         // pastGames[doc.id] = {};
         // pastGames[doc.id].difficulty = game.difficulty;
-        let opponentPhoto = allUsers[myOpponent.uid].photoURL;
+        let opponentPhoto = allUsers[myOpponent.uid] &&
+          allUsers[myOpponent.uid].photoURL;
         if (opponentPhoto) {
           avatar =
 `<span class='picContainer material-icons mdl-list__item-avatar'>
