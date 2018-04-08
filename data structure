@@ -79,6 +79,7 @@ ParsedPuzzle object:
 		{
 			black: true || false, 
 			value: <single capital letter A-Z> || <'.' (black cell)>, 
+			guess: <single capital letter A-Z> || undefined,
 			clueNum: <clue number as number> || <empty string>, 
 			status: 'free' || 'locked', 
 			circle: null || true,

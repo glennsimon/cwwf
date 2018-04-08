@@ -544,6 +544,12 @@ select {
   right: 10px;
 }
 
+.buttonIsolation {
+  margin: 100px auto 0px auto;
+  width: 80%;
+  text-align: center;
+}
+
 @media screen and (min-width: 420px) {
   #gamesPanelContainer {
     max-width: 400px;

@@ -11,6 +11,9 @@
     const gamesPanel = querySelector('#gamesPanel');
     const gamesDialog = querySelector('#gamesDialog');
     const scores = querySelector('#scores');
+    const concessionBtnContainer = querySelector('#concessionBtnContainer');
+    const puzAuthor = querySelector('#puzAuthor');
+    const puzCopy = querySelector('#puzCopy');
 
     window.addEventListener('hashchange', navigate);
 
@@ -30,14 +33,18 @@
         window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
-        // turnIndicator.classList.remove('displayNone');
+        concessionBtnContainer.classList.remove('displayNone');
+        puzAuthor.classList.remove('displayNone');
+        puzCopy.classList.remove('displayNone');
       } else if (location.hash === '#signin') {
         window.puzzleGames.unsubscribe();
         gamesPanel.classList.add('slideOut');
         appContainer.classList.add('slideIn');
-        // turnIndicator.classList.add('displayNone');
         scores.classList.remove('displayFlex');
         scores.classList.add('displayNone');
+        concessionBtnContainer.classList.remove('displayNone');
+        puzAuthor.classList.add('displayNone');
+        puzCopy.classList.add('displayNone');
       } else if (location.hash === '#games') {
         try {
           gamesDialog.close();
@@ -47,9 +54,10 @@
         window.puzzleGames.subscribe();
         gamesPanel.classList.remove('slideOut');
         appContainer.classList.remove('slideIn');
-        // turnIndicator.classList.add('displayNone');
         scores.classList.remove('displayFlex');
         scores.classList.add('displayNone');
+        puzAuthor.classList.add('displayNone');
+        puzCopy.classList.add('displayNone');
       }
     }
 

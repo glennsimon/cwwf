@@ -99,6 +99,7 @@ const puzzleWorker = (function(document, window) {
   const myScore = document.getElementById('myScore');
   const oppScore = document.getElementById('oppScore');
   const logo = document.getElementById('logo');
+  const concessionBtn = document.getElementById('concessionBtn');
   const firebase = window.firebase;
   const db = firebase.firestore();
   const messaging = firebase.messaging();
@@ -847,10 +848,6 @@ const puzzleWorker = (function(document, window) {
         cell.style.height = cellDim + 'px';
       }
     }
-    if (game.puzzle.notepad) {
-      puzNotepad.style.width = tableDim + 'px';
-      puzNotepad.classList.remove('displayNone');
-    }
     if (currentCell) {
       if (acrossWord) {
         selectAcross(currentCell);
@@ -1058,6 +1055,24 @@ const puzzleWorker = (function(document, window) {
     }
   }
 
+  /** Concede the game immediately */
+  function concede() {
+    let me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
+    let they = me === 'initiator' ? 'opponent' : 'initiator';
+
+    game.emptySquares = 0;
+    for (let square of game.puzzle.grid) {
+      if (square.status && square.status === 'free') {
+        square.status = 'locked';
+        square.guess = square.value;
+        square.bgColor = game[they].bgColor;
+        game[they].score += 1;
+      }
+    }
+    savePuzzle();
+  }
+
+  concessionBtn.addEventListener('click', concede);
   document.addEventListener('keyup', enterLetter);
   window.addEventListener('resize', resizePuzzle);
   let keyList = keyboard.getElementsByClassName('kbButton');
