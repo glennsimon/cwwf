@@ -290,11 +290,11 @@ select {
 }
 
 .fontTransRed {
-  color: rgba(255, 0 , 0, 0.5);
+  color: rgba(255, 0 , 0, 1);
 }
 
 .fontTransBlue {
-  color: rgba(0, 0, 255, 0.5);
+  color: rgba(0, 0, 255, 1);
 }
 
 .bgTransGray {

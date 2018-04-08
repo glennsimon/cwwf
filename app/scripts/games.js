@@ -211,15 +211,13 @@ const puzzleGames = (function(document, window) {
         game.opponent.uid === currentUser.uid) {
         let myOpponent = game.initiator.uid === currentUser.uid ?
           game.opponent : game.initiator;
-        let result;
+        let result = 'Game cancelled';
         if (game.status === 'finished') {
           result = currentUser.uid === game.winner ?
             'You won!!' :
             'They won';
         } else if (game.status === 'abandoned') {
           result = 'Game abandoned';
-        } else {
-          result = 'Game cancelled';
         }
         // pastGames[doc.id] = {};
         // pastGames[doc.id].difficulty = game.difficulty;
@@ -325,10 +323,16 @@ const puzzleGames = (function(document, window) {
     }
     if (game.difficulty === 'medium') {
       radioEasy.removeAttribute('checked');
+      radioHard.removeAttribute('checked');
       radioMed.setAttribute('checked', true);
     } else if (game.difficulty === 'hard') {
       radioEasy.removeAttribute('checked');
+      radioMed.removeAttribute('checked');
       radioHard.setAttribute('checked', true);
+    } else {
+      radioMed.removeAttribute('checked');
+      radioHard.removeAttribute('checked');
+      radioEasy.setAttribute('checked', true);
     }
     if (!gamesDialog.open) gamesDialog.showModal();
 

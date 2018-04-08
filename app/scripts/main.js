@@ -93,7 +93,6 @@ const puzzleWorker = (function(document, window) {
   const keyboard = document.getElementById('kbContainer');
   const screenToggle = document.getElementById('screenToggle');
   const splash = document.getElementById('splash');
-  const turnId = document.getElementById('turnId');
   const scores = document.getElementById('scores');
   const myName = document.getElementById('myName');
   const oppName = document.getElementById('oppName');
@@ -349,6 +348,7 @@ const puzzleWorker = (function(document, window) {
     oppScore.innerText = game[they].score;
     myName.classList.add(game[me].bgColor.replace('bg', 'font'));
     oppName.classList.add(game[they].bgColor.replace('bg', 'font'));
+    updateScoreHighlighting();
     if (game.emptySquares === 0) {
       let result = 'YOU WON!!';
       if (game[me].score > game[they].score) {
@@ -681,23 +681,8 @@ const puzzleWorker = (function(document, window) {
             game.initiator.uid;
           columns = game.puzzle.cols;
           myTurn = game.nextTurn !== myOpponentUid;
-          // turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
-          scores.children[0].classList.remove(
-            myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
-          );
-          scores.children[0].classList.add(
-            myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
-          );
-          scores.children[2].classList.remove(
-            myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
-          );
-          scores.children[2].classList.add(
-            myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
-          );
+          updateScoreHighlighting();
         }
-        // else {
-        // turnId.innerText = 'NO';
-        // }
         puzzleId = newPuzzleId;
         showPuzzle();
         location.hash = '#puzzle';
@@ -705,6 +690,22 @@ const puzzleWorker = (function(document, window) {
       error => {
         console.error('Error getting puzzle: ', error);
       }
+    );
+  }
+
+  /** Utility function to update score display */
+  function updateScoreHighlighting() {
+    scores.children[0].classList.remove(
+      myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
+    );
+    scores.children[0].classList.add(
+      myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
+    );
+    scores.children[2].classList.remove(
+      myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
+    );
+    scores.children[2].classList.add(
+      myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
     );
   }
 
@@ -792,7 +793,6 @@ const puzzleWorker = (function(document, window) {
             doc => {
               game = doc.data();
               myTurn = game.nextTurn !== myOpponentUid;
-              turnId.innerText = myTurn ? 'YOUR' : 'THEIR';
               showPuzzle();
             },
             error => {
