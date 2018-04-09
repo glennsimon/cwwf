@@ -103,6 +103,11 @@ const puzzleWorker = (function(document, window) {
   const firebase = window.firebase;
   const db = firebase.firestore();
   const messaging = firebase.messaging();
+  const scoreValues = {
+    A: 1, B: 4, C: 4, D: 2, E: 1, F: 4, G: 3, H: 4, I: 1, J: 10, K: 5, L: 2,
+    M: 4, N: 2, O: 1, P: 4, Q: 10, R: 1, S: 1, T: 1, U: 2, V: 5, W: 4, X: 8,
+    Y: 4, Z: 10
+  };
 
   let currentUser = firebase.auth().currentUser;
   let myOpponentUid = null;
@@ -911,7 +916,7 @@ const puzzleWorker = (function(document, window) {
     let player =
       game.initiator.uid === currentUser.uid ? 'initiator' : 'opponent';
     if (gridElement.status === 'locked') {
-      game[player].score += 1;
+      game[player].score += scoreValues[gridElement.value];
       return gridElement;
     }
     game[player].score += scoreCell(index);
@@ -936,10 +941,12 @@ const puzzleWorker = (function(document, window) {
     let addedScore = 0;
 
     for (let idx of wordBlock) {
-      if (idx === index || game.puzzle.grid[idx].status === 'locked') {
-        addedScore += 1;
+      if (idx === index) {
+        addedScore += 2 * scoreValues[game.puzzle.grid[idx].value];
+      } else if (game.puzzle.grid[idx].status === 'locked') {
+        addedScore += scoreValues[game.puzzle.grid[idx].value];
       } else {
-        return 1;
+        return scoreValues[game.puzzle.grid[index].value];
       }
     }
     let clueNumber = game.puzzle.grid[wordBlock[0]].clueNum;
