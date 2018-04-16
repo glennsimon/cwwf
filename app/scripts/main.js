@@ -960,13 +960,15 @@ const puzzleWorker = (function(document, window) {
    * @param {Event} event Keyboard or touch event from physical or virtual keyboard
    */
   function enterLetter(event) {
-    let letter = null;
-    if (event.target.classList[0] === 'kbButton') {
-      letter = event.target.children[0].innerText;
-    } else if (event.target.innerText.match(/^[a-zA-Z]$/)) {
-      letter = event.target.innerText;
-    } else if (event.key) {
+    let letter;
+    if (event.key) {
       letter = event.key;
+    } else {
+      let node = event.target;
+      while (node.classList[0] !== 'kbButton') {
+        node = node.parentNode;
+      }
+      letter = node.childNodes[0].childNodes[0].data;
     }
     if (letter && letter.toLowerCase() === 'backspace') {
       undoEntry();

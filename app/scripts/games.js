@@ -281,6 +281,7 @@ const puzzleGames = (function(document, window) {
     difficulty =
       radioHard.parentElement.classList.contains('is-checked') ?
         'hard' : difficulty;
+    closeGamesDialog();
 
     window.puzzleWorker.loadPuzzle({
       initiator: {
@@ -344,9 +345,10 @@ const puzzleGames = (function(document, window) {
       difficulty =
         radioHard.parentElement.classList.contains('is-checked') ?
           'hard' : difficulty;
-
       let they = currentUser.uid === game.initiator.uid ?
         'opponent' : 'initiator';
+      closeGamesDialog();
+
       // load puzzle based on uids of players
       window.puzzleWorker.loadPuzzle({
         initiator: {
@@ -359,8 +361,6 @@ const puzzleGames = (function(document, window) {
         },
         difficulty: difficulty
       });
-      // gamesDialog.close();
-      closeGamesDialog();
     }
   }
 
