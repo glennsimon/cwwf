@@ -231,12 +231,7 @@ const puzzleWorker = (function(document, window) {
           letterDiv.classList.add('marginAuto');
           if (game.puzzle.grid[gridIndex].status === 'locked') {
             cell.classList.add(game.puzzle.grid[gridIndex].bgColor);
-            // letterDiv.innerText = game.puzzle.grid[gridIndex].guess;
           }
-          // if (game.puzzle.grid[gridIndex].bgColor === 'bgTransGray') {
-          //   cell.classList.add('bgTransGray');
-          //   letterDiv.innerText = game.puzzle.grid[gridIndex].guess;
-          // }
           let guess = game.puzzle.grid[gridIndex].guess;
           letterDiv.innerText = guess ? guess : '';
           squareDiv.appendChild(letterDiv);
@@ -870,21 +865,18 @@ const puzzleWorker = (function(document, window) {
   /** Play currentUser's turn. Executed when the player clicks the enter button */
   function playWord() {
     if (!myTurn) return;
-    if (!checkIfCorrect(idxArray)) {
-      game.nextTurn = myOpponentUid;
-      myTurn = !myTurn;
-      savePuzzle();
-      return;
-    }
-    let direction = acrossWord ? 'across' : 'down';
-    let clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
-    game.puzzle.completedClues[direction].push(clueNumber);
-    document
-      .getElementById(direction + clueNumber)
-      .classList.add('colorLightGray');
-    for (let index of idxArray) {
-      let gridElement = game.puzzle.grid[index];
-      game.puzzle.grid[index] = setCellStatus(index, gridElement);
+    if (incomplete()) return;
+    if (correctAnswer()) {
+      let direction = acrossWord ? 'across' : 'down';
+      let clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
+      game.puzzle.completedClues[direction].push(clueNumber);
+      document
+        .getElementById(direction + clueNumber)
+        .classList.add('colorLightGray');
+      for (let index of idxArray) {
+        let gridElement = game.puzzle.grid[index];
+        game.puzzle.grid[index] = setCellStatus(index, gridElement);
+      }
     }
     game.nextTurn = myOpponentUid;
     myTurn = !myTurn;
@@ -892,12 +884,24 @@ const puzzleWorker = (function(document, window) {
   }
 
   /**
+   * Checks if array of cells has a letter in each square
+   * @return {boolean} true if word is incomplete, false otherwise
+   */
+  function incomplete() {
+    for (let i of idxArray) {
+      if (!game.puzzle.grid[i].guess || game.puzzle.grid[i].guess === '') {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Checks if array of cells is filled in correctly
-   * @param {array} indexArray Array of cell indices
    * @return {boolean} true if correct, false otherwise
    */
-  function checkIfCorrect(indexArray) {
-    for (let index of indexArray) {
+  function correctAnswer() {
+    for (let index of idxArray) {
       let gridElement = game.puzzle.grid[index];
       if (gridElement.guess !== gridElement.value) {
         return false;
