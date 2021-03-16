@@ -17,15 +17,9 @@ const concat = require('gulp-concat');
 // const uglify = require('gulp-uglify');
 const useref = require('gulp-useref');
 const htmlmin = require('gulp-htmlmin');
-
-// import path from 'path';
-// import del from 'del';
-// import runSequence from 'run-sequence';
-// import browserSync from 'browser-sync';
-// import swPrecache from 'sw-precache';
-// import gulpLoadPlugins from 'gulp-load-plugins';
-// import {output as pagespeed} from 'psi';
-// import pkg from './package.json';
+const del = require('del');
+const workboxBuild = require('workbox-build');
+// const {output: pagespeed} = require('psi');
 
 const reload = browserSync.reload;
 
@@ -39,7 +33,7 @@ function lint() {
 
 // Optimize images
 function images() {
-  gulp.src('app/images/**/*')
+  return gulp.src('app/images/**/*')
     .pipe(newer('dist/images'))
     .pipe(imagemin())
     .pipe(gulp.dest('dist/images'));
@@ -47,7 +41,7 @@ function images() {
 
 // Copy all files at the root level (app) 
 function copy() {
-  gulp.src([
+  return gulp.src([
       'app/*',
       '!app/*.html',
       'node_modules/apache-server-configs/dist/.htaccess'
@@ -94,7 +88,7 @@ function styles() {
 
 // Concatenate and minify JavaScript
 function scripts() {
-    gulp.src([
+    return gulp.src([
       // Note: Since we are not using useref in the scripts build pipeline,
       //       you need to explicitly list your scripts here in the right order
       //       to be correctly concatenated
@@ -147,56 +141,53 @@ function html() {
     .pipe(gulp.dest('dist'));
 }
 
-// // Clean output directory
-// gulp.task('clean', () => del(['.tmp', 'dist/*', '!dist/.git'], {dot: true}));
+// Clean output directory
+function clean(cb) {
+  del(['.tmp', 'dist/*', '!dist/.git'], {dot: true});
+  cb();
+}
 
-// // Watch files for changes & reload
-// gulp.task('serve', ['scripts', 'styles'], () => {
-//   browserSync({
-//     notify: false,
-//     // Customize the Browsersync console logging prefix
-//     logPrefix: 'WSK',
-//     // Allow scroll syncing across breakpoints
-//     scrollElementMapping: ['main', '.mdl-layout'],
-//     // Run as an https by uncommenting 'https: true'
-//     // Note: this uses an unsigned certificate which on first access
-//     //       will present a certificate warning in the browser.
-//     // https: true,
-//     server: ['.tmp', 'app'],
-//     port: 3000
-//   });
+// Watch files for changes & reload
+function serve(cb) {
+  gulp.parallel(scripts, styles);
+  browserSync({
+    notify: false,
+    // Customize the Browsersync console logging prefix
+    logPrefix: 'WSK',
+    // Allow scroll syncing across breakpoints
+    scrollElementMapping: ['main', '.mdl-layout'],
+    // Run as an https by uncommenting 'https: true'
+    // Note: this uses an unsigned certificate which on first access
+    //       will present a certificate warning in the browser.
+    // https: true,
+    server: ['.tmp', 'app'],
+    port: 3000
+  });
 
-//   gulp.watch(['app/**/*.html'], reload);
-//   gulp.watch(['app/styles/**/*.{scss,css}'], ['styles', reload]);
-//   gulp.watch(['app/scripts/**/*.js'], ['lint', 'scripts', reload]);
-//   gulp.watch(['app/images/**/*'], reload);
-// });
+  gulp.watch(['app/**/*.html'], reload);
+  gulp.watch(['app/styles/**/*.{scss,css}'], ['styles', reload]);
+  gulp.watch(['app/scripts/**/*.js'], ['lint', 'scripts', reload]);
+  gulp.watch(['app/images/**/*'], reload);
+  cb();
+}
 
-// // Build and serve the output from the dist build
-// gulp.task('serve:dist', ['default'], () =>
-//   browserSync({
-//     notify: false,
-//     logPrefix: 'WSK',
-//     // Allow scroll syncing across breakpoints
-//     scrollElementMapping: ['main', '.mdl-layout'],
-//     // Run as an https by uncommenting 'https: true'
-//     // Note: this uses an unsigned certificate which on first access
-//     //       will present a certificate warning in the browser.
-//     // https: true,
-//     server: 'dist',
-//     port: 3001
-//   })
-// );
-
-// // Build production files, the default task
-// gulp.task('default', ['clean'], cb =>
-//   runSequence(
-//     'styles',
-//     ['lint', 'html', 'scripts', 'images', 'copy'],
-//     'generate-service-worker',
-//     cb
-//   )
-// );
+// Build and serve the output from the dist build
+function serveDist(cb) {
+  build();
+  browserSync({
+    notify: false,
+    logPrefix: 'WSK',
+    // Allow scroll syncing across breakpoints
+    scrollElementMapping: ['main', '.mdl-layout'],
+    // Run as an https by uncommenting 'https: true'
+    // Note: this uses an unsigned certificate which on first access
+    //       will present a certificate warning in the browser.
+    // https: true,
+    server: 'dist',
+    port: 3001
+  });
+  cb();
+}
 
 // // Run PageSpeed Insights
 // gulp.task('pagespeed', cb =>
@@ -246,9 +237,41 @@ function html() {
 //   });
 // });
 
+function generateServiceWorker() {
+  return workboxBuild.generateSW({
+    globDirectory: 'dist',
+    globPatterns: [
+      '**/*.{html,json,js,css}',
+    ],
+    swDest: 'dist/service-worker.js',
+    cacheId: 'cwwf'
+  });
+}
 // Load custom tasks from the `tasks` directory
 // Run: `npm install --save-dev require-dir` from the command-line
 // try { require('require-dir')('tasks'); } catch (err) { console.error(err); }
 
+// define complex tasks
+const build = gulp.series(
+  clean,
+  styles,
+  gulp.parallel(
+    lint, html, scripts, images, copy
+  ),
+  generateServiceWorker
+);
+// // Build production files, the default task
+// gulp.task('default', ['clean'], cb =>
+//   runSequence(
+//     'styles',
+//     ['lint', 'html', 'scripts', 'images', 'copy'],
+//     'generate-service-worker',
+//     cb
+//   )
+// );
+
+
 // export tasks
-exports.lint = lint;
+exports.default = build;
+exports.serve = serve;
+exports.serveDist = serveDist;
