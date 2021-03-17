@@ -102,7 +102,7 @@ function scripts() {
     ])
       .pipe(newer('.tmp/scripts'))
       .pipe(sourcemaps.init())
-      .pipe(babel())
+      .pipe(babel({ presets: ["@babel/preset-env"] }))
       .pipe(sourcemaps.write())
       .pipe(gulp.dest('.tmp/scripts'))
       .pipe(concat('main.min.js'))
@@ -272,6 +272,7 @@ const build = gulp.series(
 
 
 // export tasks
+exports.clean = clean;
 exports.default = build;
 exports.serve = serve;
 exports.serveDist = serveDist;

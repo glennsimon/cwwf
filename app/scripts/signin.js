@@ -28,14 +28,14 @@
       signInOptions: [
         // Leave the lines as is for the providers you want to offer your users.
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-        firebase.auth.EmailAuthProvider.PROVIDER_ID
+        firebase.auth.EmailAuthProvider.PROVIDER_ID,
         // firebase.auth.FacebookAuthProvider.PROVIDER_ID,
         // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
         // firebase.auth.GithubAuthProvider.PROVIDER_ID,
-        // firebase.auth.PhoneAuthProvider.PROVIDER_ID
+        // firebase.auth.PhoneAuthProvider.PROVIDER_ID,
       ],
       // Terms of service url.
-      tosUrl: './#tos'
+      tosUrl: './#tos',
     };
 
     // We'll create two constants which we will write to
@@ -43,27 +43,27 @@
     // or online.
     const isOfflineForDatabase = {
       state: 'offline',
-      lastChanged: firebase.database.ServerValue.TIMESTAMP
+      lastChanged: firebase.database.ServerValue.TIMESTAMP,
     };
     const isOnlineForDatabase = {
       state: 'online',
-      lastChanged: firebase.database.ServerValue.TIMESTAMP
+      lastChanged: firebase.database.ServerValue.TIMESTAMP,
     };
     // Firestore uses a different server timestamp value, so we'll
     // create two more constants for Firestore state.
     const isOfflineForFirestore = {
       state: 'offline',
-      lastChanged: firebase.firestore.FieldValue.serverTimestamp()
+      lastChanged: firebase.firestore.FieldValue.serverTimestamp(),
     };
     const isOnlineForFirestore = {
       state: 'online',
-      lastChanged: firebase.firestore.FieldValue.serverTimestamp()
+      lastChanged: firebase.firestore.FieldValue.serverTimestamp(),
     };
 
     // The start method will wait until the DOM is loaded.
     ui.start('#firebaseuiAuthContainer', uiConfig);
 
-    firebase.auth().onAuthStateChanged(user => {
+    firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         // User is signed in.
         uid = user.uid;
@@ -76,7 +76,7 @@
           emailVerified: user.emailVerified,
           phoneNumber: user.phoneNumber,
           providerData: user.providerData,
-          providerId: user.providerId
+          providerId: user.providerId,
         };
 
         authButton.textContent = 'sign out';
@@ -89,7 +89,7 @@
         userStatusDatabaseRef = firebase.database().ref(`/users/${uid}`);
         userStatusFirestoreRef = firebase.firestore().doc(`/users/${uid}`);
 
-        firebase.database().ref('.info/connected').on('value', snapshot => {
+        firebase.database().ref('.info/connected').on('value', (snapshot) => {
           if (snapshot.val() === false) {
             // Instead of simply returning, we'll also set Firestore's state
             // to "offline". This ensures that our Firestore cache is aware
@@ -98,10 +98,10 @@
             return;
           }
           userStatusDatabaseRef.onDisconnect()
-            .set(isOfflineForDatabase).then(() => {
-              userStatusDatabaseRef.set(isOnlineForDatabase);
-              userStatusFirestoreRef.set(isOnlineForFirestore, {merge: true});
-            });
+              .set(isOfflineForDatabase).then(() => {
+                userStatusDatabaseRef.set(isOnlineForDatabase);
+                userStatusFirestoreRef.set(isOnlineForFirestore, {merge: true});
+              });
         });
         authContainer.classList.add('displayNone');
       } else {
@@ -120,20 +120,20 @@
       if (authButton.textContent === 'sign out') {
         window.puzzleGames.clearLists();
         userStatusFirestoreRef
-          .set(isOfflineForFirestore, {merge: true}).then(() => {
-            firebase.auth().signOut();
-          }).then(() => {
-            // Sign-out successful.
-            uid = undefined;
-            userStatusDatabaseRef = undefined;
-            userStatusFirestoreRef = undefined;
-            puzTable.classList.add('displayNone');
-            clueContainer.classList.add('displayNone');
-            kbContainer.classList.add('displayNone');
-            splash.classList.remove('displayNone');
-          }).catch(error => {
-            console.log(error);
-          });
+            .set(isOfflineForFirestore, {merge: true}).then(() => {
+              firebase.auth().signOut();
+            }).then(() => {
+              // Sign-out successful.
+              uid = undefined;
+              userStatusDatabaseRef = undefined;
+              userStatusFirestoreRef = undefined;
+              puzTable.classList.add('displayNone');
+              clueContainer.classList.add('displayNone');
+              kbContainer.classList.add('displayNone');
+              splash.classList.remove('displayNone');
+            }).catch((error) => {
+              console.log(error);
+            });
       } else {
         puzTable.classList.add('displayNone');
         clueContainer.classList.add('displayNone');

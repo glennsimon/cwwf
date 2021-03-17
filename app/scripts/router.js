@@ -23,11 +23,11 @@
     function navigate() {
       if (location.hash === '#puzzle') {
         try {
-          let replayButton = querySelector('#replayButton');
+          const replayButton = querySelector('#replayButton');
           if (!replayButton) {
             gamesDialog.close();
           }
-        } catch(err) {
+        } catch (err) {
           // do nothing, error OK
         }
         window.puzzleGames.unsubscribe();

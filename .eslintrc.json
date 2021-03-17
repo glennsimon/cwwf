@@ -11,5 +11,8 @@
     },
     "globals": {
         "importScripts": true
+    },
+    "env": {
+        "node": true
     }
 }

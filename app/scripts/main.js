@@ -1,21 +1,3 @@
-/*!
- *
- *  Web Starter Kit
- *  Copyright 2015 Google Inc. All rights reserved.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *    https://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License
- *
- */
 /* eslint-env es6, browser */
 const puzzleWorker = (function(document, window) {
   'use strict';
@@ -24,14 +6,14 @@ const puzzleWorker = (function(document, window) {
   // and that the current page is accessed from a secure origin. Using a
   // service worker from an insecure origin will trigger JS console errors. See
   // http://www.chromium.org/Home/chromium-security/prefer-secure-origins-for-powerful-new-features
-  var isLocalhost = Boolean(
-    window.location.hostname === 'localhost' ||
-    // [::1] is the IPv6 localhost address.
-    window.location.hostname === '[::1]' ||
-    // 127.0.0.1/8 is considered localhost for IPv4.
-    window.location.hostname.match(
-      /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
-    )
+  const isLocalhost = Boolean(
+      window.location.hostname === 'localhost' ||
+      // [::1] is the IPv6 localhost address.
+      window.location.hostname === '[::1]' ||
+      // 127.0.0.1/8 is considered localhost for IPv4.
+      window.location.hostname.match(
+          /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
+      )
   );
 
   if (
@@ -39,43 +21,46 @@ const puzzleWorker = (function(document, window) {
     (window.location.protocol === 'https:' || isLocalhost)
   ) {
     navigator.serviceWorker
-      .register('service-worker.js')
-      .then(function(registration) {
-        // updatefound is fired if service-worker.js changes.
-        registration.onupdatefound = function() {
-          // updatefound is also fired the very first time the SW is installed,
-          // and there's no need to prompt for a reload at that point.
-          // So check here to see if the page is already controlled,
-          // i.e. whether there's an existing service worker.
-          if (navigator.serviceWorker.controller) {
-            // The updatefound event implies that registration.installing is set:
-            // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#service-worker-container-updatefound-event
-            var installingWorker = registration.installing;
+        .register('service-worker.js')
+        .then(function(registration) {
+          // updatefound is fired if service-worker.js changes.
+          registration.onupdatefound = function() {
+            // updatefound is also fired the very first time the SW is
+            // installed, and there's no need to prompt for a reload at
+            // that point.
+            // So check here to see if the page is already controlled,
+            // i.e. whether there's an existing service worker.
+            if (navigator.serviceWorker.controller) {
+              // The updatefound event implies that registration.installing is
+              // set:
+              // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#service-worker-container-updatefound-event
+              const installingWorker = registration.installing;
 
-            installingWorker.onstatechange = function() {
-              switch (installingWorker.state) {
-                case 'installed':
-                  // At this point, the old content will have been purged and the
-                  // fresh content will have been added to the cache.
-                  // It's the perfect time to display a "New content is
-                  // available; please refresh." message in the page's interface.
-                  break;
+              installingWorker.onstatechange = function() {
+                switch (installingWorker.state) {
+                  case 'installed':
+                    // At this point, the old content will have been purged
+                    // and the fresh content will have been added to the
+                    // cache. It's the perfect time to display a "New
+                    // content is available; please refresh." message in
+                    // the page's interface.
+                    break;
 
-                case 'redundant':
-                  throw new Error(
-                    'The installing service worker became redundant.'
-                  );
+                  case 'redundant':
+                    throw new Error(
+                        'The installing service worker became redundant.'
+                    );
 
-                default:
-                  // Ignore
-              }
-            };
-          }
-        };
-      })
-      .catch(function(e) {
-        console.error('Error during service worker registration:', e);
-      });
+                  default:
+                    // Ignore
+                }
+              };
+            }
+          };
+        })
+        .catch(function(e) {
+          console.error('Error during service worker registration:', e);
+        });
   }
 
   // const yearPicker = document.getElementById('pickYear');
@@ -106,7 +91,7 @@ const puzzleWorker = (function(document, window) {
   const scoreValues = {
     A: 1, B: 4, C: 4, D: 2, E: 1, F: 4, G: 3, H: 4, I: 1, J: 10, K: 5, L: 2,
     M: 4, N: 2, O: 1, P: 4, Q: 10, R: 1, S: 1, T: 1, U: 2, V: 5, W: 4, X: 8,
-    Y: 4, Z: 10
+    Y: 4, Z: 10,
   };
 
   let currentUser = firebase.auth().currentUser;
@@ -123,22 +108,22 @@ const puzzleWorker = (function(document, window) {
 
   // Add the public key generated from the console here.
   messaging.usePublicVapidKey(
-    'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4wB4x' +
-    '-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak'
+      'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4wB4x' +
+      '-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak'
   );
 
   // Callback fired if Instance ID token is updated.
   messaging.onTokenRefresh(function() {
     messaging
-      .getToken()
-      .then(function(refreshedToken) {
-        console.log('Token refreshed.');
-        // Send Instance ID token to app server.
-        sendTokenToServer(refreshedToken);
-      })
-      .catch(function(err) {
-        console.log('Unable to retrieve refreshed token ', err);
-      });
+        .getToken()
+        .then(function(refreshedToken) {
+          console.log('Token refreshed.');
+          // Send Instance ID token to app server.
+          sendTokenToServer(refreshedToken);
+        })
+        .catch(function(err) {
+          console.log('Unable to retrieve refreshed token ', err);
+        });
   });
 
   /**
@@ -148,30 +133,30 @@ const puzzleWorker = (function(document, window) {
   function sendTokenToServer(token) {
     if (currentUser) {
       const userStatusFirestoreRef = firebase
-        .firestore()
-        .doc(`/users/${currentUser.uid}`);
+          .firestore()
+          .doc(`/users/${currentUser.uid}`);
       userStatusFirestoreRef.set({msgToken: token}, {merge: true});
     }
   }
 
-  messaging.onMessage(payload => {
+  messaging.onMessage((payload) => {
     console.log('onMessage: ', payload);
   });
 
-  firebase.auth().onAuthStateChanged(user => {
+  firebase.auth().onAuthStateChanged((user) => {
     currentUser = user;
     messaging
-      .requestPermission()
-      .then(() => {
-        return messaging.getToken();
-      })
-      .then(token => {
-        console.log('Permission granted. Token: ', token);
-        sendTokenToServer(token);
-      })
-      .catch(err => {
-        console.log('User denied messaging', err);
-      });
+        .requestPermission()
+        .then(() => {
+          return messaging.getToken();
+        })
+        .then((token) => {
+          console.log('Permission granted. Token: ', token);
+          sendTokenToServer(token);
+        })
+        .catch((err) => {
+          console.log('User denied messaging', err);
+        });
   });
 
   logo.addEventListener('click', () => {
@@ -193,7 +178,8 @@ const puzzleWorker = (function(document, window) {
     }
     idxArray = [];
     clueNumIndices = {};
-    // initial estimate of element size used to determine cellDim -> tableDim -> puzzle size
+    // initial estimate of element size used to determine
+    // cellDim -> tableDim -> puzzle size
     if (game.puzzle.notepad) {
       // puzNotepad.style.width = '300px';
       puzNotepad.innerHTML = `<b>Notepad:</b>${game.puzzle.notepad}`;
@@ -207,16 +193,16 @@ const puzzleWorker = (function(document, window) {
       `&copy; ${game.puzzle.copyright}` :
       '';
 
-    let cellDim = getCellDim();
-    let tableDim = cellDim * game.puzzle.rows;
+    const cellDim = getCellDim();
+    const tableDim = cellDim * game.puzzle.rows;
     let gridIndex = 0;
     for (let rowIndex = 0; rowIndex < game.puzzle.rows; rowIndex += 1) {
-      let row = puzTable.insertRow(rowIndex);
+      const row = puzTable.insertRow(rowIndex);
       row.style.width = `${tableDim}px`;
       for (let colIndex = 0; colIndex < game.puzzle.cols; colIndex += 1) {
-        let clueNumber = game.puzzle.grid[gridIndex].clueNum;
-        let cell = row.insertCell(colIndex);
-        let blackCell = game.puzzle.grid[gridIndex].black;
+        const clueNumber = game.puzzle.grid[gridIndex].clueNum;
+        const cell = row.insertCell(colIndex);
+        const blackCell = game.puzzle.grid[gridIndex].black;
 
         cell.style.width = `${cellDim}px`;
         cell.style.height = `${cellDim}px`;
@@ -225,20 +211,20 @@ const puzzleWorker = (function(document, window) {
           cell.className = 'black';
         } else {
           cell.classList.add('cursorPointer');
-          let squareDiv = document.createElement('div');
-          let letterDiv = document.createElement('div');
+          const squareDiv = document.createElement('div');
+          const letterDiv = document.createElement('div');
           squareDiv.classList.add('square');
           letterDiv.classList.add('marginAuto');
           if (game.puzzle.grid[gridIndex].status === 'locked') {
             cell.classList.add(game.puzzle.grid[gridIndex].bgColor);
           }
-          let guess = game.puzzle.grid[gridIndex].guess;
+          const guess = game.puzzle.grid[gridIndex].guess;
           letterDiv.innerText = guess ? guess : '';
           squareDiv.appendChild(letterDiv);
           cell.appendChild(squareDiv);
           if (clueNumber !== '') {
             clueNumIndices[clueNumber.toString()] = gridIndex;
-            let clueNumDiv = document.createElement('div');
+            const clueNumDiv = document.createElement('div');
             clueNumDiv.classList.add('clueNumber');
             clueNumDiv.appendChild(document.createTextNode(clueNumber));
             cell.appendChild(clueNumDiv);
@@ -263,23 +249,23 @@ const puzzleWorker = (function(document, window) {
     }
 
     // create contents for across clues div
-    for (let clue of game.puzzle.clues.across) {
-      let parsedClue = clue.split('.');
-      let clueNumber = parseInt(parsedClue[0], 10);
-      let clueRef = parsedClue[0] + '.';
-      let clueText = parsedClue.slice(1).join('.');
-      let clueDiv = document.createElement('div');
+    for (const clue of game.puzzle.clues.across) {
+      const parsedClue = clue.split('.');
+      const clueNumber = parseInt(parsedClue[0], 10);
+      const clueRef = parsedClue[0] + '.';
+      const clueText = parsedClue.slice(1).join('.');
+      const clueDiv = document.createElement('div');
       clueDiv.classList.add('displayFlex', 'cursorPointer');
       clueDiv.id = 'across' + clueNumber;
       if (game.puzzle.completedClues.across.includes(clueNumber)) {
         clueDiv.classList.add('colorLightGray');
       }
 
-      let numDiv = document.createElement('div');
+      const numDiv = document.createElement('div');
       numDiv.appendChild(document.createTextNode(clueRef));
       numDiv.classList.add('padRight', 'cursorPointer');
 
-      let textDiv = document.createElement('div');
+      const textDiv = document.createElement('div');
       textDiv.appendChild(document.createTextNode(clueText));
       textDiv.classList.add('cursorPointer');
       clueDiv.appendChild(numDiv);
@@ -289,23 +275,23 @@ const puzzleWorker = (function(document, window) {
     }
 
     // create contents for down clues div
-    for (let clue of game.puzzle.clues.down) {
-      let parsedClue = clue.split('.');
-      let clueNumber = parseInt(parsedClue[0], 10);
-      let clueRef = parsedClue[0] + '.';
-      let clueText = parsedClue.slice(1).join('.');
-      let clueDiv = document.createElement('div');
+    for (const clue of game.puzzle.clues.down) {
+      const parsedClue = clue.split('.');
+      const clueNumber = parseInt(parsedClue[0], 10);
+      const clueRef = parsedClue[0] + '.';
+      const clueText = parsedClue.slice(1).join('.');
+      const clueDiv = document.createElement('div');
       clueDiv.classList.add('displayFlex', 'cursorPointer');
       clueDiv.id = 'down' + clueNumber;
       if (game.puzzle.completedClues.down.includes(clueNumber)) {
         clueDiv.classList.add('colorLightGray');
       }
 
-      let numDiv = document.createElement('div');
+      const numDiv = document.createElement('div');
       numDiv.appendChild(document.createTextNode(clueRef));
       numDiv.classList.add('padRight', 'cursorPointer');
 
-      let textDiv = document.createElement('div');
+      const textDiv = document.createElement('div');
       textDiv.appendChild(document.createTextNode(clueText));
       textDiv.classList.add('cursorPointer');
       clueDiv.appendChild(numDiv);
@@ -313,13 +299,13 @@ const puzzleWorker = (function(document, window) {
       downClues.appendChild(clueDiv);
     }
 
-    acrossClues.addEventListener('click', event => {
+    acrossClues.addEventListener('click', (event) => {
       if (event.target.innerText !== '') {
         clueClicked(event, 'across');
       }
     });
 
-    downClues.addEventListener('click', event => {
+    downClues.addEventListener('click', (event) => {
       if (event.target.innerText !== '') {
         clueClicked(event, 'down');
       }
@@ -327,8 +313,9 @@ const puzzleWorker = (function(document, window) {
 
     scores.classList.remove('displayNone');
     scores.classList.add('displayFlex');
-    let me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
-    let they = me === 'initiator' ? 'opponent' : 'initiator';
+    const me = currentUser.uid === game.initiator.uid ?
+        'initiator' : 'opponent';
+    const they = me === 'initiator' ? 'opponent' : 'initiator';
     let myNickname = game[me].displayName;
     let oppNickname = game[they].displayName;
 
@@ -372,10 +359,10 @@ const puzzleWorker = (function(document, window) {
   function clueClicked(event, direction) {
     let clueNumberText = event.target.parentElement.firstChild.innerText;
     clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
-    let cellIndex = clueNumIndices[clueNumberText];
-    let row = Math.floor(cellIndex / columns);
-    let col = cellIndex - row * columns;
-    let cell = puzTable.firstChild.children[row].children[col];
+    const cellIndex = clueNumIndices[clueNumberText];
+    const row = Math.floor(cellIndex / columns);
+    const col = cellIndex - row * columns;
+    const cell = puzTable.firstChild.children[row].children[col];
     if (direction === 'across') {
       selectAcross(cell);
     } else {
@@ -388,7 +375,7 @@ const puzzleWorker = (function(document, window) {
    * @return {number} dimension
    */
   function getCellDim() {
-    let puzTableWidth = puzTable.offsetWidth;
+    const puzTableWidth = puzTable.offsetWidth;
     return Math.floor(puzTableWidth / game.puzzle.rows);
   }
 
@@ -397,10 +384,10 @@ const puzzleWorker = (function(document, window) {
    * @param {Event} event Mouse click or screen touch event
    */
   function cellClicked(event) {
-    let cell = event.target;
-    let row = cell.parentElement.rowIndex;
-    let col = cell.cellIndex;
-    let index = row * columns + col;
+    const cell = event.target;
+    const row = cell.parentElement.rowIndex;
+    const col = cell.cellIndex;
+    const index = row * columns + col;
     // console.log(cell.cellIndex);
     // console.log(cell.parentElement.rowIndex);
     // console.log(event);
@@ -426,15 +413,14 @@ const puzzleWorker = (function(document, window) {
 
   /** Clears letters when user changes to a different clue */
   function clearLetters() {
-    for (let index of idxArray) {
+    for (const index of idxArray) {
       if (game.puzzle.grid[index].status === 'locked') continue;
       game.puzzle.grid[index].guess = '';
-      let row = Math.floor(index / columns);
-      let col = index - row * columns;
+      const row = Math.floor(index / columns);
+      const col = index - row * columns;
       puzTable.firstChild.children[row].children[
           col
-        ].firstChild.firstChild.innerText =
-        '';
+      ].firstChild.firstChild.innerText = '';
     }
   }
 
@@ -446,10 +432,10 @@ const puzzleWorker = (function(document, window) {
    * @return {array} Array of indices that make up a word block
    */
   function getWordBlock(cell, direction) {
-    let row = cell.parentElement.rowIndex;
-    let col = cell.cellIndex;
+    const row = cell.parentElement.rowIndex;
+    const col = cell.cellIndex;
     let index = row * columns + col;
-    let indexArray = [];
+    const indexArray = [];
     if (direction === 'across') {
       while (index > row * columns && !game.puzzle.grid[index - 1].black) {
         index--;
@@ -479,22 +465,22 @@ const puzzleWorker = (function(document, window) {
    * @param {Object} cell Cell the user clicked
    */
   function selectAcross(cell) {
-    let row = cell.parentElement.rowIndex;
-    let col = cell.cellIndex;
-    let rowOffset = row * columns;
-    let index = row * columns + col;
+    const row = cell.parentElement.rowIndex;
+    const col = cell.cellIndex;
+    const rowOffset = row * columns;
+    const index = row * columns + col;
 
     clearHighlights();
     idxArray = getWordBlock(cell, 'across');
     currentClue = game.puzzle.grid[idxArray[0]].clueNum;
-    for (let clue of acrossClues.children) {
-      let clueNumStr = clue.children[0].textContent.split('.')[0];
+    for (const clue of acrossClues.children) {
+      const clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
         clue.classList.add('rangeHighlight', 'cluePop');
         acrossClues.scrollBy({
           top: clue.offsetTop - 100 - acrossClues.scrollTop,
           left: 0,
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
         singleClue.innerText = clue.children[1].textContent;
         break;
@@ -503,9 +489,9 @@ const puzzleWorker = (function(document, window) {
     let currentCol = index - rowOffset;
     let currentCell = cell.parentElement.children[currentCol];
     cell.parentElement.children[idxArray[0] - rowOffset].classList.add(
-      'border2pxLeft'
+        'border2pxLeft'
     );
-    for (let idx of idxArray) {
+    for (const idx of idxArray) {
       currentCol = idx - rowOffset;
       currentCell = cell.parentElement.children[currentCol];
       currentCell.classList.add('border2pxTop', 'border2pxBottom');
@@ -514,7 +500,7 @@ const puzzleWorker = (function(document, window) {
       );
     }
     cell.parentElement.children[
-      idxArray[idxArray.length - 1] - rowOffset
+        idxArray[idxArray.length - 1] - rowOffset
     ].classList.add('border2pxRight');
   }
 
@@ -524,22 +510,22 @@ const puzzleWorker = (function(document, window) {
    * @param {Object} cell Cell the user clicked
    */
   function selectDown(cell) {
-    let row = cell.parentElement.rowIndex;
-    let col = cell.cellIndex;
-    let index = row * columns + col;
+    const row = cell.parentElement.rowIndex;
+    const col = cell.cellIndex;
+    const index = row * columns + col;
 
     clearHighlights();
     idxArray = getWordBlock(cell, 'down');
     // get the number of the clue number
     currentClue = game.puzzle.grid[idxArray[0]].clueNum;
-    for (let clue of downClues.children) {
-      let clueNumStr = clue.children[0].textContent.split('.')[0];
+    for (const clue of downClues.children) {
+      const clueNumStr = clue.children[0].textContent.split('.')[0];
       if (clueNumStr === currentClue.toString()) {
         clue.classList.add('rangeHighlight', 'cluePop');
         downClues.scrollBy({
           top: clue.offsetTop - 100 - downClues.scrollTop,
           left: 0,
-          behavior: 'smooth'
+          behavior: 'smooth',
         });
         singleClue.innerText = clue.children[1].textContent;
       }
@@ -547,9 +533,9 @@ const puzzleWorker = (function(document, window) {
     let currentRow = Math.floor(index / columns);
     let currentCell = puzTable.children[0].children[currentRow].children[col];
     puzTable.children[0].children[Math.floor(idxArray[0] / columns)].children[
-      col
+        col
     ].classList.add('border2pxTop');
-    for (let idx of idxArray) {
+    for (const idx of idxArray) {
       currentRow = Math.floor(idx / columns);
       currentCell = puzTable.children[0].children[currentRow].children[col];
       currentCell.classList.add('border2pxLeft', 'border2pxRight');
@@ -558,33 +544,33 @@ const puzzleWorker = (function(document, window) {
       );
     }
     puzTable.children[0].children[
-      Math.floor(idxArray[idxArray.length - 1] / columns)
+        Math.floor(idxArray[idxArray.length - 1] / columns)
     ].children[col].classList.add('border2pxBottom');
   }
 
   /** Removes clue cell highlighting from all cells */
   function clearHighlights() {
     // console.log(puzTable.children[0]);
-    let rowArray = puzTable.children[0].children;
+    const rowArray = puzTable.children[0].children;
 
-    for (let row of rowArray) {
-      for (let cell of row.children) {
+    for (const row of rowArray) {
+      for (const cell of row.children) {
         if (cell.className !== 'black') {
           cell.classList.remove(
-            'rangeHighlight',
-            'currCellHighlight',
-            'border2pxBottom',
-            'border2pxRight',
-            'border2pxLeft',
-            'border2pxTop'
+              'rangeHighlight',
+              'currCellHighlight',
+              'border2pxBottom',
+              'border2pxRight',
+              'border2pxLeft',
+              'border2pxTop'
           );
         }
       }
     }
-    for (let clue of acrossClues.children) {
+    for (const clue of acrossClues.children) {
       clue.classList.remove('rangeHighlight', 'cluePop');
     }
-    for (let clue of downClues.children) {
+    for (const clue of downClues.children) {
       clue.classList.remove('rangeHighlight', 'cluePop');
     }
   }
@@ -606,10 +592,9 @@ const puzzleWorker = (function(document, window) {
 
     // Stop listening for previous puzzle changes
     if (puzzleId) {
-      db
-        .collection('games')
-        .doc(puzzleId)
-        .onSnapshot(() => {});
+      db.collection('games')
+          .doc(puzzleId)
+          .onSnapshot(() => {});
     }
 
     if (difficulty === 'hard') {
@@ -619,38 +604,38 @@ const puzzleWorker = (function(document, window) {
     }
 
     fetch(directory)
-      .then(response => {
-        return response.json();
-      })
-      .then(dir => {
-        const years = Object.getOwnPropertyNames(dir);
-        year = years[Math.floor(Math.random() * years.length)];
-        const months = Object.getOwnPropertyNames(dir[year]);
-        month = months[Math.floor(Math.random() * months.length)];
-        const days = dir[year][month];
-        day = days[Math.floor(Math.random() * days.length)];
-      })
-      .then(() => {
-        let baseUrl =
-          'https://raw.githubusercontent.com/doshea/nyt_crosswords/master';
-        let url = `${baseUrl}/${year}/${month}/${day}`;
-        fetch(url)
-          .then(response => {
-            return response.json();
-          })
-          .then(obj => {
-            parsePuzzle(obj);
-            saveNewPuzzle(paramObject);
-            showPuzzle();
-            location.hash = '#puzzle';
-          })
-          .catch(error => {
-            console.error('Error fetching puzzle: ', error);
-          });
-      })
-      .catch(error => {
-        console.error('Error fetching puzzle date: ', error);
-      });
+        .then((response) => {
+          return response.json();
+        })
+        .then((dir) => {
+          const years = Object.getOwnPropertyNames(dir);
+          year = years[Math.floor(Math.random() * years.length)];
+          const months = Object.getOwnPropertyNames(dir[year]);
+          month = months[Math.floor(Math.random() * months.length)];
+          const days = dir[year][month];
+          day = days[Math.floor(Math.random() * days.length)];
+        })
+        .then(() => {
+          const baseUrl =
+            'https://raw.githubusercontent.com/doshea/nyt_crosswords/master';
+          const url = `${baseUrl}/${year}/${month}/${day}`;
+          fetch(url)
+              .then((response) => {
+                return response.json();
+              })
+              .then((obj) => {
+                parsePuzzle(obj);
+                saveNewPuzzle(paramObject);
+                showPuzzle();
+                location.hash = '#puzzle';
+              })
+              .catch((error) => {
+                console.error('Error fetching puzzle: ', error);
+              });
+        })
+        .catch((error) => {
+          console.error('Error fetching puzzle date: ', error);
+        });
   }
 
   /**
@@ -666,31 +651,30 @@ const puzzleWorker = (function(document, window) {
 
     // Stop listening for previous puzzle changes
     if (puzzleId) {
-      db
-        .collection('games')
-        .doc(puzzleId)
-        .onSnapshot(() => {});
+      db.collection('games')
+          .doc(puzzleId)
+          .onSnapshot(() => {});
     }
 
     docRef.onSnapshot(
-      doc => {
-        game = doc.data();
-        if (game.status === 'started') {
-          myOpponentUid =
+        (doc) => {
+          game = doc.data();
+          if (game.status === 'started') {
+            myOpponentUid =
             game.initiator.uid === currentUser.uid ?
             game.opponent.uid :
             game.initiator.uid;
-          columns = game.puzzle.cols;
-          myTurn = game.nextTurn !== myOpponentUid;
-          updateScoreHighlighting();
+            columns = game.puzzle.cols;
+            myTurn = game.nextTurn !== myOpponentUid;
+            updateScoreHighlighting();
+          }
+          puzzleId = newPuzzleId;
+          showPuzzle();
+          location.hash = '#puzzle';
+        },
+        (error) => {
+          console.error('Error getting puzzle: ', error);
         }
-        puzzleId = newPuzzleId;
-        showPuzzle();
-        location.hash = '#puzzle';
-      },
-      error => {
-        console.error('Error getting puzzle: ', error);
-      }
     );
   }
 
@@ -734,7 +718,7 @@ const puzzleWorker = (function(document, window) {
     game.puzzle.completedClues.across = [];
     game.puzzle.completedClues.down = [];
     game.puzzle.grid = [];
-    for (var i = 0; i < puzzle.grid.length; i++) {
+    for (let i = 0; i < puzzle.grid.length; i++) {
       game.puzzle.grid[i] = {};
       if (puzzle.grid[i] === '.') {
         game.puzzle.grid[i].black = true;
@@ -753,7 +737,8 @@ const puzzleWorker = (function(document, window) {
   }
 
   /** Saves new puzzle to firebase
-   * @param {Object} paramObject Id and difficulty object passed to loadPuzzle from games.js
+   * @param {Object} paramObject Id and difficulty object passed to loadPuzzle
+   * from games.js
    */
   function saveNewPuzzle(paramObject) {
     const initiatorUid = paramObject.initiator.uid;
@@ -781,40 +766,37 @@ const puzzleWorker = (function(document, window) {
     game.status = 'started';
     game.winner = null;
     game.nextTurn = initiatorUid;
-    db
-      .collection('games')
-      .add(game)
-      .then(docRef => {
-        console.log('game written to firestore with docRef: ', docRef);
-        puzzleId = docRef.id;
-        db
-          .collection('games')
-          .doc(puzzleId)
-          .onSnapshot(
-            doc => {
-              game = doc.data();
-              myTurn = game.nextTurn !== myOpponentUid;
-              showPuzzle();
-            },
-            error => {
-              console.error('Error getting puzzle: ', error);
-            }
-          );
-      })
-      .catch(error => {
-        console.error('Error writing file to firestore: ', error);
-      });
+    db.collection('games')
+        .add(game)
+        .then((docRef) => {
+          console.log('game written to firestore with docRef: ', docRef);
+          puzzleId = docRef.id;
+          db.collection('games')
+              .doc(puzzleId)
+              .onSnapshot(
+                  (doc) => {
+                    game = doc.data();
+                    myTurn = game.nextTurn !== myOpponentUid;
+                    showPuzzle();
+                  },
+                  (error) => {
+                    console.error('Error getting puzzle: ', error);
+                  }
+              );
+        })
+        .catch((error) => {
+          console.error('Error writing file to firestore: ', error);
+        });
   }
 
   /** Saves puzzle to firebase */
   function savePuzzle() {
-    db
-      .collection('games')
-      .doc(puzzleId)
-      .set(game, {merge: true})
-      .catch(error => {
-        console.error('Error saving to firebase: ', error);
-      });
+    db.collection('games')
+        .doc(puzzleId)
+        .set(game, {merge: true})
+        .catch((error) => {
+          console.error('Error saving to firebase: ', error);
+        });
   }
 
   /** Removes puzzle from DOM */
@@ -836,14 +818,14 @@ const puzzleWorker = (function(document, window) {
   function resizePuzzle() {
     if (puzTable.children.length === 0) return;
     // console.log(puzTable.children[0]);
-    let cellDim = getCellDim();
-    let tableDim = cellDim * game.puzzle.rows;
-    let rowArray = puzTable.children[0].children;
+    const cellDim = getCellDim();
+    const tableDim = cellDim * game.puzzle.rows;
+    const rowArray = puzTable.children[0].children;
 
-    for (let row of rowArray) {
+    for (const row of rowArray) {
       row.style.width = tableDim + 'px';
-      let cellArray = row.children;
-      for (let cell of cellArray) {
+      const cellArray = row.children;
+      for (const cell of cellArray) {
         cell.style.width = cellDim + 'px';
         cell.style.height = cellDim + 'px';
       }
@@ -862,19 +844,22 @@ const puzzleWorker = (function(document, window) {
     document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
   }
 
-  /** Play currentUser's turn. Executed when the player clicks the enter button */
+  /**
+   * Play currentUser's turn. Executed when the player clicks the enter
+   * button
+   */
   function playWord() {
     if (!myTurn) return;
     if (incomplete()) return;
     if (correctAnswer()) {
-      let direction = acrossWord ? 'across' : 'down';
-      let clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
+      const direction = acrossWord ? 'across' : 'down';
+      const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
       game.puzzle.completedClues[direction].push(clueNumber);
       document
-        .getElementById(direction + clueNumber)
-        .classList.add('colorLightGray');
-      for (let index of idxArray) {
-        let gridElement = game.puzzle.grid[index];
+          .getElementById(direction + clueNumber)
+          .classList.add('colorLightGray');
+      for (const index of idxArray) {
+        const gridElement = game.puzzle.grid[index];
         game.puzzle.grid[index] = setCellStatus(index, gridElement);
       }
     }
@@ -888,7 +873,7 @@ const puzzleWorker = (function(document, window) {
    * @return {boolean} true if word is incomplete, false otherwise
    */
   function incomplete() {
-    for (let i of idxArray) {
+    for (const i of idxArray) {
       if (!game.puzzle.grid[i].guess || game.puzzle.grid[i].guess === '') {
         return true;
       }
@@ -901,8 +886,8 @@ const puzzleWorker = (function(document, window) {
    * @return {boolean} true if correct, false otherwise
    */
   function correctAnswer() {
-    for (let index of idxArray) {
-      let gridElement = game.puzzle.grid[index];
+    for (const index of idxArray) {
+      const gridElement = game.puzzle.grid[index];
       if (gridElement.guess !== gridElement.value) {
         return false;
       }
@@ -917,7 +902,7 @@ const puzzleWorker = (function(document, window) {
    * @return {Object} Updated grid element object
    */
   function setCellStatus(index, gridElement) {
-    let player =
+    const player =
       game.initiator.uid === currentUser.uid ? 'initiator' : 'opponent';
     if (gridElement.status === 'locked') {
       game[player].score += scoreValues[gridElement.value];
@@ -944,7 +929,7 @@ const puzzleWorker = (function(document, window) {
     const wordBlock = getWordBlock(cell, direction);
     let addedScore = 0;
 
-    for (let idx of wordBlock) {
+    for (const idx of wordBlock) {
       if (idx === index) {
         addedScore += 2 * scoreValues[game.puzzle.grid[idx].value];
       } else if (game.puzzle.grid[idx].status === 'locked') {
@@ -953,15 +938,16 @@ const puzzleWorker = (function(document, window) {
         return scoreValues[game.puzzle.grid[index].value];
       }
     }
-    let clueNumber = game.puzzle.grid[wordBlock[0]].clueNum;
+    const clueNumber = game.puzzle.grid[wordBlock[0]].clueNum;
     game.puzzle.completedClues[direction].push(clueNumber);
     return addedScore;
   }
 
   /**
-   * Adds a letter to the puzzle from physical or virtual keyboard event and moves
-   * forward one space
-   * @param {Event} event Keyboard or touch event from physical or virtual keyboard
+   * Adds a letter to the puzzle from physical or virtual keyboard event and
+   * moves forward one space
+   * @param {Event} event Keyboard or touch event from physical or virtual
+   * keyboard
    */
   function enterLetter(event) {
     let letter;
@@ -986,12 +972,12 @@ const puzzleWorker = (function(document, window) {
     if (currentCell) {
       let row = currentCell.parentElement.rowIndex;
       let col = currentCell.cellIndex;
-      let index = row * columns + col;
-      let nextCellIndex = idxArray.indexOf(index) + 1;
-      let localIdxArray = idxArray
-        .slice(nextCellIndex)
-        .concat(idxArray.slice(0, nextCellIndex));
-      let letterDiv = document.createElement('div');
+      const index = row * columns + col;
+      const nextCellIndex = idxArray.indexOf(index) + 1;
+      const localIdxArray = idxArray
+          .slice(nextCellIndex)
+          .concat(idxArray.slice(0, nextCellIndex));
+      const letterDiv = document.createElement('div');
       // console.log(idxArray);
       // console.log(localIdxArray);
 
@@ -1003,12 +989,12 @@ const puzzleWorker = (function(document, window) {
       letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
       letterDiv.classList.add('marginAuto');
       currentCell.children[0].replaceChild(
-        letterDiv,
-        currentCell.children[0].children[0]
+          letterDiv,
+          currentCell.children[0].children[0]
       );
       currentCell.classList.remove('currCellHighlight');
       currentCell.classList.add('rangeHighlight');
-      for (let idx of localIdxArray) {
+      for (const idx of localIdxArray) {
         if (game.puzzle.grid[idx].status !== 'locked') {
           row = Math.floor(idx / columns);
           col = idx - row * columns;
@@ -1029,17 +1015,17 @@ const puzzleWorker = (function(document, window) {
     if (currentCell) {
       let row = currentCell.parentElement.rowIndex;
       let col = currentCell.cellIndex;
-      let index = row * columns + col;
+      const index = row * columns + col;
       // reverse copy idxArray so we go backwards instead of forwards
       let localIdxArray = [];
       for (let i = 0, j = idxArray.length; i < idxArray.length; i++, j--) {
         localIdxArray[i] = idxArray[j - 1];
       }
-      let nextCellIndex = localIdxArray.indexOf(index) + 1;
+      const nextCellIndex = localIdxArray.indexOf(index) + 1;
       localIdxArray = localIdxArray
-        .slice(nextCellIndex)
-        .concat(localIdxArray.slice(0, nextCellIndex));
-      let letterDiv = document.createElement('div');
+          .slice(nextCellIndex)
+          .concat(localIdxArray.slice(0, nextCellIndex));
+      const letterDiv = document.createElement('div');
       // console.log(idxArray);
       // console.log(localIdxArray);
 
@@ -1050,12 +1036,12 @@ const puzzleWorker = (function(document, window) {
       letterDiv.appendChild(document.createTextNode(''));
       letterDiv.classList.add('marginAuto');
       currentCell.children[0].replaceChild(
-        letterDiv,
-        currentCell.children[0].children[0]
+          letterDiv,
+          currentCell.children[0].children[0]
       );
       currentCell.classList.remove('currCellHighlight');
       currentCell.classList.add('rangeHighlight');
-      for (let idx of localIdxArray) {
+      for (const idx of localIdxArray) {
         if (game.puzzle.grid[idx].status !== 'locked') {
           row = Math.floor(idx / columns);
           col = idx - row * columns;
@@ -1070,11 +1056,12 @@ const puzzleWorker = (function(document, window) {
 
   /** Concede the game immediately */
   function concede() {
-    let me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
-    let they = me === 'initiator' ? 'opponent' : 'initiator';
+    const me = currentUser.uid === game.initiator.uid ?
+        'initiator' : 'opponent';
+    const they = me === 'initiator' ? 'opponent' : 'initiator';
 
     game.emptySquares = 0;
-    for (let square of game.puzzle.grid) {
+    for (const square of game.puzzle.grid) {
       if (square.status && square.status === 'free') {
         square.status = 'locked';
         square.guess = square.value;
@@ -1088,15 +1075,15 @@ const puzzleWorker = (function(document, window) {
   concessionBtn.addEventListener('click', concede);
   document.addEventListener('keyup', enterLetter);
   window.addEventListener('resize', resizePuzzle);
-  let keyList = keyboard.getElementsByClassName('kbButton');
-  for (let node of keyList) {
+  const keyList = keyboard.getElementsByClassName('kbButton');
+  for (const node of keyList) {
     node.addEventListener('click', enterLetter);
   }
   document.getElementById('backspace').addEventListener('click', undoEntry);
   document.getElementById('enter').addEventListener('click', playWord);
   document
-    .getElementById('closeDrawer')
-    .addEventListener('click', toggleDrawer);
+      .getElementById('closeDrawer')
+      .addEventListener('click', toggleDrawer);
   screenToggle.addEventListener('click', toggleScreen);
 
   /** Toggle between window and full screen */
@@ -1124,7 +1111,7 @@ const puzzleWorker = (function(document, window) {
     init: init,
     loadPuzzle: loadPuzzle,
     fetchPuzzle: fetchPuzzle,
-    clearPuzzle: clearPuzzle
+    clearPuzzle: clearPuzzle,
   };
 })(document, window);
 

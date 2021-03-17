@@ -27,7 +27,7 @@ const puzzleGames = (function(document, window) {
   // let pastGames = {};
   // holder variable for function
 
-  firebase.auth().onAuthStateChanged(user => {
+  firebase.auth().onAuthStateChanged((user) => {
     currentUser = user;
     // fillLists();
     if (user) {
@@ -48,7 +48,7 @@ const puzzleGames = (function(document, window) {
   });
 
   gamesDialog.querySelector('.close').addEventListener('click',
-    closeGamesDialog);
+      closeGamesDialog);
 
   /** Reset radio buttons and close dialog */
   function closeGamesDialog() {
@@ -67,7 +67,7 @@ const puzzleGames = (function(document, window) {
       gamesDialog.firstChild.classList.add('padding0', 'height100pct');
       opponentHeading.classList.remove('displayNone');
       opponentList.classList.remove('displayNone');
-      let replayButton = querySelector('#replayButton');
+      const replayButton = querySelector('#replayButton');
       if (replayButton) {
         try {
           gamesDialog.firstChild.removeChild(replayButton);
@@ -86,13 +86,13 @@ const puzzleGames = (function(document, window) {
   /** Subscribe to firestore listeners */
   function subscribe() {
     firebase.firestore().collection('users')
-      .onSnapshot(snapshot => loadUserList(snapshot), error => {
-        console.error('Error getting users: ', error);
-      });
+        .onSnapshot((snapshot) => loadUserList(snapshot), (error) => {
+          console.error('Error getting users: ', error);
+        });
     firebase.firestore().collection('games')
-      .onSnapshot(snapshot => loadGames(snapshot), error => {
-        console.error('Error getting games: ', error);
-      });
+        .onSnapshot((snapshot) => loadGames(snapshot), (error) => {
+          console.error('Error getting games: ', error);
+        });
   }
 
   /** Unsubscribe from firestore listeners */
@@ -114,8 +114,8 @@ const puzzleGames = (function(document, window) {
       console.warn('No users exist yet.');
       return;
     }
-    let usersObj = {};
-    snapshot.docs.forEach(doc => {
+    const usersObj = {};
+    snapshot.docs.forEach((doc) => {
       const uid = doc.id;
       const user = doc.data();
       usersObj[uid] = user;
@@ -171,7 +171,7 @@ const puzzleGames = (function(document, window) {
       console.warn('No games exist yet.');
       return;
     }
-    snapshot.docs.forEach(doc => {
+    snapshot.docs.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
       // console.log(doc.id, ' => ', doc.data());
       const game = doc.data();
@@ -179,9 +179,9 @@ const puzzleGames = (function(document, window) {
       if (game.status === 'started' &&
         (game.initiator.uid === currentUser.uid ||
           game.opponent.uid === currentUser.uid)) {
-        let myOpponent = game.initiator.uid === currentUser.uid ?
+        const myOpponent = game.initiator.uid === currentUser.uid ?
           game.opponent : game.initiator;
-        let opponentPhoto = allUsers[myOpponent.uid] &&
+        const opponentPhoto = allUsers[myOpponent.uid] &&
           allUsers[myOpponent.uid].photoURL;
         if (opponentPhoto) {
           avatar =
@@ -209,7 +209,7 @@ const puzzleGames = (function(document, window) {
  </li>`;
       } else if (game.initiator.uid === currentUser.uid ||
         game.opponent.uid === currentUser.uid) {
-        let myOpponent = game.initiator.uid === currentUser.uid ?
+        const myOpponent = game.initiator.uid === currentUser.uid ?
           game.opponent : game.initiator;
         let result = 'Game cancelled';
         if (game.status === 'finished') {
@@ -221,7 +221,7 @@ const puzzleGames = (function(document, window) {
         }
         // pastGames[doc.id] = {};
         // pastGames[doc.id].difficulty = game.difficulty;
-        let opponentPhoto = allUsers[myOpponent.uid] &&
+        const opponentPhoto = allUsers[myOpponent.uid] &&
           allUsers[myOpponent.uid].photoURL;
         if (opponentPhoto) {
           avatar =
@@ -286,13 +286,13 @@ const puzzleGames = (function(document, window) {
     window.puzzleWorker.loadPuzzle({
       initiator: {
         uid: currentUser.uid,
-        displayName: currentUser.displayName
+        displayName: currentUser.displayName,
       },
       opponent: {
         uid: target.id,
-        displayName: allUsers[target.id].displayName
+        displayName: allUsers[target.id].displayName,
       },
-      difficulty: difficulty
+      difficulty: difficulty,
     });
     // unsubscribe();
     // location.hash = '#puzzle';
@@ -316,8 +316,8 @@ const puzzleGames = (function(document, window) {
       replayButton = document.createElement('button');
       replayButton.setAttribute('id', 'replayButton');
       replayButton.classList.add('mdl-button', 'mdl-js-button',
-        'mdl-button--raised', 'mdl-js-ripple-effect',
-        'mdl-button--accent', 'cursorPointer');
+          'mdl-button--raised', 'mdl-js-ripple-effect',
+          'mdl-button--accent', 'cursorPointer');
       replayButton.innerText = 'Play Again!';
       gamesDialog.firstChild.appendChild(replayButton);
       replayButton.addEventListener('click', replayOpponent);
@@ -345,7 +345,7 @@ const puzzleGames = (function(document, window) {
       difficulty =
         radioHard.parentElement.classList.contains('is-checked') ?
           'hard' : difficulty;
-      let they = currentUser.uid === game.initiator.uid ?
+      const they = currentUser.uid === game.initiator.uid ?
         'opponent' : 'initiator';
       closeGamesDialog();
 
@@ -353,13 +353,13 @@ const puzzleGames = (function(document, window) {
       window.puzzleWorker.loadPuzzle({
         initiator: {
           uid: currentUser.uid,
-          displayName: currentUser.displayName
+          displayName: currentUser.displayName,
         },
         opponent: {
           uid: game[they].uid,
-          displayName: game[they].displayName
+          displayName: game[they].displayName,
         },
-        difficulty: difficulty
+        difficulty: difficulty,
       });
     }
   }
@@ -369,7 +369,7 @@ const puzzleGames = (function(document, window) {
    * @param {Object} event Click event from dialogListContainer
    */
   function loadActiveGame(event) {
-    let target = event.target.parentElement;
+    const target = event.target.parentElement;
     if (target.id === '') {
       window.puzzleWorker.fetchPuzzle(target.parentElement.id);
     } else {
@@ -402,7 +402,7 @@ const puzzleGames = (function(document, window) {
     subscribe: subscribe,
     unsubscribe: unsubscribe,
     clearLists: clearLists,
-    showReplayDialog: showReplayDialog
+    showReplayDialog: showReplayDialog,
   };
 })(document, window);
 

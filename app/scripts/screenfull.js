@@ -1,4 +1,4 @@
-/*!
+/* !
  * screenfull
  * v3.3.2 - 2017-10-27
  * (c) Sindre Sorhus; MIT License
@@ -7,27 +7,27 @@
 (function() {
   'use strict';
 
-  var document;
+  let document;
   if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
     document = window.document;
   } else {
     document = {};
   }
-  var isCommonjs = typeof module !== 'undefined' && module.exports;
-  var keyboardAllowed =
+  const isCommonjs = typeof module !== 'undefined' && module.exports;
+  const keyboardAllowed =
     typeof Element !== 'undefined' && 'ALLOW_KEYBOARD_INPUT' in Element;
 
-  var fn = (function() {
-    var val;
+  const fn = (function() {
+    let val;
 
-    var fnMap = [
+    const fnMap = [
       [
         'requestFullscreen',
         'exitFullscreen',
         'fullscreenElement',
         'fullscreenEnabled',
         'fullscreenchange',
-        'fullscreenerror'
+        'fullscreenerror',
       ],
       // New WebKit
       [
@@ -36,7 +36,7 @@
         'webkitFullscreenElement',
         'webkitFullscreenEnabled',
         'webkitfullscreenchange',
-        'webkitfullscreenerror'
+        'webkitfullscreenerror',
 
       ],
       // Old WebKit (Safari 5.1)
@@ -46,7 +46,7 @@
         'webkitCurrentFullScreenElement',
         'webkitCancelFullScreen',
         'webkitfullscreenchange',
-        'webkitfullscreenerror'
+        'webkitfullscreenerror',
 
       ],
       [
@@ -55,7 +55,7 @@
         'mozFullScreenElement',
         'mozFullScreenEnabled',
         'mozfullscreenchange',
-        'mozfullscreenerror'
+        'mozfullscreenerror',
       ],
       [
         'msRequestFullscreen',
@@ -63,13 +63,13 @@
         'msFullscreenElement',
         'msFullscreenEnabled',
         'MSFullscreenChange',
-        'MSFullscreenError'
-      ]
+        'MSFullscreenError',
+      ],
     ];
 
-    var i = 0;
-    var l = fnMap.length;
-    var ret = {};
+    let i = 0;
+    const l = fnMap.length;
+    const ret = {};
 
     for (; i < l; i++) {
       val = fnMap[i];
@@ -84,14 +84,14 @@
     return false;
   })();
 
-  var eventNameMap = {
+  const eventNameMap = {
     change: fn.fullscreenchange,
-    error: fn.fullscreenerror
+    error: fn.fullscreenerror,
   };
 
-  var screenfull = {
+  const screenfull = {
     request: function(elem) {
-      var request = fn.requestFullscreen;
+      const request = fn.requestFullscreen;
 
       elem = elem || document.documentElement;
 
@@ -122,18 +122,18 @@
       this.on('error', callback);
     },
     on: function(event, callback) {
-      var eventName = eventNameMap[event];
+      const eventName = eventNameMap[event];
       if (eventName) {
         document.addEventListener(eventName, callback, false);
       }
     },
     off: function(event, callback) {
-      var eventName = eventNameMap[event];
+      const eventName = eventNameMap[event];
       if (eventName) {
         document.removeEventListener(eventName, callback, false);
       }
     },
-    raw: fn
+    raw: fn,
   };
 
   if (!fn) {
@@ -150,21 +150,21 @@
     isFullscreen: {
       get: function() {
         return Boolean(document[fn.fullscreenElement]);
-      }
+      },
     },
     element: {
       enumerable: true,
       get: function() {
         return document[fn.fullscreenElement];
-      }
+      },
     },
     enabled: {
       enumerable: true,
       get: function() {
         // Coerce to boolean in case of old WebKit
         return Boolean(document[fn.fullscreenEnabled]);
-      }
-    }
+      },
+    },
   });
 
   if (isCommonjs) {
