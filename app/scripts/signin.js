@@ -1,5 +1,5 @@
 /* eslint-env es6, browser */
-(function(document, window) {
+(function() {
   window.addEventListener('load', function() {
     initApp();
   });
@@ -143,4 +143,4 @@
       }
     });
   }
-})(document, window);
+})();

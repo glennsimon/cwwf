@@ -4,9 +4,10 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
-  databaseURL: 'https://xwordswf.firebaseio.com'
+  databaseURL: 'https://xwordswf.firebaseio.com',
 });
-// The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
+// The Cloud Functions for Firebase SDK to create Cloud Functions and
+// setup triggers.
 const Firestore = require('@google-cloud/firestore');
 const fs = require('fs');
 const https = require('https');
@@ -19,68 +20,66 @@ const firestore = new Firestore();
 // Create a new function which is triggered on changes to /users/{uid}
 // Note: This is a Realtime Database trigger, *not* Cloud Firestore.
 exports.onUserStatusChanged = functions.database
-  .ref('/users/{uid}').onUpdate(event => {
+    .ref('/users/{uid}').onUpdate(async (change, context) => {
     // Get the data written to Realtime Database
-    const eventStatus = event.data.val();
+      const eventStatus = change.after.val();
 
-    // Then use other event data to create a reference to the
-    // corresponding Firestore document.
-    const userStatusFirestoreRef = firestore.doc(`users/${event.params.uid}`);
+      // Then use other event data to create a reference to the
+      // corresponding Firestore document.
+      const userStatusFirestoreRef = firestore.doc(`users/${context.params.uid}`);
 
-    // It is likely that the Realtime Database change that triggered
-    // this event has already been overwritten by a fast change in
-    // online / offline status, so we'll re-read the current data
-    // and compare the timestamps.
-    return event.data.ref.once('value').then(statusSnapshot => {
-      return statusSnapshot.val();
-    }).then(status => {
-      console.log(status, eventStatus);
+      // It is likely that the Realtime Database change that triggered
+      // this event has already been overwritten by a fast change in
+      // online / offline status, so we'll re-read the current data
+      // and compare the timestamps.
+      const statusSnapshot = await change.after.ref.once('value');
+      const status = statusSnapshot.val();
+      functions.logger.log(status, eventStatus);
       // If the current timestamp for this data is newer than
       // the data that triggered this event, we exit this function.
-      if (status.lastChanged > eventStatus.lastChanged) return;
-
+      if (status.lastChanged > eventStatus.lastChanged) {
+        return null;
+      }
+      
       // Otherwise, we convert the lastChanged field to a Date
       eventStatus.lastChanged = new Date(eventStatus.lastChanged);
 
       // ... and write it to Firestore.
-      return userStatusFirestoreRef.set(eventStatus, { merge: true });
-    }).catch(err => {
-      console.error('Error: ', err);
+      return userStatusFirestoreRef.set(eventStatus, {merge: true});
     });
-  });
 
 exports.updateUser = functions.firestore
-  .document('games/{gameId}')
-  .onUpdate(event => {
-    const newValue = event.data.data();
-    const previousValue = event.data.previous.data();
+    .document('games/{gameId}')
+    .onUpdate((change, context) => {
+      const newValue = change.after.data();
+      const previousValue = change.before.data();
 
-    if (newValue.nextTurn !== previousValue.nextTurn) {
-      notifyPlayer(newValue.nextTurn);
-      return 'success!';
-    }
-    return 'no change';
-  });
+      if (newValue.nextTurn !== previousValue.nextTurn) {
+        notifyPlayer(newValue.nextTurn);
+        return 'success!';
+      }
+      return 'no change';
+    });
 
 /**
  * Sends notification to player
  * @param {string} uid uid of player
  */
 function notifyPlayer(uid) {
-  firestore.doc(`users/${uid}`).get().then(doc => {
+  firestore.doc(`users/${uid}`).get().then((doc) => {
     return doc.data().msgToken;
-  }).then(toKey => {
+  }).then((toKey) => {
     if (toKey) {
       const serverKey = fs.readFileSync('./server-key.txt', 'utf8');
       const notification = {
         title: 'Your turn!',
         body: 'Your opponent has played their turn',
         icon: 'favicon.ico',
-        click_action: 'https://xwordswf.firebaseapp.com'
+        click_action: 'https://xwordswf.firebaseapp.com',
       };
       const postData = JSON.stringify({
         notification: notification,
-        to: toKey
+        to: toKey,
       });
       const options = {
         hostname: 'fcm.googleapis.com',
@@ -88,14 +87,14 @@ function notifyPlayer(uid) {
         method: 'POST',
         headers: {
           'Authorization': 'key=' + serverKey.trim(),
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
       };
-      const req = https.request(options, res => {
+      const req = https.request(options, (res) => {
         console.log(`STATUS: ${res.statusCode}`);
         console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
         res.setEncoding('utf8');
-        res.on('data', chunk => {
+        res.on('data', (chunk) => {
           console.log(`BODY: ${chunk}`);
         });
         res.on('end', () => {
@@ -103,7 +102,7 @@ function notifyPlayer(uid) {
         });
       });
 
-      req.on('error', e => {
+      req.on('error', (e) => {
         console.error(`problem with request: ${e.message}`);
       });
 
@@ -113,7 +112,7 @@ function notifyPlayer(uid) {
       return 'function complete';
     }
     return 'no user key available';
-  }).catch(error => {
+  }).catch((error) => {
     console.error('Error: ', error);
   });
 }
