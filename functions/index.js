@@ -62,7 +62,7 @@ exports.updateUser = functions.firestore
     });
 
 /**
- * Sends notification to player
+ * Sends   to player
  * @param {string} uid uid of player
  */
 function notifyPlayer(uid) {
@@ -70,7 +70,7 @@ function notifyPlayer(uid) {
     return doc.data().msgToken;
   }).then((toKey) => {
     if (toKey) {
-      const serverKey = fs.readFileSync('./server-key.txt', 'utf8');
+      // const serverKey = fs.readFileSync('./server-key.txt', 'utf8');
       const notification = {
         title: 'Your turn!',
         body: 'Your opponent has played their turn',
@@ -86,7 +86,7 @@ function notifyPlayer(uid) {
         path: '/fcm/send',
         method: 'POST',
         headers: {
-          'Authorization': 'key=' + serverKey.trim(),
+          // 'Authorization': 'key=' + serverKey.trim(),
           'Content-Type': 'application/json',
         },
       };
