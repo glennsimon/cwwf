@@ -1,5 +1,5 @@
 /* eslint-env es6, browser */
-const puzzleWorker = (function(document, window) {
+const puzzleWorker = (function() {
   'use strict';
 
   // Check to make sure service workers are supported in the current browser,
@@ -106,26 +106,6 @@ const puzzleWorker = (function(document, window) {
   let myTurn = null;
   let clueNumIndices = {};
 
-  // Add the public key generated from the console here.
-  messaging.usePublicVapidKey(
-      'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4wB4x' +
-      '-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak'
-  );
-
-  // Callback fired if Instance ID token is updated.
-  messaging.onTokenRefresh(function() {
-    messaging
-        .getToken()
-        .then(function(refreshedToken) {
-          console.log('Token refreshed.');
-          // Send Instance ID token to app server.
-          sendTokenToServer(refreshedToken);
-        })
-        .catch(function(err) {
-          console.log('Unable to retrieve refreshed token ', err);
-        });
-  });
-
   /**
    * Send cloud messaging token to server
    * @param {string} token Cloud messaging token
@@ -145,8 +125,7 @@ const puzzleWorker = (function(document, window) {
 
   firebase.auth().onAuthStateChanged((user) => {
     currentUser = user;
-    messaging
-        .requestPermission()
+    messaging.requestPermission()
         .then(() => {
           return messaging.getToken();
         })
@@ -849,7 +828,7 @@ const puzzleWorker = (function(document, window) {
    * button
    */
   function playWord() {
-    if (!myTurn) return;
+    if (!myTurn) return; // TODO: should pop up message saying not your turn
     if (incomplete()) return;
     if (correctAnswer()) {
       const direction = acrossWord ? 'across' : 'down';
@@ -964,10 +943,10 @@ const puzzleWorker = (function(document, window) {
       undoEntry();
       return;
     }
-    if (letter && letter.toLowerCase() === 'enter') {
-      playWord();
-      return;
-    }
+    // if (letter && letter.toLowerCase() === 'enter') {
+    //   playWord();
+    //   return;
+    // }
     if (!letter || !letter.match(/^[a-zA-Z]$/)) return;
     if (currentCell) {
       let row = currentCell.parentElement.rowIndex;
@@ -1113,6 +1092,6 @@ const puzzleWorker = (function(document, window) {
     fetchPuzzle: fetchPuzzle,
     clearPuzzle: clearPuzzle,
   };
-})(document, window);
+})();
 
 puzzleWorker.init();

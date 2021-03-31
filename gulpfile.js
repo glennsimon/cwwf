@@ -276,3 +276,4 @@ exports.clean = clean;
 exports.default = build;
 exports.serve = serve;
 exports.serveDist = serveDist;
+exports.copy = copy;
