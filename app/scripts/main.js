@@ -124,18 +124,20 @@ const puzzleWorker = (function() {
   });
 
   firebase.auth().onAuthStateChanged((user) => {
-    currentUser = user;
-    messaging.requestPermission()
-        .then(() => {
-          return messaging.getToken();
-        })
-        .then((token) => {
-          console.log('Permission granted. Token: ', token);
-          sendTokenToServer(token);
-        })
-        .catch((err) => {
-          console.log('User denied messaging', err);
-        });
+    if (user) {
+      currentUser = user;
+      messaging.requestPermission()
+          .then(() => {
+            return messaging.getToken();
+          })
+          .then((token) => {
+            console.log('Permission granted. Token: ', token);
+            sendTokenToServer(token);
+          })
+          .catch((err) => {
+            console.log('User denied messaging', err);
+          });
+    }
   });
 
   logo.addEventListener('click', () => {
