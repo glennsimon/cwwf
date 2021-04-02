@@ -36,6 +36,8 @@
       ],
       // Terms of service url.
       tosUrl: './#tos',
+      // Privacy policy url.
+      privacyPolicyUrl: './#privacy',
     };
 
     // We'll create two constants which we will write to
