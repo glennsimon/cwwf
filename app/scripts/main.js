@@ -87,7 +87,7 @@ const puzzleWorker = (function() {
   const concessionBtn = document.getElementById('concessionBtn');
   const firebase = window.firebase;
   const db = firebase.firestore();
-  const messaging = firebase.messaging.isSupported ?
+  const messaging = firebase.messaging.isSupported() ?
       firebase.messaging() : null;
   const scoreValues = {
     A: 1, B: 4, C: 4, D: 2, E: 1, F: 4, G: 3, H: 4, I: 1, J: 10, K: 5, L: 2,
