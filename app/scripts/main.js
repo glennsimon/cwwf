@@ -95,7 +95,7 @@ const puzzleWorker = (function() {
     Y: 4, Z: 10,
   };
 
-  let currentUser = firebase.auth().currentUser;
+  let currentUser = null;
   let myOpponentUid = null;
   let currentCell = null;
   let acrossWord = true;
@@ -107,19 +107,6 @@ const puzzleWorker = (function() {
   let myTurn = null;
   let clueNumIndices = {};
 
-  /**
-   * Send cloud messaging token to server
-   * @param {string} token Cloud messaging token
-   */
-  function sendTokenToServer(token) {
-    if (currentUser) {
-      const userStatusFirestoreRef = firebase
-          .firestore()
-          .doc(`/users/${currentUser.uid}`);
-      userStatusFirestoreRef.set({msgToken: token}, {merge: true});
-    }
-  }
-
   if (messaging) {
     messaging.onMessage((payload) => {
       console.log('onMessage: ', payload);
@@ -127,21 +114,34 @@ const puzzleWorker = (function() {
   }
 
   firebase.auth().onAuthStateChanged((user) => {
-    if (user && messaging) {
+    if (user) {
       currentUser = user;
-      messaging.requestPermission()
-          .then(() => {
-            return messaging.getToken();
-          })
-          .then((token) => {
-            console.log('Permission granted. Token: ', token);
-            sendTokenToServer(token);
-          })
-          .catch((err) => {
-            console.log('User denied messaging', err);
-          });
+      if (messaging) {
+        sendTokenToServer();
+      }
     }
   });
+
+  /**
+   * Send cloud messaging token to server
+   * @param {string} token Cloud messaging token
+   */
+  function sendTokenToServer() {
+    messaging.requestPermission()
+        .then(() => {
+          return messaging.getToken();
+        })
+        .then((token) => {
+          console.log('Permission granted. Token: ', token);
+          const userStatusFirestoreRef = firebase
+              .firestore()
+              .doc(`/users/${currentUser.uid}`);
+          userStatusFirestoreRef.set({msgToken: token}, {merge: true});
+        })
+        .catch((err) => {
+          console.log('User denied messaging', err);
+        });
+  }
 
   logo.addEventListener('click', () => {
     location.hash = '#games';
