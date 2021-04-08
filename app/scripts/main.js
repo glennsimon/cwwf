@@ -95,7 +95,7 @@ const puzzleWorker = (function() {
     Y: 4, Z: 10,
   };
 
-  let currentUser = null;
+  let currentUser = firebase.auth().currentUser;
   let myOpponentUid = null;
   let currentCell = null;
   let acrossWord = true;
