@@ -120,12 +120,14 @@ const puzzleWorker = (function() {
     }
   }
 
-  messaging.onMessage((payload) => {
-    console.log('onMessage: ', payload);
-  });
+  if (messaging) {
+    messaging.onMessage((payload) => {
+      console.log('onMessage: ', payload);
+    });
+  }
 
   firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
+    if (user && messaging) {
       currentUser = user;
       messaging.requestPermission()
           .then(() => {
