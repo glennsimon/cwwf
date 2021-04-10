@@ -133,7 +133,7 @@ const puzzleGames = (function(document, window) {
 </span>`;
         }
         dialogList +=
-`<li class='mdl-list__item mdl-list__item--two-line'>
+`<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
    <span class='mdl-list__item-primary-content'>
      ${avatar}
      <span>${user.displayName}</span>
@@ -141,11 +141,9 @@ const puzzleGames = (function(document, window) {
        ${user.providerId.split('.')[0]}
      </span>
    </span>
-   <span id='${uid}' class='mdl-list__item-secondary-content cursorPointer'>
+   <span class='mdl-list__item-secondary-content'>
      <span class='mdl-list__item-secondary-info'>Play</span>
-     <div class='mdl-list__item-secondary-action'>
-       <i class='material-icons'>grid_on</i>
-     </div>
+     <i class='material-icons'>grid_on</i>
    </span>
  </li>`;
       }
@@ -192,7 +190,8 @@ const puzzleGames = (function(document, window) {
 </span>`;
         }
         activeGamesHtml +=
-`<li class='mdl-list__item mdl-list__item--two-line'>
+// eslint-disable-next-line max-len
+`<li id='${doc.id}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
    <span class='mdl-list__item-primary-content'>
      ${avatar}
      <span>${myOpponent.displayName}</span>
@@ -200,11 +199,9 @@ const puzzleGames = (function(document, window) {
        ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
      </span>
    </span>
-   <span id='${doc.id}' class='mdl-list__item-secondary-content cursorPointer'>
+   <span class='mdl-list__item-secondary-content'>
      <span class='mdl-list__item-secondary-info'>Play</span>
-     <div class='mdl-list__item-secondary-action'>
-       <i class='material-icons'>grid_on</i>
-     </div>
+     <i class='material-icons'>grid_on</i>
    </span>
  </li>`;
       } else if (game.initiator.uid === currentUser.uid ||

@@ -88,6 +88,10 @@ select {
   background-color: gold;
 }
 
+.mdl-list__item:hover {
+  background-color: #b8b8b8;
+}
+
 /* END COMMON */
 
 
@@ -555,6 +559,10 @@ select {
   margin: 100px auto 0px auto;
   width: 80%;
   text-align: center;
+}
+
+.clickInheritParent {
+  pointer-events: inherit;
 }
 
 @media screen and (min-width: 420px) {
