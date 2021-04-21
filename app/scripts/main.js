@@ -833,7 +833,10 @@ const puzzleWorker = (function() {
    * button
    */
   function playWord() {
-    if (!myTurn) return; // TODO: should pop up message saying not your turn
+    if (!myTurn) {
+      alert('Your opponent hasn\'t played their turn yet!');
+      return;
+    }
     if (incomplete()) return;
     if (correctAnswer()) {
       const direction = acrossWord ? 'across' : 'down';
@@ -934,6 +937,10 @@ const puzzleWorker = (function() {
    * keyboard
    */
   function enterLetter(event) {
+    if (event.keyCode === 13) {
+      playWord();
+      return;
+    }
     let letter;
     if (event.key) {
       letter = event.key;
