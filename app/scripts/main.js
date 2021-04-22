@@ -833,7 +833,7 @@ const puzzleWorker = (function() {
    * button
    */
   function playWord() {
-    if (!myTurn) {
+    if (location.hash === '#puzzle' && !myTurn) {
       alert('Your opponent hasn\'t played their turn yet!');
       return;
     }
