@@ -12,8 +12,9 @@ service cloud.firestore {
       allow read: if true;
       // Only logged in users whose turn it is can update a game
       allow update, delete: if request.auth != null
-                  && resource.data.status != 'finished'
-                  && resource.data.nextTurn == request.auth.uid;
+                  && ((resource.data.status != 'finished'
+                  && resource.data.nextTurn == request.auth.uid)
+                  || (resource.data.emptySquares == 0));
       // Only a logged in user can create a new game
       allow create: if request.auth != null;
     }
