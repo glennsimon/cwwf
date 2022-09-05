@@ -1,0 +1,28 @@
+{
+    "state": "online",
+    "lastChanged": {
+        "_delegate": {
+            "_methodName": "FieldValue.serverTimestamp"
+        }
+    },
+    "displayName": "Glenn Simon",
+    "photoURL": "https://lh5.googleusercontent.com/-rYlKFe3k7Ws/AAAAAAAAAAI/AAAAAAAAXJU/ONxtyayEM7s/photo.jpg",
+    "providerId": "google.com",
+    "uid": "3eoDltvYiwYfjPviYRRQ2agbsAz1",
+    "privateData": {
+        "email": "glenncochransimon@gmail.com",
+        "emailVerified": true,
+        "phoneNumber": null,
+        "providerData": [
+            {
+                "uid": "104090209296416096492",
+                "displayName": "Glenn Simon",
+                "photoURL": "https://lh3.googleusercontent.com/a-/AFdZucrige7GvukBS3FfesyAIb7djUVPgOO4EoHMveVN9LY=s96-c",
+                "email": "glenncochransimon@gmail.com",
+                "phoneNumber": null,
+                "providerId": "google.com"
+            }
+        ],
+        "providerId": "firebase"
+    }
+}

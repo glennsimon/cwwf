@@ -73,6 +73,7 @@ function notifyPlayer(uid) {
       functions.logger.log('got users messagetoken: ', toKey);
 
       const notification = {
+        topic: 'your-turn',
         notification: {
           title: 'Your turn!',
           body: 'Your opponent has played their turn',
@@ -83,39 +84,6 @@ function notifyPlayer(uid) {
 
       return admin.messaging().sendToDevice(toKey, notification);
 
-      // const postData = JSON.stringify({
-      //   notification: notification,
-      //   to: toKey,
-      // });
-      // const options = {
-      //   hostname: 'fcm.googleapis.com',
-      //   path: '/fcm/send',
-      //   method: 'POST',
-      //   headers: {
-      //     // 'Authorization': 'key=' + server Key.trim(),
-      //     'Content-Type': 'application/json',
-      //   },
-      // };
-      // const req = https.request(options, (res) => {
-      //   console.log(`STATUS: ${res.statusCode}`);
-      //   console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-      //   res.setEncoding('utf8');
-      //   res.on('data', (chunk) => {
-      //     console.log(`BODY: ${chunk}`);
-      //   });
-      //   res.on('end', () => {
-      //     console.log('No more data in response.');
-      //   });
-      // });
-
-      // req.on('error', (e) => {
-      //   console.error(`problem with request: ${e.message}`);
-      // });
-
-      // // write data to request body
-      // req.write(postData);
-      // req.end();
-      // return 'function complete';
     }
     return 'no user key available';
   }).catch((error) => {
