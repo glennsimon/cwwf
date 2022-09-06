@@ -954,58 +954,60 @@ function scoreCell(index) {
  * keyboard
  */
 function enterLetter(event) {
-  if (event.keyCode === 13) {
-    playWord();
-    return;
-  }
-  let letter;
-  if (event.key) {
-    letter = event.key;
-  } else {
-    let node = event.target;
-    while (node.classList[0] !== 'kbButton') {
-      node = node.parentNode;
-    }
-    letter = node.childNodes[0].childNodes[0].data;
-  }
-  if (letter && letter.toLowerCase() === 'backspace') {
-    undoEntry();
-    return;
-  }
-  if (!letter || !letter.match(/^[a-zA-Z]$/)) return;
-  if (currentCell) {
-    let row = currentCell.parentElement.rowIndex;
-    let col = currentCell.cellIndex;
-    const index = row * columns + col;
-    const nextCellIndex = idxArray.indexOf(index) + 1;
-    const localIdxArray = idxArray
-      .slice(nextCellIndex)
-      .concat(idxArray.slice(0, nextCellIndex));
-    const letterDiv = document.createElement('div');
-    // console.log(idxArray);
-    // console.log(localIdxArray);
-
-    if (game.puzzle.grid[index].status === 'locked') {
-      // alert('Sorry, that square is locked by a previous answer');
+  if (!keyboard.classList.contains('displayNone')) {
+    if (event.keyCode === 13) {
+      playWord();
       return;
     }
-    game.puzzle.grid[index].guess = letter.toUpperCase();
-    letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
-    letterDiv.classList.add('marginAuto');
-    currentCell.children[0].replaceChild(
-      letterDiv,
-      currentCell.children[0].children[0]
-    );
-    currentCell.classList.remove('currCellHighlight');
-    currentCell.classList.add('rangeHighlight');
-    for (const idx of localIdxArray) {
-      if (game.puzzle.grid[idx].status !== 'locked') {
-        row = Math.floor(idx / columns);
-        col = idx - row * columns;
-        currentCell = puzTable.children[0].children[row].children[col];
-        currentCell.classList.remove('rangeHighlight');
-        currentCell.classList.add('currCellHighlight');
-        break;
+    let letter;
+    if (event.key) {
+      letter = event.key;
+    } else {
+      let node = event.target;
+      while (node.classList[0] !== 'kbButton') {
+        node = node.parentNode;
+      }
+      letter = node.childNodes[0].childNodes[0].data;
+    }
+    if (letter && letter.toLowerCase() === 'backspace') {
+      undoEntry();
+      return;
+    }
+    if (!letter || !letter.match(/^[a-zA-Z]$/)) return;
+    if (currentCell) {
+      let row = currentCell.parentElement.rowIndex;
+      let col = currentCell.cellIndex;
+      const index = row * columns + col;
+      const nextCellIndex = idxArray.indexOf(index) + 1;
+      const localIdxArray = idxArray
+        .slice(nextCellIndex)
+        .concat(idxArray.slice(0, nextCellIndex));
+      const letterDiv = document.createElement('div');
+      // console.log(idxArray);
+      // console.log(localIdxArray);
+
+      if (game.puzzle.grid[index].status === 'locked') {
+        // alert('Sorry, that square is locked by a previous answer');
+        return;
+      }
+      game.puzzle.grid[index].guess = letter.toUpperCase();
+      letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
+      letterDiv.classList.add('marginAuto');
+      currentCell.children[0].replaceChild(
+        letterDiv,
+        currentCell.children[0].children[0]
+      );
+      currentCell.classList.remove('currCellHighlight');
+      currentCell.classList.add('rangeHighlight');
+      for (const idx of localIdxArray) {
+        if (game.puzzle.grid[idx].status !== 'locked') {
+          row = Math.floor(idx / columns);
+          col = idx - row * columns;
+          currentCell = puzTable.children[0].children[row].children[col];
+          currentCell.classList.remove('rangeHighlight');
+          currentCell.classList.add('currCellHighlight');
+          break;
+        }
       }
     }
   }
