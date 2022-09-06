@@ -15,8 +15,11 @@ let firebaseConfig = {
   appId: '1:38205810024:web:d3d48e2fbc2d1c17bee2dd',
 };
 
+// if (location.hostname === 'localhost') {
+//   firebaseConfig.databaseURL = 'http://localhost:9000?ns=emulatorui';
+// }
 if (location.hostname === 'localhost') {
-  firebaseConfig.databaseURL = 'http://localhost:9000?ns=emulatorui';
+  firebaseConfig.databaseURL = 'http://localhost:9000?ns=xwordswf';
 }
 
 const app = initializeApp(firebaseConfig);

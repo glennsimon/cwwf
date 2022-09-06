@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import { getMessaging } from "firebase/messaging/sw";
+import { initializeApp } from 'firebase/app';
+import { getMessaging } from 'firebase/messaging/sw';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDNheDAGRrSjCgic20dgnuawMILWBrTNUk',
@@ -12,8 +12,11 @@ const firebaseConfig = {
   measurementId: 'G-measurement-id',
 };
 
+// if (location.hostname === 'localhost') {
+//   firebaseConfig.databaseURL = 'http://localhost:9000?ns=emulatorui';
+// }
 if (location.hostname === 'localhost') {
-  firebaseConfig.databaseURL = 'http://localhost:9000?ns=emulatorui';
+  firebaseConfig.databaseURL = 'http://localhost:9000?ns=xwordswf';
 }
 
 // Initialize the Firebase app in the service worker by passing in

@@ -9,7 +9,12 @@ import {
   set,
   serverTimestamp,
 } from 'firebase/database';
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import {
+  getAuth,
+  onAuthStateChanged,
+  beforeAuthStateChanged,
+  signOut,
+} from 'firebase/auth';
 
 /** Note: FirebaseUI is not compatible with the v9 modular SDK.
  * The v9 compatibility layer (specifically, the app-compat and
@@ -43,8 +48,6 @@ function initApp() {
   const splash = document.getElementById('splash');
   const ui = new firebaseui.auth.AuthUI(auth);
   let uid = null;
-  let userStatusDatabaseRef;
-  let userStatusFirestoreRef;
 
   const uiConfig = {
     signInSuccessUrl: './',
@@ -66,11 +69,22 @@ function initApp() {
   // The start method will wait until the DOM is loaded.
   ui.start('#firebaseuiAuthContainer', uiConfig);
 
+  // handles change to database just before auth state changes,
+  // allowing permission to make the change.
+  beforeAuthStateChanged(auth, (user) => {
+    if (uid) {
+      set(ref(dbRT, `/users/${uid}`), {
+        lastChanged: serverTimestamp(),
+        state: 'offline',
+      });
+    }
+  });
+
   // const unsubscribeUser = onAuthStateChanged(auth, (user) => {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       // User is signed in.
-      uid = user.uid;
+      const uid = user.uid;
       const userData = {};
       userData.displayName = user.displayName;
       userData.photoURL = user.photoURL;
@@ -102,30 +116,32 @@ function initApp() {
         .catch((err) => {
           console.log('error: ', err);
         });
-    } else if (uid) {
-      // User is signed out.
-      set(ref(dbRT, `/users/${uid}`), {
-        lastChanged: serverTimestamp(),
-        state: 'offline',
-      });
-      uid = null;
-      authButton.textContent = 'sign in';
-      authContainer.classList.remove('displayNone');
     }
   });
 
+  // Updates user online status only if user is logged in
+  // when connection/disconnection with app is made.
+  // If no user is logged in, this does nothing.
   onValue(ref(dbRT, '.info/connected'), (snapshot) => {
-    if (uid && snapshot.val() === true) {
-      let isOnline = {
+    uid = auth.currentUser ? auth.currentUser.uid : null;
+    if (snapshot.val() === false) {
+      return;
+    } else if (uid) {
+      let online = {
         state: 'online',
         lastChanged: serverTimestamp(),
       };
-      set(ref(dbRT, `/users/${uid}`), isOnline, { merge: true });
-
-      onDisconnect(ref(dbRT, `/users/${uid}`)).set({
-        lastChanged: serverTimestamp(),
+      let offline = {
         state: 'offline',
-      });
+        lastChanged: serverTimestamp(),
+      };
+
+      onDisconnect(ref(dbRT, `/users/${uid}`))
+        .set(offline)
+        .then(() => {
+          set(ref(dbRT, `/users/${uid}`), online);
+          return;
+        });
     }
   });
 

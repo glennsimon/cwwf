@@ -1,11 +1,12 @@
 const functions = require('firebase-functions');
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
-admin.initializeApp();
-// admin.initializeApp({
-//   credential: admin.credential.applicationDefault(),
-//   databaseURL: 'https://xwordswf.firebaseio.com',
-// });
+// admin.initializeApp();
+admin.initializeApp({
+  // credential: admin.credential.applicationDefault(),
+  // databaseURL: 'https://xwordswf.firebaseio.com',
+  projectId: 'xwordswf',
+});
 // The Cloud Functions for Firebase SDK to create Cloud Functions and
 // setup triggers.
 const Firestore = require('@google-cloud/firestore');
@@ -22,7 +23,7 @@ console.log('Hello from index.js');
 // Create a new function which is triggered on changes to /users/{uid}
 // Note: This is a Realtime Database trigger, *not* Cloud Firestore.
 exports.onUserStatusChanged = functions.database
-  .instance('emulatorui')
+  // .instance('emulatorui')
   .ref('/users/{uid}')
   .onUpdate((change, context) => {
     // Get the data written to Realtime Database
