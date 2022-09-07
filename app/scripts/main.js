@@ -797,7 +797,7 @@ function saveNewPuzzle(paramObject) {
 
 /** Saves puzzle to firebase */
 async function savePuzzle() {
-  await setDoc(doc(db, 'games', currentPuzzleId), { merge: true });
+  await setDoc(doc(db, 'games', currentPuzzleId), game, { merge: true });
 }
 
 /** Removes puzzle from DOM */
