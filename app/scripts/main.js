@@ -1071,7 +1071,7 @@ function concede() {
       square.status = 'locked';
       square.guess = square.value;
       square.bgColor = game[they].bgColor;
-      game[they].score += 1;
+      game[they].score += scoreValues[square.value];
     }
   }
   savePuzzle();
