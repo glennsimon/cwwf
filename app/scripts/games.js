@@ -992,7 +992,7 @@ function enterLetter(event) {
       while (node.classList[0] !== 'kbButton') {
         node = node.parentNode;
       }
-      letter = node.childNodes[0].childNodes[0].data;
+      letter = node.children[0].firstChild.data.trim();
     }
     if (letter && letter.toLowerCase() === 'backspace') {
       undoEntry();
