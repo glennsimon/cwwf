@@ -338,14 +338,8 @@ function loadPuzzle(paramObject) {
   document.getElementById('puzTitle').innerText = 'Fetching data...';
   const startGame = httpsCallable(functions, 'startGame');
   startGame(paramObject)
-    .then((returnObj) => {
-      game = returnObj.data;
-      game.start = serverTimestamp();
-      // console.log('game: ', game);
-      return;
-    })
-    .then(() => {
-      showPuzzle();
+    .then((gameId) => {
+      subscribeToGame(gameId.data);
       location.hash = '#puzzle';
       return;
     })
@@ -369,7 +363,6 @@ function showPuzzle() {
   }
   idxArray = [];
   clueNumIndices = {};
-  currentPuzzleId = game.docId;
   columns = game.puzzle.cols;
   myTurn = true;
   // initial estimate of element size used to determine
@@ -1101,7 +1094,7 @@ function playWord() {
   const answerObj = {};
   console.log('game: ', game);
   answerObj.idxArray = idxArray;
-  answerObj.gameId = game.docId;
+  answerObj.gameId = currentPuzzleId;
   answerObj.guess = [];
   for (const index of idxArray) {
     answerObj.guess.push(game.puzzle.grid[index].guess);

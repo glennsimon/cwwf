@@ -2,6 +2,7 @@ const functions = require('firebase-functions');
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
 const gaxios = require('gaxios');
+const { serverTimestamp } = require('firebase/firestore');
 // admin.initializeApp();
 admin.initializeApp();
 
@@ -100,12 +101,9 @@ exports.startGame = functions.https.onCall((gameInfo, context) => {
       return JSON.parse(doc.data().lookup);
     })
     .then((library) => {
-      // console.log(library);
-
       let seedObject = {};
 
       const years = Object.getOwnPropertyNames(library);
-      // console.log(years);
       const year = years[Math.floor(Math.random() * years.length)];
       const months = Object.getOwnPropertyNames(library[year]);
       const month = months[Math.floor(Math.random() * months.length)];
@@ -118,23 +116,28 @@ exports.startGame = functions.https.onCall((gameInfo, context) => {
       return seedObject;
     })
     .then((seedObject) => {
-      seedObject.difficulty = gameInfo.difficulty;
-      seedObject.initiator = gameInfo.initiator;
-      seedObject.opponent = gameInfo.opponent;
       // console.log(seedObject);
-      // const returnedPuz = newPuzzle(seedObject);
       return newPuzzle(seedObject);
     })
-    .then((game) => {
+    .then((gameFromWeb) => {
+      const game = parsePuzzle(gameFromWeb);
+      game.initiator = {};
+      game.initiator.uid = gameInfo.initiator.uid;
+      game.initiator.displayName = gameInfo.initiator.displayName;
+      game.initiator.bgColor = 'bgTransRed';
+      game.initiator.score = 0;
+      game.opponent = {};
+      game.opponent.uid = gameInfo.opponent.uid;
+      game.opponent.displayName = gameInfo.opponent.displayName;
+      game.opponent.bgColor = 'bgTransBlue';
+      game.opponent.score = 0;
+      game.difficulty = gameInfo.difficulty;
+      game.status = 'started';
+      game.winner = null;
+      game.nextTurn = gameInfo.initiator.uid;
+      game.start = Date(serverTimestamp());
       // console.log('New parsed puzzle: ', game);
-      return saveNewPuzzle(game, gameInfo);
-    })
-    .then((saveObj) => {
-      const game = saveObj.game;
-      game.docId = saveObj.docRef.id;
-      delete game.answers;
-      // console.log('game: ', game);
-      return game;
+      return newGameId(game);
     })
     .catch((error) => {
       console.error('Error fetching puzzle date: ', error);
@@ -195,7 +198,7 @@ function newPuzzle(seedObject) {
     .request({ url: url })
     .then((response) => {
       // console.log('fetched puzzle: ', response.data);
-      return parsePuzzle(response.data);
+      return response.data;
     })
     .catch((err) => {
       console.log('Error fetching from CDN: ', err);
@@ -256,26 +259,12 @@ function parsePuzzle(puzzle) {
  * @param {Object} gameInfo
  * @returns {string}
  */
-async function saveNewPuzzle(game, gameInfo) {
-  game.initiator = {};
-  game.initiator.uid = gameInfo.initiator.uid;
-  game.initiator.displayName = gameInfo.initiator.displayName;
-  game.initiator.bgColor = 'bgTransRed';
-  game.initiator.score = 0;
-  game.opponent = {};
-  game.opponent.uid = gameInfo.opponent.uid;
-  game.opponent.displayName = gameInfo.opponent.displayName;
-  game.opponent.bgColor = 'bgTransBlue';
-  game.opponent.score = 0;
-  game.difficulty = gameInfo.difficulty;
-  game.status = 'started';
-  game.winner = null;
-  game.nextTurn = gameInfo.initiator.uid;
+async function newGameId(game) {
   const docRef = await db
     .collection('/games/')
     .add(game)
     .catch((err) => {
       console.log('Error saving new game: ', err);
     });
-  return { docRef: docRef, game: game };
+  return docRef.id;
 }
