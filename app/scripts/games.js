@@ -517,11 +517,7 @@ function showPuzzle() {
       : oppNickname.slice(0, oppNickname.indexOf(' '));
   oppNickname = oppNickname.length > 8 ? oppNickname.slice(0, 8) : oppNickname;
   oppName.innerText = oppNickname;
-  myScore.innerText = game[me].score;
-  oppScore.innerText = game[they].score;
-  myName.classList.add(game[me].bgColor.replace('bg', 'font'));
-  oppName.classList.add(game[they].bgColor.replace('bg', 'font'));
-  updateScoreHighlighting();
+  updateScoreboard();
   if (game.emptySquares === 0) {
     let result = 'YOU WON!!';
     if (game[me].score > game[they].score) {
@@ -534,6 +530,27 @@ function showPuzzle() {
     showReplayDialog(game, result);
     savePuzzle();
   }
+}
+
+function updateScoreboard() {
+  const me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
+  const they = me === 'initiator' ? 'opponent' : 'initiator';
+  myScore.innerText = game[me].score;
+  oppScore.innerText = game[they].score;
+  myName.classList.add(game[me].bgColor.replace('bg', 'font'));
+  oppName.classList.add(game[they].bgColor.replace('bg', 'font'));
+  scores.children[0].classList.remove(
+    myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
+  );
+  scores.children[0].classList.add(
+    myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
+  );
+  scores.children[2].classList.remove(
+    myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
+  );
+  scores.children[2].classList.add(
+    myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
+  );
 }
 
 /** Removes puzzle from DOM */
@@ -674,22 +691,6 @@ function clearLetters() {
       col
     ].firstChild.firstChild.innerText = '';
   }
-}
-
-/** Utility function to update score display */
-function updateScoreHighlighting() {
-  scores.children[0].classList.remove(
-    myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
-  );
-  scores.children[0].classList.add(
-    myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
-  );
-  scores.children[2].classList.remove(
-    myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
-  );
-  scores.children[2].classList.add(
-    myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
-  );
 }
 
 /**
@@ -995,7 +996,7 @@ function subscribeToGame(puzzleId) {
             : game.initiator.uid;
         columns = game.puzzle.cols;
         myTurn = game.nextTurn !== myOpponentUid;
-        updateScoreHighlighting();
+        updateScoreboard();
       }
       currentPuzzleId = puzzleId;
       showPuzzle();
@@ -1114,11 +1115,16 @@ function playWord() {
         for (let index = 0; index < idxArray.length; index++) {
           const gridElement = game.puzzle.grid[idxArray[index]];
           const value = answerObj.guess[index];
-          game.puzzle.grid[index] = setCellStatus(index, gridElement, value);
+          game.puzzle.grid[idxArray[index]] = setCellStatus(
+            idxArray[index],
+            gridElement,
+            value
+          );
         }
       }
       game.nextTurn = myOpponentUid;
       myTurn = !myTurn;
+      updateScoreboard();
       savePuzzle();
       return;
     })
