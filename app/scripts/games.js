@@ -1,5 +1,4 @@
 import { db, app, functions } from './firebase-init.js';
-import { clearPuzzle } from './main.js';
 import {
   collection,
   addDoc,
@@ -337,12 +336,12 @@ function showPastGame(event) {
  */
 function loadPuzzle(paramObject) {
   document.getElementById('puzTitle').innerText = 'Fetching data...';
-  const startGame = httpsCallable(functions, 'startGame', { mode: 'no-cors' });
+  const startGame = httpsCallable(functions, 'startGame');
   startGame(paramObject)
     .then((returnObj) => {
       game = returnObj.data;
       game.start = serverTimestamp();
-      console.log('game: ', game);
+      // console.log('game: ', game);
       return;
     })
     .then(() => {
@@ -542,6 +541,21 @@ function showPuzzle() {
     showReplayDialog(game, result);
     savePuzzle();
   }
+}
+
+/** Removes puzzle from DOM */
+function clearPuzzle() {
+  puzTitle.innerText = 'Puzzle info will appear here';
+  // clear out old puzzle and clues
+  puzTable.innerHTML = '';
+  puzAuthor.innerText = '';
+  puzNotepad.classList.add('displayNone');
+  puzCopy.innerHTML = '';
+  clueContainer.classList.add('displayNone');
+  splash.classList.remove('displayNone');
+  acrossClues.innerHTML = '';
+  downClues.innerHTML = '';
+  singleClue.innerText = 'Select in the puzzle to reveal clue';
 }
 
 /**
@@ -972,6 +986,41 @@ function fetchPuzzle(puzzleId) {
   subscribeToGame(puzzleId);
 }
 
+function subscribeToGame(puzzleId) {
+  // Stop listening for previous puzzle changes
+  unsubscribe();
+
+  // Start listening to current puzzle changes
+  gameUnsubscribe = onSnapshot(
+    doc(db, 'games', puzzleId),
+    (doc) => {
+      game = doc.data();
+      if (game.status === 'started') {
+        myOpponentUid =
+          game.initiator.uid === currentUser.uid
+            ? game.opponent.uid
+            : game.initiator.uid;
+        columns = game.puzzle.cols;
+        myTurn = game.nextTurn !== myOpponentUid;
+        updateScoreHighlighting();
+      }
+      currentPuzzleId = puzzleId;
+      showPuzzle();
+      location.hash = '#puzzle';
+    },
+    (error) => {
+      console.error('Error getting puzzle: ', error);
+    }
+  );
+}
+
+function unsubscribe() {
+  if (gameUnsubscribe) {
+    gameUnsubscribe();
+    gameUnsubscribe = null;
+  }
+}
+
 /**
  * Adds a letter to the puzzle from physical or virtual keyboard event and
  * moves forward one space
@@ -989,7 +1038,7 @@ function enterLetter(event) {
       letter = event.key;
     } else {
       let node = event.target;
-      while (node.classList[0] !== 'kbButton') {
+      while (!node.classList.contains('kbButton')) {
         node = node.parentNode;
       }
       letter = node.children[0].firstChild.data.trim();
@@ -1038,6 +1087,116 @@ function enterLetter(event) {
   }
 }
 
+/**
+ * Play currentUser's turn. Executed when the player clicks the enter
+ * button
+ */
+function playWord() {
+  if (location.hash === '#puzzle' && !myTurn) {
+    alert("Your opponent hasn't played their turn yet!");
+    return;
+  }
+  if (incomplete()) return;
+  // TODO: something like? - document.getElementById('puzTitle').innerText = 'Fetching data...';
+  const answerObj = {};
+  console.log('game: ', game);
+  answerObj.idxArray = idxArray;
+  answerObj.gameId = game.docId;
+  answerObj.guess = [];
+  for (const index of idxArray) {
+    answerObj.guess.push(game.puzzle.grid[index].guess);
+  }
+  const checkAnswer = httpsCallable(functions, 'checkAnswer');
+  checkAnswer(answerObj)
+    .then((isCorrect) => {
+      // console.log('isCorrect: ', isCorrect);
+      clearHighlights();
+      if (isCorrect.data) {
+        const direction = acrossWord ? 'across' : 'down';
+        const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
+        game.puzzle.completedClues[direction].push(clueNumber);
+        document
+          .getElementById(direction + clueNumber)
+          .classList.add('colorLightGray');
+        for (let index = 0; index < idxArray.length; index++) {
+          const gridElement = game.puzzle.grid[idxArray[index]];
+          const value = answerObj.guess[index];
+          game.puzzle.grid[index] = setCellStatus(index, gridElement, value);
+        }
+      }
+      game.nextTurn = myOpponentUid;
+      myTurn = !myTurn;
+      savePuzzle();
+      return;
+    })
+    .catch((err) => {
+      console.log('Error code: ', err.code);
+      console.log('Error message: ', err.message);
+      console.log('Error details: ', err.details);
+    });
+}
+
+/**
+ * Sets values for gridElement based on currentUser play
+ * @param {number} index index of cell
+ * @param {Object} gridElement game.puzzle grid array object
+ * @return {Object} Updated grid element object
+ */
+function setCellStatus(index, gridElement, value) {
+  const player =
+    game.initiator.uid === currentUser.uid ? 'initiator' : 'opponent';
+  gridElement.value = value;
+  if (gridElement.status === 'locked') {
+    game[player].score += scoreValues[gridElement.value];
+    return gridElement;
+  }
+  game[player].score += scoreCell(index);
+  game.emptySquares--;
+  gridElement.bgColor = game[player].bgColor;
+  gridElement.status = 'locked';
+  return gridElement;
+}
+
+/**
+ * Adds to score if orthogonal word is completed by this play
+ * @param {number} index index of cell
+ * @return {number} additional score due to completion of orthogonal word
+ */
+function scoreCell(index) {
+  const row = Math.floor(index / columns);
+  const col = index - row * columns;
+  const cell = puzTable.children[0].children[row].children[col];
+  const direction = acrossWord ? 'down' : 'across';
+  const wordBlock = getWordBlock(cell, direction);
+  let addedScore = 0;
+
+  for (const idx of wordBlock) {
+    if (idx === index) {
+      addedScore += 2 * scoreValues[game.puzzle.grid[idx].value];
+    } else if (game.puzzle.grid[idx].status === 'locked') {
+      addedScore += scoreValues[game.puzzle.grid[idx].value];
+    } else {
+      return scoreValues[game.puzzle.grid[index].value];
+    }
+  }
+  const clueNumber = game.puzzle.grid[wordBlock[0]].clueNum;
+  game.puzzle.completedClues[direction].push(clueNumber);
+  return addedScore;
+}
+
+/**
+ * Checks if array of cells has a letter in each square
+ * @return {boolean} true if word is incomplete, false otherwise
+ */
+function incomplete() {
+  for (const i of idxArray) {
+    if (!game.puzzle.grid[i].guess || game.puzzle.grid[i].guess === '') {
+      return true;
+    }
+  }
+  return false;
+}
+
 // concessionBtn.addEventListener('click', concede);
 document.addEventListener('keyup', enterLetter);
 // window.addEventListener('resize', resizePuzzle);
@@ -1049,4 +1208,4 @@ document.getElementById('backspace').addEventListener('click', undoEntry);
 // document.getElementById('enter').addEventListener('click', playWord);
 // document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
 
-export { game, init, clearLists, showReplayDialog };
+export { init, clearLists, showReplayDialog, unsubscribe };

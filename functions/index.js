@@ -49,13 +49,14 @@ exports.updateUser = functions.firestore
   });
 
 /**
- * Sends   to player
+ * Sends FCM message to player to notify them that it is their turn.
  * @param {string} uid uid of player
  */
-function notifyPlayer(uid) {
+function notifyPlayer(context, auth, uid) {
   db.doc(`users/${uid}`)
     .get()
     .then((doc) => {
+      console.log('msgToken: ', doc.data().msgToken);
       return doc.data().msgToken;
     })
     .then((toKey) => {
@@ -82,24 +83,16 @@ function notifyPlayer(uid) {
 }
 
 /**
- * This function fetches a new game based on the data value (gameInfo) in
- * the user's https call and then calls functions to format, save,
- * and return the game id from firestore (/games/{id}).
+ * Firebase Cloud Function fetches a new game based on the gameInfo
+ * parameter in
+ * the client's https call and then calls functions to format, save,
+ * and return the game from firestore (/games/{id}).  The id is included in
+ * the returned game Object as game.docId, and the game is sent back to the
+ * client when the client calls httpsCallable(functions, 'startGame')
+ * @param {Object} gameInfo Object containing player and difficulty information
+ * @return {Object} game
  */
 exports.startGame = functions.https.onCall((gameInfo, context) => {
-  // TODO: move this back inside client
-  // document.getElementById('puzTitle').innerText = 'Fetching data...';
-  // TODO: move this back inside client
-  // location.hash = '#puzzle';
-  // TODO: move this back inside client
-  // myTurn = true;
-  // columns = cols;
-  // console.log(game.puzzle);
-
-  // gameInfo contains game difficulty level and information about
-  // the players.
-  // console.log('startGame triggered. gameInfo: ', gameInfo);
-
   return db
     .doc(`/gameCategories/${gameInfo.difficulty}/`)
     .get()
@@ -140,7 +133,7 @@ exports.startGame = functions.https.onCall((gameInfo, context) => {
       const game = saveObj.game;
       game.docId = saveObj.docRef.id;
       delete game.answers;
-      console.log('game: ', game);
+      // console.log('game: ', game);
       return game;
     })
     .catch((error) => {
@@ -148,13 +141,45 @@ exports.startGame = functions.https.onCall((gameInfo, context) => {
     });
 });
 
-exports.playTurn = functions.https.onCall((data, context) => {
-  const uid = context.auth.uid;
+/**
+ * Firebase Cloud Function which returns the result of checking
+ * the if answer is correct
+ * @param {Object} answerObj Object containing player and difficulty information
+ * @return {Object} Object with result of the checked answer
+ */
+exports.checkAnswer = functions.https.onCall((answerObj, context) => {
+  return isCorrect(answerObj);
 });
 
 exports.abandonGame = functions.https.onCall((data, context) => {
   const uid = context.auth.uid;
 });
+
+/**
+ * Checks if array of cells is filled in correctly
+ * @param {Object} turnData
+ * @return {boolean} true if correct, false otherwise
+ */
+function isCorrect(answerObj) {
+  return db
+    .doc(`games/${answerObj.gameId}`)
+    .get()
+    .then((doc) => {
+      const game = doc.data();
+      // console.log(game);
+      console.log('answerObj: ', answerObj);
+      for (let index = 0; index < answerObj.guess.length; index++) {
+        const correctValue = game.answers[answerObj.idxArray[index]];
+        const guess = answerObj.guess[index];
+        console.log('Correct answer: ', correctValue);
+        console.log('Guess: ', guess);
+        if (correctValue !== guess) {
+          return false;
+        }
+      }
+      return true;
+    });
+}
 
 /**
  * Randomly select a new puzzle based on seedObject.difficulty value.
