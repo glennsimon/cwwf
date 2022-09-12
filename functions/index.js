@@ -150,20 +150,7 @@ exports.startGame = functions.https.onCall((gameInfo, context) => {
  * @param {Object} answerObj Object containing player and difficulty information
  * @return {Object} Object with result of the checked answer
  */
-exports.checkAnswer = functions.https.onCall((answerObj, context) => {
-  return isCorrect(answerObj);
-});
-
-exports.abandonGame = functions.https.onCall((data, context) => {
-  const uid = context.auth.uid;
-});
-
-/**
- * Checks if array of cells is filled in correctly
- * @param {Object} turnData
- * @return {boolean} true if correct, false otherwise
- */
-function isCorrect(answerObj) {
+exports.isCorrect = functions.https.onCall((answerObj, context) => {
   return db
     .doc(`games/${answerObj.gameId}`)
     .get()
@@ -182,7 +169,11 @@ function isCorrect(answerObj) {
       }
       return true;
     });
-}
+});
+
+exports.abandonGame = functions.https.onCall((data, context) => {
+  const uid = context.auth.uid;
+});
 
 /**
  * Randomly select a new puzzle based on seedObject.difficulty value.

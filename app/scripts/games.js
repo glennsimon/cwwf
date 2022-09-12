@@ -99,6 +99,7 @@ let gameUnsubscribe = null;
 // holder variable for function
 
 onAuthStateChanged(auth, (user) => {
+  console.log('Hello from onAuthStateChanged. Current user ID: ', user.uid);
   currentUser = user;
   // fillLists();
   if (user) {
@@ -118,6 +119,7 @@ gamesDialog.querySelector('.close').addEventListener('click', closeGamesDialog);
 
 /** Reset radio buttons and close dialog */
 function closeGamesDialog() {
+  console.log('Hello from closeGamesDialog.');
   radioMed.removeAttribute('checked');
   radioHard.removeAttribute('checked');
   radioEasy.setAttribute('checked', true);
@@ -126,6 +128,7 @@ function closeGamesDialog() {
 
 /** Start a new game or send user to the login page */
 function initNewGame() {
+  console.log('Hello from initNewGame.');
   if (currentUser) {
     // user is logged in
     gameOverHeading.classList.add('displayNone');
@@ -153,6 +156,7 @@ function initNewGame() {
 onSnapshot(
   collection(db, 'users'),
   (snapshot) => {
+    console.log('user list changed.');
     loadUserList(snapshot);
   },
   (error) => {
@@ -162,6 +166,7 @@ onSnapshot(
 onSnapshot(
   collection(db, 'games'),
   (snapshot) => {
+    console.log('Game list changed.');
     loadGames(snapshot);
   },
   (error) => {
@@ -174,6 +179,7 @@ onSnapshot(
  * @param {Object} snapshot Collection of users
  */
 function loadUserList(snapshot) {
+  console.log('Hello from loadUserList.');
   if (!currentUser) return;
   dialogListContainer.innerHTML = '';
   dialogListContainer.removeEventListener('click', loadNewGame);
@@ -224,6 +230,7 @@ function loadUserList(snapshot) {
  * @param {Object} snapshot Collection of games
  */
 function loadGames(snapshot) {
+  console.log('Hello from loadGames.');
   if (!currentUser) return;
   activeGamesContainer.innerHTML = 'No active games yet. Start one!';
   pastGamesContainer.innerHTML = 'No completed games yet';
@@ -321,6 +328,7 @@ function loadGames(snapshot) {
  * @param {Object} event Click event from replayButton in dialog
  */
 function showPastGame(event) {
+  console.log('Hello from showPastGame.');
   let eventTarget = event.target;
   while (!eventTarget.id) {
     if (eventTarget.nodeName.toLowerCase() === 'ul') return;
@@ -335,6 +343,7 @@ function showPastGame(event) {
  * @param {Object} paramObject Object with competitors and puzzle difficulty
  */
 function loadPuzzle(paramObject) {
+  console.log('Hello from loadPuzzle.');
   document.getElementById('puzTitle').innerText = 'Fetching data...';
   const startGame = httpsCallable(functions, 'startGame');
   startGame(paramObject)
@@ -357,6 +366,7 @@ function loadPuzzle(paramObject) {
  * the variable "game".
  */
 function showPuzzle() {
+  console.log('Hello from showPuzzle.');
   // clear previous puzzle if it exists
   if (puzTable.children) {
     clearPuzzle();
@@ -364,7 +374,7 @@ function showPuzzle() {
   idxArray = [];
   clueNumIndices = {};
   columns = game.puzzle.cols;
-  myTurn = true;
+  myTurn = currentUser.uid === game.nextTurn;
   // initial estimate of element size used to determine
   // cellDim -> tableDim -> puzzle size
   if (game.puzzle.notepad) {
@@ -522,9 +532,12 @@ function showPuzzle() {
     let result = 'YOU WON!!';
     if (game[me].score > game[they].score) {
       game.winner = game[me].uid;
-    } else {
+    } else if (game[me].score < game[they].score) {
       game.winner = game[they].uid;
       result = 'You lost';
+    } else {
+      game.winner = 'tie';
+      result = 'Tie game!';
     }
     game.status = 'finished';
     showReplayDialog(game, result);
@@ -533,6 +546,7 @@ function showPuzzle() {
 }
 
 function updateScoreboard() {
+  console.log('Hello from updateScoreboard.');
   const me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
   const they = me === 'initiator' ? 'opponent' : 'initiator';
   myScore.innerText = game[me].score;
@@ -555,6 +569,7 @@ function updateScoreboard() {
 
 /** Removes puzzle from DOM */
 function clearPuzzle() {
+  console.log('Hello from clearPuzzle.');
   puzTitle.innerText = 'Puzzle info will appear here';
   // clear out old puzzle and clues
   puzTable.innerHTML = '';
@@ -573,6 +588,7 @@ function clearPuzzle() {
  * backward one space
  */
 function undoEntry() {
+  console.log('Hello from undoEntry.');
   if (currentCell) {
     let row = currentCell.parentElement.rowIndex;
     let col = currentCell.cellIndex;
@@ -620,12 +636,14 @@ function undoEntry() {
  * @return {number} dimension
  */
 function getCellDim() {
+  console.log('Hello from getCellDim.');
   const puzTableWidth = puzTable.offsetWidth;
   return Math.floor(puzTableWidth / game.puzzle.rows);
 }
 
 /** Saves puzzle to firebase */
 async function savePuzzle() {
+  console.log('Hello from savePuzzle.');
   await setDoc(doc(db, 'games', currentPuzzleId), game, { merge: true });
 }
 
@@ -634,6 +652,7 @@ async function savePuzzle() {
  * @param {Event} event Mouse click or screen touch event
  */
 function cellClicked(event) {
+  console.log('Hello from cellClicked.');
   const cell = event.target;
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
@@ -667,6 +686,7 @@ function cellClicked(event) {
  * @param {string} direction Clue direction (across or down)
  */
 function clueClicked(event, direction) {
+  console.log('Hello from clueClicked.');
   let clueNumberText = event.target.parentElement.firstChild.innerText;
   clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
   const cellIndex = clueNumIndices[clueNumberText];
@@ -682,6 +702,7 @@ function clueClicked(event, direction) {
 
 /** Clears letters when user changes to a different clue */
 function clearLetters() {
+  console.log('Hello from clearLetters.');
   for (const index of idxArray) {
     if (game.puzzle.grid[index].status === 'locked') continue;
     game.puzzle.grid[index].guess = '';
@@ -699,6 +720,7 @@ function clearLetters() {
  * @param {Object} cell Cell the user clicked
  */
 function selectAcross(cell) {
+  console.log('Hello from selectAcross.');
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
   const rowOffset = row * columns;
@@ -744,6 +766,7 @@ function selectAcross(cell) {
  * @param {Object} cell Cell the user clicked
  */
 function selectDown(cell) {
+  console.log('Hello from selectDown.');
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
   const index = row * columns + col;
@@ -790,6 +813,7 @@ function selectDown(cell) {
  * @return {array} Array of indices that make up a word block
  */
 function getWordBlock(cell, direction) {
+  console.log('Hello from getWordBlock.');
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
   let index = row * columns + col;
@@ -819,6 +843,7 @@ function getWordBlock(cell, direction) {
 
 /** Removes clue cell highlighting from all cells */
 function clearHighlights() {
+  console.log('Hello from clearHighlights.');
   // console.log(puzTable.children[0]);
   const rowArray = puzTable.children[0].children;
 
@@ -849,6 +874,7 @@ function clearHighlights() {
  * @param {Object} event Click event from dialogListContainer
  */
 function loadNewGame(event) {
+  console.log('Hello from loadNewGame.');
   let target = event.target.parentElement;
   if (target.id === '') {
     target = target.parentElement;
@@ -880,6 +906,7 @@ function loadNewGame(event) {
  * @param {string} result Message about who won
  */
 function showReplayDialog(game, result) {
+  console.log('Hello from showReplayDialog.');
   winMessage.innerText = result;
   gameOverHeading.classList.remove('displayNone');
   winMessage.classList.remove('displayNone');
@@ -950,6 +977,7 @@ function showReplayDialog(game, result) {
  * @param {Object} event Click event from dialogListContainer
  */
 function loadActiveGame(event) {
+  console.log('Hello from loadActiveGame.');
   const target = event.target.parentElement;
   if (target.id === '') {
     fetchPuzzle(target.parentElement.id);
@@ -960,6 +988,7 @@ function loadActiveGame(event) {
 
 /** Clear lists on games view */
 function clearLists() {
+  console.log('Hello from clearLists.');
   activeGamesContainer.innerHTML = 'You must sign in to see your active games';
   pastGamesContainer.innerHTML = 'You must sign in to see your completed games';
   clearPuzzle();
@@ -967,6 +996,7 @@ function clearLists() {
 
 /** Init in case we need it */
 function init() {
+  console.log('Hello from init.');
   console.log('puzzleWorker here!');
 }
 
@@ -976,11 +1006,13 @@ function init() {
  * @param {String} puzzleId Firestore game (puzzle) id
  */
 function fetchPuzzle(puzzleId) {
+  console.log('Hello from fetchPuzzle.');
   puzTitle.innerText = 'Fetching data...';
   subscribeToGame(puzzleId);
 }
 
 function subscribeToGame(puzzleId) {
+  console.log('Hello from subscribeToGame.');
   // Stop listening for previous puzzle changes
   unsubscribe();
 
@@ -995,8 +1027,8 @@ function subscribeToGame(puzzleId) {
             ? game.opponent.uid
             : game.initiator.uid;
         columns = game.puzzle.cols;
-        myTurn = game.nextTurn !== myOpponentUid;
-        updateScoreboard();
+        // myTurn = game.nextTurn !== myOpponentUid;
+        // updateScoreboard();
       }
       currentPuzzleId = puzzleId;
       showPuzzle();
@@ -1009,6 +1041,7 @@ function subscribeToGame(puzzleId) {
 }
 
 function unsubscribe() {
+  console.log('Hello from unsubscribe.');
   if (gameUnsubscribe) {
     gameUnsubscribe();
     gameUnsubscribe = null;
@@ -1022,6 +1055,7 @@ function unsubscribe() {
  * keyboard
  */
 function enterLetter(event) {
+  console.log('Hello from enterLetter.');
   if (!keyboard.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
       playWord();
@@ -1086,12 +1120,14 @@ function enterLetter(event) {
  * button
  */
 function playWord() {
+  console.log('Hello from playWord.');
   if (location.hash === '#puzzle' && !myTurn) {
     alert("Your opponent hasn't played their turn yet!");
     return;
   }
   if (incomplete()) return;
-  // TODO: something like? - document.getElementById('puzTitle').innerText = 'Fetching data...';
+  // TODO: something like this?:
+  // document.getElementById('puzTitle').innerText = 'Fetching data...';
   const answerObj = {};
   console.log('game: ', game);
   answerObj.idxArray = idxArray;
@@ -1100,7 +1136,7 @@ function playWord() {
   for (const index of idxArray) {
     answerObj.guess.push(game.puzzle.grid[index].guess);
   }
-  const checkAnswer = httpsCallable(functions, 'checkAnswer');
+  const checkAnswer = httpsCallable(functions, 'isCorrect');
   checkAnswer(answerObj)
     .then((isCorrect) => {
       // console.log('isCorrect: ', isCorrect);
@@ -1123,8 +1159,8 @@ function playWord() {
         }
       }
       game.nextTurn = myOpponentUid;
-      myTurn = !myTurn;
-      updateScoreboard();
+      // myTurn = !myTurn;
+      // updateScoreboard();
       savePuzzle();
       return;
     })
@@ -1142,6 +1178,7 @@ function playWord() {
  * @return {Object} Updated grid element object
  */
 function setCellStatus(index, gridElement, value) {
+  console.log('Hello from setCellStatus.');
   const player =
     game.initiator.uid === currentUser.uid ? 'initiator' : 'opponent';
   gridElement.value = value;
@@ -1162,6 +1199,7 @@ function setCellStatus(index, gridElement, value) {
  * @return {number} additional score due to completion of orthogonal word
  */
 function scoreCell(index) {
+  console.log('Hello from scoreCell.');
   const row = Math.floor(index / columns);
   const col = index - row * columns;
   const cell = puzTable.children[0].children[row].children[col];
@@ -1188,6 +1226,7 @@ function scoreCell(index) {
  * @return {boolean} true if word is incomplete, false otherwise
  */
 function incomplete() {
+  console.log('Hello from incomplete.');
   for (const i of idxArray) {
     if (!game.puzzle.grid[i].guess || game.puzzle.grid[i].guess === '') {
       return true;
@@ -1204,7 +1243,7 @@ for (const node of keyList) {
   node.addEventListener('click', enterLetter);
 }
 document.getElementById('backspace').addEventListener('click', undoEntry);
-// document.getElementById('enter').addEventListener('click', playWord);
+document.getElementById('enter').addEventListener('click', playWord);
 // document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
 
 export { init, clearLists, showReplayDialog, unsubscribe };
