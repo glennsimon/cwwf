@@ -99,7 +99,8 @@ let gameUnsubscribe = null;
 // holder variable for function
 
 onAuthStateChanged(auth, (user) => {
-  console.log('Hello from onAuthStateChanged. Current user ID: ', user.uid);
+  const uid = user ? user.uid : null;
+  console.log('Hello from onAuthStateChanged. Current user ID: ', uid);
   currentUser = user;
   // fillLists();
   if (user) {
@@ -638,7 +639,7 @@ function undoEntry() {
 function getCellDim() {
   console.log('Hello from getCellDim.');
   const puzTableWidth = puzTable.offsetWidth;
-  return Math.floor(puzTableWidth / game.puzzle.rows);
+  return Math.floor(puzTableWidth / game.puzzle.cols);
 }
 
 /** Saves puzzle to firebase */
@@ -978,12 +979,11 @@ function showReplayDialog(game, result) {
  */
 function loadActiveGame(event) {
   console.log('Hello from loadActiveGame.');
-  const target = event.target.parentElement;
-  if (target.id === '') {
-    fetchPuzzle(target.parentElement.id);
-  } else {
-    fetchPuzzle(target.id);
+  let target = event.target;
+  while (target.id === '') {
+    target = target.parentElement;
   }
+  fetchPuzzle(target.id);
 }
 
 /** Clear lists on games view */
@@ -1235,6 +1235,11 @@ function incomplete() {
   return false;
 }
 
+/** Helper function for toggling drawer */
+function toggleDrawer() {
+  document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
+}
+
 // concessionBtn.addEventListener('click', concede);
 document.addEventListener('keyup', enterLetter);
 // window.addEventListener('resize', resizePuzzle);
@@ -1244,6 +1249,6 @@ for (const node of keyList) {
 }
 document.getElementById('backspace').addEventListener('click', undoEntry);
 document.getElementById('enter').addEventListener('click', playWord);
-// document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
+document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
 
-export { init, clearLists, showReplayDialog, unsubscribe };
+export { init, clearLists, showReplayDialog, unsubscribe, toggleDrawer };

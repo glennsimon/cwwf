@@ -1,5 +1,5 @@
 import { app, db } from './firebase-init.js';
-import { clearLists } from './games';
+import { clearLists, toggleDrawer } from './games';
 import { setDoc, doc } from 'firebase/firestore';
 import {
   getDatabase,
@@ -39,13 +39,9 @@ window.addEventListener('load', function () {
 /** Initialize after document loads */
 function initApp() {
   const authButton = document.getElementById('authButton');
-  const authContainer = document.getElementById('firebaseuiAuthContainer');
+  // const authContainer = document.getElementById('firebaseuiAuthContainer');
   const profileName = document.getElementById('profileName');
   const avatar = document.getElementById('avatar');
-  const puzTable = document.getElementById('puzTable');
-  const clueContainer = document.getElementById('clueContainer');
-  const kbContainer = document.getElementById('kbContainer');
-  const splash = document.getElementById('splash');
   const ui = new firebaseui.auth.AuthUI(auth);
   let uid = null;
 
@@ -146,11 +142,7 @@ function initApp() {
   });
 
   authButton.addEventListener('click', () => {
-    document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
-    puzTable.classList.add('displayNone');
-    clueContainer.classList.add('displayNone');
-    kbContainer.classList.add('displayNone');
-    splash.classList.remove('displayNone');
+    toggleDrawer();
     if (authButton.textContent === 'sign out') {
       signOut(auth)
         .then(() => {
@@ -161,8 +153,7 @@ function initApp() {
         .catch((error) => {
           console.log(error);
         });
-    } else {
-      location.hash = '#signin';
     }
+    location.hash = '#signin';
   });
 }

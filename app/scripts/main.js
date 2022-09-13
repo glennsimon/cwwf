@@ -232,11 +232,6 @@ function resizePuzzle() {
   }
 }
 
-/** Helper function for toggling drawer */
-function toggleDrawer() {
-  document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
-}
-
 /**
  * Checks if array of cells is filled in correctly
  * @return {boolean} true if correct, false otherwise

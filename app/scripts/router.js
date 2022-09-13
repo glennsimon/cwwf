@@ -14,6 +14,10 @@ function initRouter() {
   const concessionBtnContainer = querySelector('#concessionBtnContainer');
   const puzAuthor = querySelector('#puzAuthor');
   const puzCopy = querySelector('#puzCopy');
+  const puzTable = document.getElementById('puzTable');
+  const clueContainer = document.getElementById('clueContainer');
+  const kbContainer = document.getElementById('kbContainer');
+  const splash = document.getElementById('splash');
 
   window.addEventListener('hashchange', navigate);
 
@@ -41,9 +45,13 @@ function initRouter() {
       appContainer.classList.add('slideIn');
       scores.classList.remove('displayFlex');
       scores.classList.add('displayNone');
-      concessionBtnContainer.classList.remove('displayNone');
+      concessionBtnContainer.classList.add('displayNone');
       puzAuthor.classList.add('displayNone');
       puzCopy.classList.add('displayNone');
+      puzTable.classList.add('displayNone');
+      clueContainer.classList.add('displayNone');
+      kbContainer.classList.add('displayNone');
+      splash.classList.remove('displayNone');
     } else if (location.hash === '#games') {
       try {
         gamesDialog.close();
