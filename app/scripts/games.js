@@ -531,7 +531,10 @@ function showPuzzle() {
       result = 'Tie game!';
     }
     game.status = 'finished';
-    showReplayDialog(game, result);
+    if (!game.hideReplay) {
+      showReplayDialog(game, result);
+      game.hideReplay = true;
+    }
     savePuzzle();
   }
 }
@@ -572,6 +575,7 @@ function clearPuzzle() {
   acrossClues.innerHTML = '';
   downClues.innerHTML = '';
   singleClue.innerText = 'Select in the puzzle to reveal clue';
+  currentCell = null;
 }
 
 /**
@@ -1230,21 +1234,21 @@ function toggleDrawer() {
   document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
 }
 
-/** Concede the game immediately */
-function concede() {
-  const me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
-  const they = me === 'initiator' ? 'opponent' : 'initiator';
-
-  game.emptySquares = 0;
-  for (const square of game.puzzle.grid) {
-    if (square.status && square.status === 'free') {
-      square.status = 'locked';
-      square.guess = square.value;
-      square.bgColor = game[they].bgColor;
-      game[they].score += scoreValues[square.value];
-    }
-  }
-  savePuzzle();
+/** Abandon the game immediately, adding all remaining
+ * points to opponent's score
+ * @param {string} gameId
+ */
+function abandon() {
+  const abandonObj = {};
+  abandonObj.gameId = currentPuzzleId;
+  abandonObj.opponentUid = myOpponentUid;
+  abandonObj.myUid = currentUser.uid;
+  const abandonGame = httpsCallable(functions, 'abandonGame');
+  abandonGame(abandonObj).catch((err) => {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
+  });
 }
 
 /** Resizes puzzle based on available space */
@@ -1272,7 +1276,7 @@ function resizePuzzle() {
   }
 }
 
-concessionBtn.addEventListener('click', concede);
+concessionBtn.addEventListener('click', abandon);
 document.addEventListener('keyup', enterLetter);
 window.addEventListener('resize', resizePuzzle);
 const keyList = keyboard.getElementsByClassName('kbButton');

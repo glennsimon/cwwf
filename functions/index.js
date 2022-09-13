@@ -9,6 +9,35 @@ admin.initializeApp();
 const db = admin.firestore();
 console.log('Hello from index.js');
 
+const scoreValues = {
+  A: 1,
+  B: 4,
+  C: 4,
+  D: 2,
+  E: 1,
+  F: 4,
+  G: 3,
+  H: 4,
+  I: 1,
+  J: 10,
+  K: 5,
+  L: 2,
+  M: 4,
+  N: 2,
+  O: 1,
+  P: 4,
+  Q: 10,
+  R: 1,
+  S: 1,
+  T: 1,
+  U: 2,
+  V: 5,
+  W: 4,
+  X: 8,
+  Y: 4,
+  Z: 10,
+};
+
 // Create a new function which is triggered on changes to /users/{uid}
 // Note: This is a Realtime Database trigger, *not* Cloud Firestore.
 exports.onUserStatusChanged = functions.database
@@ -171,8 +200,45 @@ exports.isCorrect = functions.https.onCall((answerObj, context) => {
     });
 });
 
-exports.abandonGame = functions.https.onCall((data, context) => {
-  const uid = context.auth.uid;
+exports.abandonGame = functions.https.onCall((abandonObj, context) => {
+  db.doc(`games/${abandonObj.gameId}`)
+    .get()
+    .then((doc) => {
+      const game = doc.data();
+      const answers = game.answers;
+      const they =
+        game.initiator.uid === abandonObj.opponentUid
+          ? 'initiator'
+          : 'opponent';
+      const me = they === 'initiator' ? 'opponent' : 'initiator';
+      // console.log('answerObj: ', abandonObj);
+      for (let index = 0; index < answers.length; index++) {
+        if (answers[index] === '.') continue;
+        if (game.puzzle.grid[index].status === 'locked') continue;
+        const letter = answers[index];
+        game.puzzle.grid[index].value = answers[index];
+        game.puzzle.grid[index].guess = answers[index];
+        game.puzzle.grid[index].status = 'locked';
+        game.puzzle.grid[index].bgColor = game[they].bgColor;
+        game[they].score += scoreValues[letter];
+      }
+      game.status = 'finished';
+      game.winner = 'tie';
+      game.emptySquares = 0;
+      if (game[me].score > game[they].score) {
+        game.winner = abandonObj.myUid;
+      } else if (game[me].score < game[they].score) {
+        game.winner = abandonObj.opponentUid;
+      }
+      return game;
+    })
+    .then((game) => {
+      db.doc(`games/${abandonObj.gameId}`).set(game, { merge: true });
+      return;
+    })
+    .catch((err) => {
+      console.log('Error abandoning game: ', err);
+    });
 });
 
 /**
