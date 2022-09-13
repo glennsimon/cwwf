@@ -1,13 +1,5 @@
 import { db, app, functions } from './firebase-init.js';
-import {
-  collection,
-  addDoc,
-  setDoc,
-  serverTimestamp,
-  doc,
-  getDoc,
-  onSnapshot,
-} from 'firebase/firestore';
+import { collection, setDoc, doc, onSnapshot } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 
@@ -37,14 +29,12 @@ const acrossClues = document.getElementById('acrossClues');
 const downClues = document.getElementById('downClues');
 const singleClue = document.getElementById('singleClue');
 const keyboard = document.getElementById('kbContainer');
-const screenToggle = document.getElementById('screenToggle');
 const splash = document.getElementById('splash');
 const scores = document.getElementById('scores');
 const myName = document.getElementById('myName');
 const oppName = document.getElementById('oppName');
 const myScore = document.getElementById('myScore');
 const oppScore = document.getElementById('oppScore');
-const logo = document.getElementById('logo');
 const concessionBtn = document.getElementById('concessionBtn');
 // const messaging = getMessaging(app);
 const scoreValues = {
@@ -286,8 +276,8 @@ function loadGames(snapshot) {
     ) {
       const myOpponent =
         game.initiator.uid === currentUser.uid ? game.opponent : game.initiator;
-      let result = 'Game cancelled';
-      if (game.status === 'finished') {
+      let result = 'Tie game!';
+      if (game.status === 'finished' && game.winner !== 'tie') {
         result = currentUser.uid === game.winner ? 'You won!!' : 'They won';
       } else if (game.status === 'abandoned') {
         result = 'Game abandoned';
@@ -1240,9 +1230,51 @@ function toggleDrawer() {
   document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
 }
 
-// concessionBtn.addEventListener('click', concede);
+/** Concede the game immediately */
+function concede() {
+  const me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
+  const they = me === 'initiator' ? 'opponent' : 'initiator';
+
+  game.emptySquares = 0;
+  for (const square of game.puzzle.grid) {
+    if (square.status && square.status === 'free') {
+      square.status = 'locked';
+      square.guess = square.value;
+      square.bgColor = game[they].bgColor;
+      game[they].score += scoreValues[square.value];
+    }
+  }
+  savePuzzle();
+}
+
+/** Resizes puzzle based on available space */
+function resizePuzzle() {
+  if (puzTable.children.length === 0) return;
+  // console.log(puzTable.children[0]);
+  const cellDim = getCellDim();
+  const tableDim = cellDim * game.puzzle.rows;
+  const rowArray = puzTable.children[0].children;
+
+  for (const row of rowArray) {
+    row.style.width = tableDim + 'px';
+    const cellArray = row.children;
+    for (const cell of cellArray) {
+      cell.style.width = cellDim + 'px';
+      cell.style.height = cellDim + 'px';
+    }
+  }
+  if (currentCell) {
+    if (acrossWord) {
+      selectAcross(currentCell);
+    } else {
+      selectDown(currentCell);
+    }
+  }
+}
+
+concessionBtn.addEventListener('click', concede);
 document.addEventListener('keyup', enterLetter);
-// window.addEventListener('resize', resizePuzzle);
+window.addEventListener('resize', resizePuzzle);
 const keyList = keyboard.getElementsByClassName('kbButton');
 for (const node of keyList) {
   node.addEventListener('click', enterLetter);

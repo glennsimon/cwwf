@@ -12,6 +12,7 @@ function initRouter() {
   const gamesDialog = querySelector('#gamesDialog');
   const scores = querySelector('#scores');
   const concessionBtnContainer = querySelector('#concessionBtnContainer');
+  const puzTitle = querySelector('#puzTitle');
   const puzAuthor = querySelector('#puzAuthor');
   const puzCopy = querySelector('#puzCopy');
   const puzTable = document.getElementById('puzTable');
@@ -46,6 +47,7 @@ function initRouter() {
       scores.classList.remove('displayFlex');
       scores.classList.add('displayNone');
       concessionBtnContainer.classList.add('displayNone');
+      puzTitle.classList.add('displayNone');
       puzAuthor.classList.add('displayNone');
       puzCopy.classList.add('displayNone');
       puzTable.classList.add('displayNone');
@@ -61,8 +63,10 @@ function initRouter() {
       unsubscribe();
       gamesPanel.classList.remove('slideOut');
       appContainer.classList.remove('slideIn');
+      concessionBtnContainer.classList.add('displayNone');
       scores.classList.remove('displayFlex');
       scores.classList.add('displayNone');
+      puzTitle.classList.add('displayNone');
       puzAuthor.classList.add('displayNone');
       puzCopy.classList.add('displayNone');
     }
