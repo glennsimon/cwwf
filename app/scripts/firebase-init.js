@@ -14,6 +14,7 @@ let firebaseConfig = {
   storageBucket: 'xwordswf.appspot.com',
   messagingSenderId: '38205810024',
   appId: '1:38205810024:web:d3d48e2fbc2d1c17bee2dd',
+  measurementId: 'G-357VX1P634',
 };
 
 // if (location.hostname === 'localhost') {
