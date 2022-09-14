@@ -1,6 +1,5 @@
 **/node_modules
 **/old_node_modules
-dist/
 .tmp/
 .firebase/
 app.yaml
