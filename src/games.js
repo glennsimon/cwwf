@@ -36,6 +36,9 @@ const oppName = document.getElementById('oppName');
 const myScore = document.getElementById('myScore');
 const oppScore = document.getElementById('oppScore');
 const concessionBtn = document.getElementById('concessionBtn');
+const concessionBtnContainer = document.getElementById(
+  'concessionBtnContainer'
+);
 // const messaging = getMessaging(app);
 const scoreValues = {
   A: 1,
@@ -325,6 +328,7 @@ function showPastGame(event) {
     if (eventTarget.nodeName.toLowerCase() === 'ul') return;
     eventTarget = eventTarget.parentElement;
   }
+  concessionBtnContainer.classList.add('displayNone');
   fetchPuzzle(eventTarget.id);
 }
 
@@ -977,6 +981,7 @@ function loadActiveGame(event) {
   while (target.id === '') {
     target = target.parentElement;
   }
+  concessionBtnContainer.classList.remove('displayNone');
   fetchPuzzle(target.id);
 }
 
@@ -1114,6 +1119,7 @@ function enterLetter(event) {
  * button
  */
 function playWord() {
+  if (game.status === 'finished') return;
   console.log('Hello from playWord.');
   if (location.hash === '#puzzle' && !myTurn) {
     alert("Your opponent hasn't played their turn yet!");
@@ -1220,7 +1226,8 @@ function scoreCell(index) {
  * @return {boolean} true if word is incomplete, false otherwise
  */
 function incomplete() {
-  console.log('Hello from incomplete.');
+  console.log('Hello from incomplete. idxArray: ', idxArray);
+  if (idxArray.length === 0) return true;
   for (const i of idxArray) {
     if (!game.puzzle.grid[i].guess || game.puzzle.grid[i].guess === '') {
       return true;

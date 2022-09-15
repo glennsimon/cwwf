@@ -82,7 +82,7 @@ exports.updateUser = functions.firestore
  * Sends FCM message to player to notify them that it is their turn.
  * @param {string} uid uid of player
  */
-function notifyPlayer(context, auth, uid) {
+function notifyPlayer(uid) {
   db.doc(`users/${uid}`)
     .get()
     .then((doc) => {
@@ -91,19 +91,21 @@ function notifyPlayer(context, auth, uid) {
     })
     .then((toKey) => {
       if (toKey) {
-        functions.logger.log('got users messagetoken: ', toKey);
+        // functions.logger.log('got users messagetoken: ', toKey);
 
-        const notification = {
-          topic: 'your-turn',
+        const payload = {
           notification: {
             title: 'Your turn!',
             body: 'Your opponent has played their turn',
             icon: 'assets/favicon.ico',
-            click_action: 'https://xwordswf.firebaseapp.com',
+            clickAction: 'https://xwordswf.firebaseapp.com',
           },
         };
 
-        return admin.messaging().sendToDevice(toKey, notification);
+        return admin.messaging().sendToDevice(toKey, payload, {
+          collapseKey: 'your-turn',
+          timeToLive: 86400,
+        });
       }
       return 'no user key available';
     })

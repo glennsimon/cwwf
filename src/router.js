@@ -37,7 +37,6 @@ function initRouter() {
       }
       gamesPanel.classList.add('slideOut');
       appContainer.classList.add('slideIn');
-      concessionBtnContainer.classList.remove('displayNone');
       puzAuthor.classList.remove('displayNone');
       puzCopy.classList.remove('displayNone');
     } else if (location.hash === '#signin') {
