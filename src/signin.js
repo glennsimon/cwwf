@@ -1,5 +1,5 @@
 import { app, db } from './firebase-init.js';
-import { clearLists, toggleDrawer } from './games';
+import { clearLists, toggleDrawer } from './games.js';
 import { setDoc, doc } from 'firebase/firestore';
 import {
   getDatabase,

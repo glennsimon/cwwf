@@ -1246,6 +1246,8 @@ function toggleDrawer() {
  * @param {string} gameId
  */
 function abandon() {
+  toggleDrawer();
+  concessionBtnContainer.classList.add('displayNone');
   const abandonObj = {};
   abandonObj.gameId = currentPuzzleId;
   abandonObj.opponentUid = myOpponentUid;

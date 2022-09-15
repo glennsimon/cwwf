@@ -1,13 +1,39 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const BundleAnalyzerPlugin =
+  require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
   mode: 'development',
   entry: {
-    bundle: [
-      path.resolve(__dirname, 'src/main.js'),
-      path.resolve(__dirname, 'src/signin.js'),
-      path.resolve(__dirname, 'src/router.js'),
+    init: {
+      import: './src/firebase-init.js',
+      dependOn: 'fb_essentials',
+    },
+    signin: {
+      import: './src/signin.js',
+      dependOn: ['fb_essentials', 'init', 'games'],
+    },
+    main: {
+      import: './src/main.js',
+      dependOn: ['fb_essentials', 'init'],
+    },
+    router: {
+      import: './src/router.js',
+      dependOn: 'games',
+    },
+    games: {
+      import: './src/games.js',
+      dependOn: ['fb_essentials', 'init'],
+    },
+    fb_essentials: [
+      'firebase/firestore',
+      'firebase/auth',
+      'firebase/functions',
+      'firebase/app',
+      'firebase/messaging',
+      'firebase/analytics',
+      'firebase/database',
     ],
   },
   devtool: 'inline-source-map',
@@ -17,6 +43,9 @@ module.exports = {
     clean: {
       keep: /images\//,
     },
+  },
+  optimization: {
+    splitChunks: { chunks: 'all' },
   },
   module: {
     rules: [
@@ -42,5 +71,6 @@ module.exports = {
       filename: 'index.html',
       template: 'src/template.html',
     }),
+    // new BundleAnalyzerPlugin(),
   ],
 };
