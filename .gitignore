@@ -2,7 +2,13 @@
 **/old_node_modules
 .tmp/
 .firebase/
+dist/
+seed/
+related_files/
 app.yaml
 **/service-account.json
 **/temp.txt
 **/notify.js
+ui-debug.log
+database-debug.log
+firestore-debug.log

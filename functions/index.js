@@ -98,7 +98,7 @@ function notifyPlayer(context, auth, uid) {
           notification: {
             title: 'Your turn!',
             body: 'Your opponent has played their turn',
-            icon: 'favicon.ico',
+            icon: 'assets/favicon.ico',
             click_action: 'https://xwordswf.firebaseapp.com',
           },
         };
