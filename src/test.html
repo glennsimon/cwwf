@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EventBus test</title>
+  </head>
+  <body>
+    <h1>EventBus test</h1>
+    <button id="myButton">BUTTON</button>
+    <div id="myDiv">just a div</div>
+    <script>
+      class EventBus extends EventTarget {
+        on(type, listener) {
+          this.addEventListener(type, listener);
+        }
+        once(type, listener) {
+          this.addEventListener(type, listener, { once: true });
+        }
+        off(type, listener) {
+          this.removeEventListener(type, listener);
+        }
+        emit(type, data) {
+          this.dispatchEvent(new CustomEvent(type, { detail: data }));
+        }
+      }
+
+      const eventBus = new EventBus();
+
+      const myButton = document.getElementById('myButton');
+      const myDiv = document.getElementById('myDiv');
+
+      eventBus.on('on-event', (data) => {
+        console.log(data.detail);
+      });
+
+      eventBus.once('once-event', (data) => {
+        console.log(data.detail);
+      });
+
+      eventBus.emit('on-event', 'on-event triggered');
+      eventBus.emit('once-event', 'once-event triggered');
+      eventBus.emit('on-event', 'on-event triggered');
+      eventBus.emit('once-event', 'once-event triggered');
+      eventBus.emit('on-event', 'on-event triggered');
+      eventBus.emit('once-event', 'once-event triggered');
+      eventBus.emit('on-event', 'on-event triggered');
+      eventBus.emit('once-event', 'once-event triggered');
+      eventBus.emit('on-event', 'on-event triggered');
+      eventBus.emit('once-event', 'once-event triggered');
+    </script>
+  </body>
+</html>

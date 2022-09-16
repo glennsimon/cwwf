@@ -1,25 +1,27 @@
-import { db, app, functions } from './firebase-init.js';
-import { collection, setDoc, doc, onSnapshot } from 'firebase/firestore';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { httpsCallable } from 'firebase/functions';
+import { db, auth, messaging } from './firebase-init.js';
+import { onMessage, getToken } from 'firebase/messaging';
+import { setDoc, doc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
-const querySelector = document.querySelector.bind(document);
-const gamesDialog = querySelector('#gamesDialog');
-const startGameButton = querySelector('#startGameButton');
-const headerSignin = querySelector('#headerSignin');
-// const turnIndicator = querySelector('#turnIndicator');
-const gameOverHeading = querySelector('#gameOverHeading');
-const winMessage = querySelector('#winMessage');
-const opponentHeading = querySelector('#opponentHeading');
-const opponentList = querySelector('#opponentList');
-const radioEasy = querySelector('#radioEasy');
-const radioMed = querySelector('#radioMed');
-const radioHard = querySelector('#radioHard');
-const dialogListContainer = querySelector('#dialogList');
-const activeGamesContainer = querySelector('#activeGamesContainer');
-const pastGamesContainer = querySelector('#pastGamesContainer');
+import './styles/main.css';
+import { eventBus } from './event-bus.js';
 
-const puzTitle = document.getElementById('puzTitle');
+const authButton = document.getElementById('authButton');
+const profileName = document.getElementById('profileName');
+const avatar = document.getElementById('avatar');
+const gamesDialog = document.getElementById('gamesDialog');
+const startGameButton = document.getElementById('startGameButton');
+const headerSignin = document.getElementById('headerSignin');
+const gameOverHeading = document.getElementById('gameOverHeading');
+const winMessage = document.getElementById('winMessage');
+const opponentHeading = document.getElementById('opponentHeading');
+const opponentList = document.getElementById('opponentList');
+const radioEasy = document.getElementById('radioEasy');
+const radioMed = document.getElementById('radioMed');
+const radioHard = document.getElementById('radioHard');
+const dialogListContainer = document.getElementById('dialogList');
+const activeGamesContainer = document.getElementById('activeGamesContainer');
+const pastGamesContainer = document.getElementById('pastGamesContainer');
 const puzTable = document.getElementById('puzTable');
 const puzAuthor = document.getElementById('puzAuthor');
 const puzCopy = document.getElementById('puzCopy');
@@ -39,69 +41,28 @@ const concessionBtn = document.getElementById('concessionBtn');
 const concessionBtnContainer = document.getElementById(
   'concessionBtnContainer'
 );
-// const messaging = getMessaging(app);
-const scoreValues = {
-  A: 1,
-  B: 4,
-  C: 4,
-  D: 2,
-  E: 1,
-  F: 4,
-  G: 3,
-  H: 4,
-  I: 1,
-  J: 10,
-  K: 5,
-  L: 2,
-  M: 4,
-  N: 2,
-  O: 1,
-  P: 4,
-  Q: 10,
-  R: 1,
-  S: 1,
-  T: 1,
-  U: 2,
-  V: 5,
-  W: 4,
-  X: 8,
-  Y: 4,
-  Z: 10,
-};
+const puzTitle = document.getElementById('puzTitle');
+const logo = document.getElementById('logo');
 
-const auth = getAuth(app);
-
-let currentUser = auth.currentUser;
-// let difficulty = 'medium';
-let dialogList = '';
 let activeGamesHtml = '';
 let pastGamesHtml = '';
-let allUsers = {};
-let game = null;
-let myOpponentUid = null;
-let currentCell = null;
-let acrossWord = true;
-let columns = null;
-let currentClue = null;
-let idxArray = [];
-let currentPuzzleId = null;
-let myTurn = null;
-let clueNumIndices = {};
-let gameUnsubscribe = null;
-// let pastGames = {};
-// holder variable for function
 
-onAuthStateChanged(auth, (user) => {
-  const uid = user ? user.uid : null;
-  console.log('Hello from onAuthStateChanged. Current user ID: ', uid);
-  currentUser = user;
-  // fillLists();
-  if (user) {
-    headerSignin.classList.add('displayNone');
-  } else {
-    headerSignin.classList.remove('displayNone');
-    // turnIndicator.classList.add('displayNone');
-  }
+eventBus.on('auth-change');
+authButton.textContent = 'sign out';
+profileName.textContent = user.displayName;
+avatar.src = user.photoURL ? user.photoURL : 'assets/avatar_circle_black.png';
+
+currentUser = user;
+if (user) {
+  headerSignin.classList.add('displayNone');
+} else {
+  headerSignin.classList.remove('displayNone');
+}
+
+puzTitle.innerText = 'No puzzle loaded';
+
+logo.addEventListener('click', () => {
+  location.hash = '#games';
 });
 
 startGameButton.addEventListener('click', initNewGame);
@@ -119,54 +80,6 @@ function closeGamesDialog() {
   radioEasy.setAttribute('checked', true);
   gamesDialog.close();
 }
-
-/** Start a new game or send user to the login page */
-function initNewGame() {
-  console.log('Hello from initNewGame.');
-  if (currentUser) {
-    // user is logged in
-    gameOverHeading.classList.add('displayNone');
-    winMessage.classList.add('displayNone');
-    gamesDialog.showModal();
-    gamesDialog.children[0].classList.add('padding0', 'height100pct');
-    opponentHeading.classList.remove('displayNone');
-    opponentList.classList.remove('displayNone');
-    const replayButton = querySelector('#replayButton');
-    if (replayButton) {
-      try {
-        gamesDialog.children[0].removeChild(replayButton);
-      } catch (err) {
-        // do nothing.  replayButton not attached
-      }
-    }
-    gamesDialog.classList.add('height80pct');
-  } else {
-    // user is not logged in
-    location.hash = '#signin';
-  }
-}
-
-/** Subscribe to firestore listeners. */
-onSnapshot(
-  collection(db, 'users'),
-  (snapshot) => {
-    console.log('user list changed.');
-    loadUserList(snapshot);
-  },
-  (error) => {
-    console.error('Error getting Users: ', error);
-  }
-);
-onSnapshot(
-  collection(db, 'games'),
-  (snapshot) => {
-    console.log('Game list changed.');
-    loadGames(snapshot);
-  },
-  (error) => {
-    console.error('Error getting games: ', error);
-  }
-);
 
 /**
  * Snapshot of firebase 'user' collection
@@ -315,21 +228,6 @@ function loadGames(snapshot) {
     pastGamesHtml === '' ? 'No completed games yet' : pastGamesHtml;
   activeGamesContainer.addEventListener('click', loadActiveGame);
   pastGamesContainer.addEventListener('click', showPastGame);
-}
-
-/**
- * Show dialog for user to decide if they want to replay the opponent
- * @param {Object} event Click event from replayButton in dialog
- */
-function showPastGame(event) {
-  console.log('Hello from showPastGame.');
-  let eventTarget = event.target;
-  while (!eventTarget.id) {
-    if (eventTarget.nodeName.toLowerCase() === 'ul') return;
-    eventTarget = eventTarget.parentElement;
-  }
-  concessionBtnContainer.classList.add('displayNone');
-  fetchPuzzle(eventTarget.id);
 }
 
 /**
@@ -640,65 +538,6 @@ function getCellDim() {
   return Math.floor(puzTableWidth / game.puzzle.cols);
 }
 
-/** Saves puzzle to firebase */
-async function savePuzzle() {
-  console.log('Hello from savePuzzle.');
-  await setDoc(doc(db, 'games', currentPuzzleId), game, { merge: true });
-}
-
-/**
- * Sets the variable currentCell to the cell the user clicked in
- * @param {Event} event Mouse click or screen touch event
- */
-function cellClicked(event) {
-  console.log('Hello from cellClicked.');
-  const cell = event.target;
-  const row = cell.parentElement.rowIndex;
-  const col = cell.cellIndex;
-  const index = row * columns + col;
-  // console.log(cell.cellIndex);
-  // console.log(cell.parentElement.rowIndex);
-  // console.log(event);
-
-  if (cell.className === 'black') {
-    return;
-  }
-  if (!idxArray.includes(index)) {
-    clearLetters();
-  }
-  if (currentCell && currentCell === cell) {
-    clearLetters();
-    acrossWord = !acrossWord;
-  }
-  idxArray = [];
-  currentCell = cell;
-  if (acrossWord) {
-    selectAcross(cell);
-  } else {
-    selectDown(cell);
-  }
-}
-
-/**
- * When clue is clicked, this event fires
- * @param {Event} event Mouse click or screen touch event
- * @param {string} direction Clue direction (across or down)
- */
-function clueClicked(event, direction) {
-  console.log('Hello from clueClicked.');
-  let clueNumberText = event.target.parentElement.firstChild.innerText;
-  clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
-  const cellIndex = clueNumIndices[clueNumberText];
-  const row = Math.floor(cellIndex / columns);
-  const col = cellIndex - row * columns;
-  const cell = puzTable.firstChild.children[row].children[col];
-  if (direction === 'across') {
-    selectAcross(cell);
-  } else {
-    selectDown(cell);
-  }
-}
-
 /** Clears letters when user changes to a different clue */
 function clearLetters() {
   console.log('Hello from clearLetters.');
@@ -869,37 +708,6 @@ function clearHighlights() {
 }
 
 /**
- * Load game based on user selection
- * @param {Object} event Click event from dialogListContainer
- */
-function loadNewGame(event) {
-  console.log('Hello from loadNewGame.');
-  let target = event.target.parentElement;
-  if (target.id === '') {
-    target = target.parentElement;
-  }
-  let difficulty = radioMed.parentElement.classList.contains('is-checked')
-    ? 'medium'
-    : 'easy';
-  difficulty = radioHard.parentElement.classList.contains('is-checked')
-    ? 'hard'
-    : difficulty;
-  closeGamesDialog();
-
-  loadPuzzle({
-    initiator: {
-      uid: currentUser.uid,
-      displayName: currentUser.displayName,
-    },
-    opponent: {
-      uid: target.id,
-      displayName: allUsers[target.id].displayName,
-    },
-    difficulty: difficulty,
-  });
-}
-
-/**
  * Show dialog for user to decide if they want to replay the opponent
  * @param {Object} game Previous game versus the opponent
  * @param {string} result Message about who won
@@ -913,7 +721,7 @@ function showReplayDialog(game, result) {
   opponentList.classList.add('displayNone');
   gamesDialog.classList.remove('height80pct');
   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
-  let replayButton = querySelector('#replayButton');
+  let replayButton = document.getElementById('replayButton');
   if (!replayButton) {
     replayButton = document.createElement('button');
     replayButton.setAttribute('id', 'replayButton');
@@ -971,80 +779,12 @@ function showReplayDialog(game, result) {
   }
 }
 
-/**
- * Load game based on user selection
- * @param {Object} event Click event from dialogListContainer
- */
-function loadActiveGame(event) {
-  console.log('Hello from loadActiveGame.');
-  let target = event.target;
-  while (target.id === '') {
-    target = target.parentElement;
-  }
-  concessionBtnContainer.classList.remove('displayNone');
-  fetchPuzzle(target.id);
-}
-
 /** Clear lists on games view */
 function clearLists() {
   console.log('Hello from clearLists.');
   activeGamesContainer.innerHTML = 'You must sign in to see your active games';
   pastGamesContainer.innerHTML = 'You must sign in to see your completed games';
   clearPuzzle();
-}
-
-/** Init in case we need it */
-function init() {
-  console.log('Hello from init.');
-  console.log('puzzleWorker here!');
-}
-
-/**
- * This function fetches an active puzzle based on the user's selection
- * and then calls functions to format and display the puzzle
- * @param {String} puzzleId Firestore game (puzzle) id
- */
-function fetchPuzzle(puzzleId) {
-  console.log('Hello from fetchPuzzle.');
-  puzTitle.innerText = 'Fetching data...';
-  subscribeToGame(puzzleId);
-}
-
-function subscribeToGame(puzzleId) {
-  console.log('Hello from subscribeToGame.');
-  // Stop listening for previous puzzle changes
-  unsubscribe();
-
-  // Start listening to current puzzle changes
-  gameUnsubscribe = onSnapshot(
-    doc(db, 'games', puzzleId),
-    (doc) => {
-      game = doc.data();
-      if (game.status === 'started') {
-        myOpponentUid =
-          game.initiator.uid === currentUser.uid
-            ? game.opponent.uid
-            : game.initiator.uid;
-        columns = game.puzzle.cols;
-        // myTurn = game.nextTurn !== myOpponentUid;
-        // updateScoreboard();
-      }
-      currentPuzzleId = puzzleId;
-      showPuzzle();
-      location.hash = '#puzzle';
-    },
-    (error) => {
-      console.error('Error getting puzzle: ', error);
-    }
-  );
-}
-
-function unsubscribe() {
-  console.log('Hello from unsubscribe.');
-  if (gameUnsubscribe) {
-    gameUnsubscribe();
-    gameUnsubscribe = null;
-  }
 }
 
 /**
@@ -1115,63 +855,6 @@ function enterLetter(event) {
 }
 
 /**
- * Play currentUser's turn. Executed when the player clicks the enter
- * button
- */
-function playWord() {
-  if (game.status === 'finished') return;
-  console.log('Hello from playWord.');
-  if (location.hash === '#puzzle' && !myTurn) {
-    alert("Your opponent hasn't played their turn yet!");
-    return;
-  }
-  if (incomplete()) return;
-  // TODO: something like this?:
-  // document.getElementById('puzTitle').innerText = 'Fetching data...';
-  const answerObj = {};
-  console.log('game: ', game);
-  answerObj.idxArray = idxArray;
-  answerObj.gameId = currentPuzzleId;
-  answerObj.guess = [];
-  for (const index of idxArray) {
-    answerObj.guess.push(game.puzzle.grid[index].guess);
-  }
-  const checkAnswer = httpsCallable(functions, 'isCorrect');
-  checkAnswer(answerObj)
-    .then((isCorrect) => {
-      // console.log('isCorrect: ', isCorrect);
-      clearHighlights();
-      if (isCorrect.data) {
-        const direction = acrossWord ? 'across' : 'down';
-        const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
-        game.puzzle.completedClues[direction].push(clueNumber);
-        document
-          .getElementById(direction + clueNumber)
-          .classList.add('colorLightGray');
-        for (let index = 0; index < idxArray.length; index++) {
-          const gridElement = game.puzzle.grid[idxArray[index]];
-          const value = answerObj.guess[index];
-          game.puzzle.grid[idxArray[index]] = setCellStatus(
-            idxArray[index],
-            gridElement,
-            value
-          );
-        }
-      }
-      game.nextTurn = myOpponentUid;
-      // myTurn = !myTurn;
-      // updateScoreboard();
-      savePuzzle();
-      return;
-    })
-    .catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
-}
-
-/**
  * Sets values for gridElement based on currentUser play
  * @param {number} index index of cell
  * @param {Object} gridElement game.puzzle grid array object
@@ -1191,49 +874,6 @@ function setCellStatus(index, gridElement, value) {
   gridElement.bgColor = game[player].bgColor;
   gridElement.status = 'locked';
   return gridElement;
-}
-
-/**
- * Adds to score if orthogonal word is completed by this play
- * @param {number} index index of cell
- * @return {number} additional score due to completion of orthogonal word
- */
-function scoreCell(index) {
-  console.log('Hello from scoreCell.');
-  const row = Math.floor(index / columns);
-  const col = index - row * columns;
-  const cell = puzTable.children[0].children[row].children[col];
-  const direction = acrossWord ? 'down' : 'across';
-  const wordBlock = getWordBlock(cell, direction);
-  let addedScore = 0;
-
-  for (const idx of wordBlock) {
-    if (idx === index) {
-      addedScore += 2 * scoreValues[game.puzzle.grid[idx].value];
-    } else if (game.puzzle.grid[idx].status === 'locked') {
-      addedScore += scoreValues[game.puzzle.grid[idx].value];
-    } else {
-      return scoreValues[game.puzzle.grid[index].value];
-    }
-  }
-  const clueNumber = game.puzzle.grid[wordBlock[0]].clueNum;
-  game.puzzle.completedClues[direction].push(clueNumber);
-  return addedScore;
-}
-
-/**
- * Checks if array of cells has a letter in each square
- * @return {boolean} true if word is incomplete, false otherwise
- */
-function incomplete() {
-  console.log('Hello from incomplete. idxArray: ', idxArray);
-  if (idxArray.length === 0) return true;
-  for (const i of idxArray) {
-    if (!game.puzzle.grid[i].guess || game.puzzle.grid[i].guess === '') {
-      return true;
-    }
-  }
-  return false;
 }
 
 /** Helper function for toggling drawer */
@@ -1285,15 +925,4 @@ function resizePuzzle() {
   }
 }
 
-concessionBtn.addEventListener('click', abandon);
-document.addEventListener('keyup', enterLetter);
-window.addEventListener('resize', resizePuzzle);
-const keyList = keyboard.getElementsByClassName('kbButton');
-for (const node of keyList) {
-  node.addEventListener('click', enterLetter);
-}
-document.getElementById('backspace').addEventListener('click', undoEntry);
-document.getElementById('enter').addEventListener('click', playWord);
-document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
-
-export { init, clearLists, showReplayDialog, unsubscribe, toggleDrawer };
+export {};

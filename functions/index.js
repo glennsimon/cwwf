@@ -3,10 +3,12 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const gaxios = require('gaxios');
 const { serverTimestamp } = require('firebase/firestore');
+
 // admin.initializeApp();
 admin.initializeApp();
 
 const db = admin.firestore();
+const dbRT = getDatabase();
 console.log('Hello from index.js');
 
 const scoreValues = {
@@ -54,10 +56,12 @@ exports.onUserStatusChanged = functions.database
     functions.logger.log('newValue: ', newValue);
     // If the current timestamp for this data is newer than
     // the data that triggered this event, we exit this function.
-    if (context.params.uid === null) {
+    if (
+      context.params.uid === null ||
+      oldValue.lastChanged > newValue.lastChanged
+    ) {
       return null;
     }
-
     // Otherwise, we convert the lastChanged field to a Date
     // newValue.lastChanged = new Date(newValue.lastChanged);
 
@@ -65,25 +69,42 @@ exports.onUserStatusChanged = functions.database
     return db.doc(`users/${context.params.uid}`).set(newValue, { merge: true });
   });
 
-exports.updateUser = functions.firestore
-  .document('games/{gameId}')
-  .onUpdate((change, context) => {
-    const newValue = change.after.data();
-    const previousValue = change.before.data();
-
-    if (newValue.nextTurn !== previousValue.nextTurn) {
-      notifyPlayer(newValue.nextTurn);
-      return 'success!';
-    }
-    return 'no change';
-  });
+exports.authStateChanged = functions.https.onCall((user, context) => {
+  if (user) {
+    // User is signed in.
+    const uid = user.uid;
+    const userData = {};
+    userData.displayName = user.displayName;
+    userData.photoURL = user.photoURL;
+    userData.providerId = user.providerData[0].providerId;
+    userData.uid = uid;
+    userData.privateData = {
+      email: user.email,
+      emailVerified: user.emailVerified,
+      phoneNumber: user.phoneNumber,
+      providerData: user.providerData,
+      providerId: user.providerId,
+    };
+    return db
+      .doc(`/users/${uid}`)
+      .set(userData, { merge: true })
+      .then(() => {
+        return `${uid} updated and registered as logged in`;
+      })
+      .catch((err) => {
+        console.log('error: ', err);
+      });
+  }
+  return 'no user is logged in';
+});
 
 /**
  * Sends FCM message to player to notify them that it is their turn.
  * @param {string} uid uid of player
  */
-function notifyPlayer(uid) {
-  db.doc(`users/${uid}`)
+exports.notifyPlayer = functions.https.onCall((uid, context) => {
+  return db
+    .doc(`users/${uid}`)
     .get()
     .then((doc) => {
       console.log('msgToken: ', doc.data().msgToken);
@@ -97,22 +118,23 @@ function notifyPlayer(uid) {
           notification: {
             title: 'Your turn!',
             body: 'Your opponent has played their turn',
-            icon: 'assets/favicon.ico',
+            icon: 'images/favicon.ico',
             clickAction: 'https://xwordswf.firebaseapp.com',
           },
         };
 
-        return admin.messaging().sendToDevice(toKey, payload, {
+        admin.messaging().sendToDevice(toKey, payload, {
           collapseKey: 'your-turn',
           timeToLive: 86400,
         });
+        return `sent notification to ${uid}`;
       }
       return 'no user key available';
     })
     .catch((error) => {
       functions.logger.log('Error: ', error);
     });
-}
+});
 
 /**
  * Firebase Cloud Function fetches a new game based on the gameInfo
