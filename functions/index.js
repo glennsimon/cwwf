@@ -8,7 +8,6 @@ const { serverTimestamp } = require('firebase/firestore');
 admin.initializeApp();
 
 const db = admin.firestore();
-const dbRT = getDatabase();
 console.log('Hello from index.js');
 
 const scoreValues = {
@@ -137,18 +136,19 @@ exports.notifyPlayer = functions.https.onCall((uid, context) => {
 });
 
 /**
- * Firebase Cloud Function fetches a new game based on the gameInfo
+ * Firebase Cloud Function fetches a new game based on the gameStartParameters
  * parameter in
  * the client's https call and then calls functions to format, save,
  * and return the game from firestore (/games/{id}).  The id is included in
  * the returned game Object as game.docId, and the game is sent back to the
  * client when the client calls httpsCallable(functions, 'startGame')
- * @param {Object} gameInfo Object containing player and difficulty information
+ * @param {Object} gameStartParameters Object containing player and difficulty information
  * @return {Object} game
  */
-exports.startGame = functions.https.onCall((gameInfo, context) => {
+exports.startGame = functions.https.onCall((gameStartParameters, context) => {
+  const gameStartParameters = {};
   return db
-    .doc(`/gameCategories/${gameInfo.difficulty}/`)
+    .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
     .get()
     .then((doc) => {
       return JSON.parse(doc.data().lookup);
@@ -175,28 +175,114 @@ exports.startGame = functions.https.onCall((gameInfo, context) => {
     .then((gameFromWeb) => {
       const game = parsePuzzle(gameFromWeb);
       game.initiator = {};
-      game.initiator.uid = gameInfo.initiator.uid;
-      game.initiator.displayName = gameInfo.initiator.displayName;
+      game.initiator.uid = gameStartParameters.initiator.uid;
+      game.initiator.displayName = gameStartParameters.initiator.displayName;
       game.initiator.bgColor = 'bgTransRed';
       game.initiator.score = 0;
       game.opponent = {};
-      game.opponent.uid = gameInfo.opponent.uid;
-      game.opponent.displayName = gameInfo.opponent.displayName;
+      game.opponent.uid = gameStartParameters.opponent.uid;
+      game.opponent.displayName = gameStartParameters.opponent.displayName;
       game.opponent.bgColor = 'bgTransBlue';
       game.opponent.score = 0;
-      game.difficulty = gameInfo.difficulty;
+      game.difficulty = gameStartParameters.difficulty;
       game.status = 'started';
       game.winner = null;
-      game.nextTurn = gameInfo.initiator.uid;
+      game.nextTurn = gameStartParameters.initiator.uid;
       game.start = Date(serverTimestamp());
       // console.log('New parsed puzzle: ', game);
-      return newGameId(game);
+      const gameObj = {};
+      gameObj.game = game;
+      gameObj.gameId = newGameId(game);
+      return gameObj;
     })
     .catch((error) => {
       console.error('Error fetching puzzle date: ', error);
     });
 });
 
+/**
+ * Randomly select a new puzzle based on seedObject.difficulty value.
+ * Returns puzzle parsed for use in the app.
+ * @param {Object} seedObject
+ * @return {Object}
+ */
+function newPuzzle(seedObject) {
+  const baseUrl =
+    'https://raw.githubusercontent.com/doshea/nyt_crosswords/master';
+  const url = `${baseUrl}/${seedObject.year}/${seedObject.month}/${seedObject.day}`;
+  return gaxios
+    .request({ url: url })
+    .then((response) => {
+      // TODO: sanitize response to make sure it is safe
+      // console.log('fetched puzzle: ', response.data);
+      return response.data;
+    })
+    .catch((err) => {
+      console.log('Error fetching from CDN: ', err);
+    });
+}
+
+/**
+ * Parses puzzle from CDN for use in game app, returns parsed puzzle.
+ * @param {Object} puzzle
+ * @returns {Object}
+ */
+function parsePuzzle(puzzle) {
+  const rows = puzzle.size.rows;
+  const cols = puzzle.size.cols;
+  const game = {};
+  game.answers = puzzle.grid;
+  game.emptySquares = rows * cols;
+  game.puzzle = {};
+  game.puzzle.cols = cols;
+  game.puzzle.rows = rows;
+  game.puzzle.author = puzzle.author;
+  game.puzzle.clues = puzzle.clues;
+  game.puzzle.copyright = puzzle.copyright;
+  game.puzzle.date = puzzle.date;
+  game.puzzle.dow = puzzle.dow;
+  game.puzzle.editor = puzzle.editor;
+  game.puzzle.notepad = puzzle.notepad;
+  game.puzzle.title = puzzle.title;
+  game.puzzle.completedClues = {};
+  game.puzzle.completedClues.across = [];
+  game.puzzle.completedClues.down = [];
+  game.puzzle.grid = [];
+  for (let i = 0; i < puzzle.grid.length; i++) {
+    game.puzzle.grid[i] = {};
+    if (puzzle.grid[i] === '.') {
+      game.puzzle.grid[i].black = true;
+      game.emptySquares--;
+    } else {
+      game.puzzle.grid[i].black = false;
+      game.puzzle.grid[i].value = '';
+      game.puzzle.grid[i].clueNum =
+        puzzle.gridnums[i] === 0 ? '' : puzzle.gridnums[i];
+      game.puzzle.grid[i].status = 'free';
+      game.puzzle.grid[i].circle = puzzle.circles && puzzle.circles[i] === 1;
+    }
+  }
+  // TODO: move below back inside client
+  // columns = cols;
+  // console.log('parsed puzzle: ', game);
+  return game;
+}
+
+/**
+ * Adds puzzle difficulty and initiator and opponent information.
+ * Returns the game id from firestore (/games/{id}).
+ * @param {Object} game
+ * @returns {string}
+ */
+async function newGameId(game) {
+  const docRef = await db
+    .collection('/games/')
+    .add(game)
+    .catch((err) => {
+      console.log('Error saving new game: ', err);
+    });
+  return docRef.id;
+}
 /**
  * Firebase Cloud Function which returns the result of checking
  * the if answer is correct
@@ -264,88 +350,3 @@ exports.abandonGame = functions.https.onCall((abandonObj, context) => {
       console.log('Error abandoning game: ', err);
     });
 });
-
-/**
- * Randomly select a new puzzle based on seedObject.difficulty value.
- * Returns puzzle parsed for use in the app.
- * @param {Object} seedObject
- * @return {Object}
- */
-function newPuzzle(seedObject) {
-  const baseUrl =
-    'https://raw.githubusercontent.com/doshea/nyt_crosswords/master';
-  const url = `${baseUrl}/${seedObject.year}/${seedObject.month}/${seedObject.day}`;
-  return gaxios
-    .request({ url: url })
-    .then((response) => {
-      // console.log('fetched puzzle: ', response.data);
-      return response.data;
-    })
-    .catch((err) => {
-      console.log('Error fetching from CDN: ', err);
-    });
-}
-
-/**
- * Parses puzzle from CDN for use in game app, returns parsed puzzle.
- * @param {Object} puzzle
- * @returns {Object}
- */
-function parsePuzzle(puzzle) {
-  const rows = puzzle.size.rows;
-  const cols = puzzle.size.cols;
-  const game = {};
-  game.answers = puzzle.grid;
-  game.emptySquares = rows * cols;
-  game.puzzle = {};
-  game.puzzle.cols = cols;
-  game.puzzle.rows = rows;
-  game.puzzle.author = puzzle.author;
-  game.puzzle.clues = puzzle.clues;
-  game.puzzle.copyright = puzzle.copyright;
-  game.puzzle.date = puzzle.date;
-  game.puzzle.dow = puzzle.dow;
-  game.puzzle.editor = puzzle.editor;
-  game.puzzle.notepad = puzzle.notepad;
-  game.puzzle.title = puzzle.title;
-  game.puzzle.completedClues = {};
-  game.puzzle.completedClues.across = [];
-  game.puzzle.completedClues.down = [];
-  game.puzzle.grid = [];
-  for (let i = 0; i < puzzle.grid.length; i++) {
-    game.puzzle.grid[i] = {};
-    if (puzzle.grid[i] === '.') {
-      game.puzzle.grid[i].black = true;
-      game.emptySquares--;
-    } else {
-      game.puzzle.grid[i].black = false;
-      game.puzzle.grid[i].value = '';
-      game.puzzle.grid[i].clueNum =
-        puzzle.gridnums[i] === 0 ? '' : puzzle.gridnums[i];
-      game.puzzle.grid[i].status = 'free';
-      game.puzzle.grid[i].circle = puzzle.circles && puzzle.circles[i] === 1;
-    }
-  }
-  // TODO: move this back inside client
-  // columns = cols;
-  // console.log('parsed puzzle: ', game);
-
-  return game;
-}
-
-/**
- * Adds puzzle difficulty and initiator and opponent information.
- * Returns the game id from firestore (/games/{id}).
- * @param {Object} game
- * @param {Object} gameInfo
- * @returns {string}
- */
-async function newGameId(game) {
-  const docRef = await db
-    .collection('/games/')
-    .add(game)
-    .catch((err) => {
-      console.log('Error saving new game: ', err);
-    });
-  return docRef.id;
-}

@@ -1,3 +1,4 @@
+import { eventBus, eventType } from './event-bus.js';
 import { db, app, auth, functions, messaging } from './firebase-init.js';
 import { onMessage, getToken } from 'firebase/messaging';
 import { collection, setDoc, doc, onSnapshot } from 'firebase/firestore';
@@ -33,7 +34,8 @@ const scoreValues = {
   Z: 10,
 };
 
-let currentUser = auth.currentUser;
+let currentUser = null;
+let previousUser = null;
 let dialogList = '';
 let allUsers = {};
 let game = null;
@@ -48,30 +50,79 @@ let myTurn = null;
 let clueNumIndices = {};
 let gameUnsubscribe = null;
 
-/** Start a new game or send user to the login page */
-function initNewGame() {
-  console.log('Hello from initNewGame.');
-  if (currentUser) {
-    // user is logged in
-    gameOverHeading.classList.add('displayNone');
-    winMessage.classList.add('displayNone');
-    gamesDialog.showModal();
-    gamesDialog.children[0].classList.add('padding0', 'height100pct');
-    opponentHeading.classList.remove('displayNone');
-    opponentList.classList.remove('displayNone');
-    const replayButton = document.getElementById('replayButton');
-    if (replayButton) {
-      try {
-        gamesDialog.children[0].removeChild(replayButton);
-      } catch (err) {
-        // do nothing.  replayButton not attached
-      }
-    }
-    gamesDialog.classList.add('height80pct');
+// Empty eventBus template - delete later
+eventBus.on(eventType, (data) => {
+  if (condition) {
   } else {
-    // user is not logged in
-    location.hash = '#signin';
   }
+});
+
+/**
+ * EventBus event that triggers on any auth change.
+ * Callback parameter is `User` who is currently signed in.
+ * */
+eventBus.on(eventType.authChange, (user) => {
+  currentUser = user;
+});
+
+/**
+ * EventBus event that triggers after user is signed out.
+ * Callback parameter is `User` who was previously signed in.
+ */
+eventBus.on(eventType.signedOut, (user) => {
+  previousUser = user;
+  if (condition) {
+  } else {
+  }
+});
+
+/**
+ * EventBus event that triggers when user starts a new game from
+ * the new game dialog or from the replay dialog.
+ * @param {Object} gameStartParameters Parameters needed to start game
+ */
+eventBus.on(eventType.startNewGame, (gameStartParameters) => {
+  console.log('Attempting to start a new game.');
+  const startGame = httpsCallable(functions, 'startGame');
+  startGame(gameStartParameters)
+    .then((gameId) => {
+      subscribeToGame(gameId.data);
+      return;
+    })
+    .catch((err) => {
+      console.log('Error code: ', err.code);
+      console.log('Error message: ', err.message);
+      console.log('Error details: ', err.details);
+    });
+});
+
+function subscribeToGame(puzzleId) {
+  console.log('Hello from subscribeToGame.');
+  // Stop listening for previous puzzle changes
+  gameUnsubscribe();
+
+  // Start listening to current puzzle changes
+  gameUnsubscribe = onSnapshot(
+    doc(db, 'games', puzzleId),
+    (doc) => {
+      game = doc.data();
+      if (game.status === 'started') {
+        myOpponentUid =
+          game.initiator.uid === currentUser.uid
+            ? game.opponent.uid
+            : game.initiator.uid;
+        columns = game.puzzle.cols;
+        // myTurn = game.nextTurn !== myOpponentUid;
+        // updateScoreboard();
+      }
+      currentPuzzleId = puzzleId;
+      showPuzzle();
+      location.hash = '#puzzle';
+    },
+    (error) => {
+      console.error('Error getting puzzle: ', error);
+    }
+  );
 }
 
 /** Saves puzzle to firebase */

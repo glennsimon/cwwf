@@ -12,19 +12,25 @@ module.exports = {
     },
     signin: {
       import: './src/signin.js',
-      dependOn: ['fb_essentials', 'init', 'games'],
-    },
-    main: {
-      import: './src/main.js',
-      dependOn: ['fb_essentials', 'init'],
     },
     router: {
       import: './src/router.js',
-      dependOn: 'games',
+      dependOn: 'presenter',
     },
-    games: {
-      import: './src/games.js',
-      dependOn: ['fb_essentials', 'init'],
+    event_bus: {
+      import: './src/event-bus.js',
+    },
+    model: {
+      import: './src/model.js',
+      dependOn: ['fb_essentials', 'event_bus', 'init'],
+    },
+    view: {
+      import: './src/view.js',
+      dependOn: ['fb_essentials', 'event_bus', 'init'],
+    },
+    presenter: {
+      import: './src/presenter.js',
+      dependOn: ['fb_essentials', 'event_bus', 'init', 'signin'],
     },
     fb_essentials: [
       'firebase/firestore',

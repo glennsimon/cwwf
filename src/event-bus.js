@@ -1,3 +1,13 @@
+const eventType = {
+  authChange: 'authChange',
+  signedOut: 'signedOut',
+  // turnPlayed: 'turnPlayed',
+  // letterEntered: 'letterEntered',
+  startNewGame: 'startNewGame',
+  // getGame: 'getGame',
+  openNewGameDialog: 'openNewGameDialog',
+};
+
 class EventBus extends EventTarget {
   on(type, listener) {
     this.addEventListener(type, listener);
@@ -5,9 +15,6 @@ class EventBus extends EventTarget {
   once(type, listener) {
     this.addEventListener(type, listener, { once: true });
   }
-  // off(type, listener) {
-  //   this.removeEventListener(type, listener);
-  // }
   emit(type, data) {
     this.dispatchEvent(new CustomEvent(type, { detail: data }));
   }
@@ -15,4 +22,4 @@ class EventBus extends EventTarget {
 
 const eventBus = new EventBus();
 
-export { eventBus };
+export { eventBus, eventType };

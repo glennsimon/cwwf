@@ -1,4 +1,4 @@
-import { eventBus } from './event-bus.js';
+import { eventBus, eventType } from './event-bus.js';
 import {
   getDatabase,
   ref,
@@ -14,24 +14,28 @@ import {
   signOut,
 } from 'firebase/auth';
 import { onMessage, getToken } from 'firebase/messaging';
-import { collection, setDoc, doc, onSnapshot } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  setDoc,
+  doc,
+  onSnapshot,
+  query,
+} from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, app, auth, functions, messaging } from './firebase-init.js';
-import { EventBus } from './event-bus';
 
+const authButton = document.getElementById('authButton');
+const startGameButton = document.getElementById('startGameButton');
+const dialogList = document.getElementById('dialogList');
 const dbRT = getDatabase(app);
 const vapidKey =
   'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4' +
   'wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak';
-const eventTypes = {
-  authChange: 'authChange',
-  turnPlayed: 'turnPlayed',
-  letterEntered: 'letterEntered',
-  startNewGame: 'startNewGame',
-  getGame: 'getGame',
-};
+
 // local uid for auth state tracking
 let uid = null;
+let gameUnsubscribe = () => {};
 
 function authState(state) {
   return { state: state, lastChanged: Date(serverTimestamp()) };
@@ -78,7 +82,7 @@ onAuthStateChanged(auth, (user) => {
       return;
     })
     .then(() => {
-      eventBus.emit(eventTypes.authChange, user.uid);
+      eventBus.emit(eventType.authChange, user);
       return;
     })
     .then(() => {
@@ -122,33 +126,77 @@ async function sendTokenToServer(token) {
   }
 }
 
+/**
+ * Clicking the authButton on the drawer signs out the user, and then
+ * triggers an EventBus event with the previous user as the payload.
+ */
 authButton.addEventListener('click', () => {
-  toggleDrawer();
-  if (authButton.textContent === 'sign out') {
+  if (user) {
     signOut(auth)
       .then(() => {
         // Sign-out successful.
-        clearLists();
+        eventBus.emit(eventType.signedOut, user);
+        location.hash = '#signin';
         return;
       })
       .catch((error) => {
         console.log(error);
       });
+  } else {
+    // keep this - location should change only if signOut successful
+    location.hash = '#signin';
   }
+});
+
+// Go to signin page when user clicks headerSignin icon
+headerSignin.addEventListener('click', () => {
   location.hash = '#signin';
 });
 
-/** Subscribe to firestore listeners. */
-onSnapshot(
-  collection(db, 'users'),
-  (snapshot) => {
-    console.log('user list changed.');
-    loadUserList(snapshot);
-  },
-  (error) => {
-    console.error('Error getting Users: ', error);
+/**
+ * Fires an event with user data to open the new game dialog in the view,
+ * or send user to the login page if no one is logged in.
+ */
+startGameButton.addEventListener('click', async () => {
+  console.log('startGameButton clicked.');
+  if (currentUser) {
+    // user is logged in
+    eventBus.emit(
+      eventType.openNewGameDialog,
+      await getDocs(query(collection(db, 'users')))
+    );
+  } else {
+    // user is not logged in
+    location.hash = '#signin';
   }
-);
+});
+
+/**
+ * Start a new game with selected opponent
+ * @param {MouseEvent} event Click event from dialogList
+ */
+dialogList('click', (event) => {
+  console.log('User selected opponent to start a new game.');
+  const gameStartParameters = {};
+  gameStartParameters.initiator = currentUser;
+  // TODO: selecting the right target may need fixing - while loop?
+  let target = event.target.parentElement;
+  if (target.id === '') {
+    target = target.parentElement;
+  }
+  gameStartParameters.opponent = allUsers[target.id];
+  let difficulty = radioMed.parentElement.classList.contains('is-checked')
+    ? 'medium'
+    : 'easy';
+  difficulty = radioHard.parentElement.classList.contains('is-checked')
+    ? 'hard'
+    : difficulty;
+  gameStartParameters.difficulty = difficulty;
+  closeGamesDialog();
+  document.getElementById('puzTitle').innerText = 'Fetching new puzzle...';
+  eventBus.emit(eventType.startNewGame, gameStartParameters);
+});
+
 onSnapshot(
   collection(db, 'games'),
   (snapshot) => {
@@ -232,37 +280,6 @@ function clueClicked(event, direction) {
  * Load game based on user selection
  * @param {Object} event Click event from dialogListContainer
  */
-function loadNewGame(event) {
-  console.log('Hello from loadNewGame.');
-  let target = event.target.parentElement;
-  if (target.id === '') {
-    target = target.parentElement;
-  }
-  let difficulty = radioMed.parentElement.classList.contains('is-checked')
-    ? 'medium'
-    : 'easy';
-  difficulty = radioHard.parentElement.classList.contains('is-checked')
-    ? 'hard'
-    : difficulty;
-  closeGamesDialog();
-
-  loadPuzzle({
-    initiator: {
-      uid: currentUser.uid,
-      displayName: currentUser.displayName,
-    },
-    opponent: {
-      uid: target.id,
-      displayName: allUsers[target.id].displayName,
-    },
-    difficulty: difficulty,
-  });
-}
-
-/**
- * Load game based on user selection
- * @param {Object} event Click event from dialogListContainer
- */
 function loadActiveGame(event) {
   console.log('Hello from loadActiveGame.');
   let target = event.target;
@@ -282,43 +299,6 @@ function fetchPuzzle(puzzleId) {
   console.log('Hello from fetchPuzzle.');
   puzTitle.innerText = 'Fetching data...';
   subscribeToGame(puzzleId);
-}
-
-function subscribeToGame(puzzleId) {
-  console.log('Hello from subscribeToGame.');
-  // Stop listening for previous puzzle changes
-  unsubscribe();
-
-  // Start listening to current puzzle changes
-  gameUnsubscribe = onSnapshot(
-    doc(db, 'games', puzzleId),
-    (doc) => {
-      game = doc.data();
-      if (game.status === 'started') {
-        myOpponentUid =
-          game.initiator.uid === currentUser.uid
-            ? game.opponent.uid
-            : game.initiator.uid;
-        columns = game.puzzle.cols;
-        // myTurn = game.nextTurn !== myOpponentUid;
-        // updateScoreboard();
-      }
-      currentPuzzleId = puzzleId;
-      showPuzzle();
-      location.hash = '#puzzle';
-    },
-    (error) => {
-      console.error('Error getting puzzle: ', error);
-    }
-  );
-}
-
-function unsubscribe() {
-  console.log('Hello from unsubscribe.');
-  if (gameUnsubscribe) {
-    gameUnsubscribe();
-    gameUnsubscribe = null;
-  }
 }
 
 /**
@@ -439,4 +419,4 @@ document.getElementById('backspace').addEventListener('click', undoEntry);
 document.getElementById('enter').addEventListener('click', playWord);
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
 
-export { eventTypes };
+export {};

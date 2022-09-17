@@ -4,13 +4,13 @@ import { setDoc, doc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 import './styles/main.css';
-import { eventBus } from './event-bus.js';
+import { eventBus, eventType } from './event-bus.js';
+import { QuerySnapshot } from '@google-cloud/firestore';
 
 const authButton = document.getElementById('authButton');
 const profileName = document.getElementById('profileName');
 const avatar = document.getElementById('avatar');
 const gamesDialog = document.getElementById('gamesDialog');
-const startGameButton = document.getElementById('startGameButton');
 const headerSignin = document.getElementById('headerSignin');
 const gameOverHeading = document.getElementById('gameOverHeading');
 const winMessage = document.getElementById('winMessage');
@@ -19,7 +19,7 @@ const opponentList = document.getElementById('opponentList');
 const radioEasy = document.getElementById('radioEasy');
 const radioMed = document.getElementById('radioMed');
 const radioHard = document.getElementById('radioHard');
-const dialogListContainer = document.getElementById('dialogList');
+const dialogList = document.getElementById('dialogList');
 const activeGamesContainer = document.getElementById('activeGamesContainer');
 const pastGamesContainer = document.getElementById('pastGamesContainer');
 const puzTable = document.getElementById('puzTable');
@@ -43,32 +43,84 @@ const concessionBtnContainer = document.getElementById(
 );
 const puzTitle = document.getElementById('puzTitle');
 const logo = document.getElementById('logo');
+const replayButton = document.getElementById('replayButton');
+
+let currentUser = null;
+let currentOpponent = null;
+let allUsers = null;
 
 let activeGamesHtml = '';
 let pastGamesHtml = '';
-
-eventBus.on('auth-change');
-authButton.textContent = 'sign out';
-profileName.textContent = user.displayName;
-avatar.src = user.photoURL ? user.photoURL : 'assets/avatar_circle_black.png';
-
-currentUser = user;
-if (user) {
-  headerSignin.classList.add('displayNone');
-} else {
-  headerSignin.classList.remove('displayNone');
-}
-
-puzTitle.innerText = 'No puzzle loaded';
 
 logo.addEventListener('click', () => {
   location.hash = '#games';
 });
 
-startGameButton.addEventListener('click', initNewGame);
-headerSignin.addEventListener('click', () => {
-  location.hash = '#signin';
+/**
+ * EventBus event that triggers on
+ * @param {} paramName
+ */
+eventBus.on(eventType, (data) => {
+  if (condition) {
+  } else {
+  }
 });
+
+/**
+ * EventBus event that triggers on any auth change
+ * @param {User} user Current logged in user or null
+ */
+eventBus.on(eventType.authChange, (user) => {
+  if (user) {
+    authButton.textContent = 'sign out';
+    profileName.textContent = user.displayName;
+    avatar.src = user.photoURL
+      ? user.photoURL
+      : 'images/avatar_circle_black.png';
+    location.hash = '#games';
+    headerSignin.classList.add('displayNone');
+  } else {
+    authButton.textContent = 'sign out';
+    profileName.textContent = 'N. E. Person';
+    avatar.src = user.photoURL = 'images/avatar_circle_black.png';
+    headerSignin.classList.remove('displayNone');
+    puzTitle.innerText = 'No puzzle loaded';
+    location.hash = '#signin';
+  }
+  currentUser = user;
+});
+
+/**
+ * EventBus event that triggers after user is signed out
+ */
+eventBus.on(eventType.signedOut, () => {
+  activeGamesContainer.innerHTML = 'You must sign in to see your active games';
+  pastGamesContainer.innerHTML = 'You must sign in to see your completed games';
+  toggleDrawer();
+  clearPuzzle();
+});
+
+/** Helper function for toggling drawer */
+function toggleDrawer() {
+  document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
+}
+
+/** Removes puzzle from DOM */
+function clearPuzzle() {
+  console.log('Hello from clearPuzzle.');
+  puzTitle.innerText = 'Puzzle info will appear here';
+  // clear out old puzzle and clues
+  puzTable.innerHTML = '';
+  puzAuthor.innerText = '';
+  puzNotepad.classList.add('displayNone');
+  puzCopy.innerHTML = '';
+  clueContainer.classList.add('displayNone');
+  splash.classList.remove('displayNone');
+  acrossClues.innerHTML = '';
+  downClues.innerHTML = '';
+  singleClue.innerText = 'Select in the puzzle to reveal clue';
+  currentCell = null;
+}
 
 gamesDialog.querySelector('.close').addEventListener('click', closeGamesDialog);
 
@@ -82,15 +134,29 @@ function closeGamesDialog() {
 }
 
 /**
- * Snapshot of firebase 'user' collection
+ * EventBus event that triggers when user clicks the new game button,
+ * which causes the gamesDialog to open.
+ * @param {QuerySnapshot} snapshot Snapshot of all users
+ */
+eventBus.on(eventType.openNewGameDialog, (snapshot) => {
+  loadUserList(snapshot);
+  gameOverHeading.classList.add('displayNone');
+  winMessage.classList.add('displayNone');
+  gamesDialog.children[0].classList.add('padding0', 'height100pct');
+  opponentHeading.classList.remove('displayNone');
+  opponentList.classList.remove('displayNone');
+  replayButton.classList.add('displayNone');
+  gamesDialog.classList.add('height80pct');
+  gamesDialog.showModal();
+});
+
+/**
+ * Load list of potential opponents with snapshot of all firebase users.
  * @param {Object} snapshot Collection of users
  */
 function loadUserList(snapshot) {
   console.log('Hello from loadUserList.');
-  if (!currentUser) return;
-  dialogListContainer.innerHTML = '';
-  dialogListContainer.removeEventListener('click', loadNewGame);
-  dialogList = '';
+  let userList = '';
   if (snapshot.empty) {
     console.warn('No users exist yet.');
     return;
@@ -111,7 +177,7 @@ function loadUserList(snapshot) {
   </div>
 </span>`;
       }
-      dialogList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
+      userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
    <span class='mdl-list__item-primary-content'>
      ${avatar}
      <span>${user.displayName}</span>
@@ -127,9 +193,8 @@ function loadUserList(snapshot) {
     }
   });
   allUsers = usersObj;
-  // console.log(dialogList);
-  dialogListContainer.innerHTML = dialogList;
-  dialogListContainer.addEventListener('click', loadNewGame);
+  // console.log(userList);
+  dialogList.innerHTML = userList;
 }
 
 /**
@@ -231,34 +296,12 @@ function loadGames(snapshot) {
 }
 
 /**
- * This function fetches a puzzle based on the user's selection and then
- * calls functions to format and display the puzzle
- * @param {Object} paramObject Object with competitors and puzzle difficulty
- */
-function loadPuzzle(paramObject) {
-  console.log('Hello from loadPuzzle.');
-  document.getElementById('puzTitle').innerText = 'Fetching data...';
-  const startGame = httpsCallable(functions, 'startGame');
-  startGame(paramObject)
-    .then((gameId) => {
-      subscribeToGame(gameId.data);
-      location.hash = '#puzzle';
-      return;
-    })
-    .catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
-}
-
-/**
  * This function takes the puzzle object returned from the fetch and displays
  * a grid and clues. The HTML table element is a placeholder and the rows and
  * cells are created on the fly. The fetched puzzle is stored as an object in
  * the variable "game".
  */
-function showPuzzle() {
+function showPuzzle(game) {
   console.log('Hello from showPuzzle.');
   // clear previous puzzle if it exists
   if (puzTable.children) {
@@ -439,6 +482,8 @@ function showPuzzle() {
     }
     savePuzzle();
   }
+  // TODO: should this go here?
+  location.hash = '#puzzle';
 }
 
 function updateScoreboard() {
@@ -461,23 +506,6 @@ function updateScoreboard() {
   scores.children[2].classList.add(
     myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
   );
-}
-
-/** Removes puzzle from DOM */
-function clearPuzzle() {
-  console.log('Hello from clearPuzzle.');
-  puzTitle.innerText = 'Puzzle info will appear here';
-  // clear out old puzzle and clues
-  puzTable.innerHTML = '';
-  puzAuthor.innerText = '';
-  puzNotepad.classList.add('displayNone');
-  puzCopy.innerHTML = '';
-  clueContainer.classList.add('displayNone');
-  splash.classList.remove('displayNone');
-  acrossClues.innerHTML = '';
-  downClues.innerHTML = '';
-  singleClue.innerText = 'Select in the puzzle to reveal clue';
-  currentCell = null;
 }
 
 /**
@@ -751,40 +779,33 @@ function showReplayDialog(game, result) {
     radioEasy.setAttribute('checked', true);
   }
   if (!gamesDialog.open) gamesDialog.showModal();
-
-  /** Load game based on user selection */
-  function replayOpponent() {
-    let difficulty = radioMed.parentElement.classList.contains('is-checked')
-      ? 'medium'
-      : 'easy';
-    difficulty = radioHard.parentElement.classList.contains('is-checked')
-      ? 'hard'
-      : difficulty;
-    const they =
-      currentUser.uid === game.initiator.uid ? 'opponent' : 'initiator';
-    closeGamesDialog();
-
-    // load puzzle based on uids of players
-    loadPuzzle({
-      initiator: {
-        uid: currentUser.uid,
-        displayName: currentUser.displayName,
-      },
-      opponent: {
-        uid: game[they].uid,
-        displayName: game[they].displayName,
-      },
-      difficulty: difficulty,
-    });
-  }
 }
 
-/** Clear lists on games view */
-function clearLists() {
-  console.log('Hello from clearLists.');
-  activeGamesContainer.innerHTML = 'You must sign in to see your active games';
-  pastGamesContainer.innerHTML = 'You must sign in to see your completed games';
-  clearPuzzle();
+/** Load game based on user selection */
+function replayOpponent() {
+  let difficulty = radioMed.parentElement.classList.contains('is-checked')
+    ? 'medium'
+    : 'easy';
+  difficulty = radioHard.parentElement.classList.contains('is-checked')
+    ? 'hard'
+    : difficulty;
+  const they =
+    currentUser.uid === game.initiator.uid ? 'opponent' : 'initiator';
+  // Emit startNewGame event from eventBus
+  closeGamesDialog();
+
+  // load puzzle based on uids of players
+  loadPuzzle({
+    initiator: {
+      uid: currentUser.uid,
+      displayName: currentUser.displayName,
+    },
+    opponent: {
+      uid: game[they].uid,
+      displayName: game[they].displayName,
+    },
+    difficulty: difficulty,
+  });
 }
 
 /**
@@ -876,11 +897,6 @@ function setCellStatus(index, gridElement, value) {
   return gridElement;
 }
 
-/** Helper function for toggling drawer */
-function toggleDrawer() {
-  document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
-}
-
 /** Abandon the game immediately, adding all remaining
  * points to opponent's score
  * @param {string} gameId
@@ -925,4 +941,4 @@ function resizePuzzle() {
   }
 }
 
-export {};
+export { showPuzzle };

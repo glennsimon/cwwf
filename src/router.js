@@ -1,4 +1,4 @@
-import { unsubscribe } from './games.js';
+import { unsubscribe } from './presenter.js';
 
 window.addEventListener('load', function () {
   initRouter();
