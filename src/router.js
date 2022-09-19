@@ -1,5 +1,5 @@
-import { unsubscribe } from './presenter.js';
-
+import { populateAllGamesController } from './controller.js';
+import { loadGamesView } from './view.js';
 window.addEventListener('load', function () {
   initRouter();
 });
@@ -25,7 +25,7 @@ function initRouter() {
   /**
    * Navigate based on hash change
    */
-  function navigate() {
+  async function navigate() {
     if (location.hash === '#puzzle') {
       try {
         const replayButton = querySelector('#replayButton');
@@ -54,12 +54,14 @@ function initRouter() {
       kbContainer.classList.add('displayNone');
       splash.classList.remove('displayNone');
     } else if (location.hash === '#games') {
+      await populateAllGamesController().then((gamesObj) => {
+        loadGamesView(gamesObj);
+      });
       try {
         gamesDialog.close();
       } catch (err) {
         // do nothing, error OK
       }
-      unsubscribe();
       gamesPanel.classList.remove('slideOut');
       appContainer.classList.remove('slideIn');
       concessionBtnContainer.classList.add('displayNone');

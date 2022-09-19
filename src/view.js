@@ -1,4 +1,13 @@
 import { db, auth, messaging } from './firebase-init.js';
+import {
+  authButtonClickedController,
+  startNewGameController,
+  getAllUsersController,
+  getCurrentUserController,
+  fetchPuzzleController,
+  playWordController,
+  getColumnsController,
+} from './controller.js';
 import { onMessage, getToken } from 'firebase/messaging';
 import { setDoc, doc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -8,6 +17,7 @@ import { eventBus, eventType } from './event-bus.js';
 import { QuerySnapshot } from '@google-cloud/firestore';
 
 const authButton = document.getElementById('authButton');
+const drawer = document.getElementById('drawer');
 const profileName = document.getElementById('profileName');
 const avatar = document.getElementById('avatar');
 const gamesDialog = document.getElementById('gamesDialog');
@@ -45,32 +55,29 @@ const puzTitle = document.getElementById('puzTitle');
 const logo = document.getElementById('logo');
 const replayButton = document.getElementById('replayButton');
 
-let currentUser = null;
-let currentOpponent = null;
-let allUsers = null;
-
-let activeGamesHtml = '';
-let pastGamesHtml = '';
+let currentCell = null;
+// let currentOpponent = null;
+// let allUsers = null;
 
 logo.addEventListener('click', () => {
   location.hash = '#games';
 });
 
 /**
- * EventBus event that triggers on
- * @param {} paramName
+ * Clicking the authButton on the drawer calls `authButtonClickedController`
+ * from the controller, which signs the user in or out depending on
+ * their current sign in status.
  */
-eventBus.on(eventType, (data) => {
-  if (condition) {
-  } else {
-  }
+authButton.addEventListener('click', (event) => {
+  authButtonClickedController();
 });
 
 /**
- * EventBus event that triggers on any auth change
+ * Called by the controller, updates the view
+ * when there is an auth change.
  * @param {User} user Current logged in user or null
  */
-eventBus.on(eventType.authChange, (user) => {
+function authChangeView(user) {
   if (user) {
     authButton.textContent = 'sign out';
     profileName.textContent = user.displayName;
@@ -87,18 +94,21 @@ eventBus.on(eventType.authChange, (user) => {
     puzTitle.innerText = 'No puzzle loaded';
     location.hash = '#signin';
   }
-  currentUser = user;
-});
+  // TODO: get rid of local variables - currentUser should be available only
+  // in the controller
+  // currentUser = user;
+}
 
 /**
- * EventBus event that triggers after user is signed out
+ * Called by the controller, updates the view
+ * when user has signed out.
  */
-eventBus.on(eventType.signedOut, () => {
+function signedOutView() {
   activeGamesContainer.innerHTML = 'You must sign in to see your active games';
   pastGamesContainer.innerHTML = 'You must sign in to see your completed games';
-  toggleDrawer();
+  if (drawer.classList.contains('is-visible')) toggleDrawer();
   clearPuzzle();
-});
+}
 
 /** Helper function for toggling drawer */
 function toggleDrawer() {
@@ -122,6 +132,37 @@ function clearPuzzle() {
   currentCell = null;
 }
 
+// Go to signin page when user clicks headerSignin icon
+headerSignin.addEventListener('click', () => {
+  location.hash = '#signin';
+});
+
+/**
+ * Start a new game with selected opponent
+ * @param {MouseEvent} event Click event from dialogList
+ */
+dialogList('click', (event) => {
+  console.log('User selected opponent to start a new game.');
+  const gameStartParameters = {};
+  gameStartParameters.initiator = getCurrentUserController();
+  // TODO: selecting the right target may need fixing - while loop?
+  let target = event.target.parentElement;
+  if (target.id === '') {
+    target = target.parentElement;
+  }
+  gameStartParameters.opponent = getAllUsersController()[target.id];
+  let difficulty = radioMed.parentElement.classList.contains('is-checked')
+    ? 'medium'
+    : 'easy';
+  difficulty = radioHard.parentElement.classList.contains('is-checked')
+    ? 'hard'
+    : difficulty;
+  gameStartParameters.difficulty = difficulty;
+  closeGamesDialog();
+  document.getElementById('puzTitle').innerText = 'Fetching new puzzle...';
+  startNewGameController(gameStartParameters);
+});
+
 gamesDialog.querySelector('.close').addEventListener('click', closeGamesDialog);
 
 /** Reset radio buttons and close dialog */
@@ -134,41 +175,46 @@ function closeGamesDialog() {
 }
 
 /**
- * EventBus event that triggers when user clicks the new game button,
- * which causes the gamesDialog to open.
- * @param {QuerySnapshot} snapshot Snapshot of all users
+ * Fires an event with user data to populate, update and open the new game
+ * dialog in the view, or send user to the login page if no one is logged in.
  */
-eventBus.on(eventType.openNewGameDialog, (snapshot) => {
-  loadUserList(snapshot);
-  gameOverHeading.classList.add('displayNone');
-  winMessage.classList.add('displayNone');
-  gamesDialog.children[0].classList.add('padding0', 'height100pct');
-  opponentHeading.classList.remove('displayNone');
-  opponentList.classList.remove('displayNone');
-  replayButton.classList.add('displayNone');
-  gamesDialog.classList.add('height80pct');
-  gamesDialog.showModal();
+startGameButton.addEventListener('click', async () => {
+  console.log('startGameButton clicked.');
+  if (getCurrentUserController()) {
+    // user is logged in
+    const usersObj = await populateAllUsersController();
+    loadUserList(usersObj);
+    gameOverHeading.classList.add('displayNone');
+    winMessage.classList.add('displayNone');
+    gamesDialog.children[0].classList.add('padding0', 'height100pct');
+    opponentHeading.classList.remove('displayNone');
+    opponentList.classList.remove('displayNone');
+    replayButton.classList.add('displayNone');
+    gamesDialog.classList.add('height80pct');
+    gamesDialog.showModal();
+  } else {
+    // user is not logged in
+    location.hash = '#signin';
+  }
 });
 
 /**
- * Load list of potential opponents with snapshot of all firebase users.
- * @param {Object} snapshot Collection of users
+ * Load list of potential opponents with list of all firebase users.
+ * @param {Object} usersObj Object containing all users by uid
  */
-function loadUserList(snapshot) {
+function loadUserList(usersObj) {
   console.log('Hello from loadUserList.');
   let userList = '';
-  if (snapshot.empty) {
+  if (usersObj.empty) {
     console.warn('No users exist yet.');
     return;
   }
-  const usersObj = {};
-  snapshot.docs.forEach((doc) => {
-    const uid = doc.id;
-    const user = doc.data();
-    usersObj[uid] = user;
+  let uids = Object.keys(usersObj);
+  uids.forEach((uid) => {
+    const user = usersObj[uid];
     // doc.data() is never undefined for query doc snapshots
     // console.log(doc.id, ' => ', doc.data());
-    if (uid !== currentUser.uid) {
+    if (uid !== getCurrentUserController().uid) {
       let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
       if (user.photoURL) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
@@ -192,41 +238,39 @@ function loadUserList(snapshot) {
  </li>`;
     }
   });
-  allUsers = usersObj;
+  // allUsers = usersObj;
   // console.log(userList);
   dialogList.innerHTML = userList;
 }
 
 /**
- * Snapshot of firebase 'games' collection
- * @param {Object} snapshot Collection of games
+ * Load game list with active and past games that the current user has
+ * participated in.
+ * @param {Object} gamesObj Object all games viewable by the current user
  */
-function loadGames(snapshot) {
+function loadGamesView(gamesObj) {
   console.log('Hello from loadGames.');
-  if (!currentUser) return;
+  if (!getCurrentUserController()) return;
   activeGamesContainer.innerHTML = 'No active games yet. Start one!';
   pastGamesContainer.innerHTML = 'No completed games yet';
-  activeGamesContainer.removeEventListener('click', loadActiveGame);
-  activeGamesHtml = '';
-  pastGamesHtml = '';
-  if (snapshot.empty) {
+  let activeGamesHtml = '';
+  let pastGamesHtml = '';
+  if (!(gamesObj && Object.keys(gamesObj))) {
+    // gamesObj doesn't exist or is empty
     console.warn('No games exist yet.');
     return;
   }
-  snapshot.docs.forEach((doc) => {
-    // doc.data() is never undefined for query doc snapshots
-    // console.log(doc.id, ' => ', doc.data());
-    const game = doc.data();
+  let games = Object.keys(usersObj);
+  games.forEach((game) => {
     let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
-    if (
-      game.status === 'started' &&
-      (game.initiator.uid === currentUser.uid ||
-        game.opponent.uid === currentUser.uid)
-    ) {
+    if (game.status === 'started') {
       const myOpponent =
-        game.initiator.uid === currentUser.uid ? game.opponent : game.initiator;
+        game.initiator.uid === getCurrentUserController().uid
+          ? game.opponent
+          : game.initiator;
       const opponentPhoto =
-        allUsers[myOpponent.uid] && allUsers[myOpponent.uid].photoURL;
+        getAllUsersController()[myOpponent.uid] &&
+        getAllUsersController()[myOpponent.uid].photoURL;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <div>
@@ -243,7 +287,9 @@ function loadGames(snapshot) {
      ${avatar}
      <span>${myOpponent.displayName}</span>
      <span class='mdl-list__item-sub-title'>
-       ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
+       ${
+         getCurrentUserController().uid === game.nextTurn ? 'Your' : 'Their'
+       } turn
      </span>
    </span>
    <span class='mdl-list__item-secondary-content'>
@@ -251,22 +297,25 @@ function loadGames(snapshot) {
      <i class='material-icons'>grid_on</i>
    </span>
  </li>`;
-    } else if (
-      game.initiator.uid === currentUser.uid ||
-      game.opponent.uid === currentUser.uid
-    ) {
+    } else {
       const myOpponent =
-        game.initiator.uid === currentUser.uid ? game.opponent : game.initiator;
+        game.initiator.uid === getCurrentUserController().uid
+          ? game.opponent
+          : game.initiator;
       let result = 'Tie game!';
       if (game.status === 'finished' && game.winner !== 'tie') {
-        result = currentUser.uid === game.winner ? 'You won!!' : 'They won';
+        result =
+          getCurrentUserController().uid === game.winner
+            ? 'You won!!'
+            : 'They won';
       } else if (game.status === 'abandoned') {
         result = 'Game abandoned';
       }
       // pastGames[doc.id] = {};
       // pastGames[doc.id].difficulty = game.difficulty;
       const opponentPhoto =
-        allUsers[myOpponent.uid] && allUsers[myOpponent.uid].photoURL;
+        getAllUsersController()[myOpponent.uid] &&
+        getAllUsersController()[myOpponent.uid].photoURL;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <div>
@@ -284,6 +333,7 @@ function loadGames(snapshot) {
  </li>`;
     }
   });
+
   // console.log(dialogList);
   activeGamesContainer.innerHTML =
     activeGamesHtml === ''
@@ -291,9 +341,21 @@ function loadGames(snapshot) {
       : activeGamesHtml;
   pastGamesContainer.innerHTML =
     pastGamesHtml === '' ? 'No completed games yet' : pastGamesHtml;
-  activeGamesContainer.addEventListener('click', loadActiveGame);
-  pastGamesContainer.addEventListener('click', showPastGame);
 }
+
+activeGamesContainer.addEventListener('click', loadActiveGame);
+
+pastGamesContainer.addEventListener('click', (event) => {
+  console.log('User selected a past game to view.');
+  let eventTarget = event.target;
+  while (!eventTarget.id) {
+    if (eventTarget.nodeName.toLowerCase() === 'ul') return;
+    eventTarget = eventTarget.parentElement;
+  }
+  concessionBtnContainer.classList.add('displayNone');
+  puzTitle.innerText = 'Fetching data...';
+  fetchPuzzleController(eventTarget.id);
+});
 
 /**
  * This function takes the puzzle object returned from the fetch and displays
@@ -301,20 +363,17 @@ function loadGames(snapshot) {
  * cells are created on the fly. The fetched puzzle is stored as an object in
  * the variable "game".
  */
-function showPuzzle(game) {
-  console.log('Hello from showPuzzle.');
+function showPuzzleView(game) {
+  console.log('Hello from showPuzzleView.');
   // clear previous puzzle if it exists
   if (puzTable.children) {
     clearPuzzle();
   }
-  idxArray = [];
-  clueNumIndices = {};
-  columns = game.puzzle.cols;
-  myTurn = currentUser.uid === game.nextTurn;
-  // initial estimate of element size used to determine
-  // cellDim -> tableDim -> puzzle size
+  // idxArray = [];
+  // clueNumIndices = {};
+  // columns = game.puzzle.cols;
+  // myTurn = getCurrentUserController().uid === game.nextTurn;
   if (game.puzzle.notepad) {
-    // puzNotepad.style.width = '300px';
     puzNotepad.innerHTML = `<b>Notepad:</b>${game.puzzle.notepad}`;
     puzNotepad.classList.remove('displayNone');
   }
@@ -327,7 +386,7 @@ function showPuzzle(game) {
     : '';
 
   const cellDim = getCellDim();
-  const tableDim = cellDim * game.puzzle.rows;
+  const tableDim = cellDim * game.puzzle.cols;
   let gridIndex = 0;
   for (let rowIndex = 0; rowIndex < game.puzzle.rows; rowIndex += 1) {
     const row = puzTable.insertRow(rowIndex);
@@ -375,16 +434,10 @@ function showPuzzle(game) {
   clueContainer.classList.remove('displayNone');
   splash.classList.add('displayNone');
 
-  if (!game.puzzle.completedClues) {
-    game.puzzle.completedClues = {};
-    game.puzzle.completedClues.across = [];
-    game.puzzle.completedClues.down = [];
-  }
-
   // create contents for across clues div
   for (const clue of game.puzzle.clues.across) {
     const parsedClue = clue.split('.');
-    const clueNumber = parseInt(parsedClue[0], 10);
+    const clueNumber = parseInt(parsedClue[0]);
     const clueRef = parsedClue[0] + '.';
     const clueText = parsedClue.slice(1).join('.');
     const clueDiv = document.createElement('div');
@@ -403,14 +456,13 @@ function showPuzzle(game) {
     textDiv.classList.add('cursorPointer');
     clueDiv.appendChild(numDiv);
     clueDiv.appendChild(textDiv);
-    // clueDiv.addEventListener('click', acrossClueClick);
     acrossClues.appendChild(clueDiv);
   }
 
   // create contents for down clues div
   for (const clue of game.puzzle.clues.down) {
     const parsedClue = clue.split('.');
-    const clueNumber = parseInt(parsedClue[0], 10);
+    const clueNumber = parseInt(parsedClue[0]);
     const clueRef = parsedClue[0] + '.';
     const clueText = parsedClue.slice(1).join('.');
     const clueDiv = document.createElement('div');
@@ -446,66 +498,83 @@ function showPuzzle(game) {
 
   scores.classList.remove('displayNone');
   scores.classList.add('displayFlex');
-  const me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
+  const me =
+    getCurrentUserController().uid === game.initiator.uid
+      ? 'initiator'
+      : 'opponent';
   const they = me === 'initiator' ? 'opponent' : 'initiator';
   let myNickname = game[me].displayName;
   let oppNickname = game[they].displayName;
 
-  myNickname =
-    myNickname.indexOf(' ') === -1
-      ? myNickname
-      : myNickname.slice(0, myNickname.indexOf(' '));
+  myNickname = myNickname.split(' ')[0];
   myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
   myName.innerText = myNickname;
-  oppNickname =
-    oppNickname.indexOf(' ') === -1
-      ? oppNickname
-      : oppNickname.slice(0, oppNickname.indexOf(' '));
+  oppNickname = oppNickname.split(' ')[0];
   oppNickname = oppNickname.length > 8 ? oppNickname.slice(0, 8) : oppNickname;
   oppName.innerText = oppNickname;
-  updateScoreboard();
   if (game.emptySquares === 0) {
     let result = 'YOU WON!!';
-    if (game[me].score > game[they].score) {
-      game.winner = game[me].uid;
-    } else if (game[me].score < game[they].score) {
-      game.winner = game[they].uid;
+    if (game[me].score < currentGame[they].score) {
       result = 'You lost';
     } else {
-      game.winner = 'tie';
       result = 'Tie game!';
     }
-    game.status = 'finished';
     if (!game.hideReplay) {
-      showReplayDialog(game, result);
-      game.hideReplay = true;
+      showReplayDialog(currentGame, result);
     }
-    savePuzzle();
   }
+  updateScoreboard(game);
   // TODO: should this go here?
   location.hash = '#puzzle';
 }
 
-function updateScoreboard() {
+/**
+ * When clue is clicked, this event fires
+ * @param {Event} event Mouse click or screen touch event
+ * @param {string} direction Clue direction (across or down)
+ */
+function clueClicked(event, direction) {
+  console.log('Hello from clueClicked.');
+  let clueNumberText = event.target.parentElement.firstChild.innerText;
+  clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
+  const columns = getColumnsController();
+  const cellIndex = clueNumIndices[clueNumberText];
+  const row = Math.floor(cellIndex / columns);
+  const col = cellIndex - row * columns;
+  const cell = puzTable.firstChild.children[row].children[col];
+  if (direction === 'across') {
+    selectAcross(cell);
+  } else {
+    selectDown(cell);
+  }
+}
+
+/**
+ * Update scores in the scoreboard.
+ * @param {object} game Current game object
+ */
+function updateScoreboard(game) {
   console.log('Hello from updateScoreboard.');
-  const me = currentUser.uid === game.initiator.uid ? 'initiator' : 'opponent';
+  const me =
+    getCurrentUserController().uid === game.initiator.uid
+      ? 'initiator'
+      : 'opponent';
   const they = me === 'initiator' ? 'opponent' : 'initiator';
   myScore.innerText = game[me].score;
   oppScore.innerText = game[they].score;
   myName.classList.add(game[me].bgColor.replace('bg', 'font'));
   oppName.classList.add(game[they].bgColor.replace('bg', 'font'));
-  scores.children[0].classList.remove(
-    myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
-  );
-  scores.children[0].classList.add(
-    myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
-  );
-  scores.children[2].classList.remove(
-    myTurn ? 'bgColorTransGold' : 'bgColorTransWhite'
-  );
-  scores.children[2].classList.add(
-    myTurn ? 'bgColorTransWhite' : 'bgColorTransGold'
-  );
+  if (game.nextTurn === game[me].uid) {
+    scores.children[0].classList.remove('bgColorTransWhite');
+    scores.children[0].classList.add('bgColorTransGold');
+    scores.children[2].classList.remove('bgColorTransGold');
+    scores.children[2].classList.add('bgColorTransWhite');
+  } else {
+    scores.children[0].classList.remove('bgColorTransGold');
+    scores.children[0].classList.add('bgColorTransWhite');
+    scores.children[2].classList.remove('bgColorTransWhite');
+    scores.children[2].classList.add('bgColorTransGold');
+  }
 }
 
 /**
@@ -563,7 +632,7 @@ function undoEntry() {
 function getCellDim() {
   console.log('Hello from getCellDim.');
   const puzTableWidth = puzTable.offsetWidth;
-  return Math.floor(puzTableWidth / game.puzzle.cols);
+  return Math.floor(puzTableWidth / getColumnsController());
 }
 
 /** Clears letters when user changes to a different clue */
@@ -589,7 +658,7 @@ function selectAcross(cell) {
   console.log('Hello from selectAcross.');
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
-  const rowOffset = row * columns;
+  const rowOffset = row * getColumnsController();
   const index = row * columns + col;
 
   clearHighlights();
@@ -790,15 +859,17 @@ function replayOpponent() {
     ? 'hard'
     : difficulty;
   const they =
-    currentUser.uid === game.initiator.uid ? 'opponent' : 'initiator';
+    getCurrentUserController().uid === game.initiator.uid
+      ? 'opponent'
+      : 'initiator';
   // Emit startNewGame event from eventBus
   closeGamesDialog();
 
   // load puzzle based on uids of players
   loadPuzzle({
     initiator: {
-      uid: currentUser.uid,
-      displayName: currentUser.displayName,
+      uid: getCurrentUserController().uid,
+      displayName: getCurrentUserController().displayName,
     },
     opponent: {
       uid: game[they].uid,
@@ -818,7 +889,7 @@ function enterLetter(event) {
   console.log('Hello from enterLetter.');
   if (!keyboard.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
-      playWord();
+      playWordController();
       return;
     }
     let letter;
@@ -875,28 +946,6 @@ function enterLetter(event) {
   }
 }
 
-/**
- * Sets values for gridElement based on currentUser play
- * @param {number} index index of cell
- * @param {Object} gridElement game.puzzle grid array object
- * @return {Object} Updated grid element object
- */
-function setCellStatus(index, gridElement, value) {
-  console.log('Hello from setCellStatus.');
-  const player =
-    game.initiator.uid === currentUser.uid ? 'initiator' : 'opponent';
-  gridElement.value = value;
-  if (gridElement.status === 'locked') {
-    game[player].score += scoreValues[gridElement.value];
-    return gridElement;
-  }
-  game[player].score += scoreCell(index);
-  game.emptySquares--;
-  gridElement.bgColor = game[player].bgColor;
-  gridElement.status = 'locked';
-  return gridElement;
-}
-
 /** Abandon the game immediately, adding all remaining
  * points to opponent's score
  * @param {string} gameId
@@ -907,7 +956,7 @@ function abandon() {
   const abandonObj = {};
   abandonObj.gameId = currentPuzzleId;
   abandonObj.opponentUid = myOpponentUid;
-  abandonObj.myUid = currentUser.uid;
+  abandonObj.myUid = getCurrentUserController().uid;
   const abandonGame = httpsCallable(functions, 'abandonGame');
   abandonGame(abandonObj).catch((err) => {
     console.log('Error code: ', err.code);
@@ -941,4 +990,15 @@ function resizePuzzle() {
   }
 }
 
-export { showPuzzle };
+concessionBtn.addEventListener('click', abandon);
+document.addEventListener('keyup', enterLetter);
+window.addEventListener('resize', resizePuzzle);
+const keyList = keyboard.getElementsByClassName('kbButton');
+for (const node of keyList) {
+  node.addEventListener('click', enterLetter);
+}
+document.getElementById('backspace').addEventListener('click', undoEntry);
+document.getElementById('enter').addEventListener('click', playWordController);
+document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
+
+export { authChangeView, signedOutView, showPuzzleView, loadGamesView };

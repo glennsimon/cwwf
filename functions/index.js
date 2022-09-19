@@ -70,7 +70,8 @@ exports.onUserStatusChanged = functions.database
 
 exports.authStateChanged = functions.https.onCall((user, context) => {
   if (user) {
-    // User is signed in.
+    // User is signed in. Updates every time the user signs in, in case there
+    // are changes to photo or whatever.
     const uid = user.uid;
     const userData = {};
     userData.displayName = user.displayName;
@@ -94,7 +95,7 @@ exports.authStateChanged = functions.https.onCall((user, context) => {
         console.log('error: ', err);
       });
   }
-  return 'no user is logged in';
+  return new Promise((resolve) => resolve('no user is logged in'));
 });
 
 /**
@@ -174,6 +175,10 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
     })
     .then((gameFromWeb) => {
       const game = parsePuzzle(gameFromWeb);
+      game.viewableBy = [
+        `${gameStartParameters.initiator.uid}`,
+        `${gameStartParameters.opponent.uid}`,
+      ];
       game.initiator = {};
       game.initiator.uid = gameStartParameters.initiator.uid;
       game.initiator.displayName = gameStartParameters.initiator.displayName;
@@ -289,26 +294,121 @@ async function newGameId(game) {
  * @param {Object} answerObj Object containing player and difficulty information
  * @return {Object} Object with result of the checked answer
  */
-exports.isCorrect = functions.https.onCall((answerObj, context) => {
+exports.checkAnswer = functions.https.onCall((answerObj, context) => {
   return db
     .doc(`games/${answerObj.gameId}`)
     .get()
-    .then((doc) => {
-      const game = doc.data();
-      // console.log(game);
+    .then((snap) => {
+      const game = snap.data();
       console.log('answerObj: ', answerObj);
       for (let index = 0; index < answerObj.guess.length; index++) {
         const correctValue = game.answers[answerObj.idxArray[index]];
         const guess = answerObj.guess[index];
-        console.log('Correct answer: ', correctValue);
+        console.log('Correct letter: ', correctValue);
         console.log('Guess: ', guess);
         if (correctValue !== guess) {
-          return false;
+          game.nextTurn = answerObj.myOpponentUid;
+          // save the modified game
+          snap.ref.set(game, { merge: true });
+          return { correctAnswer: false };
         }
       }
-      return true;
+      const direction = answerObj.acrossWord ? 'across' : 'down';
+      const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
+      game.puzzle.completedClues[direction].push(clueNumber);
+      for (let index = 0; index < idxArray.length; index++) {
+        const gridElement = game.puzzle.grid[idxArray[index]];
+        const guess = answerObj.guess[index];
+        const player =
+          game.initiator.uid === answerObj.myUid ? 'initiator' : 'opponent';
+        gridElement.value = guess;
+        if (gridElement.status === 'locked') {
+          game[player].score += scoreValues[guess];
+        } else {
+          game[player].score += scoreCell(game, direction, index);
+          game.emptySquares--;
+          gridElement.bgColor = game[player].bgColor;
+          gridElement.status = 'locked';
+        }
+      }
+      if (game.emptySquares === 0) {
+        if (game[me].score > game[they].score) {
+          game.winner = game[me].uid;
+        } else if (game[me].score < game[they].score) {
+          game.winner = game[they].uid;
+        } else {
+          game.winner = 'tie';
+        }
+        game.status = 'finished';
+      }
+      game.nextTurn = answerObj.myOpponentUid;
+      // save the modified game
+      snap.ref.set(game, { merge: true });
+      return { correctAnswer: true };
     });
 });
+
+/**
+ * Adds score for current cell and adds to score if orthogonal word is completed by
+ * this turn.
+ * @param {object} game game Object
+ * @param {string} direction Direction of clue being solved ('across' or 'down')
+ * @param {number} index index of puzzle grid square
+ * @return {number} additional score due to completion of orthogonal word
+ */
+function scoreCell(game, direction, index) {
+  console.log('Hello from scoreCell.');
+  // get direction for orthogonal word
+  const orthoDir = direction === 'across' ? 'down' : 'across';
+  const square = game.puzzle.grid[index];
+  const orthoWordArray = getOrthoWordArray(game, square, orthoDir, index);
+  let addedScore = 0;
+
+  for (const idx of orthoWordArray) {
+    if (idx === index) {
+      addedScore += 2 * scoreValues[currentGame.puzzle.grid[idx].value];
+    } else if (currentGame.puzzle.grid[idx].status === 'locked') {
+      addedScore += scoreValues[currentGame.puzzle.grid[idx].value];
+    } else {
+      return scoreValues[currentGame.puzzle.grid[index].value];
+    }
+  }
+  return addedScore;
+}
+
+/**
+ * Returns an array of indices of cells that make up a word block in
+ * the current puzzle.
+ * @param {object} game game Object
+ * @param {object} square Object with square details at
+ * @param {string} direction Direction (across or down)
+ * @param {number} index index of puzzle grid square
+ * @return {array} Array of indices that make up a word block
+ */
+function getOrthoWordArray(game, square, direction, index) {
+  console.log('Hello from getOrthoWordArray.');
+  const rows = game.puzzle.rows;
+  const cols = game.puzzle.cols;
+  const orthoWordArray = [];
+  if (direction === 'across') {
+    while (index % cols > 0 && !game.puzzle.grid[index - 1].black) {
+      index--;
+    }
+    while ((index + 1) % cols > 0 * columns && !game.puzzle.grid[index].black) {
+      orthoWordArray.push(index);
+      index++;
+    }
+  } else {
+    while (index >= cols && !game.puzzle.grid[index - cols].black) {
+      index -= cols;
+    }
+    while (index < rows * cols && !game.puzzle.grid[index].black) {
+      orthoWordArray.push(index);
+      index += columns;
+    }
+  }
+  return orthoWordArray;
+}
 
 exports.abandonGame = functions.https.onCall((abandonObj, context) => {
   db.doc(`games/${abandonObj.gameId}`)
