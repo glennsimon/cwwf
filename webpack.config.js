@@ -15,22 +15,14 @@ module.exports = {
     },
     router: {
       import: './src/router.js',
-      dependOn: 'presenter',
     },
-    event_bus: {
-      import: './src/event-bus.js',
-    },
-    model: {
-      import: './src/model.js',
-      dependOn: ['fb_essentials', 'event_bus', 'init'],
+    controller: {
+      import: './src/controller.js',
+      dependOn: ['fb_essentials', 'init', 'router', 'signin'],
     },
     view: {
       import: './src/view.js',
-      dependOn: ['fb_essentials', 'event_bus', 'init'],
-    },
-    presenter: {
-      import: './src/presenter.js',
-      dependOn: ['fb_essentials', 'event_bus', 'init', 'signin'],
+      dependOn: 'controller',
     },
     fb_essentials: [
       'firebase/firestore',

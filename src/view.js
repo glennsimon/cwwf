@@ -1,4 +1,3 @@
-import { db, auth, messaging } from './firebase-init.js';
 import {
   authButtonClickedController,
   startNewGameController,
@@ -7,14 +6,14 @@ import {
   fetchPuzzleController,
   playWordController,
   getColumnsController,
+  getIdxArrayController,
+  setIdxArrayController,
+  getCurrentGameController,
+  enterLetterController,
+  abandonCurrentGameController,
 } from './controller.js';
-import { onMessage, getToken } from 'firebase/messaging';
-import { setDoc, doc } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
 
 import './styles/main.css';
-import { eventBus, eventType } from './event-bus.js';
-import { QuerySnapshot } from '@google-cloud/firestore';
 
 const authButton = document.getElementById('authButton');
 const drawer = document.getElementById('drawer');
@@ -141,7 +140,7 @@ headerSignin.addEventListener('click', () => {
  * Start a new game with selected opponent
  * @param {MouseEvent} event Click event from dialogList
  */
-dialogList('click', (event) => {
+dialogList.addEventListener('click', (event) => {
   console.log('User selected opponent to start a new game.');
   const gameStartParameters = {};
   gameStartParameters.initiator = getCurrentUserController();
@@ -204,6 +203,7 @@ startGameButton.addEventListener('click', async () => {
  */
 function loadUserList(usersObj) {
   console.log('Hello from loadUserList.');
+  const currentUser = getCurrentUserController();
   let userList = '';
   if (usersObj.empty) {
     console.warn('No users exist yet.');
@@ -214,7 +214,7 @@ function loadUserList(usersObj) {
     const user = usersObj[uid];
     // doc.data() is never undefined for query doc snapshots
     // console.log(doc.id, ' => ', doc.data());
-    if (uid !== getCurrentUserController().uid) {
+    if (uid !== currentUser.uid) {
       let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
       if (user.photoURL) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
@@ -250,7 +250,9 @@ function loadUserList(usersObj) {
  */
 function loadGamesView(gamesObj) {
   console.log('Hello from loadGames.');
-  if (!getCurrentUserController()) return;
+  const currentUser = getCurrentUserController();
+  const allUsers = getAllUsersController();
+  if (!currentUser) return;
   activeGamesContainer.innerHTML = 'No active games yet. Start one!';
   pastGamesContainer.innerHTML = 'No completed games yet';
   let activeGamesHtml = '';
@@ -260,17 +262,15 @@ function loadGamesView(gamesObj) {
     console.warn('No games exist yet.');
     return;
   }
-  let games = Object.keys(usersObj);
-  games.forEach((game) => {
+  let games = Object.keys(gamesObj);
+  games.forEach((key) => {
+    const game = gamesObj[key];
     let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
     if (game.status === 'started') {
       const myOpponent =
-        game.initiator.uid === getCurrentUserController().uid
-          ? game.opponent
-          : game.initiator;
+        game.initiator.uid === currentUser.uid ? game.opponent : game.initiator;
       const opponentPhoto =
-        getAllUsersController()[myOpponent.uid] &&
-        getAllUsersController()[myOpponent.uid].photoURL;
+        allUsers[myOpponent.uid] && allUsers[myOpponent.uid].photoURL;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <div>
@@ -280,16 +280,12 @@ function loadGamesView(gamesObj) {
       }
       activeGamesHtml +=
         // eslint-disable-next-line max-len
-        `<li id='${
-          doc.id
-        }' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
+        `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
    <span class='mdl-list__item-primary-content'>
      ${avatar}
      <span>${myOpponent.displayName}</span>
      <span class='mdl-list__item-sub-title'>
-       ${
-         getCurrentUserController().uid === game.nextTurn ? 'Your' : 'Their'
-       } turn
+       ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
      </span>
    </span>
    <span class='mdl-list__item-secondary-content'>
@@ -299,23 +295,17 @@ function loadGamesView(gamesObj) {
  </li>`;
     } else {
       const myOpponent =
-        game.initiator.uid === getCurrentUserController().uid
-          ? game.opponent
-          : game.initiator;
+        game.initiator.uid === currentUser.uid ? game.opponent : game.initiator;
       let result = 'Tie game!';
       if (game.status === 'finished' && game.winner !== 'tie') {
-        result =
-          getCurrentUserController().uid === game.winner
-            ? 'You won!!'
-            : 'They won';
+        result = currentUser.uid === game.winner ? 'You won!!' : 'They won';
       } else if (game.status === 'abandoned') {
         result = 'Game abandoned';
       }
       // pastGames[doc.id] = {};
       // pastGames[doc.id].difficulty = game.difficulty;
       const opponentPhoto =
-        getAllUsersController()[myOpponent.uid] &&
-        getAllUsersController()[myOpponent.uid].photoURL;
+        allUsers[myOpponent.uid] && allUsers[myOpponent.uid].photoURL;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <div>
@@ -323,7 +313,7 @@ function loadGamesView(gamesObj) {
   </div>
 </span>`;
       }
-      pastGamesHtml += `<li id='${doc.id}' class='mdl-list__item mdl-list__item--two-line\
+      pastGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line\
  cursorPointer'>
    <span class='mdl-list__item-primary-content'>
      ${avatar}
@@ -369,10 +359,6 @@ function showPuzzleView(game) {
   if (puzTable.children) {
     clearPuzzle();
   }
-  // idxArray = [];
-  // clueNumIndices = {};
-  // columns = game.puzzle.cols;
-  // myTurn = getCurrentUserController().uid === game.nextTurn;
   if (game.puzzle.notepad) {
     puzNotepad.innerHTML = `<b>Notepad:</b>${game.puzzle.notepad}`;
     puzNotepad.classList.remove('displayNone');
@@ -529,6 +515,39 @@ function showPuzzleView(game) {
 }
 
 /**
+ * Sets the variable currentCell to the cell the user clicked in
+ * @param {Event} event Mouse click or screen touch event
+ */
+function cellClicked(event) {
+  console.log('Hello from cellClicked.');
+  const cell = event.target;
+  const row = cell.parentElement.rowIndex;
+  const col = cell.cellIndex;
+  const index = row * getColumnsController() + col;
+  // console.log(cell.cellIndex);
+  // console.log(cell.parentElement.rowIndex);
+  // console.log(event);
+
+  if (cell.className === 'black') {
+    return;
+  }
+  if (!getIdxArrayController().includes(index)) {
+    clearLetters();
+  }
+  if (currentCell && currentCell === cell) {
+    clearLetters();
+    acrossWord = !acrossWord;
+  }
+  setIdxArrayController([]);
+  currentCell = cell;
+  if (acrossWord) {
+    selectAcross(cell);
+  } else {
+    selectDown(cell);
+  }
+}
+
+/**
  * When clue is clicked, this event fires
  * @param {Event} event Mouse click or screen touch event
  * @param {string} direction Clue direction (across or down)
@@ -589,6 +608,7 @@ function undoEntry() {
     const index = row * columns + col;
     // reverse copy idxArray so we go backwards instead of forwards
     let localIdxArray = [];
+    const idxArray = getIdxArrayController();
     for (let i = 0, j = idxArray.length; i < idxArray.length; i++, j--) {
       localIdxArray[i] = idxArray[j - 1];
     }
@@ -638,6 +658,7 @@ function getCellDim() {
 /** Clears letters when user changes to a different clue */
 function clearLetters() {
   console.log('Hello from clearLetters.');
+  const idxArray = getIdxArrayController();
   for (const index of idxArray) {
     if (game.puzzle.grid[index].status === 'locked') continue;
     game.puzzle.grid[index].guess = '';
@@ -656,13 +677,16 @@ function clearLetters() {
  */
 function selectAcross(cell) {
   console.log('Hello from selectAcross.');
+  const game = getCurrentGameController();
+  const columns = getColumnsController();
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
-  const rowOffset = row * getColumnsController();
+  const rowOffset = row * columns;
   const index = row * columns + col;
 
   clearHighlights();
-  idxArray = getWordBlock(cell, 'across');
+  const idxArray = getWordBlock(cell, 'across');
+  setIdxArrayController(idxArray);
   currentClue = game.puzzle.grid[idxArray[0]].clueNum;
   for (const clue of acrossClues.children) {
     const clueNumStr = clue.children[0].textContent.split('.')[0];
@@ -702,12 +726,15 @@ function selectAcross(cell) {
  */
 function selectDown(cell) {
   console.log('Hello from selectDown.');
+  const game = getCurrentGameController();
+  const columns = getColumnsController();
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
   const index = row * columns + col;
 
   clearHighlights();
-  idxArray = getWordBlock(cell, 'down');
+  const idxArray = getWordBlock(cell, 'down');
+  setIdxArrayController(idxArray);
   // get the number of the clue number
   currentClue = game.puzzle.grid[idxArray[0]].clueNum;
   for (const clue of downClues.children) {
@@ -852,6 +879,8 @@ function showReplayDialog(game, result) {
 
 /** Load game based on user selection */
 function replayOpponent() {
+  const currentUser = getCurrentUserController();
+  const game = getCurrentGameController();
   let difficulty = radioMed.parentElement.classList.contains('is-checked')
     ? 'medium'
     : 'easy';
@@ -859,17 +888,15 @@ function replayOpponent() {
     ? 'hard'
     : difficulty;
   const they =
-    getCurrentUserController().uid === game.initiator.uid
-      ? 'opponent'
-      : 'initiator';
+    currentUser.uid === game.initiator.uid ? 'opponent' : 'initiator';
   // Emit startNewGame event from eventBus
   closeGamesDialog();
 
   // load puzzle based on uids of players
-  loadPuzzle({
+  startNewGameController({
     initiator: {
-      uid: getCurrentUserController().uid,
-      displayName: getCurrentUserController().displayName,
+      uid: currentUser.uid,
+      displayName: currentUser.displayName,
     },
     opponent: {
       uid: game[they].uid,
@@ -887,6 +914,8 @@ function replayOpponent() {
  */
 function enterLetter(event) {
   console.log('Hello from enterLetter.');
+  const idxArray = getIdxArrayController();
+  const game = getCurrentGameController();
   if (!keyboard.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
       playWordController();
@@ -923,7 +952,7 @@ function enterLetter(event) {
         // alert('Sorry, that square is locked by a previous answer');
         return;
       }
-      game.puzzle.grid[index].guess = letter.toUpperCase();
+      enterLetterController(letter.toUpperCase());
       letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
       letterDiv.classList.add('marginAuto');
       currentCell.children[0].replaceChild(
@@ -946,31 +975,22 @@ function enterLetter(event) {
   }
 }
 
-/** Abandon the game immediately, adding all remaining
+/**
+ * Abandon the game immediately, adding all remaining
  * points to opponent's score
- * @param {string} gameId
  */
-function abandon() {
+concessionBtn.addEventListener('click', () => {
   toggleDrawer();
   concessionBtnContainer.classList.add('displayNone');
-  const abandonObj = {};
-  abandonObj.gameId = currentPuzzleId;
-  abandonObj.opponentUid = myOpponentUid;
-  abandonObj.myUid = getCurrentUserController().uid;
-  const abandonGame = httpsCallable(functions, 'abandonGame');
-  abandonGame(abandonObj).catch((err) => {
-    console.log('Error code: ', err.code);
-    console.log('Error message: ', err.message);
-    console.log('Error details: ', err.details);
-  });
-}
+  abandonCurrentGameController();
+});
 
 /** Resizes puzzle based on available space */
 function resizePuzzle() {
   if (puzTable.children.length === 0) return;
   // console.log(puzTable.children[0]);
   const cellDim = getCellDim();
-  const tableDim = cellDim * game.puzzle.rows;
+  const tableDim = cellDim * getColumnsController();
   const rowArray = puzTable.children[0].children;
 
   for (const row of rowArray) {
@@ -990,7 +1010,6 @@ function resizePuzzle() {
   }
 }
 
-concessionBtn.addEventListener('click', abandon);
 document.addEventListener('keyup', enterLetter);
 window.addEventListener('resize', resizePuzzle);
 const keyList = keyboard.getElementsByClassName('kbButton');

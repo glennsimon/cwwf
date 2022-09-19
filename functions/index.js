@@ -147,7 +147,6 @@ exports.notifyPlayer = functions.https.onCall((uid, context) => {
  * @return {Object} game
  */
 exports.startGame = functions.https.onCall((gameStartParameters, context) => {
-  const gameStartParameters = {};
   return db
     .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
     .get()

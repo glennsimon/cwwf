@@ -1,5 +1,4 @@
 import { db, app, auth, functions, messaging } from './firebase-init.js';
-import { eventBus, eventType } from './event-bus.js';
 import { authChangeView, signedOutView, showPuzzleView } from './view.js';
 import {
   getDatabase,
@@ -14,7 +13,7 @@ import {
   beforeAuthStateChanged,
   signOut,
 } from 'firebase/auth';
-import { onMessage, getToken } from 'firebase/messaging';
+import { getToken } from 'firebase/messaging';
 import {
   collection,
   getDocs,
@@ -82,6 +81,14 @@ let online = false;
 let gameUnsubscribe = () => {};
 
 /**
+ * Get the currentGame. Should be used by all external modules.
+ * @returns {object} Returns currentGame or null
+ */
+function getCurrentGameController() {
+  return currentGame;
+}
+
+/**
  * Get the currentUser. Should be used by all external modules.
  * @returns {Object} Returns currentUser or null
  */
@@ -111,6 +118,24 @@ function getAllGamesController() {
  */
 function getColumnsController() {
   return columns;
+}
+
+/**
+ * Get the idxArray containing the indices of the currently selected word in the
+ * puzzle. Should be used by all external modules.
+ * @returns {array} Returns idxArray
+ */
+function getIdxArrayController() {
+  return idxArray;
+}
+
+/**
+ * Set the idxArray containing the indices of the currently selected word in the
+ * puzzle. Should be used by all external modules.
+ * @param {array} wordArray Array containing the indexes of the currently selected word.
+ */
+function setIdxArrayController(wordArray) {
+  idxArray = wordArray;
 }
 
 /**
@@ -281,39 +306,6 @@ function populateAllGamesController() {
 }
 
 /**
- * Sets the variable currentCell to the cell the user clicked in
- * @param {Event} event Mouse click or screen touch event
- */
-function cellClicked(event) {
-  console.log('Hello from cellClicked.');
-  const cell = event.target;
-  const row = cell.parentElement.rowIndex;
-  const col = cell.cellIndex;
-  const index = row * columns + col;
-  // console.log(cell.cellIndex);
-  // console.log(cell.parentElement.rowIndex);
-  // console.log(event);
-
-  if (cell.className === 'black') {
-    return;
-  }
-  if (!idxArray.includes(index)) {
-    clearLetters();
-  }
-  if (currentCell && currentCell === cell) {
-    clearLetters();
-    acrossWord = !acrossWord;
-  }
-  idxArray = [];
-  currentCell = cell;
-  if (acrossWord) {
-    selectAcross(cell);
-  } else {
-    selectDown(cell);
-  }
-}
-
-/**
  * This function fetches an active puzzle based on the user's selection
  * and then calls functions to format and display the puzzle
  * @param {String} puzzleId Firestore game (puzzle) id
@@ -445,11 +437,32 @@ function startNewGameController(gameStartParameters) {
 }
 
 /**
+ * Enter a letter into the currentGame as a guess.
+ * @param {string} letter
+ */
+function enterLetterController(letter) {
+  currentGame.puzzle.grid[index].guess = letter;
+}
+
+/**
  * Update the controller currentGame variable and save the game.
  */
 async function savePuzzleController() {
   console.log('Hello from savePuzzleController.');
   await setDoc(doc(db, 'games', currentGameId), currentGame, { merge: true });
+}
+
+function abandonCurrentGameController() {
+  const abandonObj = {};
+  abandonObj.gameId = currentPuzzleId;
+  abandonObj.opponentUid = myOpponentUid;
+  abandonObj.myUid = currentUser.uid;
+  const abandonGame = httpsCallable(functions, 'abandonGame');
+  abandonGame(abandonObj).catch((err) => {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
+  });
 }
 
 export {
@@ -464,4 +477,9 @@ export {
   savePuzzleController,
   playWordController,
   getColumnsController,
+  getIdxArrayController,
+  setIdxArrayController,
+  getCurrentGameController,
+  enterLetterController,
+  abandonCurrentGameController,
 };
