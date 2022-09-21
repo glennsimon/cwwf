@@ -11,31 +11,31 @@ import firebase from 'firebase/compat/app';
 import * as firebaseui from 'firebaseui';
 import 'firebaseui/dist/firebaseui.css';
 
-// window.addEventListener('load', function () {
-//   initApp();
-// });
+window.addEventListener('load', function () {
+  initApp();
+});
 
-// /** Initialize after document loads */
-// function initApp() {
-const ui = new firebaseui.auth.AuthUI(auth);
+/** Initialize after document loads */
+function initApp() {
+  const ui = new firebaseui.auth.AuthUI(auth);
 
-const uiConfig = {
-  signInSuccessUrl: './',
-  signInOptions: [
-    // Leave the lines as is for the providers you want to offer your users.
-    firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-    firebase.auth.EmailAuthProvider.PROVIDER_ID,
-    // firebase.auth.FacebookAuthProvider.PROVIDER_ID,
-    // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
-    // firebase.auth.GithubAuthProvider.PROVIDER_ID,
-    // firebase.auth.PhoneAuthProvider.PROVIDER_ID,
-  ],
-  // Terms of service url.
-  tosUrl: './#tos',
-  // Privacy policy url.
-  privacyPolicyUrl: './#privacy',
-};
+  const uiConfig = {
+    signInSuccessUrl: './',
+    signInOptions: [
+      // Leave the lines as is for the providers you want to offer your users.
+      firebase.auth.GoogleAuthProvider.PROVIDER_ID,
+      firebase.auth.EmailAuthProvider.PROVIDER_ID,
+      // firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+      // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
+      // firebase.auth.GithubAuthProvider.PROVIDER_ID,
+      // firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+    ],
+    // Terms of service url.
+    tosUrl: './#tos',
+    // Privacy policy url.
+    privacyPolicyUrl: './#privacy',
+  };
 
-// The start method will wait until the DOM is loaded.
-ui.start('#firebaseuiAuthContainer', uiConfig);
-// }
+  // The start method will wait until the DOM is loaded.
+  ui.start('#firebaseuiAuthContainer', uiConfig);
+}

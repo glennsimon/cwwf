@@ -1,7 +1,7 @@
 import {
   authButtonClickedController,
   startNewGameController,
-  getAllUsersController,
+  populateAllUsersController,
   getCurrentUserController,
   fetchPuzzleController,
   playWordController,
@@ -11,6 +11,7 @@ import {
   getCurrentGameController,
   enterLetterController,
   abandonCurrentGameController,
+  setCurrentGameController,
 } from './controller.js';
 
 import './styles/main.css';
@@ -140,7 +141,7 @@ headerSignin.addEventListener('click', () => {
  * Start a new game with selected opponent
  * @param {MouseEvent} event Click event from dialogList
  */
-dialogList.addEventListener('click', (event) => {
+dialogList.addEventListener('click', async (event) => {
   console.log('User selected opponent to start a new game.');
   const gameStartParameters = {};
   gameStartParameters.initiator = getCurrentUserController();
@@ -149,7 +150,7 @@ dialogList.addEventListener('click', (event) => {
   if (target.id === '') {
     target = target.parentElement;
   }
-  gameStartParameters.opponent = getAllUsersController()[target.id];
+  gameStartParameters.opponent = await populateAllUsersController()[target.id];
   let difficulty = radioMed.parentElement.classList.contains('is-checked')
     ? 'medium'
     : 'easy';
@@ -248,10 +249,10 @@ function loadUserList(usersObj) {
  * participated in.
  * @param {Object} gamesObj Object all games viewable by the current user
  */
-function loadGamesView(gamesObj) {
-  console.log('Hello from loadGames.');
+async function loadGamesView(gamesObj) {
+  console.log('Hello from loadGamesView.');
   const currentUser = getCurrentUserController();
-  const allUsers = getAllUsersController();
+  const allUsers = await populateAllUsersController();
   if (!currentUser) return;
   activeGamesContainer.innerHTML = 'No active games yet. Start one!';
   pastGamesContainer.innerHTML = 'No completed games yet';
@@ -333,9 +334,16 @@ function loadGamesView(gamesObj) {
     pastGamesHtml === '' ? 'No completed games yet' : pastGamesHtml;
 }
 
-activeGamesContainer.addEventListener('click', loadActiveGame);
+activeGamesContainer.addEventListener('click', loadGame);
 
-pastGamesContainer.addEventListener('click', (event) => {
+pastGamesContainer.addEventListener('click', loadGame);
+
+/**
+ * Fetch an existing game from firestore via the controller.
+ * @param {MouseEvent} event
+ * @returns null
+ */
+function loadGame(event) {
   console.log('User selected a past game to view.');
   let eventTarget = event.target;
   while (!eventTarget.id) {
@@ -345,7 +353,7 @@ pastGamesContainer.addEventListener('click', (event) => {
   concessionBtnContainer.classList.add('displayNone');
   puzTitle.innerText = 'Fetching data...';
   fetchPuzzleController(eventTarget.id);
-});
+}
 
 /**
  * This function takes the puzzle object returned from the fetch and displays
@@ -373,6 +381,7 @@ function showPuzzleView(game) {
 
   const cellDim = getCellDim();
   const tableDim = cellDim * game.puzzle.cols;
+  game.clueNumIndices = [];
   let gridIndex = 0;
   for (let rowIndex = 0; rowIndex < game.puzzle.rows; rowIndex += 1) {
     const row = puzTable.insertRow(rowIndex);
@@ -401,7 +410,7 @@ function showPuzzleView(game) {
         squareDiv.appendChild(letterDiv);
         cell.appendChild(squareDiv);
         if (clueNumber !== '') {
-          clueNumIndices[clueNumber.toString()] = gridIndex;
+          game.clueNumIndices[clueNumber.toString()] = gridIndex;
           const clueNumDiv = document.createElement('div');
           clueNumDiv.classList.add('clueNumber');
           clueNumDiv.appendChild(document.createTextNode(clueNumber));
@@ -414,6 +423,7 @@ function showPuzzleView(game) {
       gridIndex += 1;
     }
   }
+  setCurrentGameController(game);
 
   keyboard.classList.remove('displayNone');
   keyboard.classList.add('displayFlex');
@@ -556,8 +566,9 @@ function clueClicked(event, direction) {
   console.log('Hello from clueClicked.');
   let clueNumberText = event.target.parentElement.firstChild.innerText;
   clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
+  const game = getCurrentGameController();
   const columns = getColumnsController();
-  const cellIndex = clueNumIndices[clueNumberText];
+  const cellIndex = game.clueNumIndices[clueNumberText];
   const row = Math.floor(cellIndex / columns);
   const col = cellIndex - row * columns;
   const cell = puzTable.firstChild.children[row].children[col];

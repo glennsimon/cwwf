@@ -12,9 +12,11 @@ module.exports = {
     },
     signin: {
       import: './src/signin.js',
+      dependOn: 'init',
     },
     router: {
       import: './src/router.js',
+      dependOn: 'init',
     },
     controller: {
       import: './src/controller.js',

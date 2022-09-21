@@ -1,5 +1,3 @@
-import { populateAllGamesController } from './controller.js';
-import { loadGamesView } from './view.js';
 window.addEventListener('load', function () {
   initRouter();
 });
@@ -25,7 +23,7 @@ function initRouter() {
   /**
    * Navigate based on hash change
    */
-  async function navigate() {
+  function navigate() {
     if (location.hash === '#puzzle') {
       try {
         const replayButton = querySelector('#replayButton');
@@ -40,7 +38,6 @@ function initRouter() {
       puzAuthor.classList.remove('displayNone');
       puzCopy.classList.remove('displayNone');
     } else if (location.hash === '#signin') {
-      unsubscribe();
       gamesPanel.classList.add('slideOut');
       appContainer.classList.add('slideIn');
       scores.classList.remove('displayFlex');
@@ -54,9 +51,6 @@ function initRouter() {
       kbContainer.classList.add('displayNone');
       splash.classList.remove('displayNone');
     } else if (location.hash === '#games') {
-      await populateAllGamesController().then((gamesObj) => {
-        loadGamesView(gamesObj);
-      });
       try {
         gamesDialog.close();
       } catch (err) {

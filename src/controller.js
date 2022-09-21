@@ -1,5 +1,10 @@
 import { db, app, auth, functions, messaging } from './firebase-init.js';
-import { authChangeView, signedOutView, showPuzzleView } from './view.js';
+import {
+  authChangeView,
+  signedOutView,
+  showPuzzleView,
+  loadGamesView,
+} from './view.js';
 import {
   getDatabase,
   ref,
@@ -21,6 +26,7 @@ import {
   doc,
   onSnapshot,
   query,
+  where,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 
@@ -89,19 +95,19 @@ function getCurrentGameController() {
 }
 
 /**
+ * Set the currentGame. Should be used by all external modules.
+ * @param {object} game Game with some parameters changed or added
+ */
+function setCurrentGameController(game) {
+  currentGame = game;
+}
+
+/**
  * Get the currentUser. Should be used by all external modules.
  * @returns {Object} Returns currentUser or null
  */
 function getCurrentUserController() {
   return currentUser;
-}
-
-/**
- * Get the allUsers Object. Should be used by all external modules.
- * @returns {Object} Returns allUsers Object
- */
-function getAllUsersController() {
-  return allUsers;
 }
 
 /**
@@ -151,6 +157,7 @@ function authState(state) {
 // when connection/disconnection with app is made.
 // If no user is logged in, this does nothing.
 onValue(ref(dbRT, '.info/connected'), (snapshot) => {
+  console.log('connected notification fired. Connected: ', `${snapshot.val()}`);
   const uid = auth.currentUser ? auth.currentUser.uid : null;
   if (snapshot.val() === false) {
     return;
@@ -164,28 +171,25 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
   }
 });
 
-// handles change to database just before auth state changes,
-// allowing permission to make the change.
-beforeAuthStateChanged(auth, (user) => {
-  const uid = auth.currentUser ? auth.currentUser.uid : null;
-  if (uid) {
-    set(ref(dbRT, `/users/${uid}`), authState('offline'));
-  }
-});
+// // handles change to database just before auth state changes,
+// // allowing permission to make the change.
+// beforeAuthStateChanged(auth, (user) => {
+//   const uid = auth.currentUser ? auth.currentUser.uid : null;
+//   if (uid) {
+//     set(ref(dbRT, `/users/${uid}`), authState('offline'));
+//   }
+// });
 
 onAuthStateChanged(auth, (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user ID: ', uid);
-  const authStateChanged = httpsCallable(functions, 'authStateChanged');
-  authStateChanged(user)
-    .then((result) => {
+  const authChanged = httpsCallable(functions, 'authChanged');
+  authChanged()
+    .then(async (result) => {
       console.log(result);
-      return;
-    })
-    .then(() => {
-      // Create a reference to this user's specific status node.
-      // This is where we will store data about being online/offline.
-      set(ref(dbRT, `/users/${uid}`), authState('online'));
+      if (result) {
+        await set(ref(dbRT, `/users/${result.data}`), authState('online'));
+      }
       return;
     })
     .then(() => {
@@ -195,10 +199,15 @@ onAuthStateChanged(auth, (user) => {
       return;
     })
     .then(() => {
+      populateAllGames().then((gamesObj) => {
+        loadGamesView(gamesObj);
+      });
       generateMessagingToken();
     })
     .catch((err) => {
-      console.log('error: ', err);
+      console.log('Error code: ', err.code);
+      console.log('Error message: ', err.message);
+      console.log('Error details: ', err.details);
     });
 });
 
@@ -284,10 +293,11 @@ function populateAllUsersController() {
  * from firestore and return the list.
  * @returns Object containing all games by gameId
  */
-function populateAllGamesController() {
+function populateAllGames() {
+  console.log('Hello from populateAllGames.');
   const q = query(
     collection(db, 'games'),
-    where('viewableBy', 'array-contains', `${currentUser}`)
+    where('viewableBy', 'array-contains', `${currentUser.uid}`)
   );
   return getDocs(q)
     .then((snapshot) => {
@@ -345,8 +355,8 @@ function subscribeToGame(gameId) {
       }
       idxArray = [];
       clueNumIndices = {};
-      columns = game.puzzle.cols;
-      myTurn = currentUser.uid === game.nextTurn;
+      columns = currentGame.puzzle.cols;
+      myTurn = currentUser.uid === currentGame.nextTurn;
       showPuzzleView(currentGame);
     },
     (error) => {
@@ -470,8 +480,6 @@ export {
   startNewGameController,
   getCurrentUserController,
   populateAllUsersController,
-  getAllUsersController,
-  populateAllGamesController,
   getAllGamesController,
   fetchPuzzleController,
   savePuzzleController,
@@ -480,6 +488,7 @@ export {
   getIdxArrayController,
   setIdxArrayController,
   getCurrentGameController,
+  setCurrentGameController,
   enterLetterController,
   abandonCurrentGameController,
 };

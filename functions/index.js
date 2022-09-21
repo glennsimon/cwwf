@@ -48,11 +48,11 @@ exports.onUserStatusChanged = functions.database
     const newValue = change.after.val();
     const oldValue = change.before.val();
 
-    // console.log('oldValue: ', oldValue);
-    // console.log('newValue: ', newValue);
+    console.log('oldValue: ', oldValue);
+    console.log('newValue: ', newValue);
     // console.log(context);
-    functions.logger.log('oldValue: ', oldValue);
-    functions.logger.log('newValue: ', newValue);
+    // functions.logger.log('oldValue: ', oldValue);
+    // functions.logger.log('newValue: ', newValue);
     // If the current timestamp for this data is newer than
     // the data that triggered this event, we exit this function.
     if (
@@ -68,34 +68,41 @@ exports.onUserStatusChanged = functions.database
     return db.doc(`users/${context.params.uid}`).set(newValue, { merge: true });
   });
 
-exports.authStateChanged = functions.https.onCall((user, context) => {
-  if (user) {
+exports.authChanged = functions.https.onCall(async (data, context) => {
+  functions.logger.log(
+    'From authChanged. context.auth.token: ',
+    context.auth.token
+  );
+  if (context.auth.token.uid) {
     // User is signed in. Updates every time the user signs in, in case there
     // are changes to photo or whatever.
-    const uid = user.uid;
+    const uid = context.auth.token.uid;
     const userData = {};
-    userData.displayName = user.displayName;
-    userData.photoURL = user.photoURL;
-    userData.providerId = user.providerData[0].providerId;
+    userData.displayName = context.auth.token.name
+      ? context.auth.token.name
+      : null;
+    userData.photoURL = context.auth.token.picture
+      ? context.auth.token.picture
+      : null;
     userData.uid = uid;
     userData.privateData = {
-      email: user.email,
-      emailVerified: user.emailVerified,
-      phoneNumber: user.phoneNumber,
-      providerData: user.providerData,
-      providerId: user.providerId,
+      email: context.auth.token.email ? context.auth.token.email : null,
+      emailVerified: context.auth.token.email_verified
+        ? context.auth.token.email_verified
+        : null,
     };
-    return db
+    await db
       .doc(`/users/${uid}`)
       .set(userData, { merge: true })
       .then(() => {
-        return `${uid} updated and registered as logged in`;
+        return uid;
       })
       .catch((err) => {
         console.log('error: ', err);
       });
+    return uid;
   }
-  return new Promise((resolve) => resolve('no user is logged in'));
+  return;
 });
 
 /**
