@@ -56,6 +56,7 @@ const logo = document.getElementById('logo');
 const replayButton = document.getElementById('replayButton');
 
 let currentCell = null;
+let acrossWord = true;
 // let currentOpponent = null;
 // let allUsers = null;
 
@@ -613,6 +614,7 @@ function updateScoreboard(game) {
  */
 function undoEntry() {
   console.log('Hello from undoEntry.');
+  const columns = getColumnsController();
   if (currentCell) {
     let row = currentCell.parentElement.rowIndex;
     let col = currentCell.cellIndex;
@@ -670,6 +672,8 @@ function getCellDim() {
 function clearLetters() {
   console.log('Hello from clearLetters.');
   const idxArray = getIdxArrayController();
+  const game = getCurrentGameController();
+  const columns = getColumnsController();
   for (const index of idxArray) {
     if (game.puzzle.grid[index].status === 'locked') continue;
     game.puzzle.grid[index].guess = '';
@@ -698,7 +702,7 @@ function selectAcross(cell) {
   clearHighlights();
   const idxArray = getWordBlock(cell, 'across');
   setIdxArrayController(idxArray);
-  currentClue = game.puzzle.grid[idxArray[0]].clueNum;
+  const currentClue = game.puzzle.grid[idxArray[0]].clueNum;
   for (const clue of acrossClues.children) {
     const clueNumStr = clue.children[0].textContent.split('.')[0];
     if (clueNumStr === currentClue.toString()) {
@@ -747,7 +751,7 @@ function selectDown(cell) {
   const idxArray = getWordBlock(cell, 'down');
   setIdxArrayController(idxArray);
   // get the number of the clue number
-  currentClue = game.puzzle.grid[idxArray[0]].clueNum;
+  const currentClue = game.puzzle.grid[idxArray[0]].clueNum;
   for (const clue of downClues.children) {
     const clueNumStr = clue.children[0].textContent.split('.')[0];
     if (clueNumStr === currentClue.toString()) {
@@ -789,6 +793,8 @@ function getWordBlock(cell, direction) {
   console.log('Hello from getWordBlock.');
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
+  const game = getCurrentGameController();
+  const columns = getColumnsController();
   let index = row * columns + col;
   const indexArray = [];
   if (direction === 'across') {
@@ -927,6 +933,7 @@ function enterLetter(event) {
   console.log('Hello from enterLetter.');
   const idxArray = getIdxArrayController();
   const game = getCurrentGameController();
+  const columns = getColumnsController();
   if (!keyboard.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
       playWordController();
@@ -963,7 +970,7 @@ function enterLetter(event) {
         // alert('Sorry, that square is locked by a previous answer');
         return;
       }
-      enterLetterController(letter.toUpperCase());
+      enterLetterController(letter.toUpperCase(), index);
       letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
       letterDiv.classList.add('marginAuto');
       currentCell.children[0].replaceChild(

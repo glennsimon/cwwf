@@ -448,9 +448,10 @@ function startNewGameController(gameStartParameters) {
 
 /**
  * Enter a letter into the currentGame as a guess.
- * @param {string} letter
+ * @param {string} letter Letter to be entered into the square
+ * @param {number} index Index of square
  */
-function enterLetterController(letter) {
+function enterLetterController(letter, index) {
   currentGame.puzzle.grid[index].guess = letter;
 }
 
