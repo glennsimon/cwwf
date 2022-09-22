@@ -542,11 +542,12 @@ function cellClicked(event) {
   if (cell.className === 'black') {
     return;
   }
-  if (!getIdxArrayController().includes(index)) {
-    clearLetters();
-  }
+  // TODO: uncomment below if clearing all letters from previous selection is desired
+  // if (!getIdxArrayController().includes(index)) {
+  //   clearLetters();
+  // }
   if (currentCell && currentCell === cell) {
-    clearLetters();
+    // clearLetters();
     acrossWord = !acrossWord;
   }
   setIdxArrayController([]);

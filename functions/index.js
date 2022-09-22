@@ -306,36 +306,36 @@ exports.checkAnswer = functions.https.onCall((answerObj, context) => {
     .get()
     .then((snap) => {
       const game = snap.data();
-      console.log('answerObj: ', answerObj);
-      for (let index = 0; index < answerObj.guess.length; index++) {
-        const correctValue = game.answers[answerObj.idxArray[index]];
-        const guess = answerObj.guess[index];
-        console.log('Correct letter: ', correctValue);
-        console.log('Guess: ', guess);
-        if (correctValue !== guess) {
-          game.nextTurn = answerObj.myOpponentUid;
-          // save the modified game
-          snap.ref.set(game, { merge: true });
-          return { correctAnswer: false };
-        }
-      }
+      const idxArray = answerObj.idxArray;
+      const returnObj = { correctAnswer: true };
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
-      game.puzzle.completedClues[direction].push(clueNumber);
-      for (let index = 0; index < idxArray.length; index++) {
+      const player =
+        game.initiator.uid === answerObj.myUid ? 'initiator' : 'opponent';
+      console.log('answerObj: ', answerObj);
+      for (let index = 0; index < answerObj.guess.length; index++) {
         const gridElement = game.puzzle.grid[idxArray[index]];
+        const correctValue = game.answers[answerObj.idxArray[index]];
         const guess = answerObj.guess[index];
-        const player =
-          game.initiator.uid === answerObj.myUid ? 'initiator' : 'opponent';
-        gridElement.value = guess;
-        if (gridElement.status === 'locked') {
-          game[player].score += scoreValues[guess];
+        gridElement.guess = guess;
+        gridElement.value = correctValue;
+        console.log('Correct letter: ', correctValue);
+        console.log('Guess: ', guess);
+        if (correctValue === guess) {
+          if (gridElement.status === 'locked') {
+            game[player].score += scoreValues[guess];
+          } else {
+            game[player].score += scoreCell(game, direction, index);
+            game.emptySquares--;
+            gridElement.bgColor = game[player].bgColor;
+            gridElement.status = 'locked';
+          }
         } else {
-          game[player].score += scoreCell(game, direction, index);
-          game.emptySquares--;
-          gridElement.bgColor = game[player].bgColor;
-          gridElement.status = 'locked';
+          returnObj.correctAnswer = false;
         }
+      }
+      if (returnObj.correctAnswer) {
+        game.puzzle.completedClues[direction].push(clueNumber);
       }
       if (game.emptySquares === 0) {
         if (game[me].score > game[they].score) {
@@ -350,7 +350,7 @@ exports.checkAnswer = functions.https.onCall((answerObj, context) => {
       game.nextTurn = answerObj.myOpponentUid;
       // save the modified game
       snap.ref.set(game, { merge: true });
-      return { correctAnswer: true };
+      return returnObj;
     });
 });
 
@@ -372,11 +372,11 @@ function scoreCell(game, direction, index) {
 
   for (const idx of orthoWordArray) {
     if (idx === index) {
-      addedScore += 2 * scoreValues[currentGame.puzzle.grid[idx].value];
-    } else if (currentGame.puzzle.grid[idx].status === 'locked') {
-      addedScore += scoreValues[currentGame.puzzle.grid[idx].value];
+      addedScore += 2 * scoreValues[game.puzzle.grid[idx].value];
+    } else if (game.puzzle.grid[idx].status === 'locked') {
+      addedScore += scoreValues[game.puzzle.grid[idx].value];
     } else {
-      return scoreValues[currentGame.puzzle.grid[index].value];
+      return scoreValues[game.puzzle.grid[index].value];
     }
   }
   return addedScore;
@@ -410,7 +410,7 @@ function getOrthoWordArray(game, square, direction, index) {
     }
     while (index < rows * cols && !game.puzzle.grid[index].black) {
       orthoWordArray.push(index);
-      index += columns;
+      index += cols;
     }
   }
   return orthoWordArray;
