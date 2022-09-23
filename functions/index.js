@@ -179,7 +179,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
       // console.log(seedObject);
       return newPuzzle(seedObject);
     })
-    .then((gameFromWeb) => {
+    .then(async (gameFromWeb) => {
       const game = parsePuzzle(gameFromWeb);
       game.viewableBy = [
         `${gameStartParameters.initiator.uid}`,
@@ -203,7 +203,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
       // console.log('New parsed puzzle: ', game);
       const gameObj = {};
       gameObj.game = game;
-      gameObj.gameId = newGameId(game);
+      gameObj.gameId = await newGameId(game);
       return gameObj;
     })
     .catch((error) => {
@@ -285,14 +285,16 @@ function parsePuzzle(puzzle) {
  * @param {Object} game
  * @returns {string}
  */
-async function newGameId(game) {
-  const docRef = await db
+function newGameId(game) {
+  return db
     .collection('/games/')
     .add(game)
+    .then((docRef) => {
+      return docRef.id;
+    })
     .catch((err) => {
       console.log('Error saving new game: ', err);
     });
-  return docRef.id;
 }
 /**
  * Firebase Cloud Function which returns the result of checking

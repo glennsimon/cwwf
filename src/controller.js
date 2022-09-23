@@ -280,7 +280,9 @@ function populateAllUsersController() {
       }
       const usersObj = {};
       snapshot.docs.forEach((doc) => {
-        usersObj[doc.id] = doc.data();
+        // console.log(doc.data());
+        const user = doc.data();
+        usersObj[user.uid] = user;
       });
       allUsers = usersObj;
       return usersObj;

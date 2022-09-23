@@ -144,14 +144,21 @@ headerSignin.addEventListener('click', () => {
  */
 dialogList.addEventListener('click', async (event) => {
   console.log('User selected opponent to start a new game.');
+  const currentUser = getCurrentUserController();
+  const userList = await populateAllUsersController();
   const gameStartParameters = {};
-  gameStartParameters.initiator = getCurrentUserController();
+  gameStartParameters.initiator = {};
+  gameStartParameters.initiator.uid = currentUser.uid;
+  gameStartParameters.initiator.displayName = currentUser.displayName;
   // TODO: selecting the right target may need fixing - while loop?
   let target = event.target.parentElement;
-  if (target.id === '') {
+  // trying a fix
+  while (target.id === '') {
     target = target.parentElement;
   }
-  gameStartParameters.opponent = await populateAllUsersController()[target.id];
+  gameStartParameters.opponent = {};
+  gameStartParameters.opponent.uid = userList[target.id].uid;
+  gameStartParameters.opponent.displayName = userList[target.id].displayName;
   let difficulty = radioMed.parentElement.classList.contains('is-checked')
     ? 'medium'
     : 'easy';
@@ -181,10 +188,11 @@ function closeGamesDialog() {
  */
 startGameButton.addEventListener('click', async () => {
   console.log('startGameButton clicked.');
-  if (getCurrentUserController()) {
+  const currentUser = getCurrentUserController();
+  if (currentUser) {
     // user is logged in
     const usersObj = await populateAllUsersController();
-    loadUserList(usersObj);
+    loadUserList(usersObj, currentUser);
     gameOverHeading.classList.add('displayNone');
     winMessage.classList.add('displayNone');
     gamesDialog.children[0].classList.add('padding0', 'height100pct');
@@ -202,10 +210,10 @@ startGameButton.addEventListener('click', async () => {
 /**
  * Load list of potential opponents with list of all firebase users.
  * @param {Object} usersObj Object containing all users by uid
+ * @param {object} currentUser Current User
  */
-function loadUserList(usersObj) {
+function loadUserList(usersObj, currentUser) {
   console.log('Hello from loadUserList.');
-  const currentUser = getCurrentUserController();
   let userList = '';
   if (usersObj.empty) {
     console.warn('No users exist yet.');
@@ -511,13 +519,13 @@ function showPuzzleView(game) {
   oppName.innerText = oppNickname;
   if (game.emptySquares === 0) {
     let result = 'YOU WON!!';
-    if (game[me].score < currentGame[they].score) {
+    if (game[me].score < game[they].score) {
       result = 'You lost';
     } else {
       result = 'Tie game!';
     }
     if (!game.hideReplay) {
-      showReplayDialog(currentGame, result);
+      showReplayDialog(game, result);
     }
   }
   updateScoreboard(game);
@@ -616,6 +624,7 @@ function updateScoreboard(game) {
 function undoEntry() {
   console.log('Hello from undoEntry.');
   const columns = getColumnsController();
+  const game = getCurrentGameController();
   if (currentCell) {
     let row = currentCell.parentElement.rowIndex;
     let col = currentCell.cellIndex;
@@ -1035,7 +1044,6 @@ const keyList = keyboard.getElementsByClassName('kbButton');
 for (const node of keyList) {
   node.addEventListener('click', enterLetter);
 }
-document.getElementById('backspace').addEventListener('click', undoEntry);
 document.getElementById('enter').addEventListener('click', playWordController);
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
 
