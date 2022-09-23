@@ -1047,10 +1047,6 @@ function resizePuzzle() {
   }
 }
 
-window.addEventListener('load', () => {
-  populateAllGamesController();
-});
-
 document.addEventListener('keyup', enterLetter);
 window.addEventListener('resize', resizePuzzle);
 const keyList = keyboard.getElementsByClassName('kbButton');
