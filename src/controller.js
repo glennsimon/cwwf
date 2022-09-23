@@ -183,26 +183,26 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
 onAuthStateChanged(auth, (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user ID: ', uid);
+  authChangeView(user);
+  previousUser = currentUser;
+  currentUser = user;
+  if (!uid) return;
   const authChanged = httpsCallable(functions, 'authChanged');
   authChanged()
     .then(async (result) => {
       console.log(result);
-      if (result) {
+      if (result.data) {
         await set(ref(dbRT, `/users/${result.data}`), authState('online'));
       }
       return;
     })
     .then(() => {
-      authChangeView(user);
-      previousUser = currentUser;
-      currentUser = user;
+      generateMessagingToken();
       return;
     })
     .then(() => {
-      populateAllGames().then((gamesObj) => {
-        loadGamesView(gamesObj);
-      });
-      generateMessagingToken();
+      populateAllGamesController();
+      return;
     })
     .catch((err) => {
       console.log('Error code: ', err.code);
@@ -254,8 +254,8 @@ function authButtonClickedController() {
     signOut(auth)
       .then(() => {
         // Sign-out successful.
-        signedOutView();
-        location.hash = '#signin';
+        // signedOutView();
+        // location.hash = '#signin';
         return;
       })
       .catch((error) => {
@@ -295,8 +295,8 @@ function populateAllUsersController() {
  * from firestore and return the list.
  * @returns Object containing all games by gameId
  */
-function populateAllGames() {
-  console.log('Hello from populateAllGames.');
+function populateAllGamesController() {
+  console.log('Hello from populateAllGamesController.');
   const q = query(
     collection(db, 'games'),
     where('viewableBy', 'array-contains', `${currentUser.uid}`)
@@ -313,6 +313,9 @@ function populateAllGames() {
       });
       allGames = gamesObj;
       return gamesObj;
+    })
+    .then((gamesObj) => {
+      loadGamesView(gamesObj);
     })
     .catch((error) => console.log('Error getting list of games: ', error));
 }
@@ -467,7 +470,7 @@ async function savePuzzleController() {
 
 function abandonCurrentGameController() {
   const abandonObj = {};
-  abandonObj.gameId = currentPuzzleId;
+  abandonObj.gameId = currentGameId;
   abandonObj.opponentUid = myOpponentUid;
   abandonObj.myUid = currentUser.uid;
   const abandonGame = httpsCallable(functions, 'abandonGame');
@@ -483,6 +486,7 @@ export {
   startNewGameController,
   getCurrentUserController,
   populateAllUsersController,
+  populateAllGamesController,
   getAllGamesController,
   fetchPuzzleController,
   savePuzzleController,

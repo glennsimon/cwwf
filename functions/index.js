@@ -69,11 +69,7 @@ exports.onUserStatusChanged = functions.database
   });
 
 exports.authChanged = functions.https.onCall(async (data, context) => {
-  functions.logger.log(
-    'From authChanged. context.auth.token: ',
-    context.auth.token
-  );
-  if (context.auth.token.uid) {
+  if (context.auth && context.auth.token && context.auth.token.uid) {
     // User is signed in. Updates every time the user signs in, in case there
     // are changes to photo or whatever.
     const uid = context.auth.token.uid;
@@ -102,7 +98,7 @@ exports.authChanged = functions.https.onCall(async (data, context) => {
       });
     return uid;
   }
-  return;
+  return null;
 });
 
 /**

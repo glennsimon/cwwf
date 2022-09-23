@@ -1,3 +1,5 @@
+import { populateAllGamesController } from './controller.js';
+
 window.addEventListener('load', function () {
   initRouter();
 });
@@ -17,6 +19,7 @@ function initRouter() {
   const clueContainer = document.getElementById('clueContainer');
   const kbContainer = document.getElementById('kbContainer');
   const splash = document.getElementById('splash');
+  const headerSignin = document.getElementById('headerSignin');
 
   window.addEventListener('hashchange', navigate);
 
@@ -50,6 +53,7 @@ function initRouter() {
       clueContainer.classList.add('displayNone');
       kbContainer.classList.add('displayNone');
       splash.classList.remove('displayNone');
+      headerSignin.classList.add('displayNone');
     } else if (location.hash === '#games') {
       try {
         gamesDialog.close();
@@ -64,6 +68,8 @@ function initRouter() {
       puzTitle.classList.add('displayNone');
       puzAuthor.classList.add('displayNone');
       puzCopy.classList.add('displayNone');
+      headerSignin.classList.remove('displayNone');
+      populateAllGamesController();
     }
   }
 

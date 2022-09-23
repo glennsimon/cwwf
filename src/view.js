@@ -12,6 +12,7 @@ import {
   enterLetterController,
   abandonCurrentGameController,
   setCurrentGameController,
+  populateAllGamesController,
 } from './controller.js';
 
 import './styles/main.css';
@@ -70,6 +71,7 @@ logo.addEventListener('click', () => {
  * their current sign in status.
  */
 authButton.addEventListener('click', (event) => {
+  if (drawer.classList.contains('is-visible')) toggleDrawer();
   authButtonClickedController();
 });
 
@@ -88,13 +90,19 @@ function authChangeView(user) {
     location.hash = '#games';
     headerSignin.classList.add('displayNone');
   } else {
-    authButton.textContent = 'sign out';
+    authButton.textContent = 'sign in';
     profileName.textContent = 'N. E. Person';
-    avatar.src = user.photoURL = 'images/avatar_circle_black.png';
+    avatar.src = 'images/avatar_circle_black.png';
     headerSignin.classList.remove('displayNone');
     puzTitle.innerText = 'No puzzle loaded';
+    activeGamesContainer.innerHTML =
+      'You must sign in to see your active games';
+    pastGamesContainer.innerHTML =
+      'You must sign in to see your completed games';
+    clearPuzzle();
     location.hash = '#signin';
   }
+  if (drawer.classList.contains('is-visible')) toggleDrawer();
   // TODO: get rid of local variables - currentUser should be available only
   // in the controller
   // currentUser = user;
@@ -438,6 +446,7 @@ function showPuzzleView(game) {
   keyboard.classList.add('displayFlex');
   clueContainer.classList.remove('displayNone');
   splash.classList.add('displayNone');
+  concessionBtnContainer.classList.remove('displayNone');
 
   // create contents for across clues div
   for (const clue of game.puzzle.clues.across) {
@@ -1037,6 +1046,10 @@ function resizePuzzle() {
     }
   }
 }
+
+window.addEventListener('load', () => {
+  populateAllGamesController();
+});
 
 document.addEventListener('keyup', enterLetter);
 window.addEventListener('resize', resizePuzzle);
