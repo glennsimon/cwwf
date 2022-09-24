@@ -1,4 +1,7 @@
-import { populateAllGamesController } from './controller.js';
+import {
+  getCurrentUserController,
+  populateAllGamesController,
+} from './controller.js';
 
 window.addEventListener('load', function () {
   initRouter();
@@ -60,6 +63,9 @@ function initRouter() {
       } catch (err) {
         // do nothing, error OK
       }
+      if (!getCurrentUserController()) {
+        headerSignin.classList.remove('displayNone');
+      }
       gamesPanel.classList.remove('slideOut');
       appContainer.classList.remove('slideIn');
       concessionBtnContainer.classList.add('displayNone');
@@ -68,7 +74,6 @@ function initRouter() {
       puzTitle.classList.add('displayNone');
       puzAuthor.classList.add('displayNone');
       puzCopy.classList.add('displayNone');
-      headerSignin.classList.remove('displayNone');
       populateAllGamesController();
     }
   }

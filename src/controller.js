@@ -462,10 +462,32 @@ function enterLetterController(letter, index) {
 
 /**
  * Update the controller currentGame variable and save the game.
+ * @param {object} append Optional Object to append to game as game.append
  */
-async function savePuzzleController() {
+function savePuzzleController(append) {
   console.log('Hello from savePuzzleController.');
-  await setDoc(doc(db, 'games', currentGameId), currentGame, { merge: true });
+  if (append) {
+    appendObject(currentGame, append);
+  }
+  setDoc(doc(db, `games/${currentGameId}`), currentGame, { merge: true }).catch(
+    (err) => {
+      console.log('Error code: ', err.code);
+      console.log('Error message: ', err.message);
+      console.log('Error details: ', err.details);
+    }
+  );
+}
+
+/**
+ * Appends the append Object to the base Object.
+ * @param {object} base Base object to append to
+ * @param {object} append Object to append to base
+ */
+function appendObject(base, append) {
+  const keys = Object.keys(append);
+  keys.forEach((key) => {
+    base[key] = append[key];
+  });
 }
 
 function abandonCurrentGameController() {

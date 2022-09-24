@@ -13,6 +13,7 @@ import {
   abandonCurrentGameController,
   setCurrentGameController,
   populateAllGamesController,
+  savePuzzleController,
 } from './controller.js';
 
 import './styles/main.css';
@@ -361,13 +362,12 @@ pastGamesContainer.addEventListener('click', loadGame);
  * @returns null
  */
 function loadGame(event) {
-  console.log('User selected a past game to view.');
+  console.log('User selected a game to view.');
   let eventTarget = event.target;
   while (!eventTarget.id) {
     if (eventTarget.nodeName.toLowerCase() === 'ul') return;
     eventTarget = eventTarget.parentElement;
   }
-  concessionBtnContainer.classList.add('displayNone');
   puzTitle.innerText = 'Fetching data...';
   fetchPuzzleController(eventTarget.id);
 }
@@ -398,7 +398,7 @@ function showPuzzleView(game) {
 
   const cellDim = getCellDim();
   const tableDim = cellDim * game.puzzle.cols;
-  game.clueNumIndices = [];
+  game.clueNumIndices = {};
   let gridIndex = 0;
   for (let rowIndex = 0; rowIndex < game.puzzle.rows; rowIndex += 1) {
     const row = puzTable.insertRow(rowIndex);
@@ -535,7 +535,11 @@ function showPuzzleView(game) {
     }
     if (!game.hideReplay) {
       showReplayDialog(game, result);
+      savePuzzleController({ hideReplay: true });
     }
+    concessionBtnContainer.classList.add('displayNone');
+  } else {
+    concessionBtnContainer.classList.remove('displayNone');
   }
   updateScoreboard(game);
   // TODO: should this go here?
