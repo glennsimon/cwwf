@@ -15,6 +15,12 @@ window.addEventListener('load', function () {
   initApp();
 });
 
+/**
+ *  See https://github.com/firebase/firebaseui-web/blob/master/README.md
+ *  or https://firebase.google.com/docs/auth/web/firebaseui
+ *  for documentation
+ */
+
 /** Initialize after document loads */
 function initApp() {
   const ui = new firebaseui.auth.AuthUI(auth);
@@ -25,15 +31,15 @@ function initApp() {
       // Leave the lines as is for the providers you want to offer your users.
       firebase.auth.GoogleAuthProvider.PROVIDER_ID,
       firebase.auth.EmailAuthProvider.PROVIDER_ID,
-      // firebase.auth.FacebookAuthProvider.PROVIDER_ID,
+      firebase.auth.FacebookAuthProvider.PROVIDER_ID,
       // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
       // firebase.auth.GithubAuthProvider.PROVIDER_ID,
-      // firebase.auth.PhoneAuthProvider.PROVIDER_ID,
+      firebase.auth.PhoneAuthProvider.PROVIDER_ID,
     ],
     // Terms of service url.
-    tosUrl: './#tos',
+    tosUrl: () => (location.hash = '#tos'),
     // Privacy policy url.
-    privacyPolicyUrl: './#privacy',
+    privacyPolicyUrl: () => (location.hash = '#privacy'),
   };
 
   // The start method will wait until the DOM is loaded.

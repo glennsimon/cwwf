@@ -18,6 +18,7 @@ import {
 
 import './styles/main.css';
 
+//#region HTML element constants
 const authButton = document.getElementById('authButton');
 const drawer = document.getElementById('drawer');
 const profileName = document.getElementById('profileName');
@@ -56,6 +57,8 @@ const concessionBtnContainer = document.getElementById(
 const puzTitle = document.getElementById('puzTitle');
 const logo = document.getElementById('logo');
 const replayButton = document.getElementById('replayButton');
+const returnToSignin = document.getElementById('returnToSignin');
+//#endregion
 
 let currentCell = null;
 let acrossWord = true;
@@ -65,6 +68,8 @@ let acrossWord = true;
 logo.addEventListener('click', () => {
   location.hash = '#games';
 });
+
+returnToSignin.addEventListener('click', () => (location.hash = '#signin'));
 
 /**
  * Clicking the authButton on the drawer calls `authButtonClickedController`
@@ -101,7 +106,8 @@ function authChangeView(user) {
     pastGamesContainer.innerHTML =
       'You must sign in to see your completed games';
     clearPuzzle();
-    location.hash = '#signin';
+    if (location.hash !== '#tos' || location.hash !== '#privacy')
+      location.hash = '#signin';
   }
   if (drawer.classList.contains('is-visible')) toggleDrawer();
   // TODO: get rid of local variables - currentUser should be available only

@@ -31,6 +31,10 @@ select {
   align-self: flex-end;
 }
 
+.alignSelfCenter {
+  align-self: center;
+}
+
 .cursorPointer {
   cursor: pointer;
 }
@@ -71,6 +75,11 @@ select {
 }
 
 .displayNone {
+  display: none;
+}
+
+/* Increased specificity required for precedence */
+#returnToSignin.displayNone {
   display: none;
 }
 
