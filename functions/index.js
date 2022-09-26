@@ -316,42 +316,34 @@ exports.checkAnswer = functions.https.onCall((answerObj, context) => {
         const guess = answerObj.guess[index];
         if (correctValue !== guess) {
           returnObj.correctAnswer = false;
-          break;
         }
+      }
+      if (returnObj.correctAnswer) {
+        game.puzzle.completedClues[direction].push(clueNumber);
       }
       for (let index = 0; index < answerObj.guess.length; index++) {
         const gridElement = game.puzzle.grid[idxArray[index]];
         const correctValue = game.answers[idxArray[index]];
         const guess = answerObj.guess[index];
         gridElement.guess = guess;
-        gridElement.value = correctValue;
         console.log('Correct letter: ', correctValue);
         console.log('Guess: ', guess);
         if (correctValue === guess) {
-          if (gridElement.status === 'locked') {
+          gridElement.value = guess;
+          if (gridElement.status === 'locked' && returnObj.correctAnswer) {
             game[player].score += scoreValues[guess];
             console.log('letter score: ', scoreValues[guess]);
-          } else {
-            game[player].score += scoreCell(
-              game,
-              direction,
-              idxArray[index],
-              returnObj.correctAnswer
-            );
-            console.log(
-              'letter score: ',
-              scoreCell(game, direction, idxArray[index])
-            );
+          } else if (gridElement.status !== 'locked') {
+            game[player].score += scoreCell(game, direction, idxArray[index]);
+            // console.log(
+            //   'letter score: ',
+            //   scoreCell(game, direction, idxArray[index])
+            // );
             game.emptySquares--;
             gridElement.bgColor = game[player].bgColor;
             gridElement.status = 'locked';
           }
-        } else {
-          returnObj.correctAnswer = false;
         }
-      }
-      if (returnObj.correctAnswer) {
-        game.puzzle.completedClues[direction].push(clueNumber);
       }
       if (game.emptySquares === 0) {
         if (game[me].score > game[they].score) {
@@ -376,37 +368,34 @@ exports.checkAnswer = functions.https.onCall((answerObj, context) => {
  * @param {object} game game Object
  * @param {string} direction Direction of clue being solved ('across' or 'down')
  * @param {number} index index of puzzle grid square
- * @param {boolean} correctAnswer player answer is correct
  * @return {number} additional score due to completion of orthogonal word
  */
-function scoreCell(game, direction, index, correctAnswer) {
+function scoreCell(game, direction, index) {
   console.log('Hello from scoreCell.');
   // get direction for orthogonal word
   const orthoDir = direction === 'across' ? 'down' : 'across';
-  const square = game.puzzle.grid[index];
   const orthoWordArray = getOrthoWordArray(game, orthoDir, index);
   // console.log(orthoWordArray);
   // console.log('direction: ', direction);
   let addedScore = 0;
-  let orthoWordComplete = true;
   for (const idx of orthoWordArray) {
-    if (idx !== index) {
-      if (game.puzzle.grid[idx].status !== 'locked') {
-        orthoWordComplete = false;
-        break;
-      }
+    if (idx !== index && game.puzzle.grid[idx].status !== 'locked') {
+      addedScore = 0;
+      break;
     }
+    addedScore += scoreValues[game.puzzle.grid[idx].value];
   }
-  for (const idx of orthoWordArray) {
-    if (idx === index && orthoWordComplete) {
-      addedScore += 2 * scoreValues[game.puzzle.grid[idx].value];
-    } else if (orthoWordComplete) {
-      addedScore += scoreValues[game.puzzle.grid[idx].value];
-    } else {
-      return scoreValues[game.puzzle.grid[index].value];
-    }
-  }
-  return addedScore;
+  console.log('game.puzzle.grid[index].value: ', game.puzzle.grid[index].value);
+  console.log(
+    'scoreValues[game.puzzle.grid[index].value: ',
+    scoreValues[game.puzzle.grid[index].value]
+  );
+  console.log('added score: ', addedScore);
+  console.log(
+    'returned score: ',
+    addedScore + scoreValues[game.puzzle.grid[index].value]
+  );
+  return addedScore + scoreValues[game.puzzle.grid[index].value];
 }
 
 /**
@@ -426,7 +415,7 @@ function getOrthoWordArray(game, direction, index) {
     while (index % cols > 0 && !game.puzzle.grid[index - 1].black) {
       index--;
     }
-    while ((index + 1) % cols > 0 * columns && !game.puzzle.grid[index].black) {
+    while ((index + 1) % cols > 0 * cols && !game.puzzle.grid[index].black) {
       orthoWordArray.push(index);
       index++;
     }

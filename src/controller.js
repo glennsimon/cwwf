@@ -103,6 +103,22 @@ function setCurrentGameController(game) {
 }
 
 /**
+ * Get the value of acrossWord. Should be used by all external modules.
+ * @returns {boolean} true if across, false if down
+ */
+function getAcrossWordController() {
+  return acrossWord;
+}
+
+/**
+ * Set acrossWord. Should be used by all external modules.
+ * @param {boolean} across true if across, false if down
+ */
+function setAcrossWordController(across) {
+  acrossWord = across;
+}
+
+/**
  * Get the currentUser. Should be used by all external modules.
  * @returns {Object} Returns currentUser or null
  */
@@ -522,4 +538,6 @@ export {
   setCurrentGameController,
   enterLetterController,
   abandonCurrentGameController,
+  getAcrossWordController,
+  setAcrossWordController,
 };

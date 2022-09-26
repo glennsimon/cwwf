@@ -14,6 +14,8 @@ import {
   setCurrentGameController,
   populateAllGamesController,
   savePuzzleController,
+  setAcrossWordController,
+  getAcrossWordController,
 } from './controller.js';
 
 import './styles/main.css';
@@ -548,6 +550,7 @@ function showPuzzleView(game) {
     concessionBtnContainer.classList.remove('displayNone');
   }
   updateScoreboard(game);
+  console.log(game);
   // TODO: should this go here?
   location.hash = '#puzzle';
 }
@@ -561,7 +564,8 @@ function cellClicked(event) {
   const cell = event.target;
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
-  const index = row * getColumnsController() + col;
+  let acrossWord = getAcrossWordController();
+  // const index = row * getColumnsController() + col;
   // console.log(cell.cellIndex);
   // console.log(cell.parentElement.rowIndex);
   // console.log(event);
@@ -576,6 +580,7 @@ function cellClicked(event) {
   if (currentCell && currentCell === cell) {
     // clearLetters();
     acrossWord = !acrossWord;
+    setAcrossWordController(acrossWord);
   }
   setIdxArrayController([]);
   currentCell = cell;
