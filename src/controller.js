@@ -297,27 +297,29 @@ function populateAllUsersController() {
  */
 function populateAllGamesController() {
   console.log('Hello from populateAllGamesController.');
-  const q = query(
-    collection(db, 'games'),
-    where('viewableBy', 'array-contains', `${currentUser.uid}`)
-  );
-  return getDocs(q)
-    .then((snapshot) => {
-      if (snapshot.empty) {
-        console.warn('No games exist yet.');
-        return;
-      }
-      const gamesObj = {};
-      snapshot.docs.forEach((doc) => {
-        gamesObj[doc.id] = doc.data();
-      });
-      allGames = gamesObj;
-      return gamesObj;
-    })
-    .then((gamesObj) => {
-      loadGamesView(gamesObj);
-    })
-    .catch((error) => console.log('Error getting list of games: ', error));
+  if (currentUser) {
+    const q = query(
+      collection(db, 'games'),
+      where('viewableBy', 'array-contains', `${currentUser.uid}`)
+    );
+    return getDocs(q)
+      .then((snapshot) => {
+        if (snapshot.empty) {
+          console.warn('No games exist yet.');
+          return;
+        }
+        const gamesObj = {};
+        snapshot.docs.forEach((doc) => {
+          gamesObj[doc.id] = doc.data();
+        });
+        allGames = gamesObj;
+        return gamesObj;
+      })
+      .then((gamesObj) => {
+        loadGamesView(gamesObj);
+      })
+      .catch((error) => console.log('Error getting list of games: ', error));
+  }
 }
 
 /**

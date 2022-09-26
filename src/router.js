@@ -38,14 +38,14 @@ function initRouter() {
    */
   function navigate() {
     if (location.hash === '#puzzle') {
-      try {
-        const replayButton = querySelector('#replayButton');
-        if (!replayButton) {
-          gamesDialog.close();
-        }
-      } catch (err) {
-        // do nothing, error OK
-      }
+      // try {
+      //   const replayButton = querySelector('#replayButton');
+      //   if (!replayButton) {
+      //     gamesDialog.close();
+      //   }
+      // } catch (err) {
+      //   // do nothing, error OK
+      // }
       gamesPanel.classList.add('slideOut');
       appContainer.classList.add('slideIn');
       puzAuthor.classList.remove('displayNone');

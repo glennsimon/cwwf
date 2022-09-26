@@ -891,22 +891,24 @@ function showReplayDialog(game, result) {
   opponentList.classList.add('displayNone');
   gamesDialog.classList.remove('height80pct');
   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
-  let replayButton = document.getElementById('replayButton');
-  if (!replayButton) {
-    replayButton = document.createElement('button');
-    replayButton.setAttribute('id', 'replayButton');
-    replayButton.classList.add(
-      'mdl-button',
-      'mdl-js-button',
-      'mdl-button--raised',
-      'mdl-js-ripple-effect',
-      'mdl-button--accent',
-      'cursorPointer'
-    );
-    replayButton.innerText = 'Play Again!';
-    gamesDialog.children[0].appendChild(replayButton);
-    replayButton.addEventListener('click', replayOpponent);
-  }
+  replayButton.classList.remove('displayNone');
+  replayButton.addEventListener('click', replayOpponent);
+  // let replayButton = document.getElementById('replayButton');
+  // if (!replayButton) {
+  //   replayButton = document.createElement('button');
+  //   replayButton.setAttribute('id', 'replayButton');
+  //   replayButton.classList.add(
+  //     'mdl-button',
+  //     'mdl-js-button',
+  //     'mdl-button--raised',
+  //     'mdl-js-ripple-effect',
+  //     'mdl-button--accent',
+  //     'cursorPointer'
+  //   );
+  //   replayButton.innerText = 'Play Again!';
+  //   gamesDialog.children[0].appendChild(replayButton);
+  //   replayButton.addEventListener('click', replayOpponent);
+  // }
   if (game.difficulty === 'medium') {
     radioEasy.removeAttribute('checked');
     radioHard.removeAttribute('checked');

@@ -312,8 +312,16 @@ exports.checkAnswer = functions.https.onCall((answerObj, context) => {
         game.initiator.uid === answerObj.myUid ? 'initiator' : 'opponent';
       console.log('answerObj: ', answerObj);
       for (let index = 0; index < answerObj.guess.length; index++) {
+        const correctValue = game.answers[idxArray[index]];
+        const guess = answerObj.guess[index];
+        if (correctValue !== guess) {
+          returnObj.correctAnswer = false;
+          break;
+        }
+      }
+      for (let index = 0; index < answerObj.guess.length; index++) {
         const gridElement = game.puzzle.grid[idxArray[index]];
-        const correctValue = game.answers[answerObj.idxArray[index]];
+        const correctValue = game.answers[idxArray[index]];
         const guess = answerObj.guess[index];
         gridElement.guess = guess;
         gridElement.value = correctValue;
@@ -322,8 +330,18 @@ exports.checkAnswer = functions.https.onCall((answerObj, context) => {
         if (correctValue === guess) {
           if (gridElement.status === 'locked') {
             game[player].score += scoreValues[guess];
+            console.log('letter score: ', scoreValues[guess]);
           } else {
-            game[player].score += scoreCell(game, direction, index);
+            game[player].score += scoreCell(
+              game,
+              direction,
+              idxArray[index],
+              returnObj.correctAnswer
+            );
+            console.log(
+              'letter score: ',
+              scoreCell(game, direction, idxArray[index])
+            );
             game.emptySquares--;
             gridElement.bgColor = game[player].bgColor;
             gridElement.status = 'locked';
@@ -358,20 +376,31 @@ exports.checkAnswer = functions.https.onCall((answerObj, context) => {
  * @param {object} game game Object
  * @param {string} direction Direction of clue being solved ('across' or 'down')
  * @param {number} index index of puzzle grid square
+ * @param {boolean} correctAnswer player answer is correct
  * @return {number} additional score due to completion of orthogonal word
  */
-function scoreCell(game, direction, index) {
+function scoreCell(game, direction, index, correctAnswer) {
   console.log('Hello from scoreCell.');
   // get direction for orthogonal word
   const orthoDir = direction === 'across' ? 'down' : 'across';
   const square = game.puzzle.grid[index];
-  const orthoWordArray = getOrthoWordArray(game, square, orthoDir, index);
+  const orthoWordArray = getOrthoWordArray(game, orthoDir, index);
+  // console.log(orthoWordArray);
+  // console.log('direction: ', direction);
   let addedScore = 0;
-
+  let orthoWordComplete = true;
   for (const idx of orthoWordArray) {
-    if (idx === index) {
+    if (idx !== index) {
+      if (game.puzzle.grid[idx].status !== 'locked') {
+        orthoWordComplete = false;
+        break;
+      }
+    }
+  }
+  for (const idx of orthoWordArray) {
+    if (idx === index && orthoWordComplete) {
       addedScore += 2 * scoreValues[game.puzzle.grid[idx].value];
-    } else if (game.puzzle.grid[idx].status === 'locked') {
+    } else if (orthoWordComplete) {
       addedScore += scoreValues[game.puzzle.grid[idx].value];
     } else {
       return scoreValues[game.puzzle.grid[index].value];
@@ -384,12 +413,11 @@ function scoreCell(game, direction, index) {
  * Returns an array of indices of cells that make up a word block in
  * the current puzzle.
  * @param {object} game game Object
- * @param {object} square Object with square details at
  * @param {string} direction Direction (across or down)
  * @param {number} index index of puzzle grid square
  * @return {array} Array of indices that make up a word block
  */
-function getOrthoWordArray(game, square, direction, index) {
+function getOrthoWordArray(game, direction, index) {
   console.log('Hello from getOrthoWordArray.');
   const rows = game.puzzle.rows;
   const cols = game.puzzle.cols;

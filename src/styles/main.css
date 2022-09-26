@@ -83,6 +83,11 @@ select {
   display: none;
 }
 
+/* Increased specificity required for precedence */
+#replayButton.displayNone {
+  display: none;
+}
+
 .currCellHighlight {
   background-color: yellow;
 }
