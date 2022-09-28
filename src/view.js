@@ -251,9 +251,9 @@ function loadUserList(usersObj, currentUser) {
 </span>`;
       }
       userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-   <span class='mdl-list__item-primary-content'>
+   <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
      ${avatar}
-     <span>${user.displayName}</span>
+     <div class='overflowHidden' style='width: 115px;'>${user.displayName}</div>
      <span class='mdl-list__item-sub-title'>
        ${user.providerId ? user.providerId.split('.')[0] : 'none'}
      </span>

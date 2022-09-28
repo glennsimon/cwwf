@@ -300,6 +300,10 @@ select {
   background-color: rgba(100, 100, 100, 0.5);
 }
 
+.whiteSpaceNowrap {
+  white-space: nowrap;
+}
+
 .flexDirCol {
   flex-direction: column;
 }
