@@ -195,7 +195,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
       game.status = 'started';
       game.winner = null;
       game.nextTurn = gameStartParameters.initiator.uid;
-      game.start = Date(serverTimestamp());
+      game.start = Date.now();
       // console.log('New parsed puzzle: ', game);
       const gameObj = {};
       gameObj.game = game;

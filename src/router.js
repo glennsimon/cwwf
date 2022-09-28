@@ -15,9 +15,7 @@ function initRouter() {
   const gamesDialog = querySelector('#gamesDialog');
   const scores = querySelector('#scores');
   const concessionBtnContainer = querySelector('#concessionBtnContainer');
-  const puzTitle = querySelector('#puzTitle');
-  const puzAuthor = querySelector('#puzAuthor');
-  const puzCopy = querySelector('#puzCopy');
+  const puzzleInfo = document.getElementById('puzzleInfo');
   const puzTable = document.getElementById('puzTable');
   const clueContainer = document.getElementById('clueContainer');
   const kbContainer = document.getElementById('kbContainer');
@@ -48,8 +46,7 @@ function initRouter() {
       // }
       gamesPanel.classList.add('slideOut');
       appContainer.classList.add('slideIn');
-      puzAuthor.classList.remove('displayNone');
-      puzCopy.classList.remove('displayNone');
+      puzzleInfo.classList.remove('displayNone');
       headerSignin.classList.add('displayNone');
     } else if (location.hash === '#signin') {
       gamesPanel.classList.add('slideOut');
@@ -57,9 +54,7 @@ function initRouter() {
       scores.classList.remove('displayFlex');
       scores.classList.add('displayNone');
       concessionBtnContainer.classList.add('displayNone');
-      puzTitle.classList.add('displayNone');
-      puzAuthor.classList.add('displayNone');
-      puzCopy.classList.add('displayNone');
+      puzzleInfo.classList.add('displayNone');
       puzTable.classList.add('displayNone');
       clueContainer.classList.add('displayNone');
       kbContainer.classList.add('displayNone');
@@ -84,9 +79,7 @@ function initRouter() {
       concessionBtnContainer.classList.add('displayNone');
       scores.classList.remove('displayFlex');
       scores.classList.add('displayNone');
-      puzTitle.classList.add('displayNone');
-      puzAuthor.classList.add('displayNone');
-      puzCopy.classList.add('displayNone');
+      puzzleInfo.classList.add('displayNone');
       populateAllGamesController();
     } else if (location.hash === '#tos') {
       gamesPanel.classList.add('slideOut');
@@ -94,9 +87,7 @@ function initRouter() {
       scores.classList.remove('displayFlex');
       scores.classList.add('displayNone');
       concessionBtnContainer.classList.add('displayNone');
-      puzTitle.classList.add('displayNone');
-      puzAuthor.classList.add('displayNone');
-      puzCopy.classList.add('displayNone');
+      puzzleInfo.classList.add('displayNone');
       puzTable.classList.add('displayNone');
       clueContainer.classList.add('displayNone');
       kbContainer.classList.add('displayNone');
@@ -111,9 +102,7 @@ function initRouter() {
       scores.classList.remove('displayFlex');
       scores.classList.add('displayNone');
       concessionBtnContainer.classList.add('displayNone');
-      puzTitle.classList.add('displayNone');
-      puzAuthor.classList.add('displayNone');
-      puzCopy.classList.add('displayNone');
+      puzzleInfo.classList.add('displayNone');
       puzTable.classList.add('displayNone');
       clueContainer.classList.add('displayNone');
       kbContainer.classList.add('displayNone');

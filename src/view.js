@@ -292,6 +292,10 @@ async function loadGamesView(gamesObj) {
   let games = Object.keys(gamesObj);
   games.forEach((key) => {
     const game = gamesObj[key];
+    const startDate = new Date(game.start).toLocaleDateString('en-us', {
+      day: 'numeric',
+      month: 'short',
+    });
     let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
     if (game.status === 'started') {
       const myOpponent =
@@ -305,21 +309,19 @@ async function loadGamesView(gamesObj) {
   </div>
 </span>`;
       }
-      activeGamesHtml +=
-        // eslint-disable-next-line max-len
-        `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-   <span class='mdl-list__item-primary-content'>
-     ${avatar}
-     <span>${myOpponent.displayName}</span>
-     <span class='mdl-list__item-sub-title'>
-       ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
-     </span>
-   </span>
-   <span class='mdl-list__item-secondary-content'>
-     <span class='mdl-list__item-secondary-info'>Play</span>
-     <i class='material-icons'>grid_on</i>
-   </span>
- </li>`;
+      activeGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
+  <span class='mdl-list__item-primary-content'>
+    ${avatar}
+    <span>${myOpponent.displayName}</span>
+    <span class='mdl-list__item-sub-title'>
+      ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
+    </span>
+  </span>
+  <span class='mdl-list__item-secondary-content'>
+  <span class='mdl-list__item-secondary-info'>Started</span>
+  <span>${startDate}</span>
+  </span>
+</li>`;
     } else {
       const myOpponent =
         game.initiator.uid === currentUser.uid ? game.opponent : game.initiator;
@@ -340,14 +342,17 @@ async function loadGamesView(gamesObj) {
   </div>
 </span>`;
       }
-      pastGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line\
- cursorPointer'>
-   <span class='mdl-list__item-primary-content'>
-     ${avatar}
-     <span>${myOpponent.displayName}</span>
-     <span class='mdl-list__item-sub-title'>${result}</span>
-   </span>
- </li>`;
+      pastGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
+  <span class='mdl-list__item-primary-content'>
+    ${avatar}
+    <span>${myOpponent.displayName}</span>
+    <span class='mdl-list__item-sub-title'>${result}</span>
+  </span>
+    <span class='mdl-list__item-secondary-content'>
+    <span class='mdl-list__item-secondary-info'>Started</span>
+    <span>${startDate}</span>
+  </span>
+</li>`;
     }
   });
 

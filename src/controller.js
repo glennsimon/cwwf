@@ -26,6 +26,8 @@ import {
   doc,
   onSnapshot,
   query,
+  orderBy,
+  limit,
   where,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -316,7 +318,9 @@ function populateAllGamesController() {
   if (currentUser) {
     const q = query(
       collection(db, 'games'),
-      where('viewableBy', 'array-contains', `${currentUser.uid}`)
+      where('viewableBy', 'array-contains', `${currentUser.uid}`),
+      orderBy('start', 'desc'),
+      limit(10)
     );
     return getDocs(q)
       .then((snapshot) => {

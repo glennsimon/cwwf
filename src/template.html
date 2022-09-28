@@ -103,7 +103,7 @@
       </header>
       <div
         id="drawer"
-        class="mdl-layout__drawer mdl-color--blue-grey-800 mdl-color-text--blue-grey-50"
+        class="mdl-layout__drawer mdl-color--blue-grey-800 mdl-color-text--blue-grey-50 height100pct"
       >
         <header class="drawerHeader">
           <div id="closeDrawer" class="alignSelfEnd cursorPointer">
@@ -112,60 +112,49 @@
             >
           </div>
           <div class="picContainer">
-            <div>
-              <img
-                id="avatar"
-                class="photoCrop"
-                src="images/avatar_circle_black.png"
-                alt="profile picture"
-              />
-            </div>
+            <img
+              id="avatar"
+              class="photoCrop"
+              src="images/avatar_circle_black.png"
+              alt="profile picture"
+            />
           </div>
-          <div class="displayFlex">
-            <span id="profileName">N. E. Person</span>
-            <div class="mdl-layout-spacer"></div>
+          <span id="profileName" class="margin5pxAuto">N. E. Person</span>
+          <div id="authBtnContainer" class="margin5pxAuto">
             <button
-              id="accbtn"
-              class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"
+              id="authButton"
+              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
             >
-              <i class="material-icons" role="presentation">arrow_drop_down</i>
-              <span class="visuallyhidden">Accounts</span>
+              sign in
             </button>
-            <ul
-              class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
-              for="accbtn"
-            >
-              <li class="mdl-menu__item">
-                <button
-                  id="authButton"
-                  class="mdl-button mdl-js-button mdl-js-ripple-effect"
-                >
-                  Sign in
-                </button>
-              </li>
-            </ul>
           </div>
         </header>
-        <nav
-          class="displayFlex flexDirCol jpdy-navigation mdl-navigation mdl-color--blue-grey-800"
+        <div
+          id="drawerContent"
+          class="displayFlex flexDirCol flexGrow-1 spaceBetween"
         >
-          <div id="puzTitle" class="heading textAlignCenter colorWhite"></div>
-          <div id="puzAuthor" class="author colorWhite"></div>
-          <div id="puzCopy" class="copy"></div>
-          <div id="puzNotepad" class="displayNone"></div>
-          <div id="concessionBtnContainer" class="buttonIsolation displayNone">
+          <div id="puzzleInfo" class="displayFlex flexDirCol textAlignCenter">
+            <div id="puzTitle" class="fontWeightBold colorWhite"></div>
+            <div id="puzAuthor" class="author colorWhite"></div>
+            <div id="puzCopy" class="copy"></div>
+            <div id="puzNotepad" class="displayNone"></div>
+          </div>
+          <div
+            id="concessionBtnContainer"
+            class="textAlignCenter margin5pxAuto displayNone"
+          >
             <button
               id="concessionBtn"
               class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
             >
               abandon game
             </button>
-            <div>
+            <div class="margin10px">
               Warning! Pressing this button will immediately end the current
-              game and concede the win to your opponent.
+              game and give all remaining points to your opponent.
             </div>
           </div>
-        </nav>
+        </div>
       </div>
       <main class="mdl-layout__content mdl-color--grey-100">
         <div
@@ -458,7 +447,11 @@
         </div>
       </main>
     </div>
-    <dialog id="gamesDialog" class="mdl-dialog height80pct">
+    <dialog
+      id="gamesDialog"
+      class="mdl-dialog height80pct"
+      style="width: 300px"
+    >
       <div class="mdl-dialog__content displayFlex flexDirCol">
         <div class="closeDialogPosition close noOutline cursorPointer">
           <i class="material-icons">close</i>
@@ -473,9 +466,9 @@
         <div id="difficultyHeading" class="heading textAlignCenter">
           Difficulty level
         </div>
-        <div class="displayFlex">
+        <div class="displayFlex spaceAround">
           <label
-            class="mdl-radio mdl-js-radio mdl-js-ripple-effect width33pct"
+            class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
             for="radioEasy"
           >
             <input
@@ -489,7 +482,7 @@
             <span class="mdl-radio__label">EASY</span>
           </label>
           <label
-            class="mdl-radio mdl-js-radio mdl-js-ripple-effect width33pct"
+            class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
             for="radioMed"
           >
             <input
@@ -502,7 +495,7 @@
             <span class="mdl-radio__label">MED</span>
           </label>
           <label
-            class="mdl-radio mdl-js-radio mdl-js-ripple-effect width33pct"
+            class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
             for="radioHard"
           >
             <input
