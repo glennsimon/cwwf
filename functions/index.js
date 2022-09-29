@@ -2,7 +2,7 @@ const functions = require('firebase-functions');
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
 const gaxios = require('gaxios');
-const { serverTimestamp } = require('firebase/firestore');
+// const { serverTimestamp } = require('firebase/firestore');
 
 // admin.initializeApp();
 admin.initializeApp();
@@ -176,34 +176,68 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
       return newPuzzle(seedObject);
     })
     .then(async (gameFromWeb) => {
-      const game = parsePuzzle(gameFromWeb);
-      game.viewableBy = [
+      const batch = db.batch();
+      const gamesDocRef = db.collection('games').doc();
+      const gameListDataRef = db
+        .collection(`games/${gamesDocRef.id}/gameList/`)
+        .doc('data');
+      const gameHiddenAnswersRef = db.doc(
+        `games/${gamesDocRef.id}/hidden/answers/`
+      );
+
+      const gameListData = {};
+      gameListData.initiator = {};
+      gameListData.initiator.photoURL = gameStartParameters.initiator.photoURL
+        ? gameStartParameters.initiator.photoURL
+        : null;
+      gameListData.initiator.displayName =
+        gameStartParameters.initiator.displayName;
+      gameListData.initiator.uid = gameStartParameters.initiator.uid;
+      gameListData.opponent = {};
+      gameListData.opponent.photoURL = gameStartParameters.opponent.photoURL
+        ? gameStartParameters.opponent.photoURL
+        : null;
+      gameListData.opponent.displayName =
+        gameStartParameters.opponent.displayName;
+      gameListData.opponent.uid = gameStartParameters.opponent.uid;
+      gameListData.viewableBy = [
         `${gameStartParameters.initiator.uid}`,
         `${gameStartParameters.opponent.uid}`,
       ];
-      game.initiator = {};
-      game.initiator.uid = gameStartParameters.initiator.uid;
-      game.initiator.displayName = gameStartParameters.initiator.displayName;
-      game.initiator.bgColor = 'bgTransRed';
+      gameListData.start = Date.now();
+      batch.set(gameListDataRef, gameListData);
+
+      const answersObj = {};
+      answersObj.answerKey = gameFromWeb.grid;
+      batch.set(gameHiddenAnswersRef, answersObj);
+
+      const game = parsePuzzle(gameFromWeb);
+      Object.keys(gameListData).forEach((key) => {
+        game[key] = gameListData[key];
+      });
       game.initiator.score = 0;
-      game.opponent = {};
-      game.opponent.uid = gameStartParameters.opponent.uid;
-      game.opponent.displayName = gameStartParameters.opponent.displayName;
-      game.opponent.bgColor = 'bgTransBlue';
+      game.initiator.bgColor = 'bgTransRed';
       game.opponent.score = 0;
+      game.opponent.bgColor = 'bgTransBlue';
       game.difficulty = gameStartParameters.difficulty;
       game.status = 'started';
       game.winner = null;
       game.nextTurn = gameStartParameters.initiator.uid;
       game.start = Date.now();
       // console.log('New parsed puzzle: ', game);
+
+      batch.set(gamesDocRef, game);
+
+      await batch.commit();
+
       const gameObj = {};
       gameObj.game = game;
-      gameObj.gameId = await newGameId(game);
+      gameObj.gameId = gamesDocRef.id;
       return gameObj;
     })
     .catch((error) => {
-      console.error('Error fetching puzzle date: ', error);
+      functions.logger.error('Error fetching puzzle date: ', error);
+      // console.error('Error fetching puzzle date: ', error);
     });
 });
 
@@ -238,7 +272,6 @@ function parsePuzzle(puzzle) {
   const rows = puzzle.size.rows;
   const cols = puzzle.size.cols;
   const game = {};
-  game.answers = puzzle.grid;
   game.emptySquares = rows * cols;
   game.puzzle = {};
   game.puzzle.cols = cols;
@@ -255,6 +288,7 @@ function parsePuzzle(puzzle) {
   game.puzzle.completedClues.across = [];
   game.puzzle.completedClues.down = [];
   game.puzzle.grid = [];
+  game.clueNumIndices = {};
   for (let i = 0; i < puzzle.grid.length; i++) {
     game.puzzle.grid[i] = {};
     if (puzzle.grid[i] === '.') {
@@ -263,8 +297,12 @@ function parsePuzzle(puzzle) {
     } else {
       game.puzzle.grid[i].black = false;
       game.puzzle.grid[i].value = '';
-      game.puzzle.grid[i].clueNum =
-        puzzle.gridnums[i] === 0 ? '' : puzzle.gridnums[i];
+      if (puzzle.gridnums[i] === 0) {
+        game.puzzle.grid[i].clueNum = '';
+      } else {
+        game.puzzle.grid[i].clueNum = puzzle.gridnums[i].toString();
+        game.clueNumIndices[puzzle.gridnums[i].toString()] = i;
+      }
       game.puzzle.grid[i].status = 'free';
       game.puzzle.grid[i].circle = puzzle.circles && puzzle.circles[i] === 1;
     }
@@ -275,44 +313,47 @@ function parsePuzzle(puzzle) {
   return game;
 }
 
-/**
- * Adds puzzle difficulty and initiator and opponent information.
- * Returns the game id from firestore (/games/{id}).
- * @param {Object} game
- * @returns {string}
- */
-function newGameId(game) {
-  return db
-    .collection('/games/')
-    .add(game)
-    .then((docRef) => {
-      return docRef.id;
-    })
-    .catch((err) => {
-      console.log('Error saving new game: ', err);
-    });
-}
+// /**
+//  * Adds puzzle difficulty and initiator and opponent information.
+//  * Returns the game id from firestore (/games/{id}).
+//  * @param {Object} game
+//  * @returns {string}
+//  */
+// function newGameId(game) {
+//   return db
+//     .collection('/games/')
+//     .add(game)
+//     .then((docRef) => {
+//       return docRef.id;
+//     })
+//     .catch((err) => {
+//       console.log('Error saving new game: ', err);
+//     });
+// }
+
 /**
  * Firebase Cloud Function which returns the result of checking
  * the if answer is correct
  * @param {Object} answerObj Object containing player and difficulty information
  * @return {Object} Object with result of the checked answer
  */
-exports.checkAnswer = functions.https.onCall((answerObj, context) => {
-  return db
-    .doc(`games/${answerObj.gameId}`)
-    .get()
-    .then((snap) => {
-      const game = snap.data();
+exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
+  const gameRef = db.doc(`games/${answerObj.gameId}`);
+  const answersRef = db.doc(`games/${answerObj.gameId}/hidden/answers`);
+  const returnObj = { correctAnswer: true };
+  try {
+    await db.runTransaction(async (tx) => {
+      const game = (await tx.get(gameRef)).data();
+      const answers = (await tx.get(answersRef)).data();
       const idxArray = answerObj.idxArray;
-      const returnObj = { correctAnswer: true };
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
+
       const player =
         game.initiator.uid === answerObj.myUid ? 'initiator' : 'opponent';
       console.log('answerObj: ', answerObj);
       for (let index = 0; index < answerObj.guess.length; index++) {
-        const correctValue = game.answers[idxArray[index]];
+        const correctValue = answers.answerKey[idxArray[index]];
         const guess = answerObj.guess[index];
         if (correctValue !== guess) {
           returnObj.correctAnswer = false;
@@ -323,7 +364,7 @@ exports.checkAnswer = functions.https.onCall((answerObj, context) => {
       }
       for (let index = 0; index < answerObj.guess.length; index++) {
         const gridElement = game.puzzle.grid[idxArray[index]];
-        const correctValue = game.answers[idxArray[index]];
+        const correctValue = answers.answerKey[idxArray[index]];
         const guess = answerObj.guess[index];
         gridElement.guess = guess;
         console.log('Correct letter: ', correctValue);
@@ -357,9 +398,13 @@ exports.checkAnswer = functions.https.onCall((answerObj, context) => {
       }
       game.nextTurn = answerObj.myOpponentUid;
       // save the modified game
-      snap.ref.set(game, { merge: true });
-      return returnObj;
+      tx.update(gameRef, game);
     });
+    functions.logger.log('checkAnswer transaction success!');
+  } catch (error) {
+    functions.logger.error('checkAnswer transaction failure: ', error);
+  }
+  return returnObj;
 });
 
 /**
@@ -431,18 +476,19 @@ function getOrthoWordArray(game, direction, index) {
   return orthoWordArray;
 }
 
-exports.abandonGame = functions.https.onCall((abandonObj, context) => {
-  db.doc(`games/${abandonObj.gameId}`)
-    .get()
-    .then((doc) => {
-      const game = doc.data();
-      const answers = game.answers;
+exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
+  const gameRef = db.doc(`games/${abandonObj.gameId}`);
+  const answersRef = db.doc(`games/${abandonObj.gameId}/hidden/answers`);
+  try {
+    await db.runTransaction(async (tx) => {
+      const game = (await tx.get(gameRef)).data();
+      const answers = (await tx.get(answersRef)).data().answerKey;
       const they =
         game.initiator.uid === abandonObj.opponentUid
           ? 'initiator'
           : 'opponent';
       const me = they === 'initiator' ? 'opponent' : 'initiator';
-      // console.log('answerObj: ', abandonObj);
+      // console.log('abandonObj: ', abandonObj);
       for (let index = 0; index < answers.length; index++) {
         if (answers[index] === '.') continue;
         if (game.puzzle.grid[index].status === 'locked') continue;
@@ -461,13 +507,12 @@ exports.abandonGame = functions.https.onCall((abandonObj, context) => {
       } else if (game[me].score < game[they].score) {
         game.winner = abandonObj.opponentUid;
       }
-      return game;
-    })
-    .then((game) => {
-      db.doc(`games/${abandonObj.gameId}`).set(game, { merge: true });
-      return;
-    })
-    .catch((err) => {
-      console.log('Error abandoning game: ', err);
+      // save the modified game
+      tx.update(gameRef, game);
     });
+    functions.logger.log('abandonGame transaction success!');
+  } catch (error) {
+    functions.logger.error('abandonGame transaction failure: ', error);
+  }
+  return;
 });

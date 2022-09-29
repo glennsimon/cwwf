@@ -78,7 +78,6 @@ let columns = null;
 let currentClue = null;
 let idxArray = [];
 let myTurn = null;
-let clueNumIndices = {};
 // TODO: should this be tracked, and what can be done while offline?
 let online = false;
 
@@ -381,7 +380,6 @@ function subscribeToGame(gameId) {
         columns = currentGame.puzzle.cols;
       }
       idxArray = [];
-      clueNumIndices = {};
       columns = currentGame.puzzle.cols;
       myTurn = currentUser.uid === currentGame.nextTurn;
       showPuzzleView(currentGame);

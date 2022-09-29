@@ -167,6 +167,9 @@ dialogList.addEventListener('click', async (event) => {
   gameStartParameters.initiator = {};
   gameStartParameters.initiator.uid = currentUser.uid;
   gameStartParameters.initiator.displayName = currentUser.displayName;
+  gameStartParameters.initiator.photoURL = currentUser.photoURL
+    ? currentUser.photoURL
+    : null;
   // TODO: selecting the right target may need fixing - while loop?
   let target = event.target.parentElement;
   // trying a fix
@@ -176,6 +179,9 @@ dialogList.addEventListener('click', async (event) => {
   gameStartParameters.opponent = {};
   gameStartParameters.opponent.uid = userList[target.id].uid;
   gameStartParameters.opponent.displayName = userList[target.id].displayName;
+  gameStartParameters.opponent.photoURL = userList[target.id].photoURL
+    ? userList[target.id].photoURL
+    : null;
   let difficulty = radioMed.parentElement.classList.contains('is-checked')
     ? 'medium'
     : 'easy';
@@ -244,11 +250,9 @@ function loadUserList(usersObj, currentUser) {
     if (uid !== currentUser.uid) {
       let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
       if (user.photoURL) {
-        avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <div>
-    <img class='photoCrop' src='${user.photoURL}' alt='profile picture'>
-  </div>
-</span>`;
+        avatar = `<div>
+            <img class='photoCrop' src='${user.photoURL}' alt='profile picture'>
+          </div>`;
       }
       userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
    <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
@@ -305,7 +309,7 @@ async function loadGamesView(gamesObj) {
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <div>
-    <img class='photoCrop' src='${opponentPhoto}' alt='profile picture'>
+    <img src='${opponentPhoto}' alt='profile picture'>
   </div>
 </span>`;
       }
@@ -338,7 +342,7 @@ async function loadGamesView(gamesObj) {
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <div>
-    <img class='photoCrop' src='${opponentPhoto}' alt='profile picture'>
+    <img src='${opponentPhoto}' alt='profile picture'>
   </div>
 </span>`;
       }
@@ -411,7 +415,6 @@ function showPuzzleView(game) {
 
   const cellDim = getCellDim();
   const tableDim = cellDim * game.puzzle.cols;
-  game.clueNumIndices = {};
   let gridIndex = 0;
   for (let rowIndex = 0; rowIndex < game.puzzle.rows; rowIndex += 1) {
     const row = puzTable.insertRow(rowIndex);
@@ -440,7 +443,6 @@ function showPuzzleView(game) {
         squareDiv.appendChild(letterDiv);
         cell.appendChild(squareDiv);
         if (clueNumber !== '') {
-          game.clueNumIndices[clueNumber.toString()] = gridIndex;
           const clueNumDiv = document.createElement('div');
           clueNumDiv.classList.add('clueNumber');
           clueNumDiv.appendChild(document.createTextNode(clueNumber));

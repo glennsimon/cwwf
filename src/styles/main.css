@@ -60,13 +60,12 @@ select {
   align-self: center;
 }
 
-/* .photoCrop {
-  height: 100px;
-  width: 100px;
+.photoCrop {
+  height: 100%;
   margin: auto;
   border-radius: 50%;
   overflow: hidden;
-} */
+}
 
 .displayNone {
   display: none;
