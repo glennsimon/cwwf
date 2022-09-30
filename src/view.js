@@ -250,23 +250,25 @@ function loadUserList(usersObj, currentUser) {
     if (uid !== currentUser.uid) {
       let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
       if (user.photoURL) {
-        avatar = `<div>
-            <img class='photoCrop' src='${user.photoURL}' alt='profile picture'>
-          </div>`;
+        avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
+          <img src='${user.photoURL}' alt='profile picture'>
+        </span>`;
       }
       userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-   <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
-     ${avatar}
-     <div class='overflowHidden' style='width: 115px;'>${user.displayName}</div>
-     <span class='mdl-list__item-sub-title'>
-       ${user.providerId ? user.providerId.split('.')[0] : 'none'}
-     </span>
-   </span>
-   <span class='mdl-list__item-secondary-content'>
-     <span class='mdl-list__item-secondary-info'>Play</span>
-     <i class='material-icons'>grid_on</i>
-   </span>
- </li>`;
+        <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
+          ${avatar}
+          <div class='overflowHidden' style='width: 115px;'>${
+            user.displayName
+          }</div>
+          <span class='mdl-list__item-sub-title'>
+            ${user.providerId ? user.providerId.split('.')[0] : 'none'}
+          </span>
+        </span>
+        <span class='mdl-list__item-secondary-content'>
+          <span class='mdl-list__item-secondary-info'>Play</span>
+          <i class='material-icons'>grid_on</i>
+        </span>
+      </li>`;
     }
   });
   // allUsers = usersObj;
@@ -308,10 +310,8 @@ async function loadGamesView(gamesObj) {
         allUsers[myOpponent.uid] && allUsers[myOpponent.uid].photoURL;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <div>
-    <img src='${opponentPhoto}' alt='profile picture'>
-  </div>
-</span>`;
+          <img src='${opponentPhoto}' alt='profile picture'>
+        </span>`;
       }
       activeGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span class='mdl-list__item-primary-content'>

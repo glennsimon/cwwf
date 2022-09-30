@@ -154,7 +154,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
     .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
     .get()
     .then((doc) => {
-      return JSON.parse(doc.data().lookup);
+      return JSON.parse(doc.data().dates);
     })
     .then((library) => {
       let seedObject = {};

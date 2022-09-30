@@ -2,8 +2,10 @@
 **/old_node_modules
 .tmp/
 .firebase/
-dist/
-seed/
+./dist/
+./seed/
+./seed-new/
+./seed-clean/
 related_files/
 app.yaml
 **/service-account.json
