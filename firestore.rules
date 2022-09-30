@@ -19,5 +19,15 @@ service cloud.firestore {
       // Only a logged in user can create a new game
       allow create: if request.auth != null;
     }
+    match /gameListBuilder/{gameId} {
+      // Anybody can read all the games - there is no confidential information in them
+      allow read: if true;
+      // Only logged in users whose turn it is can update a game
+      allow update, delete: if request.auth != null
+        && ((resource.data.opponent.uid == request.auth.uid) ||
+        (resource.data.initiator.uid == request.auth.uid));
+      // Only a logged in user can create a new game
+      allow create: if request.auth != null;
+    }
   }
 }

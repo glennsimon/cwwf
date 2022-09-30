@@ -178,9 +178,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
     .then(async (gameFromWeb) => {
       const batch = db.batch();
       const gamesDocRef = db.collection('games').doc();
-      const gameListDataRef = db
-        .collection(`games/${gamesDocRef.id}/gameList/`)
-        .doc('data');
+      const gameListDataRef = db.doc(`gameListBuilder/${gamesDocRef.id}`);
       const gameHiddenAnswersRef = db.doc(
         `games/${gamesDocRef.id}/hidden/answers/`
       );
@@ -205,6 +203,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
         `${gameStartParameters.opponent.uid}`,
       ];
       gameListData.start = Date.now();
+      gameListData.status = 'started';
       batch.set(gameListDataRef, gameListData);
 
       const answersObj = {};
@@ -212,18 +211,18 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
       batch.set(gameHiddenAnswersRef, answersObj);
 
       const game = parsePuzzle(gameFromWeb);
-      Object.keys(gameListData).forEach((key) => {
-        game[key] = gameListData[key];
-      });
+      game.initiator = JSON.parse(JSON.stringify(gameListData.initiator));
       game.initiator.score = 0;
       game.initiator.bgColor = 'bgTransRed';
+      game.opponent = JSON.parse(JSON.stringify(gameListData.opponent));
       game.opponent.score = 0;
       game.opponent.bgColor = 'bgTransBlue';
+      game.viewableBy = gameListData.viewableBy;
       game.difficulty = gameStartParameters.difficulty;
       game.status = 'started';
       game.winner = null;
       game.nextTurn = gameStartParameters.initiator.uid;
-      game.start = Date.now();
+      game.start = gameListData.start;
       // console.log('New parsed puzzle: ', game);
 
       batch.set(gamesDocRef, game);
@@ -386,6 +385,7 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
           }
         }
       }
+      game.nextTurn = answerObj.myOpponentUid;
       if (game.emptySquares === 0) {
         if (game[me].score > game[they].score) {
           game.winner = game[me].uid;
@@ -395,10 +395,17 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
           game.winner = 'tie';
         }
         game.status = 'finished';
+        const gameListRef = db.doc(`gameListBuilder/${answerObj.gameId}`);
+        const gameListDoc = (await tx.get(gameListRef)).data();
+        gameListDoc.status = 'finished';
+        // console.log('gameListDoc: ', gameListDoc);
+
+        // save the modified game and the gameListBuilder doc
+        tx.update(gameRef, game).update(gameListRef, gameListDoc);
+      } else {
+        // save the modified game
+        tx.update(gameRef, game);
       }
-      game.nextTurn = answerObj.myOpponentUid;
-      // save the modified game
-      tx.update(gameRef, game);
     });
     functions.logger.log('checkAnswer transaction success!');
   } catch (error) {
@@ -479,10 +486,14 @@ function getOrthoWordArray(game, direction, index) {
 exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
   const gameRef = db.doc(`games/${abandonObj.gameId}`);
   const answersRef = db.doc(`games/${abandonObj.gameId}/hidden/answers`);
+  const gameListRef = db.doc(`gameListBuilder/${abandonObj.gameId}`);
   try {
     await db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
       const answers = (await tx.get(answersRef)).data().answerKey;
+      const gameListDoc = (await tx.get(gameListRef)).data();
+      gameListDoc.status = 'finished';
+      // console.log('gameListDoc: ', gameListDoc);
       const they =
         game.initiator.uid === abandonObj.opponentUid
           ? 'initiator'
@@ -507,8 +518,8 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
       } else if (game[me].score < game[they].score) {
         game.winner = abandonObj.opponentUid;
       }
-      // save the modified game
-      tx.update(gameRef, game);
+      // save the modified game and the gameListBuilder doc
+      tx.update(gameRef, game).update(gameListRef, gameListDoc);
     });
     functions.logger.log('abandonGame transaction success!');
   } catch (error) {

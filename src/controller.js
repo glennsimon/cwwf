@@ -316,18 +316,20 @@ function populateAllGamesController() {
   console.log('Hello from populateAllGamesController.');
   if (currentUser) {
     const q = query(
-      collection(db, 'games'),
+      collection(db, 'gameListBuilder'),
       where('viewableBy', 'array-contains', `${currentUser.uid}`),
       orderBy('start', 'desc'),
       limit(10)
     );
     return getDocs(q)
       .then((snapshot) => {
+        const gamesObj = {};
         if (snapshot.empty) {
           console.warn('No games exist yet.');
-          return;
+          // gamesObj.empty = 'empty';
+          // return gamesObj;
+          return null;
         }
-        const gamesObj = {};
         snapshot.docs.forEach((doc) => {
           gamesObj[doc.id] = doc.data();
         });
@@ -337,7 +339,11 @@ function populateAllGamesController() {
       .then((gamesObj) => {
         loadGamesView(gamesObj);
       })
-      .catch((error) => console.log('Error getting list of games: ', error));
+      .catch((err) => {
+        console.log('Error code: ', err.code);
+        console.log('Error message: ', err.message);
+        console.log('Error details: ', err.details);
+      });
   }
 }
 

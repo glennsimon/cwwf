@@ -341,9 +341,7 @@ async function loadGamesView(gamesObj) {
         allUsers[myOpponent.uid] && allUsers[myOpponent.uid].photoURL;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <div>
     <img src='${opponentPhoto}' alt='profile picture'>
-  </div>
 </span>`;
       }
       pastGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
