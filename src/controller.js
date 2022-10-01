@@ -1,10 +1,5 @@
 import { db, app, auth, functions, messaging } from './firebase-init.js';
-import {
-  authChangeView,
-  signedOutView,
-  showPuzzleView,
-  loadGamesView,
-} from './view.js';
+import { authChangeView, showPuzzleView, loadGamesView } from './view.js';
 import {
   getDatabase,
   ref,
@@ -13,11 +8,7 @@ import {
   set,
   serverTimestamp,
 } from 'firebase/database';
-import {
-  onAuthStateChanged,
-  beforeAuthStateChanged,
-  signOut,
-} from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { getToken } from 'firebase/messaging';
 import {
   collection,
@@ -36,34 +27,6 @@ const dbRT = getDatabase(app);
 const vapidKey =
   'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4' +
   'wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak';
-const scoreValues = {
-  A: 1,
-  B: 4,
-  C: 4,
-  D: 2,
-  E: 1,
-  F: 4,
-  G: 3,
-  H: 4,
-  I: 1,
-  J: 10,
-  K: 5,
-  L: 2,
-  M: 4,
-  N: 2,
-  O: 1,
-  P: 4,
-  Q: 10,
-  R: 1,
-  S: 1,
-  T: 1,
-  U: 2,
-  V: 5,
-  W: 4,
-  X: 8,
-  Y: 4,
-  Z: 10,
-};
 
 let currentUser = null;
 let previousUser = null;

@@ -1,15 +1,13 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const WorkboxPlugin = require('workbox-webpack-plugin');
 const BundleAnalyzerPlugin =
   require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
   mode: 'development',
   entry: {
-    init: {
-      import: './src/firebase-init.js',
-      dependOn: 'fb_essentials',
-    },
+    init: './src/firebase-init.js',
     signin: {
       import: './src/signin.js',
       dependOn: 'init',
@@ -20,28 +18,19 @@ module.exports = {
     },
     controller: {
       import: './src/controller.js',
-      dependOn: ['fb_essentials', 'init', 'router', 'signin'],
+      dependOn: ['init', 'signin', 'router'],
     },
     view: {
       import: './src/view.js',
       dependOn: 'controller',
     },
-    fb_essentials: [
-      'firebase/firestore',
-      'firebase/auth',
-      'firebase/functions',
-      'firebase/app',
-      'firebase/messaging',
-      'firebase/analytics',
-      'firebase/database',
-    ],
   },
   devtool: 'inline-source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[contenthash].js',
     clean: {
-      keep: /images\//,
+      keep: /(images\/|app\.webmanifest)/,
     },
   },
   optimization: {
@@ -63,6 +52,10 @@ module.exports = {
           },
         },
       },
+      // {
+      //   test: /\.(png|svg|jpg|jpeg|gif)$/i,
+      //   type: 'asset/resource',
+      // },
     ],
   },
   plugins: [
@@ -70,6 +63,12 @@ module.exports = {
       title: 'Crosswords WF',
       filename: 'index.html',
       template: 'src/template.html',
+    }),
+    new WorkboxPlugin.GenerateSW({
+      // these options encourage the ServiceWorkers to get in there fast
+      // and not allow any straggling "old" SWs to hang around
+      clientsClaim: true,
+      skipWaiting: true,
     }),
     // new BundleAnalyzerPlugin(),
   ],

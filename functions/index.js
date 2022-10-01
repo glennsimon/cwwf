@@ -204,6 +204,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
       ];
       gameListData.start = Date.now();
       gameListData.status = 'started';
+      gameListData.nextTurn = gameStartParameters.initiator.uid;
       batch.set(gameListDataRef, gameListData);
 
       const answersObj = {};
@@ -339,11 +340,13 @@ function parsePuzzle(puzzle) {
 exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
   const gameRef = db.doc(`games/${answerObj.gameId}`);
   const answersRef = db.doc(`games/${answerObj.gameId}/hidden/answers`);
+  const gameListRef = db.doc(`gameListBuilder/${answerObj.gameId}`);
   const returnObj = { correctAnswer: true };
   try {
     await db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
       const answers = (await tx.get(answersRef)).data();
+      const gameList = (await tx.get(gameListRef)).data();
       const idxArray = answerObj.idxArray;
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
@@ -386,6 +389,7 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
         }
       }
       game.nextTurn = answerObj.myOpponentUid;
+      gameList.nextTurn = answerObj.myOpponentUid;
       if (game.emptySquares === 0) {
         if (game[me].score > game[they].score) {
           game.winner = game[me].uid;
@@ -395,17 +399,10 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
           game.winner = 'tie';
         }
         game.status = 'finished';
-        const gameListRef = db.doc(`gameListBuilder/${answerObj.gameId}`);
-        const gameListDoc = (await tx.get(gameListRef)).data();
-        gameListDoc.status = 'finished';
-        // console.log('gameListDoc: ', gameListDoc);
-
-        // save the modified game and the gameListBuilder doc
-        tx.update(gameRef, game).update(gameListRef, gameListDoc);
-      } else {
-        // save the modified game
-        tx.update(gameRef, game);
+        gameList.status = 'finished';
       }
+      // save the modified game and the gameListBuilder doc
+      tx.update(gameRef, game).update(gameListRef, gameList);
     });
     functions.logger.log('checkAnswer transaction success!');
   } catch (error) {
