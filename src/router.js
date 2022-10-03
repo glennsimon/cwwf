@@ -2,6 +2,7 @@ import {
   getCurrentUserController,
   populateAllGamesController,
 } from './controller.js';
+import { auth } from './firebase-init.js';
 
 window.addEventListener('load', function () {
   initRouter();
@@ -54,6 +55,7 @@ function initRouter() {
       scores.classList.remove('displayFlex');
       scores.classList.add('displayNone');
       concessionBtnContainer.classList.add('displayNone');
+      puzzleInfo.classList.remove('displayFlex');
       puzzleInfo.classList.add('displayNone');
       puzTable.classList.add('displayNone');
       clueContainer.classList.add('displayNone');
@@ -114,7 +116,9 @@ function initRouter() {
     }
   }
 
-  if (location.hash !== '#games') {
+  if (auth.currentUser && location.hash !== '#games') {
     location.hash = '#games';
+  } else {
+    location.hash = '#signin';
   }
 }

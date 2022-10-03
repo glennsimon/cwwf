@@ -5,7 +5,7 @@ const BundleAnalyzerPlugin =
   require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
-  mode: 'development',
+  mode: 'production',
   entry: {
     init: './src/firebase-init.js',
     signin: {
@@ -25,7 +25,7 @@ module.exports = {
       dependOn: 'controller',
     },
   },
-  devtool: 'inline-source-map',
+  devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[contenthash].js',

@@ -8,7 +8,11 @@ import {
   set,
   serverTimestamp,
 } from 'firebase/database';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import {
+  beforeAuthStateChanged,
+  onAuthStateChanged,
+  signOut,
+} from 'firebase/auth';
 import { getToken } from 'firebase/messaging';
 import {
   collection,
@@ -151,14 +155,14 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
   }
 });
 
-// // handles change to database just before auth state changes,
-// // allowing permission to make the change.
-// beforeAuthStateChanged(auth, (user) => {
-//   const uid = auth.currentUser ? auth.currentUser.uid : null;
-//   if (uid) {
-//     set(ref(dbRT, `/users/${uid}`), authState('offline'));
-//   }
-// });
+// handles change to database just before auth state changes,
+// allowing permission to make the change.
+beforeAuthStateChanged(auth, (user) => {
+  const uid = auth.currentUser ? auth.currentUser.uid : null;
+  if (uid) {
+    set(ref(dbRT, `/users/${uid}`), authState('offline'));
+  }
+});
 
 onAuthStateChanged(auth, (user) => {
   const uid = user ? user.uid : null;

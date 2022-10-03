@@ -94,7 +94,9 @@
             </div>
           </div>
           <span>
-            <i id="headerSignin" class="material-icons cursorPointer"
+            <i
+              id="headerSignin"
+              class="material-icons cursorPointer displayNone"
               >fingerprint</i
             >
           </span>
@@ -131,7 +133,7 @@
           id="drawerContent"
           class="displayFlex flexDirCol flexGrow-1 spaceBetween"
         >
-          <div id="puzzleInfo" class="displayFlex flexDirCol textAlignCenter">
+          <div id="puzzleInfo" class="flexDirCol textAlignCenter displayNone">
             <div id="puzTitle" class="fontWeightBold colorWhite"></div>
             <div id="puzAuthor" class="author colorWhite"></div>
             <div id="puzCopy" class="copy"></div>
@@ -157,13 +159,15 @@
       <main class="mdl-layout__content mdl-color--grey-100">
         <div
           id="appContainer"
-          class="displayFlex flexWrap height100pct posAbsolute fullWidth"
+          class="displayFlex flexWrap height100pct posAbsolute fullWidth slideIn"
         >
           <div id="splash">
             <div class="displayFlex flexDirCol flexCenter">
               <img
                 id="splashImage"
                 src="./images/touch/chrome-touch-icon-192x192.png"
+                width="192"
+                height="192"
                 alt="logo"
               />
               <div
@@ -219,7 +223,10 @@
               </button>
             </div>
           </div>
-          <table id="puzTable" class="puzzleWidth marginAuto"></table>
+          <table
+            id="puzTable"
+            class="puzzleWidth marginAuto displayNone"
+          ></table>
           <div id="clueContainer" class="fullWidth displayNone">
             <div id="clueCard" class="cardShadow displayFlex flexDirCol">
               <div id="singleClue" class="padding0px5px flexGrow-1">
@@ -412,7 +419,10 @@
             </div>
           </div>
         </div>
-        <div id="gamesPanel" class="posAbsolute fullWidth height100pct">
+        <div
+          id="gamesPanel"
+          class="posAbsolute fullWidth height100pct slideOut"
+        >
           <div
             id="gamesPanelContainer"
             class="displayFlex flexDirCol height100pct"
@@ -525,11 +535,6 @@
         </button>
       </div>
     </dialog>
-    <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-    <link
-      type="text/css"
-      rel="stylesheet"
-      href="https://www.gstatic.com/firebasejs/ui/4.8.0/firebase-ui-auth.css"
-    />
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
   </body>
 </html>

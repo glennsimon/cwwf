@@ -171,7 +171,7 @@ dialogList.addEventListener('click', async (event) => {
     ? currentUser.photoURL
     : null;
   // TODO: selecting the right target may need fixing - while loop?
-  let target = event.target.parentElement;
+  let target = event.target;
   // trying a fix
   while (target.id === '') {
     target = target.parentElement;
