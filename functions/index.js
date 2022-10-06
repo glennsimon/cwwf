@@ -43,30 +43,33 @@ const scoreValues = {
 // Note: This is a Realtime Database trigger, *not* Cloud Firestore.
 exports.onUserStatusChanged = functions.database
   .ref('/users/{uid}')
-  .onUpdate((change, context) => {
+  .onUpdate(async (change, context) => {
     // Get the data written to Realtime Database
-    const newValue = change.after.val();
-    const oldValue = change.before.val();
-
-    console.log('oldValue: ', oldValue);
-    console.log('newValue: ', newValue);
-    // console.log(context);
-    // functions.logger.log('oldValue: ', oldValue);
-    // functions.logger.log('newValue: ', newValue);
+    const eventStatus = change.after.val();
+    const statusSnapshot = await change.after.ref.once('value');
+    const status = statusSnapshot.val();
+    console.log('status: ', status);
+    console.log('eventStatus: ', eventStatus);
     // If the current timestamp for this data is newer than
     // the data that triggered this event, we exit this function.
-    if (
-      context.params.uid === null ||
-      oldValue.lastChanged > newValue.lastChanged
-    ) {
+    if (status.lastChanged > eventStatus.lastChanged) {
       return null;
     }
-    // Otherwise, we convert the lastChanged field to a Date
-    // newValue.lastChanged = new Date(newValue.lastChanged);
-
-    // ... and write it to Firestore.
-    return db.doc(`users/${context.params.uid}`).set(newValue, { merge: true });
+    // Otherwise, we write it to Firestore.
+    const userStatusFirestoreRef = db.doc(`users/${context.params.uid}`);
+    return userStatusFirestoreRef.set(eventStatus, { merge: true });
   });
+
+exports.userOffline = functions.https.onCall((statusUpdate, context) => {
+  const uid = statusUpdate.uid;
+  return admin
+    .database()
+    .ref(`/users/${uid}`)
+    .set(statusUpdate.authState)
+    .catch((error) => {
+      functions.logger.log('Error: ', error);
+    });
+});
 
 exports.authChanged = functions.https.onCall(async (data, context) => {
   if (context.auth && context.auth.token && context.auth.token.uid) {

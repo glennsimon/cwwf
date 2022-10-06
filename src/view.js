@@ -12,7 +12,6 @@ import {
   enterLetterController,
   abandonCurrentGameController,
   setCurrentGameController,
-  populateAllGamesController,
   savePuzzleController,
   setAcrossWordController,
   getAcrossWordController,

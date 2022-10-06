@@ -16,14 +16,14 @@ module.exports = {
       import: './src/router.js',
       dependOn: 'init',
     },
-    controller: {
-      import: './src/controller.js',
-      dependOn: ['init', 'signin', 'router'],
-    },
-    view: {
-      import: './src/view.js',
-      dependOn: 'controller',
-    },
+    // controller: {
+    //   import: './src/controller.js',
+    //   dependOn: ['init', 'signin', 'router'],
+    // },
+    // view: {
+    //   import: './src/view.js',
+    //   dependOn: 'controller',
+    // },
   },
   devtool: 'source-map',
   output: {

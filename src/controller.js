@@ -8,11 +8,7 @@ import {
   set,
   serverTimestamp,
 } from 'firebase/database';
-import {
-  beforeAuthStateChanged,
-  onAuthStateChanged,
-  signOut,
-} from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { getToken } from 'firebase/messaging';
 import {
   collection,
@@ -33,7 +29,9 @@ const vapidKey =
   'wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak';
 
 let currentUser = null;
-let previousUser = null;
+// let previousUser = null;
+let userStatusFirestoreRef = null;
+let userStatusDatabaseRef = null;
 let allUsers = {};
 let allGames = {};
 let currentGame = null;
@@ -53,6 +51,7 @@ let online = false;
  * if not subscribed to any game.
  */
 let gameUnsubscribe = () => {};
+let connectionUnsubscribe = () => {};
 
 /**
  * Get the currentGame. Should be used by all external modules.
@@ -134,99 +133,99 @@ function setIdxArrayController(wordArray) {
  * @returns State object to store for user on database
  */
 function authState(state) {
-  return { state: state, lastChanged: Date(serverTimestamp()) };
+  return { state: state, lastChanged: serverTimestamp() };
 }
 
 // Updates user online status only if user is logged in
 // when connection/disconnection with app is made.
 // If no user is logged in, this does nothing.
 onValue(ref(dbRT, '.info/connected'), (snapshot) => {
-  console.log('connected notification fired. Connected: ', `${snapshot.val()}`);
-  const uid = auth.currentUser ? auth.currentUser.uid : null;
-  if (snapshot.val() === false) {
+  console.log(
+    'connected notification change fired. Connected: ',
+    `${snapshot.val()}`
+  );
+  // const uid = auth.currentUser ? auth.currentUser.uid : null;
+  if (!currentUser) {
+    connectionUnsubscribe();
+    connectionUnsubscribe = () => {};
     return;
-  } else if (uid) {
-    onDisconnect(ref(dbRT, `/users/${uid}`))
-      .set(authState('offline'))
-      .then(() => {
-        set(ref(dbRT, `/users/${uid}`), authState('online'));
-        return;
-      });
   }
+  if (snapshot.val() === false) {
+    setDoc(userStatusFirestoreRef, authState('offline'), { merge: true });
+    return;
+  }
+  // else if (uid) {
+  onDisconnect(userStatusDatabaseRef)
+    .set(authState('offline'))
+    .then(() => {
+      set(userStatusDatabaseRef, authState('online'));
+      // setDoc(userStatusFirestoreRef, authState('online'), { merge: true });
+      // return;
+    });
+  // }
 });
 
-// handles change to database just before auth state changes,
-// allowing permission to make the change.
-beforeAuthStateChanged(auth, (user) => {
-  const uid = auth.currentUser ? auth.currentUser.uid : null;
-  if (uid) {
-    set(ref(dbRT, `/users/${uid}`), authState('offline'));
-  }
-});
+connectionUnsubscribe = () => {
+  if (!userStatusFirestoreRef) return;
+  return onSnapshot(userStatusFirestoreRef, (snapshot) => {
+    let isOnline = snapshot.data().state === 'online';
+    // use isOnline if we need it...
+  });
+};
 
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user ID: ', uid);
   authChangeView(user);
-  previousUser = currentUser;
-  currentUser = user;
   if (!uid) return;
-  const authChanged = httpsCallable(functions, 'authChanged');
-  authChanged()
-    .then(async (result) => {
-      console.log(result);
-      if (result.data) {
-        await set(ref(dbRT, `/users/${result.data}`), authState('online'));
-      }
-      return;
-    })
-    .then(() => {
-      generateMessagingToken();
-      return;
-    })
-    .then(() => {
-      populateAllGamesController();
-      return;
-    })
-    .catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
+  // previousUser = currentUser;
+  currentUser = user;
+  userStatusFirestoreRef = doc(db, `/users/${uid}`);
+  userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
+  try {
+    const authChanged = httpsCallable(functions, 'authChanged');
+    await authChanged();
+    await generateMessagingToken(uid);
+    await populateAllGamesController(uid);
+  } catch (err) {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
+  }
 });
 
-// Configure messaging credentials with FCM VAPID key
-function generateMessagingToken() {
-  getToken(messaging, {
-    vapidKey: vapidKey,
-  })
-    .then((currentToken) => {
-      if (currentToken) {
-        sendTokenToServer(currentToken);
-      } else {
-        // I don't think anything is needed here.
-        // I think browser automatically asks for permission.
-      }
-      return;
-    })
-    .catch((err) => {
-      console.log('An error occurred while retrieving token: ', err);
+/**
+ * Configure messaging credentials with FCM VAPID key
+ * @param {string} uid User ID
+ */
+async function generateMessagingToken(uid) {
+  try {
+    const messagingToken = await getToken(messaging, {
+      vapidKey: vapidKey,
     });
+    if (messagingToken) {
+      sendTokenToServer(messagingToken, uid);
+    }
+    return;
+  } catch (err) {
+    console.log('An error occurred while retrieving token: ', err);
+  }
 }
 
 /**
  * Send cloud messaging token to server
- * @param {string} token Cloud messaging token
+ * @param {string} messagingToken Cloud messaging token
+ * @param {string} uid User ID
  */
-async function sendTokenToServer(token) {
-  console.log('Messaging permission granted. Token: ', token);
-  const uid = auth.currentUser ? auth.currentUser.uid : null;
+async function sendTokenToServer(messagingToken, uid) {
+  console.log('Messaging permission granted. Token: ', messagingToken);
   if (uid) {
     await setDoc(
       doc(db, `/users/${uid}/`),
-      { msgToken: token },
+      { msgToken: messagingToken },
       { merge: true }
     );
+    return;
   }
 }
 
@@ -235,20 +234,23 @@ async function sendTokenToServer(token) {
  */
 function authButtonClickedController() {
   if (currentUser) {
+    const uid = currentUser.uid;
     signOut(auth)
       .then(() => {
-        // Sign-out successful.
-        // signedOutView();
-        // location.hash = '#signin';
-        return;
+        const statusUpdate = {};
+        statusUpdate.uid = uid;
+        statusUpdate.authState = authState('offline');
+        const userOffline = httpsCallable(functions, 'userOffline');
+        userOffline(statusUpdate);
       })
       .catch((error) => {
         console.log(error);
       });
-  } else {
-    // keep this else - location should change only if signOut successful
-    location.hash = '#signin';
   }
+  // else {
+  //   // keep this else - location should change only if signOut successful
+  //   location.hash = '#signin';
+  // }
 }
 
 /**
@@ -277,40 +279,32 @@ function populateAllUsersController() {
 /**
  * Populate list of all games that is viewable to the current user
  * from firestore and return the list.
+ * @param {string} uid User ID
  * @returns Object containing all games by gameId
  */
-function populateAllGamesController() {
+async function populateAllGamesController(uid) {
   console.log('Hello from populateAllGamesController.');
-  if (currentUser) {
+  try {
     const q = query(
       collection(db, 'gameListBuilder'),
-      where('viewableBy', 'array-contains', `${currentUser.uid}`),
+      where('viewableBy', 'array-contains', `${uid}`),
       orderBy('start', 'desc'),
       limit(10)
     );
-    return getDocs(q)
-      .then((snapshot) => {
-        const gamesObj = {};
-        if (snapshot.empty) {
-          console.warn('No games exist yet.');
-          // gamesObj.empty = 'empty';
-          // return gamesObj;
-          return null;
-        }
-        snapshot.docs.forEach((doc) => {
-          gamesObj[doc.id] = doc.data();
-        });
-        allGames = gamesObj;
-        return gamesObj;
-      })
-      .then((gamesObj) => {
-        loadGamesView(gamesObj);
-      })
-      .catch((err) => {
-        console.log('Error code: ', err.code);
-        console.log('Error message: ', err.message);
-        console.log('Error details: ', err.details);
-      });
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      console.warn('No games exist yet.');
+      return null;
+    }
+    allGames = {};
+    querySnapshot.docs.forEach((doc) => {
+      allGames[doc.id] = doc.data();
+    });
+    loadGamesView(allGames);
+  } catch (err) {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
   }
 }
 
