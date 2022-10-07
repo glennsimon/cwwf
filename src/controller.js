@@ -175,7 +175,7 @@ connectionUnsubscribe = () => {
 
 onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
-  console.log('Hello from onAuthStateChanged. Current user ID: ', uid);
+  console.log('Hello from onAuthStateChanged. Current user: ', user);
   authChangeView(user);
   if (!uid) return;
   // previousUser = currentUser;
@@ -292,14 +292,14 @@ async function populateAllGamesController(uid) {
       limit(10)
     );
     const querySnapshot = await getDocs(q);
+    allGames = {};
     if (querySnapshot.empty) {
       console.warn('No games exist yet.');
-      return null;
+    } else {
+      querySnapshot.docs.forEach((doc) => {
+        allGames[doc.id] = doc.data();
+      });
     }
-    allGames = {};
-    querySnapshot.docs.forEach((doc) => {
-      allGames[doc.id] = doc.data();
-    });
     loadGamesView(allGames);
   } catch (err) {
     console.log('Error code: ', err.code);

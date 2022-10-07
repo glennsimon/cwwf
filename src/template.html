@@ -8,10 +8,6 @@
     <meta charset="utf-8" />
     <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge" /> -->
     <meta name="description" content="Mockup of Crosswords With Friends" />
-    <!-- <meta
-      name="google-signin-client_id"
-      content="38205810024-ldpgeahe0cq1kt6r0am848qjqqu61fpd.apps.googleusercontent.com"
-    /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= htmlWebpackPlugin.options.title %></title>
     <!-- Web Application Manifest -->
@@ -44,6 +40,7 @@
       rel="stylesheet"
       href="https://code.getmdl.io/1.2.1/material.indigo-pink.min.css"
     />
+    <!-- webpack code will be added below -->
   </head>
 
   <body>
@@ -156,8 +153,8 @@
                 class="textAlignCenter maxWidth400px margin5pxAuto"
               >
                 Please sign in. Sign in needed for game play and so your friends
-                can find you! Sign in only requests the minimum required
-                information for player identity.
+                can find you! Sign in only requests the minimum information
+                required for unique player identity.
               </div>
               <div id="sign-in-button"></div>
               <div id="recaptcha-container"></div>

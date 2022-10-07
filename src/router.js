@@ -2,11 +2,6 @@ import {
   getCurrentUserController,
   populateAllGamesController,
 } from './controller.js';
-import { auth } from './firebase-init.js';
-
-// window.addEventListener('load', function () {
-//   initRouter();
-// });
 
 /** Initialize after document loads */
 // function initRouter() {
@@ -74,9 +69,6 @@ function navigate() {
     } catch (err) {
       // do nothing, error OK
     }
-    if (!getCurrentUserController()) {
-      headerSignin.classList.remove('displayNone');
-    }
     gamesPanel.classList.remove('slideOut');
     appContainer.classList.remove('slideIn');
     concessionBtnContainer.classList.add('displayNone');
@@ -84,7 +76,12 @@ function navigate() {
     scores.classList.add('displayNone');
     puzzleInfo.classList.add('displayNone');
     // puzTable.classList.add('displayNone');
-    populateAllGamesController();
+    const currentUser = getCurrentUserController();
+    if (!currentUser) {
+      headerSignin.classList.remove('displayNone');
+    } else {
+      populateAllGamesController(currentUser.uid);
+    }
   } else if (location.hash === '#tos') {
     gamesPanel.classList.add('slideOut');
     appContainer.classList.add('slideIn');
@@ -117,5 +114,5 @@ function navigate() {
     firebaseuiAuthContainer.classList.add('displayNone');
   }
 }
-// navigate();
-// }
+
+navigate();

@@ -75,6 +75,7 @@ exports.authChanged = functions.https.onCall(async (data, context) => {
   if (context.auth && context.auth.token && context.auth.token.uid) {
     // User is signed in. Updates every time the user signs in, in case there
     // are changes to photo or whatever.
+    console.log('auth token: ', context.auth.token);
     const uid = context.auth.token.uid;
     const userData = {};
     userData.displayName = context.auth.token.name

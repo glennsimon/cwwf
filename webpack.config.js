@@ -8,6 +8,10 @@ module.exports = {
   mode: 'production',
   entry: {
     init: './src/firebase-init.js',
+    /**
+     * signin.js is no longer imported, but signin is handled with js in the
+     * template.html file.
+     */
     signin: {
       import: './src/signin.js',
       dependOn: 'init',
