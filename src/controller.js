@@ -177,9 +177,9 @@ onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
   authChangeView(user);
+  currentUser = user;
   if (!uid) return;
   // previousUser = currentUser;
-  currentUser = user;
   userStatusFirestoreRef = doc(db, `/users/${uid}`);
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
   try {

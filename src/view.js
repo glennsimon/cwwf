@@ -287,17 +287,15 @@ async function loadGamesView(gamesObj) {
   if (!currentUser) return;
   let activeGamesHtml = '';
   let pastGamesHtml = '';
-  if (Object.keys(gamesObj).length === 0) {
+  const keys = Object.keys(gamesObj);
+  if (keys.length === 0) {
     // gamesObj doesn't exist or is empty
     activeGamesContainer.innerHTML = 'No active games. Start one!';
     pastGamesContainer.innerHTML = 'No completed games yet';
     console.warn('No games exist yet.');
     return;
   }
-  activeGamesContainer.innerHTML = '';
-  pastGamesContainer.innerHTML = '';
-  let games = Object.keys(gamesObj);
-  games.forEach((key) => {
+  keys.forEach((key) => {
     const game = gamesObj[key];
     const startDate = new Date(game.start).toLocaleDateString('en-us', {
       day: 'numeric',
@@ -327,8 +325,6 @@ async function loadGamesView(gamesObj) {
   <span>${startDate}</span>
   </span>
 </li>`;
-
-      activeGamesContainer.innerHTML += activeGamesHtml;
     } else {
       const myOpponent =
         game.initiator.uid === currentUser.uid ? game.opponent : game.initiator;
@@ -358,10 +354,10 @@ async function loadGamesView(gamesObj) {
     <span>${startDate}</span>
   </span>
 </li>`;
-
-      pastGamesContainer.innerHTML += pastGamesHtml;
     }
   });
+  activeGamesContainer.innerHTML = activeGamesHtml;
+  pastGamesContainer.innerHTML = pastGamesHtml;
 
   // console.log(dialogList);
 }
