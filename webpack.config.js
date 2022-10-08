@@ -6,6 +6,7 @@ const BundleAnalyzerPlugin =
 
 module.exports = {
   mode: 'production',
+  // mode: 'development',
   entry: {
     init: './src/firebase-init.js',
     /**
@@ -30,6 +31,7 @@ module.exports = {
     // },
   },
   devtool: 'source-map',
+  // devtool: 'inline-source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[contenthash].js',
@@ -38,6 +40,7 @@ module.exports = {
     },
   },
   optimization: {
+    // usedExports: true,
     splitChunks: { chunks: 'all' },
   },
   module: {

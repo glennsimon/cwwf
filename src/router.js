@@ -40,6 +40,8 @@ function navigate() {
     // } catch (err) {
     //   // do nothing, error OK
     // }
+    splash.classList.remove('displayFlex');
+    splash.classList.add('displayNone');
     gamesPanel.classList.add('slideOut');
     appContainer.classList.add('slideIn');
     puzzleInfo.classList.remove('displayNone');
@@ -57,6 +59,7 @@ function navigate() {
     clueContainer.classList.add('displayNone');
     kbContainer.classList.add('displayNone');
     splash.classList.remove('displayNone');
+    splash.classList.add('displayFlex');
     headerSignin.classList.add('displayNone');
     signinMessage.classList.remove('displayNone');
     tos.classList.add('displayNone');
@@ -93,6 +96,7 @@ function navigate() {
     clueContainer.classList.add('displayNone');
     kbContainer.classList.add('displayNone');
     splash.classList.remove('displayNone');
+    splash.classList.add('displayFlex');
     tos.classList.remove('displayNone');
     returnToSignin.classList.remove('displayNone');
     signinMessage.classList.add('displayNone');
@@ -108,6 +112,7 @@ function navigate() {
     clueContainer.classList.add('displayNone');
     kbContainer.classList.add('displayNone');
     splash.classList.remove('displayNone');
+    splash.classList.add('displayFlex');
     privacy.classList.remove('displayNone');
     returnToSignin.classList.remove('displayNone');
     signinMessage.classList.add('displayNone');
