@@ -413,9 +413,10 @@ function showPuzzleView(game) {
     const row = puzTable.insertRow(rowIndex);
     row.style.width = `${tableDim}px`;
     for (let colIndex = 0; colIndex < game.puzzle.cols; colIndex += 1) {
-      const clueNumber = game.puzzle.grid[gridIndex].clueNum;
+      const squareData = game.puzzle.grid[gridIndex];
+      const clueNumber = squareData.clueNum;
       const cell = row.insertCell(colIndex);
-      const blackCell = game.puzzle.grid[gridIndex].black;
+      const blackCell = squareData.black;
 
       cell.style.width = `${cellDim}px`;
       cell.style.height = `${cellDim}px`;
@@ -428,10 +429,10 @@ function showPuzzleView(game) {
         const letterDiv = document.createElement('div');
         squareDiv.classList.add('square');
         letterDiv.classList.add('marginAuto');
-        if (game.puzzle.grid[gridIndex].status === 'locked') {
-          cell.classList.add(game.puzzle.grid[gridIndex].bgColor);
+        if (squareData.status === 'locked') {
+          cell.classList.add(squareData.bgColor);
         }
-        const guess = game.puzzle.grid[gridIndex].guess;
+        const guess = squareData.guess;
         letterDiv.innerText = guess ? guess : '';
         squareDiv.appendChild(letterDiv);
         cell.appendChild(squareDiv);
@@ -441,8 +442,25 @@ function showPuzzleView(game) {
           clueNumDiv.appendChild(document.createTextNode(clueNumber));
           cell.appendChild(clueNumDiv);
         }
-        if (game.puzzle.grid[gridIndex].circle) {
-          cell.children[0].classList.add('circle');
+        if (squareData.circle) {
+          const halfCell = cellDim / 2;
+          const radius = halfCell - 1.5;
+          let svgHtml = `<svg class='posAbsolute upperLeft'>
+          <path d='M ${halfCell} ${halfCell}'/>
+          <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black' fill='transparent'/>
+          </svg>`;
+          if (squareData.clueNum) {
+            // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 16)) + 1.5; // 22.5deg
+            // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 16)) + 1.5; // each direction
+            let dimA = radius * 0.07612 + 1.5;
+            let dimB = radius * 0.61732 + 1.5;
+            svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
+            <path d='M ${dimA} ${dimB}
+            A ${radius} ${radius} 0 1 0 ${dimB} ${dimA}'
+            stroke='black' fill='transparent'/>
+            </svg>`;
+          }
+          cell.innerHTML += svgHtml;
         }
       }
       gridIndex += 1;
@@ -1047,12 +1065,39 @@ function resizePuzzle() {
   const tableDim = cellDim * getColumnsController();
   const rowArray = puzTable.children[0].children;
 
+  const cells = puzTable.getElementsByTagName('td');
+
   for (const row of rowArray) {
     row.style.width = tableDim + 'px';
     const cellArray = row.children;
     for (const cell of cellArray) {
       cell.style.width = cellDim + 'px';
       cell.style.height = cellDim + 'px';
+      // The only svg that could be in the cell is a circle, so this
+      // Tests for a circle and resizes it
+      const svgElements = cell.getElementsByTagName('svg');
+      if (svgElements.length === 1) {
+        const halfCell = cellDim / 2;
+        const radius = halfCell - 1.5;
+        let svgHtml = `<svg class='posAbsolute upperLeft'>
+        <path d='M ${halfCell} ${halfCell}'/>
+        <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black' fill='transparent'/>
+        </svg>`;
+        const clueNumbers = cell.getElementsByClassName('clueNumber');
+        if (clueNumbers.length === 1) {
+          // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 16)) + 1.5; // 22.5deg each direction
+          // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 16)) + 1.5; // from 135deg
+          let dimA = radius * 0.07612 + 1.5;
+          let dimB = radius * 0.61732 + 1.5;
+          svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
+          <path d='M ${dimA} ${dimB}
+          A ${radius} ${radius} 0 1 0 ${dimB} ${dimA}'
+          stroke='black' fill='transparent'/>
+          </svg>`;
+        }
+        cell.removeChild(svgElements[0]);
+        cell.innerHTML += svgHtml;
+      }
     }
   }
   if (currentCell) {

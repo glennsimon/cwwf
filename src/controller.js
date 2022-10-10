@@ -8,7 +8,7 @@ import {
   set,
   serverTimestamp,
 } from 'firebase/database';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 'firebase/auth';
 import { getToken } from 'firebase/messaging';
 import {
   collection,
@@ -45,6 +45,9 @@ let idxArray = [];
 let myTurn = null;
 // TODO: should this be tracked, and what can be done while offline?
 let online = false;
+
+// webpack dynamic imports:
+// let mySignOut = () => {};
 
 /**
  * Unsubscribe from listening for changes on current game. Does nothing
@@ -165,6 +168,10 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
   // }
 });
 
+/**
+ * Subscribe user to listen to monitor online status. Executing
+ * `connectionUnsubscribe` unsubscribes the user.
+ */
 connectionUnsubscribe = () => {
   if (!userStatusFirestoreRef) return;
   return onSnapshot(userStatusFirestoreRef, (snapshot) => {
@@ -173,6 +180,9 @@ connectionUnsubscribe = () => {
   });
 };
 
+/**
+ * Firestore function that monitors auth state.
+ */
 onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
@@ -232,7 +242,9 @@ async function sendTokenToServer(messagingToken, uid) {
 /**
  * Called by the view, signs the user out or takes them to the #signin page.
  */
-function authButtonClickedController() {
+async function authButtonClickedController() {
+  // const { signOut } = await import('firebase/auth');
+
   if (currentUser) {
     const uid = currentUser.uid;
     signOut(auth)

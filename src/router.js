@@ -27,10 +27,12 @@ const firebaseuiAuthContainer = document.getElementById(
 
 window.addEventListener('hashchange', navigate);
 
+let signin = null;
+
 /**
  * Navigate based on hash change
  */
-function navigate() {
+async function navigate() {
   if (location.hash === '#puzzle') {
     // try {
     //   const replayButton = querySelector('#replayButton');
@@ -65,6 +67,9 @@ function navigate() {
     tos.classList.add('displayNone');
     privacy.classList.add('displayNone');
     returnToSignin.classList.add('displayNone');
+    if (!signin) {
+      await loadSigninModule();
+    }
     firebaseuiAuthContainer.classList.remove('displayNone');
   } else if (location.hash === '#games') {
     try {
@@ -118,6 +123,16 @@ function navigate() {
     signinMessage.classList.add('displayNone');
     firebaseuiAuthContainer.classList.add('displayNone');
   }
+}
+
+/**
+ * Lazy load signin module only if user needs to log in.
+ */
+function loadSigninModule() {
+  console.log('Hello from loadSigninModule.');
+  import(/* webpackChunkName: 'signin' */ './signin.js').then((module) => {
+    signin = module.default;
+  });
 }
 
 navigate();

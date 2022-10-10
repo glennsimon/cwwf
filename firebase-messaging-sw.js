@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getMessaging } from 'firebase/messaging/sw';
+import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDNheDAGRrSjCgic20dgnuawMILWBrTNUk',
@@ -27,3 +27,15 @@ const firebaseApp = initializeApp(firebaseConfig);
 // Retrieve an instance of Firebase Messaging so that it can handle background
 // messages.
 const messaging = getMessaging(firebaseApp);
+
+onBackgroundMessage(messaging, (payload) => {
+  console.log(
+    '[firebase-messaging-sw.js] Received background message ',
+    payload
+  );
+  // payload is sent from index.js in functions
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = payload.notification;
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});

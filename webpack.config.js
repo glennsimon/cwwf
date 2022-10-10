@@ -5,18 +5,18 @@ const BundleAnalyzerPlugin =
   require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = {
-  mode: 'production',
-  // mode: 'development',
+  // mode: 'production',
+  mode: 'development',
   entry: {
     init: './src/firebase-init.js',
     /**
      * signin.js is no longer imported, but signin is handled with js in the
      * template.html file.
      */
-    signin: {
-      import: './src/signin.js',
-      dependOn: 'init',
-    },
+    // signin: {
+    //   import: './src/signin.js',
+    //   dependOn: 'init',
+    // },
     router: {
       import: './src/router.js',
       dependOn: 'init',
@@ -30,8 +30,8 @@ module.exports = {
     //   dependOn: 'controller',
     // },
   },
-  devtool: 'source-map',
-  // devtool: 'inline-source-map',
+  // devtool: 'source-map',
+  devtool: 'eval-source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[contenthash].js',
@@ -41,7 +41,17 @@ module.exports = {
   },
   optimization: {
     // usedExports: true,
-    splitChunks: { chunks: 'all' },
+    // moduleIds: 'deterministic',
+    runtimeChunk: 'single',
+    splitChunks: {
+      // cacheGroups: {
+      //   vendor: {
+      //     test: /[\\/]node_modules[\\/]/,
+      //     name: 'vendors',
+      chunks: 'all',
+      //     },
+      //   },
+    },
   },
   module: {
     rules: [
