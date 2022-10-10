@@ -492,8 +492,15 @@ function showPuzzleView(game) {
     numDiv.classList.add('padRight', 'cursorPointer');
 
     const textDiv = document.createElement('div');
-    // textDiv.appendChild(document.createTextNode(clueText));
-    textDiv.innerHTML = clueText;
+    // unsafe:
+    // textDiv.innerHTML = clueText;
+    // safe: (setHTML sanitizes html) unfortunately, limited availablility
+    try {
+      textDiv.setHTML(clueText);
+    } catch (err) {
+      console.log('setHTML is not available in this browser');
+      textDiv.textContent = clueText;
+    }
     textDiv.classList.add('cursorPointer');
     clueDiv.appendChild(numDiv);
     clueDiv.appendChild(textDiv);
@@ -518,8 +525,15 @@ function showPuzzleView(game) {
     numDiv.classList.add('padRight', 'cursorPointer');
 
     const textDiv = document.createElement('div');
-    // textDiv.appendChild(document.createTextNode(clueText));
-    textDiv.innerHTML = clueText;
+    // unsafe:
+    // textDiv.innerHTML = clueText;
+    // safe: (setHTML sanitizes html) unfortunately, limited availablility
+    try {
+      textDiv.setHTML(clueText);
+    } catch (err) {
+      console.log('setHTML is not available in this browser');
+      textDiv.textContent = clueText;
+    }
     textDiv.classList.add('cursorPointer');
     clueDiv.appendChild(numDiv);
     clueDiv.appendChild(textDiv);
