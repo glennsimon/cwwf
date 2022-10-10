@@ -31,7 +31,7 @@ module.exports = {
     // },
   },
   // devtool: 'source-map',
-  devtool: 'eval-source-map',
+  devtool: 'inline-source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[contenthash].js',

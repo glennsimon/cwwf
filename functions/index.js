@@ -365,8 +365,9 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
           returnObj.correctAnswer = false;
         }
       }
+      console.log('returnObj: ', returnObj);
       if (returnObj.correctAnswer) {
-        game.puzzle.completedClues[direction].push(clueNumber);
+        game.puzzle.completedClues[direction].push(parseInt(clueNumber));
       }
       for (let index = 0; index < answerObj.guess.length; index++) {
         const gridElement = game.puzzle.grid[idxArray[index]];

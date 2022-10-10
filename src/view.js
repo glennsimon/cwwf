@@ -484,7 +484,7 @@ function showPuzzleView(game) {
     clueDiv.classList.add('displayFlex', 'cursorPointer');
     clueDiv.id = 'across' + clueNumber;
     if (game.puzzle.completedClues.across.includes(clueNumber)) {
-      clueDiv.classList.add('colorLightGray');
+      clueDiv.classList.add('colorDarkGray');
     }
 
     const numDiv = document.createElement('div');
@@ -509,7 +509,7 @@ function showPuzzleView(game) {
     clueDiv.classList.add('displayFlex', 'cursorPointer');
     clueDiv.id = 'down' + clueNumber;
     if (game.puzzle.completedClues.down.includes(clueNumber)) {
-      clueDiv.classList.add('colorLightGray');
+      clueDiv.classList.add('colorDarkGray');
     }
 
     const numDiv = document.createElement('div');
@@ -579,7 +579,10 @@ function showPuzzleView(game) {
  */
 function cellClicked(event) {
   console.log('Hello from cellClicked.');
-  const cell = event.target;
+  let cell = event.target;
+  while (!cell.classList.contains('cursorPointer')) {
+    cell = cell.parentElement;
+  }
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
   let acrossWord = getAcrossWordController();
@@ -1085,10 +1088,10 @@ function resizePuzzle() {
         </svg>`;
         const clueNumbers = cell.getElementsByClassName('clueNumber');
         if (clueNumbers.length === 1) {
-          // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 16)) + 1.5; // 22.5deg each direction
-          // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 16)) + 1.5; // from 135deg
-          let dimA = radius * 0.07612 + 1.5;
-          let dimB = radius * 0.61732 + 1.5;
+          // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 24)) + 1.5; // 30 deg each direction
+          // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 24)) + 1.5; // from 135deg
+          let dimA = radius * 0.03407 + 1.5;
+          let dimB = radius * 0.74118 + 1.5;
           svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
           <path d='M ${dimA} ${dimB}
           A ${radius} ${radius} 0 1 0 ${dimB} ${dimA}'
