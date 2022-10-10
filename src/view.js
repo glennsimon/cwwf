@@ -492,7 +492,8 @@ function showPuzzleView(game) {
     numDiv.classList.add('padRight', 'cursorPointer');
 
     const textDiv = document.createElement('div');
-    textDiv.appendChild(document.createTextNode(clueText));
+    // textDiv.appendChild(document.createTextNode(clueText));
+    textDiv.innerHTML = clueText;
     textDiv.classList.add('cursorPointer');
     clueDiv.appendChild(numDiv);
     clueDiv.appendChild(textDiv);
@@ -517,7 +518,8 @@ function showPuzzleView(game) {
     numDiv.classList.add('padRight', 'cursorPointer');
 
     const textDiv = document.createElement('div');
-    textDiv.appendChild(document.createTextNode(clueText));
+    // textDiv.appendChild(document.createTextNode(clueText));
+    textDiv.innerHTML = clueText;
     textDiv.classList.add('cursorPointer');
     clueDiv.appendChild(numDiv);
     clueDiv.appendChild(textDiv);
