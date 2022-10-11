@@ -44,7 +44,7 @@ const clueContainer = document.getElementById('clueContainer');
 const acrossClues = document.getElementById('acrossClues');
 const downClues = document.getElementById('downClues');
 const singleClue = document.getElementById('singleClue');
-const keyboard = document.getElementById('kbContainer');
+const kbContainer = document.getElementById('kbContainer');
 const splash = document.getElementById('splash');
 const scores = document.getElementById('scores');
 const myName = document.getElementById('myName');
@@ -62,7 +62,6 @@ const returnToSignin = document.getElementById('returnToSignin');
 //#endregion
 
 let currentCell = null;
-let acrossWord = true;
 // let currentOpponent = null;
 // let allUsers = null;
 
@@ -468,8 +467,8 @@ function showPuzzleView(game) {
   }
   setCurrentGameController(game);
 
-  keyboard.classList.remove('displayNone');
-  keyboard.classList.add('displayFlex');
+  kbContainer.classList.remove('displayNone');
+  kbContainer.classList.add('displayFlex');
   clueContainer.classList.remove('displayNone');
   splash.classList.add('displayNone');
   concessionBtnContainer.classList.remove('displayNone');
@@ -643,6 +642,10 @@ function clueClicked(event, direction) {
   const row = Math.floor(cellIndex / columns);
   const col = cellIndex - row * columns;
   const cell = puzTable.firstChild.children[row].children[col];
+  currentCell = cell;
+  let elem = event.target;
+  while (elem.id === '') elem = elem.parentElement;
+  setAcrossWordController(elem.id.includes('across'));
   if (direction === 'across') {
     selectAcross(cell);
   } else {
@@ -1007,7 +1010,7 @@ function enterLetter(event) {
   const idxArray = getIdxArrayController();
   const game = getCurrentGameController();
   const columns = getColumnsController();
-  if (!keyboard.classList.contains('displayNone')) {
+  if (!kbContainer.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
       playWordController();
       return;
@@ -1120,7 +1123,7 @@ function resizePuzzle() {
     }
   }
   if (currentCell) {
-    if (acrossWord) {
+    if (getAcrossWordController()) {
       selectAcross(currentCell);
     } else {
       selectDown(currentCell);
@@ -1130,7 +1133,7 @@ function resizePuzzle() {
 
 document.addEventListener('keyup', enterLetter);
 window.addEventListener('resize', resizePuzzle);
-const keyList = keyboard.getElementsByClassName('kbButton');
+const keyList = kbContainer.getElementsByClassName('kbButton');
 for (const node of keyList) {
   node.addEventListener('click', enterLetter);
 }
