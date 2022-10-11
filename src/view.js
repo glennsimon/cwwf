@@ -450,13 +450,13 @@ function showPuzzleView(game) {
           <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black' fill='transparent'/>
           </svg>`;
           if (squareData.clueNum) {
-            // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 16)) + 1.5; // 22.5deg
-            // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 16)) + 1.5; // each direction
-            let dimA = radius * 0.07612 + 1.5;
-            let dimB = radius * 0.61732 + 1.5;
+            // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 24)) + 1.5; // 30 deg each direction
+            // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 24)) + 1.5; // from 135deg
+            let dimA = radius * 0.03407 + 1.5;
+            let dimB = radius * 0.74118 + 1.5;
             svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
             <path d='M ${dimA} ${dimB}
-            A ${radius} ${radius} 0 1 0 ${dimB} ${dimA}'
+            A ${radius} ${radius} 0 1 0 ${halfCell} 1.5'
             stroke='black' fill='transparent'/>
             </svg>`;
           }
@@ -1110,7 +1110,7 @@ function resizePuzzle() {
           let dimB = radius * 0.74118 + 1.5;
           svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
           <path d='M ${dimA} ${dimB}
-          A ${radius} ${radius} 0 1 0 ${dimB} ${dimA}'
+          A ${radius} ${radius} 0 1 0 ${halfCell} 1.5'
           stroke='black' fill='transparent'/>
           </svg>`;
         }
