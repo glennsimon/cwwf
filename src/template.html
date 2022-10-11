@@ -192,13 +192,18 @@
           </div>
         </div>
       </div>
-      <main class="mdl-layout__content mdl-color--grey-100">
+      <main
+        class="mdl-layout__content mdl-color--grey-100"
+        style="overflow-y: hidden"
+      >
         <div
           id="appContainer"
           class="displayFlex flexWrap height100pct posAbsolute fullWidth slideIn"
         >
           <div id="splash" class="displayFlex">
-            <div class="displayFlex flexDirCol marginAuto flexGrow-1">
+            <div
+              class="displayFlex flexDirCol marginAuto flexGrow-1 flexWrap height100pct"
+            >
               <img
                 id="splashImage"
                 src="./images/touch/chrome-touch-icon-192x192.png"
@@ -268,13 +273,13 @@
                 Select in the puzzle to reveal clue
               </div>
             </div>
-            <div class="displayFlex flexGrow-1">
-              <div id="acrossContainer" class="padding-5 displayNone">
+            <div id="clueLists">
+              <div id="acrossContainer" class="padding-5">
                 <div class="heading">Across</div>
                 <div id="acrossClues" class="overflowYScroll"></div>
                 <!-- class='flexColumnWrap'></div> -->
               </div>
-              <div id="downContainer" class="padding-5 displayNone">
+              <div id="downContainer" class="padding-5">
                 <div class="heading">Down</div>
                 <div id="downClues" class="overflowYScroll"></div>
                 <!-- class='flexColumnWrap'></div> -->
