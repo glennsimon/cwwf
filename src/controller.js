@@ -29,18 +29,14 @@ const vapidKey =
   'wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak';
 
 let currentUser = null;
-// let previousUser = null;
 let userStatusFirestoreRef = null;
 let userStatusDatabaseRef = null;
-let allUsers = {};
 let allGames = {};
 let currentGame = null;
 let currentGameId = null;
 let myOpponentUid = null;
-let currentCell = null;
 let acrossWord = true;
 let columns = null;
-let currentClue = null;
 let idxArray = [];
 let myTurn = null;
 // TODO: should this be tracked, and what can be done while offline?
@@ -282,7 +278,6 @@ function populateAllUsersController() {
         const user = doc.data();
         usersObj[user.uid] = user;
       });
-      allUsers = usersObj;
       return usersObj;
     })
     .catch((error) => console.log('Error getting list of users: ', error));

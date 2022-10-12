@@ -249,24 +249,22 @@ function loadUserList(usersObj, currentUser) {
       let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
       if (user.photoURL) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-          <img src='${user.photoURL}' alt='profile picture'>
-        </span>`;
+  <img src='${user.photoURL}' alt='profile picture'>
+</span>`;
       }
       userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-        <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
-          ${avatar}
-          <div class='overflowHidden' style='width: 115px;'>${
-            user.displayName
-          }</div>
-          <span class='mdl-list__item-sub-title'>
-            ${user.providerId ? user.providerId.split('.')[0] : 'none'}
-          </span>
-        </span>
-        <span class='mdl-list__item-secondary-content'>
-          <span class='mdl-list__item-secondary-info'>Play</span>
-          <i class='material-icons'>grid_on</i>
-        </span>
-      </li>`;
+  <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
+    ${avatar}
+    <div class='overflowHidden' style='width: 115px;'>${user.displayName}</div>
+    <span class='mdl-list__item-sub-title'>
+      ${user.providerId ? user.providerId.split('.')[0] : 'none'}
+    </span>
+  </span>
+  <span class='mdl-list__item-secondary-content'>
+    <span class='mdl-list__item-secondary-info'>Play</span>
+    <i class='material-icons'>grid_on</i>
+  </span>
+</li>`;
     }
   });
   // allUsers = usersObj;
@@ -308,8 +306,8 @@ async function loadGamesView(gamesObj) {
         allUsers[myOpponent.uid] && allUsers[myOpponent.uid].photoURL;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-          <img src='${opponentPhoto}' alt='profile picture'>
-        </span>`;
+  <img src='${opponentPhoto}' alt='profile picture'>
+</span>`;
       }
       activeGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span class='mdl-list__item-primary-content'>
@@ -339,7 +337,7 @@ async function loadGamesView(gamesObj) {
         allUsers[myOpponent.uid] && allUsers[myOpponent.uid].photoURL;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-    <img src='${opponentPhoto}' alt='profile picture'>
+  <img src='${opponentPhoto}' alt='profile picture'>
 </span>`;
       }
       pastGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
@@ -445,19 +443,21 @@ function showPuzzleView(game) {
           const halfCell = cellDim / 2;
           const radius = halfCell - 1.5;
           let svgHtml = `<svg class='posAbsolute upperLeft'>
-          <path d='M ${halfCell} ${halfCell}'/>
-          <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black' fill='transparent'/>
-          </svg>`;
+  <path d='M ${halfCell} ${halfCell}'/>
+  <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black'
+    fill='transparent'/>
+</svg>`;
           if (squareData.clueNum) {
-            // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 24)) + 1.5; // 30 deg each direction
-            // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 24)) + 1.5; // from 135deg
+            // dimA and dimB values below are for 105 degree start point
+            // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 24)) + 1.5;
+            // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 24)) + 1.5;
             let dimA = radius * 0.03407 + 1.5;
             let dimB = radius * 0.74118 + 1.5;
-            svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
-            <path d='M ${dimA} ${dimB}
-            A ${radius} ${radius} 0 1 0 ${halfCell} 1.5'
-            stroke='black' fill='transparent'/>
-            </svg>`;
+            svgHtml = `\
+<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
+  <path d='M ${dimA} ${dimB} A ${radius} ${radius} 0 1 0 ${halfCell} 1.5'
+    stroke='black' fill='transparent'/>
+</svg>`;
           }
           cell.innerHTML += svgHtml;
         }
@@ -493,7 +493,7 @@ function showPuzzleView(game) {
     const textDiv = document.createElement('div');
     // unsafe:
     // textDiv.innerHTML = clueText;
-    // safe: (setHTML sanitizes html) unfortunately, limited availablility
+    // safe: (setHTML sanitizes html) unfortunately, limited availablility, so
     try {
       textDiv.setHTML(clueText);
     } catch (err) {
@@ -620,11 +620,8 @@ function cellClicked(event) {
   }
   setIdxArrayController([]);
   currentCell = cell;
-  if (acrossWord) {
-    selectAcross(cell);
-  } else {
-    selectDown(cell);
-  }
+  const direction = acrossWord ? 'across' : 'down';
+  selectBlock(direction, cell);
 }
 
 /**
@@ -646,11 +643,7 @@ function clueClicked(event, direction) {
   let elem = event.target;
   while (elem.id === '') elem = elem.parentElement;
   setAcrossWordController(elem.id.includes('across'));
-  if (direction === 'across') {
-    selectAcross(cell);
-  } else {
-    selectDown(cell);
-  }
+  selectBlock(direction, cell);
 }
 
 /**
@@ -760,12 +753,12 @@ function clearLetters() {
 }
 
 /**
- * Highlights an across clue and location in puzzle based on which cell
+ * Highlights a clue and location in puzzle based on which cell
  * the user clicks
+ * @param {string} direction 'across' or 'down'
  * @param {Object} cell Cell the user clicked
  */
-function selectAcross(cell) {
-  console.log('Hello from selectAcross.');
+function selectBlock(direction, cell) {
   const game = getCurrentGameController();
   const columns = getColumnsController();
   const row = cell.parentElement.rowIndex;
@@ -774,86 +767,36 @@ function selectAcross(cell) {
   const index = row * columns + col;
 
   clearHighlights();
-  const idxArray = getWordBlock(cell, 'across');
+  const idxArray = getWordBlock(cell, direction);
   setIdxArrayController(idxArray);
-  const currentClue = game.puzzle.grid[idxArray[0]].clueNum;
-  for (const clue of acrossClues.children) {
-    const clueNumStr = clue.children[0].textContent.split('.')[0];
-    if (clueNumStr === currentClue.toString()) {
-      clue.classList.add('rangeHighlight', 'cluePop');
-      acrossClues.scrollBy({
-        top: clue.offsetTop - 100 - acrossClues.scrollTop,
-        left: 0,
-        behavior: 'smooth',
-      });
-      singleClue.innerText = clue.children[1].textContent;
-      break;
-    }
-  }
-  let currentCol = index - rowOffset;
-  let currentCell = cell.parentElement.children[currentCol];
-  cell.parentElement.children[idxArray[0] - rowOffset].classList.add(
-    'border2pxLeft'
+  const clue = document.getElementById(
+    direction + game.puzzle.grid[idxArray[0]].clueNum
   );
-  for (const idx of idxArray) {
-    currentCol = idx - rowOffset;
-    currentCell = cell.parentElement.children[currentCol];
-    currentCell.classList.add('border2pxTop', 'border2pxBottom');
-    currentCell.classList.add(
-      currentCol === col ? 'currCellHighlight' : 'rangeHighlight'
-    );
-  }
-  cell.parentElement.children[
-    idxArray[idxArray.length - 1] - rowOffset
-  ].classList.add('border2pxRight');
-}
+  clue.classList.add('rangeHighlight', 'cluePop');
+  const clueList = direction === 'across' ? acrossClues : downClues;
+  clueList.scrollBy({
+    top: clue.offsetTop - 100 - clueList.scrollTop,
+    left: 0,
+    behavior: 'smooth',
+  });
+  singleClue.innerText = clue.children[1].textContent;
 
-/**
- * Highlights a down clue and location in puzzle based on which cell
- * the user clicks
- * @param {Object} cell Cell the user clicked
- */
-function selectDown(cell) {
-  console.log('Hello from selectDown.');
-  const game = getCurrentGameController();
-  const columns = getColumnsController();
-  const row = cell.parentElement.rowIndex;
-  const col = cell.cellIndex;
-  const index = row * columns + col;
-
-  clearHighlights();
-  const idxArray = getWordBlock(cell, 'down');
-  setIdxArrayController(idxArray);
-  // get the number of the clue number
-  const currentClue = game.puzzle.grid[idxArray[0]].clueNum;
-  for (const clue of downClues.children) {
-    const clueNumStr = clue.children[0].textContent.split('.')[0];
-    if (clueNumStr === currentClue.toString()) {
-      clue.classList.add('rangeHighlight', 'cluePop');
-      downClues.scrollBy({
-        top: clue.offsetTop - 100 - downClues.scrollTop,
-        left: 0,
-        behavior: 'smooth',
-      });
-      singleClue.innerText = clue.children[1].textContent;
-    }
-  }
-  let currentRow = Math.floor(index / columns);
-  let currentCell = puzTable.children[0].children[currentRow].children[col];
-  puzTable.children[0].children[Math.floor(idxArray[0] / columns)].children[
-    col
-  ].classList.add('border2pxTop');
-  for (const idx of idxArray) {
-    currentRow = Math.floor(idx / columns);
-    currentCell = puzTable.children[0].children[currentRow].children[col];
-    currentCell.classList.add('border2pxLeft', 'border2pxRight');
+  const begin = direction === 'across' ? 'Left' : 'Top';
+  const end = direction === 'across' ? 'Right' : 'Bottom';
+  const sideA = direction === 'across' ? 'Top' : 'Left';
+  const sideB = direction === 'across' ? 'Bottom' : 'Right';
+  for (let idx = 0; idx < idxArray.length; idx++) {
+    const idxRow = Math.floor(idxArray[idx] / columns);
+    const idxCol = idxArray[idx] - idxRow * columns;
+    const currentCell = puzTable.firstChild.children[idxRow].children[idxCol];
     currentCell.classList.add(
-      currentRow === row ? 'currCellHighlight' : 'rangeHighlight'
+      currentCell === cell ? 'currCellHighlight' : 'rangeHighlight'
     );
+    if (idx === 0) currentCell.classList.add(`border2px${begin}`);
+    currentCell.classList.add(`border2px${sideA}`, `border2px${sideB}`);
+    if (idx === idxArray.length - 1)
+      currentCell.classList.add(`border2px${end}`);
   }
-  puzTable.children[0].children[
-    Math.floor(idxArray[idxArray.length - 1] / columns)
-  ].children[col].classList.add('border2pxBottom');
 }
 
 /**
@@ -938,22 +881,6 @@ function showReplayDialog(game, result) {
   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
   replayButton.classList.remove('displayNone');
   replayButton.addEventListener('click', replayOpponent);
-  // let replayButton = document.getElementById('replayButton');
-  // if (!replayButton) {
-  //   replayButton = document.createElement('button');
-  //   replayButton.setAttribute('id', 'replayButton');
-  //   replayButton.classList.add(
-  //     'mdl-button',
-  //     'mdl-js-button',
-  //     'mdl-button--raised',
-  //     'mdl-js-ripple-effect',
-  //     'mdl-button--accent',
-  //     'cursorPointer'
-  //   );
-  //   replayButton.innerText = 'Play Again!';
-  //   gamesDialog.children[0].appendChild(replayButton);
-  //   replayButton.addEventListener('click', replayOpponent);
-  // }
   if (game.difficulty === 'medium') {
     radioEasy.removeAttribute('checked');
     radioHard.removeAttribute('checked');
@@ -1123,11 +1050,8 @@ function resizePuzzle() {
     }
   }
   if (currentCell) {
-    if (getAcrossWordController()) {
-      selectAcross(currentCell);
-    } else {
-      selectDown(currentCell);
-    }
+    const direction = getAcrossWordController() ? 'across' : 'down';
+    selectBlock(direction, currentCell);
   }
 }
 
