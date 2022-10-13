@@ -391,7 +391,8 @@ function playWordController() {
   const checkAnswer = httpsCallable(functions, 'checkAnswer');
   checkAnswer(answerObj)
     .then((obj) => {
-      console.log('isCorrect: ', `${obj.data.correctAnswer}`);
+      const returnObj = obj.data;
+      console.log('returnObj: ', returnObj);
       return;
     })
     .then(() => {

@@ -14,6 +14,8 @@
     "webpack": "^5.74.0",
     "webpack-bundle-analyzer": "^4.6.1",
     "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.11.1",
+    "webpack-merge": "^5.8.0",
     "workbox-build": "^6.1.2",
     "workbox-webpack-plugin": "^6.5.4"
   },
@@ -22,7 +24,8 @@
   },
   "private": true,
   "scripts": {
-    "build": "webpack"
+    "start": "webpack --config webpack.dev.js --watch",
+    "build": "webpack --config webpack.prod.js"
   },
   "eslintConfig": {
     "extends": "google"
