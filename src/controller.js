@@ -1,5 +1,10 @@
 import { db, app, auth, functions, messaging } from './firebase-init.js';
-import { authChangeView, showPuzzleView, loadGamesView } from './view.js';
+import {
+  authChangeView,
+  showPuzzleView,
+  loadGamesView,
+  animateScoringView,
+} from './view.js';
 import {
   getDatabase,
   ref,
@@ -392,6 +397,7 @@ function playWordController() {
   checkAnswer(answerObj)
     .then((obj) => {
       const returnObj = obj.data;
+      animateScoringView(returnObj);
       console.log('returnObj: ', returnObj);
       return;
     })

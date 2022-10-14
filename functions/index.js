@@ -335,7 +335,7 @@ function parsePuzzle(puzzle) {
 //     });
 // }
 
-let correctIndices = [];
+let checkAnswerResult = [];
 
 /**
  * Firebase Cloud Function which returns the result of checking
@@ -370,23 +370,29 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
       if (returnObj.correctAnswer) {
         game.puzzle.completedClues[direction].push(parseInt(clueNumber));
       }
-      correctIndices = [];
+      checkAnswerResult = [];
       for (let index = 0; index < answerObj.guess.length; index++) {
         const gridElement = game.puzzle.grid[idxArray[index]];
         const correctValue = answers.answerKey[idxArray[index]];
         const guess = answerObj.guess[index];
         gridElement.guess = guess;
+        const cellResult = {};
+        cellResult.guess = guess;
+        cellResult.correctLetter = correctValue;
+        cellResult.index = idxArray[index];
         console.log('Correct letter: ', correctValue);
         console.log('Guess: ', guess);
         if (correctValue === guess) {
           gridElement.value = guess;
           if (gridElement.status === 'locked' && returnObj.correctAnswer) {
             game[player].score += scoreValues[guess];
-            correctIndices.push(idxArray[index]);
+            cellResult.score = scoreValues[guess];
+            checkAnswerResult.push(cellResult);
             console.log('letter score: ', scoreValues[guess]);
           } else if (gridElement.status !== 'locked') {
             game[player].score += scoreCell(game, direction, idxArray[index]);
-            correctIndices.push(idxArray[index]);
+            cellResult.score = scoreValues[guess];
+            checkAnswerResult.push(cellResult);
             // console.log(
             //   'letter score: ',
             //   scoreCell(game, direction, idxArray[index])
@@ -395,6 +401,9 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
             gridElement.bgColor = game[player].bgColor;
             gridElement.status = 'locked';
           }
+        } else {
+          cellResult.score = 0;
+          checkAnswerResult.push(cellResult);
         }
       }
       game.nextTurn = answerObj.myOpponentUid;
@@ -417,7 +426,7 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
   } catch (error) {
     functions.logger.error('checkAnswer transaction failure: ', error);
   }
-  returnObj.correctIndices = correctIndices;
+  returnObj.checkAnswerResult = checkAnswerResult;
   return returnObj;
 });
 
@@ -437,25 +446,30 @@ function scoreCell(game, direction, index) {
   // console.log(orthoWordArray);
   // console.log('direction: ', direction);
   let addedScore = 0;
-  let addedIndices = [];
+  let addedResults = [];
   console.log('ortho word array: ', orthoWordArray);
   for (const idx of orthoWordArray) {
+    const correctLetter = game.puzzle.grid[idx].value;
+    const cellResult = {};
+    cellResult.correctLetter = correctLetter;
+    cellResult.index = idx;
+    cellResult.score = scoreValues[correctLetter];
     if (idx !== index && game.puzzle.grid[idx].status !== 'locked') {
       addedScore = 0;
-      addedIndices = [];
+      addedResults = [];
       break;
     }
-    addedScore += scoreValues[game.puzzle.grid[idx].value];
-    addedIndices.push(idx);
+    addedScore += scoreValues[correctLetter];
+    addedResults.push(cellResult);
   }
-  correctIndices = correctIndices.concat(addedIndices);
+  checkAnswerResult = checkAnswerResult.concat(addedResults);
   console.log('game.puzzle.grid[index].value: ', game.puzzle.grid[index].value);
   console.log(
-    'scoreValues[game.puzzle.grid[index].value: ',
+    'scoreValues[game.puzzle.grid[index].value]: ',
     scoreValues[game.puzzle.grid[index].value]
   );
   console.log('added score: ', addedScore);
-  console.log('added indices: ', addedIndices);
+  console.log('addedResults: ', addedResults);
   console.log(
     'returned score: ',
     addedScore + scoreValues[game.puzzle.grid[index].value]

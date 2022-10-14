@@ -1,3 +1,4 @@
+import { getGlobal } from '@firebase/util';
 import {
   authButtonClickedController,
   startNewGameController,
@@ -589,6 +590,121 @@ function showPuzzleView(game) {
 }
 
 /**
+ * Animate scoring with
+ * @param {*} scoreObj
+ */
+async function animateScoringView(scoreObj) {
+  console.log('scoreObj: ', scoreObj);
+  /**
+   * scoreObj: checkAnswerResult: [
+   *   {correctLetter: 'S', index: 6, score: 1},
+   *   {correctLetter: 'E', index: 7, score: 1},
+   *   {correctLetter: 'L', index: 8, score: 2},
+   *   {correctLetter: 'F', index: 9, score: 4},
+   *   {guess: 'E', correctLetter: 'E', index: 7, score: 1},
+   *   {guess: 'G', correctLetter: 'G', index: 22, score: 3},
+   *   {guess: 'A', correctLetter: 'A', index: 37, score: 1},
+   *   {guess: 'D', correctLetter: 'D', index: 52, score: 2}
+   * ],
+   * correctAnswer: true
+   */
+  let scoreElem = scores.children[0].children[1];
+  let animatedScore = parseInt(scoreElem.textContent);
+  for (const letter of scoreObj.checkAnswerResult) {
+    const index = letter.index;
+    const guess = letter.guess ? letter.guess : letter.correctLetter;
+    const score = letter.score;
+    const columns = puzTable.firstChild.children.length;
+    const row = Math.floor(index / columns);
+    const col = index - row * columns;
+    const cell = puzTable.firstChild.children[row].children[col];
+    const cellBoundingRectangle = cell.getBoundingClientRect();
+    const cellWidth = cellBoundingRectangle.width;
+    const cellHeight = cellBoundingRectangle.height;
+    const cellX = cellBoundingRectangle.x;
+    const cellY = cellBoundingRectangle.y;
+    const scoreBox = scores.children[0].getBoundingClientRect();
+    const scoreWidth = scoreBox.width;
+    const scoreHeight = scoreBox.height;
+    const scoreX = scoreBox.x;
+    const scoreY = scoreBox.y;
+    const animatedCell = document.createElement('div');
+    animatedCell.id = 'animatedCell';
+    animatedCell.style.width = cellWidth + 'px';
+    animatedCell.style.height = cellHeight + 'px';
+    animatedCell.style.left = cellX + 'px';
+    animatedCell.style.top = cellY + 'px';
+    animatedCell.style.zIndex = 99;
+    animatedCell.classList = 'displayFlex posFixed flexDirCol spaceAround';
+    const square = document.createElement('div');
+    square.classList = 'square';
+    const letterBox = document.createElement('div');
+    letterBox.classList = 'marginAuto';
+    letterBox.innerText = cell.children[0].children[0].textContent;
+    square.appendChild(letterBox);
+    animatedCell.appendChild(square);
+    const clueNum = document.createElement('div');
+    clueNum.classList = 'clueNumber';
+    clueNum.innerText = cell.children[1] ? cell.children[1].textContent : '';
+    animatedCell.appendChild(clueNum);
+    const cellAnimator = document.getElementById('cellAnimator');
+    cellAnimator.appendChild(animatedCell);
+
+    animatedCell.animate(
+      [
+        { transform: 'scale(120%)', easing: 'linear', offset: 0.05 },
+        {
+          left: `${cellX}px`,
+          transform: 'scale(110%)',
+          easing: 'ease-in',
+          offset: 0.1,
+        },
+        {
+          left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
+          transform: 'scale(110%)',
+          offset: 0.9,
+        },
+        { transform: 'scale(120%)', easing: 'linear', offset: 0.95 },
+        {
+          transform: 'scale(10%)',
+          left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
+          easing: 'linear',
+        },
+      ],
+      {
+        duration: 2000,
+        fill: 'forwards',
+      }
+    );
+    animatedCell.animate(
+      [
+        {
+          top: `${cellY}px`,
+          easing: 'ease-out',
+          offset: 0.1,
+        },
+        {
+          top: `${scoreY + (scoreHeight - cellHeight) / 2}px`,
+          offset: 0.9,
+        },
+        {
+          top: `${scoreY + (scoreHeight - cellHeight) / 2}px`,
+        },
+      ],
+      {
+        duration: 2000,
+        fill: 'forwards',
+      }
+    );
+    await Promise.all(
+      animatedCell.getAnimations().map((animation) => animation.finished)
+    ).then(() => animatedCell.remove());
+    animatedScore += letter.score;
+    scoreElem.innerText = '' + animatedScore;
+  }
+}
+
+/**
  * Sets the variable currentCell to the cell the user clicked in
  * @param {Event} event Mouse click or screen touch event
  */
@@ -1064,4 +1180,10 @@ for (const node of keyList) {
 document.getElementById('enter').addEventListener('click', playWordController);
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
 
-export { authChangeView, signedOutView, showPuzzleView, loadGamesView };
+export {
+  authChangeView,
+  signedOutView,
+  showPuzzleView,
+  loadGamesView,
+  animateScoringView,
+};

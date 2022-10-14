@@ -234,6 +234,12 @@ select {
   aspect-ratio: 1;
 }
 
+#animatedCell {
+  border: 1px solid black;
+  background-color: white;
+  text-align: center;
+}
+
 /* .circle {
   border: 1px solid black;
   border-radius: 50%;
@@ -512,6 +518,10 @@ select {
 
 .posAbsolute {
   position: absolute;
+}
+
+.posFixed {
+  position: fixed;
 }
 
 .puzzleWidth {
