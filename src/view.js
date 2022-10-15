@@ -595,21 +595,6 @@ function showPuzzleView(game) {
  */
 function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
-  /**
-   * scoreObj: checkAnswerResult: [
-   *   {correctLetter: 'S', index: 6, score: 1},
-   *   {correctLetter: 'E', index: 7, score: 1},
-   *   {correctLetter: 'L', index: 8, score: 2},
-   *   {correctLetter: 'F', index: 9, score: 4},
-   *   {guess: 'E', correctLetter: 'E', index: 7, score: 1},
-   *   {guess: 'G', correctLetter: 'G', index: 22, score: 3},
-   *   {guess: 'A', correctLetter: 'A', index: 37, score: 1},
-   *   {guess: 'D', correctLetter: 'D', index: 52, score: 2}
-   * ],
-   * correctAnswer: true,
-   * playerUid: '3eoDltvYiwYfjPviYRRQ2agbsAz1'
-   */
-
   if (scoreObj.newGame) return;
   const myUid = getCurrentUserController().uid;
   const scoreElem =
@@ -619,8 +604,6 @@ function animateScoringView(scoreObj) {
   let delay = 0;
   for (const letter of scoreObj.checkAnswerResult) {
     const index = letter.index;
-    // const guess = letter.guess ? letter.guess : letter.correctLetter;
-    // const score = letter.score;
     const columns = puzTable.firstChild.children.length;
     const row = Math.floor(index / columns);
     const col = index - row * columns;
@@ -657,61 +640,169 @@ function animateScoringView(scoreObj) {
     const cellAnimator = document.getElementById('cellAnimator');
     cellAnimator.appendChild(animatedCell);
 
-    animatedCell.animate(
-      [
-        { transform: 'scale(120%)', easing: 'linear', offset: 0.05 },
+    if (letter.score === 0) {
+      const windowHeight = window.innerHeight;
+      const windowWidth = window.innerWidth;
+      const horizontalBounce = windowWidth * (0.5 - Math.random());
+      // animatedCell
+      //   .animate (
+      // [
+      //   {
+      //     backgroundColor: 'red',
+      //     transform: 'rotate(0deg)',
+      //   },
+      //   {
+      //     backgroundColor: 'red',
+      //     iterations: Infinity,
+      //     transform: 'rotate(720deg)',
+      //   },
+      // ],
+      // { delay: delay, duration: 2000 }
+      // );
+      animatedCell.animate(
+        [
+          {
+            backgroundColor: 'red',
+            transform: 'scale(120%)',
+            easing: 'linear',
+            offset: 0.05,
+          },
+          {
+            top: `${cellY}px`,
+            transform: 'scale(110%) rotate(0deg)',
+            easing: 'ease-in',
+            offset: 0.1,
+          },
+          {
+            top: `${windowHeight - cellHeight}px`,
+            transform: 'scale(110%) rotate(720deg)',
+            offset: 0.9,
+          },
+          {
+            backgroundColor: 'red',
+            top: `${windowHeight - cellHeight}px`,
+            transform: 'scale(110%)',
+            offset: 1,
+          },
+        ],
         {
-          left: `${cellX}px`,
-          transform: 'scale(110%)',
-          easing: 'ease-in',
-          offset: 0.1,
-        },
+          delay: delay,
+          duration: 1000,
+          fill: 'forwards',
+        }
+      );
+      animatedCell.animate(
+        [
+          {
+            backgroundColor: 'red',
+            top: `${windowHeight - cellHeight}px`,
+            transform: 'scale(110%)',
+            easing: 'ease-out',
+          },
+          {
+            top: `${cellHeight + (windowHeight - cellHeight) / 2}px`,
+            transform: 'scale(110%)',
+            offset: 0.5,
+            easing: 'ease-in',
+          },
+          {
+            top: `${windowHeight}px`,
+            transform: 'scale(110%)',
+            offset: 1,
+          },
+        ],
         {
-          left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
-          transform: 'scale(110%)',
-          offset: 0.9,
-        },
-        { transform: 'scale(120%)', easing: 'linear', offset: 0.95 },
+          delay: delay + 1000,
+          duration: 1000,
+          fill: 'forwards',
+        }
+      );
+      animatedCell.animate(
+        [
+          {
+            left: `${cellX}px`,
+            transform: 'rotate(0deg)',
+          },
+          {
+            left: `${cellX + horizontalBounce}px`,
+            transform: 'rotate(720deg)',
+          },
+        ],
         {
-          transform: 'scale(10%)',
-          left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
-          easing: 'linear',
-        },
-      ],
-      {
-        delay: delay,
-        duration: 2000,
-        fill: 'forwards',
-      }
-    );
-    animatedCell.animate(
-      [
+          delay: delay + 1000,
+          duration: 1000,
+          fill: 'forwards',
+        }
+      );
+    } else {
+      animatedCell.animate(
+        [
+          { transform: 'scale(120%)', easing: 'linear', offset: 0.05 },
+          {
+            left: `${cellX}px`,
+            transform: 'scale(110%)',
+            easing: 'ease-in',
+            offset: 0.1,
+          },
+          {
+            left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
+            transform: 'scale(110%)',
+            offset: 0.9,
+          },
+          { transform: 'scale(120%)', easing: 'linear', offset: 0.95 },
+          {
+            transform: 'scale(10%)',
+            left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
+            easing: 'linear',
+          },
+        ],
         {
-          top: `${cellY}px`,
-          easing: 'ease-out',
-          offset: 0.1,
-        },
+          delay: delay,
+          duration: 2000,
+          fill: 'forwards',
+        }
+      );
+      animatedCell.animate(
+        [
+          {
+            top: `${cellY}px`,
+            easing: 'ease-out',
+            offset: 0.1,
+          },
+          {
+            top: `${scoreY + (scoreHeight - cellHeight) / 2}px`,
+            offset: 0.9,
+          },
+          {
+            top: `${scoreY + (scoreHeight - cellHeight) / 2}px`,
+          },
+        ],
         {
-          top: `${scoreY + (scoreHeight - cellHeight) / 2}px`,
-          offset: 0.9,
-        },
-        {
-          top: `${scoreY + (scoreHeight - cellHeight) / 2}px`,
-        },
-      ],
-      {
-        delay: delay,
-        duration: 2000,
-        fill: 'forwards',
-      }
-    );
+          delay: delay,
+          duration: 2000,
+          fill: 'forwards',
+        }
+      );
+    }
     setTimeout(() => {
       animatedCell.remove();
+      animatedScore += letter.score;
+      playerScore.innerText = '' + animatedScore;
     }, 2000 + delay);
-    animatedScore += letter.score;
-    playerScore.innerText = '' + animatedScore;
     delay += 500;
   }
+  return wait(1500 + delay);
+}
+
+/**
+ * Promisify setTimeout so it can be used in a .then statement
+ * @param {number} time Time in milliseconds
+ * @returns Promise that resolves in `time`
+ */
+function wait(time) {
+  return new Promise((resolve) => {
+    setTimeout(resolve.bind(null), time);
+  });
 }
 
 /**

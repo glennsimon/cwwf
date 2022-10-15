@@ -356,7 +356,7 @@ function subscribeToGame(gameId) {
   // Start listening to current puzzle changes
   gameUnsubscribe = onSnapshot(
     doc(db, 'games', gameId),
-    (doc) => {
+    async (doc) => {
       const prevGameId = currentGameId;
       currentGame = doc.data();
       currentGameId = gameId;
@@ -371,7 +371,7 @@ function subscribeToGame(gameId) {
       columns = currentGame.puzzle.cols;
       myTurn = currentUser.uid === currentGame.nextTurn;
       if (prevGameId === gameId) {
-        animateScoringView(currentGame.lastTurnCheckObj);
+        await animateScoringView(currentGame.lastTurnCheckObj);
       }
       showPuzzleView(currentGame);
     },
