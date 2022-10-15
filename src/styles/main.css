@@ -234,7 +234,7 @@ select {
   aspect-ratio: 1;
 }
 
-#animatedCell {
+.animatedCell {
   border: 1px solid black;
   background-color: white;
   text-align: center;

@@ -228,6 +228,8 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
       game.winner = null;
       game.nextTurn = gameStartParameters.initiator.uid;
       game.start = gameListData.start;
+      game.lastTurnCheckObj = { newGame: true };
+
       // console.log('New parsed puzzle: ', game);
 
       batch.set(gamesDocRef, game);
@@ -347,7 +349,7 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
   const gameRef = db.doc(`games/${answerObj.gameId}`);
   const answersRef = db.doc(`games/${answerObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${answerObj.gameId}`);
-  const returnObj = { correctAnswer: true };
+  const lastTurnCheckObj = { correctAnswer: true };
   try {
     await db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
@@ -357,17 +359,17 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
       const player =
-        game.initiator.uid === answerObj.myUid ? 'initiator' : 'opponent';
+        game.initiator.uid === answerObj.playerUid ? 'initiator' : 'opponent';
       console.log('answerObj: ', answerObj);
       for (let index = 0; index < answerObj.guess.length; index++) {
         const correctValue = answers.answerKey[idxArray[index]];
         const guess = answerObj.guess[index];
         if (correctValue !== guess) {
-          returnObj.correctAnswer = false;
+          lastTurnCheckObj.correctAnswer = false;
         }
       }
-      console.log('returnObj: ', returnObj);
-      if (returnObj.correctAnswer) {
+      console.log('lastTurnCheckObj: ', lastTurnCheckObj);
+      if (lastTurnCheckObj.correctAnswer) {
         game.puzzle.completedClues[direction].push(parseInt(clueNumber));
       }
       checkAnswerResult = [];
@@ -384,7 +386,10 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
         console.log('Guess: ', guess);
         if (correctValue === guess) {
           gridElement.value = guess;
-          if (gridElement.status === 'locked' && returnObj.correctAnswer) {
+          if (
+            gridElement.status === 'locked' &&
+            lastTurnCheckObj.correctAnswer
+          ) {
             game[player].score += scoreValues[guess];
             cellResult.score = scoreValues[guess];
             checkAnswerResult.push(cellResult);
@@ -419,6 +424,9 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
         game.status = 'finished';
         gameList.status = 'finished';
       }
+      lastTurnCheckObj.checkAnswerResult = checkAnswerResult;
+      lastTurnCheckObj.playerUid = answerObj.playerUid;
+      game.lastTurnCheckObj = lastTurnCheckObj;
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameList);
     });
@@ -426,8 +434,7 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
   } catch (error) {
     functions.logger.error('checkAnswer transaction failure: ', error);
   }
-  returnObj.checkAnswerResult = checkAnswerResult;
-  return returnObj;
+  return;
 });
 
 /**
@@ -541,7 +548,7 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
       game.winner = 'tie';
       game.emptySquares = 0;
       if (game[me].score > game[they].score) {
-        game.winner = abandonObj.myUid;
+        game.winner = abandonObj.playerUid;
       } else if (game[me].score < game[they].score) {
         game.winner = abandonObj.opponentUid;
       }

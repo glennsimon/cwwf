@@ -1,6 +1,7 @@
 import {
   getCurrentUserController,
   populateAllGamesController,
+  setCurrentGameIdController,
 } from './controller.js';
 
 /** Initialize after document loads */
@@ -71,6 +72,7 @@ async function navigate() {
       await loadSigninModule();
     }
     firebaseuiAuthContainer.classList.remove('displayNone');
+    setCurrentGameIdController(null);
   } else if (location.hash === '#games') {
     try {
       gamesDialog.close();
@@ -90,6 +92,7 @@ async function navigate() {
     } else {
       populateAllGamesController(currentUser.uid);
     }
+    setCurrentGameIdController(null);
   } else if (location.hash === '#tos') {
     gamesPanel.classList.add('slideOut');
     appContainer.classList.add('slideIn');
@@ -106,6 +109,7 @@ async function navigate() {
     returnToSignin.classList.remove('displayNone');
     signinMessage.classList.add('displayNone');
     firebaseuiAuthContainer.classList.add('displayNone');
+    setCurrentGameIdController(null);
   } else if (location.hash === '#privacy') {
     gamesPanel.classList.add('slideOut');
     appContainer.classList.add('slideIn');
@@ -122,6 +126,7 @@ async function navigate() {
     returnToSignin.classList.remove('displayNone');
     signinMessage.classList.add('displayNone');
     firebaseuiAuthContainer.classList.add('displayNone');
+    setCurrentGameIdController(null);
   }
 }
 

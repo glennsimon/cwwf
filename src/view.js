@@ -593,7 +593,7 @@ function showPuzzleView(game) {
  * Animate scoring with
  * @param {*} scoreObj
  */
-async function animateScoringView(scoreObj) {
+function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
   /**
    * scoreObj: checkAnswerResult: [
@@ -606,14 +606,21 @@ async function animateScoringView(scoreObj) {
    *   {guess: 'A', correctLetter: 'A', index: 37, score: 1},
    *   {guess: 'D', correctLetter: 'D', index: 52, score: 2}
    * ],
-   * correctAnswer: true
+   * correctAnswer: true,
+   * playerUid: '3eoDltvYiwYfjPviYRRQ2agbsAz1'
    */
-  let scoreElem = scores.children[0].children[1];
-  let animatedScore = parseInt(scoreElem.textContent);
+
+  if (scoreObj.newGame) return;
+  const myUid = getCurrentUserController().uid;
+  const scoreElem =
+    myUid === scoreObj.playerUid ? scores.children[0] : scores.children[2];
+  const playerScore = scoreElem.children[1];
+  let animatedScore = parseInt(playerScore.textContent);
+  let delay = 0;
   for (const letter of scoreObj.checkAnswerResult) {
     const index = letter.index;
-    const guess = letter.guess ? letter.guess : letter.correctLetter;
-    const score = letter.score;
+    // const guess = letter.guess ? letter.guess : letter.correctLetter;
+    // const score = letter.score;
     const columns = puzTable.firstChild.children.length;
     const row = Math.floor(index / columns);
     const col = index - row * columns;
@@ -623,19 +630,19 @@ async function animateScoringView(scoreObj) {
     const cellHeight = cellBoundingRectangle.height;
     const cellX = cellBoundingRectangle.x;
     const cellY = cellBoundingRectangle.y;
-    const scoreBox = scores.children[0].getBoundingClientRect();
+    const scoreBox = scoreElem.getBoundingClientRect();
     const scoreWidth = scoreBox.width;
     const scoreHeight = scoreBox.height;
     const scoreX = scoreBox.x;
     const scoreY = scoreBox.y;
     const animatedCell = document.createElement('div');
-    animatedCell.id = 'animatedCell';
     animatedCell.style.width = cellWidth + 'px';
     animatedCell.style.height = cellHeight + 'px';
     animatedCell.style.left = cellX + 'px';
     animatedCell.style.top = cellY + 'px';
     animatedCell.style.zIndex = 99;
-    animatedCell.classList = 'displayFlex posFixed flexDirCol spaceAround';
+    animatedCell.classList =
+      'displayFlex posFixed flexDirCol spaceAround animatedCell';
     const square = document.createElement('div');
     square.classList = 'square';
     const letterBox = document.createElement('div');
@@ -672,6 +679,7 @@ async function animateScoringView(scoreObj) {
         },
       ],
       {
+        delay: delay,
         duration: 2000,
         fill: 'forwards',
       }
@@ -692,15 +700,17 @@ async function animateScoringView(scoreObj) {
         },
       ],
       {
+        delay: delay,
         duration: 2000,
         fill: 'forwards',
       }
     );
-    await Promise.all(
-      animatedCell.getAnimations().map((animation) => animation.finished)
-    ).then(() => animatedCell.remove());
+    setTimeout(() => {
+      animatedCell.remove();
+    }, 2000 + delay);
     animatedScore += letter.score;
-    scoreElem.innerText = '' + animatedScore;
+    playerScore.innerText = '' + animatedScore;
+    delay += 500;
   }
 }
 

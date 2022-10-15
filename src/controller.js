@@ -74,6 +74,14 @@ function setCurrentGameController(game) {
 }
 
 /**
+ * Set the currentGameId. Should be used by all external modules.
+ * @param {object} gameId gameId | null
+ */
+function setCurrentGameIdController(gameId) {
+  currentGameId = gameId;
+}
+
+/**
  * Get the value of acrossWord. Should be used by all external modules.
  * @returns {boolean} true if across, false if down
  */
@@ -349,6 +357,7 @@ function subscribeToGame(gameId) {
   gameUnsubscribe = onSnapshot(
     doc(db, 'games', gameId),
     (doc) => {
+      const prevGameId = currentGameId;
       currentGame = doc.data();
       currentGameId = gameId;
       if (currentGame.status === 'started') {
@@ -361,6 +370,9 @@ function subscribeToGame(gameId) {
       idxArray = [];
       columns = currentGame.puzzle.cols;
       myTurn = currentUser.uid === currentGame.nextTurn;
+      if (prevGameId === gameId) {
+        animateScoringView(currentGame.lastTurnCheckObj);
+      }
       showPuzzleView(currentGame);
     },
     (error) => {
@@ -388,19 +400,13 @@ function playWordController() {
   answerObj.gameId = currentGameId;
   answerObj.acrossWord = acrossWord;
   answerObj.guess = [];
-  answerObj.myUid = currentUser.uid;
+  answerObj.playerUid = currentUser.uid;
   answerObj.myOpponentUid = myOpponentUid;
   for (const index of idxArray) {
     answerObj.guess.push(currentGame.puzzle.grid[index].guess);
   }
   const checkAnswer = httpsCallable(functions, 'checkAnswer');
   checkAnswer(answerObj)
-    .then((obj) => {
-      const returnObj = obj.data;
-      animateScoringView(returnObj);
-      console.log('returnObj: ', returnObj);
-      return;
-    })
     .then(() => {
       const notifyOpponent = httpsCallable(functions, 'notifyPlayer');
       return notifyOpponent(answerObj.myOpponentUid).then((result) => {
@@ -495,7 +501,7 @@ function abandonCurrentGameController() {
   const abandonObj = {};
   abandonObj.gameId = currentGameId;
   abandonObj.opponentUid = myOpponentUid;
-  abandonObj.myUid = currentUser.uid;
+  abandonObj.playerUid = currentUser.uid;
   const abandonGame = httpsCallable(functions, 'abandonGame');
   abandonGame(abandonObj).catch((err) => {
     console.log('Error code: ', err.code);
@@ -519,6 +525,7 @@ export {
   setIdxArrayController,
   getCurrentGameController,
   setCurrentGameController,
+  setCurrentGameIdController,
   enterLetterController,
   abandonCurrentGameController,
   getAcrossWordController,
