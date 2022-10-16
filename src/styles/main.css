@@ -188,10 +188,6 @@ select {
   flex-grow: 10;
 }*/
 
-/*#clueContainer {
-  align-self: stretch;
-}*/
-
 #puzNotepad {
   background-color: #ffffe0;
   padding: 4px;
@@ -666,7 +662,6 @@ select {
   }
 
   #clueContainer {
-    display: flex;
     height: 45vw;
     width: 50vw;
   }
@@ -708,7 +703,6 @@ select {
 @media screen and (min-aspect-ratio: 3/2) {
   #clueContainer {
     height: 70%;
-    display: flex;
     width: 50vw;
   }
 

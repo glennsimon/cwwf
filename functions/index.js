@@ -91,6 +91,7 @@ exports.authChanged = functions.https.onCall(async (data, context) => {
         ? context.auth.token.email_verified
         : null,
     };
+    userData.signInProvider = context.auth.token.firebase.sign_in_provider;
     await db
       .doc(`/users/${uid}`)
       .set(userData, { merge: true })

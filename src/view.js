@@ -258,7 +258,7 @@ function loadUserList(usersObj, currentUser) {
     ${avatar}
     <div class='overflowHidden' style='width: 115px;'>${user.displayName}</div>
     <span class='mdl-list__item-sub-title'>
-      ${user.providerId ? user.providerId.split('.')[0] : 'none'}
+      ${user.signInProvider ? user.signInProvider.split('.')[0] : 'none'}
     </span>
   </span>
   <span class='mdl-list__item-secondary-content'>
@@ -471,6 +471,7 @@ function showPuzzleView(game) {
   kbContainer.classList.remove('displayNone');
   kbContainer.classList.add('displayFlex');
   clueContainer.classList.remove('displayNone');
+  clueContainer.classList.add('displayFlex');
   splash.classList.add('displayNone');
   concessionBtnContainer.classList.remove('displayNone');
 
@@ -623,14 +624,15 @@ function animateScoringView(scoreObj) {
     animatedCell.style.height = cellHeight + 'px';
     animatedCell.style.left = cellX + 'px';
     animatedCell.style.top = cellY + 'px';
-    animatedCell.style.zIndex = 99;
-    animatedCell.classList =
-      'displayFlex posFixed flexDirCol spaceAround animatedCell';
+    animatedCell.style.zIndex = 10;
+    animatedCell.backgroundColor = cell.backgroundColor;
+    animatedCell.classList = `displayFlex posFixed flexDirCol spaceAround animatedCell`;
     const square = document.createElement('div');
     square.classList = 'square';
     const letterBox = document.createElement('div');
     letterBox.classList = 'marginAuto';
-    letterBox.innerText = cell.children[0].children[0].textContent;
+    cell.children[0].children[0].innerText = letter.guess;
+    letterBox.innerText = letter.guess;
     square.appendChild(letterBox);
     animatedCell.appendChild(square);
     const clueNum = document.createElement('div');
@@ -644,21 +646,6 @@ function animateScoringView(scoreObj) {
       const windowHeight = window.innerHeight;
       const windowWidth = window.innerWidth;
       const horizontalBounce = windowWidth * (0.5 - Math.random());
-      // animatedCell
-      //   .animate (
-      // [
-      //   {
-      //     backgroundColor: 'red',
-      //     transform: 'rotate(0deg)',
-      //   },
-      //   {
-      //     backgroundColor: 'red',
-      //     iterations: Infinity,
-      //     transform: 'rotate(720deg)',
-      //   },
-      // ],
-      // { delay: delay, duration: 2000 }
-      // );
       animatedCell.animate(
         [
           {
