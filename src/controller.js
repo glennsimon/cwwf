@@ -44,6 +44,7 @@ let acrossWord = true;
 let columns = null;
 let idxArray = [];
 let myTurn = null;
+let gameListParameters = {};
 // TODO: should this be tracked, and what can be done while offline?
 let online = false;
 
@@ -63,6 +64,22 @@ let connectionUnsubscribe = () => {};
  */
 function getCurrentGameController() {
   return currentGame;
+}
+
+/**
+ * Get myOpponentUid. Should be used by all external modules.
+ * @returns {object} Returns myOpponentUid or null
+ */
+function getMyOpponentUidController() {
+  return myOpponentUid;
+}
+
+/**
+ * Get gameListParameters. Should be used by all external modules.
+ * @returns {object} Returns gameListParameters or null
+ */
+function getGameListParametersController() {
+  return gameListParameters;
 }
 
 /**
@@ -361,11 +378,10 @@ function subscribeToGame(gameId) {
       currentGame = doc.data();
       currentGameId = gameId;
       if (currentGame.status === 'started') {
-        myOpponentUid =
-          currentGame.initiator.uid === currentUser.uid
-            ? currentGame.opponent.uid
-            : currentGame.initiator.uid;
-        columns = currentGame.puzzle.cols;
+        const keys = Object.keys(currentGame.players);
+        for (const key of keys) {
+          if (key !== currentUser.uid) myOpponentUid = key;
+        }
       }
       idxArray = [];
       columns = currentGame.puzzle.cols;
@@ -530,4 +546,6 @@ export {
   abandonCurrentGameController,
   getAcrossWordController,
   setAcrossWordController,
+  getMyOpponentUidController,
+  getGameListParametersController,
 };

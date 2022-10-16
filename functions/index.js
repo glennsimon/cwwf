@@ -2,6 +2,7 @@ const functions = require('firebase-functions');
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
 const gaxios = require('gaxios');
+const { ContextExclusionPlugin } = require('webpack');
 // const { serverTimestamp } = require('firebase/firestore');
 
 // admin.initializeApp();
@@ -189,27 +190,10 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
       );
 
       const gameListData = {};
-      gameListData.initiator = {};
-      gameListData.initiator.photoURL = gameStartParameters.initiator.photoURL
-        ? gameStartParameters.initiator.photoURL
-        : null;
-      gameListData.initiator.displayName =
-        gameStartParameters.initiator.displayName;
-      gameListData.initiator.uid = gameStartParameters.initiator.uid;
-      gameListData.opponent = {};
-      gameListData.opponent.photoURL = gameStartParameters.opponent.photoURL
-        ? gameStartParameters.opponent.photoURL
-        : null;
-      gameListData.opponent.displayName =
-        gameStartParameters.opponent.displayName;
-      gameListData.opponent.uid = gameStartParameters.opponent.uid;
-      gameListData.viewableBy = [
-        `${gameStartParameters.initiator.uid}`,
-        `${gameStartParameters.opponent.uid}`,
-      ];
+      gameListData.players = gameStartParameters.players;
       gameListData.start = Date.now();
       gameListData.status = 'started';
-      gameListData.nextTurn = gameStartParameters.initiator.uid;
+      gameListData.nextTurn = context.params.uid;
       batch.set(gameListDataRef, gameListData);
 
       const answersObj = {};
@@ -217,17 +201,15 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
       batch.set(gameHiddenAnswersRef, answersObj);
 
       const game = parsePuzzle(gameFromWeb);
-      game.initiator = JSON.parse(JSON.stringify(gameListData.initiator));
-      game.initiator.score = 0;
-      game.initiator.bgColor = 'bgTransRed';
-      game.opponent = JSON.parse(JSON.stringify(gameListData.opponent));
-      game.opponent.score = 0;
-      game.opponent.bgColor = 'bgTransBlue';
-      game.viewableBy = gameListData.viewableBy;
+      game.players = gameStartParameters.players;
+      const players = Object.keys(game.players);
+      for (const player of players) {
+        game.players[player].score = 0;
+      }
       game.difficulty = gameStartParameters.difficulty;
       game.status = 'started';
       game.winner = null;
-      game.nextTurn = gameStartParameters.initiator.uid;
+      game.nextTurn = context.params.uid;
       game.start = gameListData.start;
       game.lastTurnCheckObj = { newGame: true };
 
@@ -239,6 +221,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
 
       const gameObj = {};
       gameObj.game = game;
+      // gameObj.gameListData = gameListData;
       gameObj.gameId = gamesDocRef.id;
       return gameObj;
     })
@@ -314,29 +297,9 @@ function parsePuzzle(puzzle) {
       game.puzzle.grid[i].circle = puzzle.circles && puzzle.circles[i] === 1;
     }
   }
-  // TODO: move below back inside client
-  // columns = cols;
   // console.log('parsed puzzle: ', game);
   return game;
 }
-
-// /**
-//  * Adds puzzle difficulty and initiator and opponent information.
-//  * Returns the game id from firestore (/games/{id}).
-//  * @param {Object} game
-//  * @returns {string}
-//  */
-// function newGameId(game) {
-//   return db
-//     .collection('/games/')
-//     .add(game)
-//     .then((docRef) => {
-//       return docRef.id;
-//     })
-//     .catch((err) => {
-//       console.log('Error saving new game: ', err);
-//     });
-// }
 
 let checkAnswerResult = [];
 
@@ -359,8 +322,7 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
       const idxArray = answerObj.idxArray;
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
-      const player =
-        game.initiator.uid === answerObj.playerUid ? 'initiator' : 'opponent';
+      const player = answerObj.playerUid;
       console.log('answerObj: ', answerObj);
       for (let index = 0; index < answerObj.guess.length; index++) {
         const correctValue = answers.answerKey[idxArray[index]];
@@ -527,13 +489,15 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
       const game = (await tx.get(gameRef)).data();
       const answers = (await tx.get(answersRef)).data().answerKey;
       const gameListDoc = (await tx.get(gameListRef)).data();
+      const myUid = context.params.uid;
+      const oppUid = abandonObj.opponentUid;
       gameListDoc.status = 'finished';
       // console.log('gameListDoc: ', gameListDoc);
-      const they =
-        game.initiator.uid === abandonObj.opponentUid
-          ? 'initiator'
-          : 'opponent';
-      const me = they === 'initiator' ? 'opponent' : 'initiator';
+      // const they =
+      //   game.initiator.uid === abandonObj.opponentUid
+      //     ? 'initiator'
+      //     : 'opponent';
+      // const me = they === 'initiator' ? 'opponent' : 'initiator';
       // console.log('abandonObj: ', abandonObj);
       for (let index = 0; index < answers.length; index++) {
         if (answers[index] === '.') continue;
@@ -542,16 +506,16 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
         game.puzzle.grid[index].value = answers[index];
         game.puzzle.grid[index].guess = answers[index];
         game.puzzle.grid[index].status = 'locked';
-        game.puzzle.grid[index].bgColor = game[they].bgColor;
-        game[they].score += scoreValues[letter];
+        game.puzzle.grid[index].bgColor = game[oppUid].bgColor;
+        game.players[oppUid].score += scoreValues[letter];
       }
       game.status = 'finished';
       game.winner = 'tie';
       game.emptySquares = 0;
-      if (game[me].score > game[they].score) {
-        game.winner = abandonObj.playerUid;
-      } else if (game[me].score < game[they].score) {
-        game.winner = abandonObj.opponentUid;
+      if (game.players[myUid].score > game.players[oppUid].score) {
+        game.winner = myUid;
+      } else if (game.players[myUid].score < game.players[oppUid].score) {
+        game.winner = oppUid;
       }
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameListDoc);

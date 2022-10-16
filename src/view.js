@@ -1,4 +1,5 @@
 import { getGlobal } from '@firebase/util';
+import { startGame } from '../functions/index.js';
 import {
   authButtonClickedController,
   startNewGameController,
@@ -16,6 +17,8 @@ import {
   savePuzzleController,
   setAcrossWordController,
   getAcrossWordController,
+  getMyOpponentUidController,
+  getGameListParametersController,
 } from './controller.js';
 
 import './styles/main.css';
@@ -163,23 +166,25 @@ dialogList.addEventListener('click', async (event) => {
   const currentUser = getCurrentUserController();
   const userList = await populateAllUsersController();
   const gameStartParameters = {};
-  gameStartParameters.initiator = {};
-  gameStartParameters.initiator.uid = currentUser.uid;
-  gameStartParameters.initiator.displayName = currentUser.displayName;
-  gameStartParameters.initiator.photoURL = currentUser.photoURL
+  const myUid = currentUser.uid;
+  gameStartParameters.players = {};
+  gameStartParameters.players[myUid] = {};
+  gameStartParameters.players[myUid].bgColor = 'bgTransRed';
+  gameStartParameters.players[myUid].displayName = currentUser.displayName;
+  gameStartParameters.players[myUid].photoURL = currentUser.photoURL
     ? currentUser.photoURL
     : null;
-  // TODO: selecting the right target may need fixing - while loop?
   let target = event.target;
-  // trying a fix
   while (target.id === '') {
     target = target.parentElement;
   }
-  gameStartParameters.opponent = {};
-  gameStartParameters.opponent.uid = userList[target.id].uid;
-  gameStartParameters.opponent.displayName = userList[target.id].displayName;
-  gameStartParameters.opponent.photoURL = userList[target.id].photoURL
-    ? userList[target.id].photoURL
+  const opponent = userList.target.id;
+  const oppUid = opponent.uid;
+  gameStartParameters.players[oppUid] = {};
+  gameStartParameters.players[oppUid].bgColor = 'bgTransBlue';
+  gameStartParameters.players[oppUid].displayName = opponent.displayName;
+  gameStartParameters.players[oppUid].photoURL = opponent.photoURL
+    ? opponent.photoURL
     : null;
   let difficulty = radioMed.parentElement.classList.contains('is-checked')
     ? 'medium'
@@ -300,11 +305,9 @@ async function loadGamesView(gamesObj) {
       month: 'short',
     });
     let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
+    const myOpponent = game.players[getMyOpponentUidController()];
     if (game.status === 'started') {
-      const myOpponent =
-        game.initiator.uid === currentUser.uid ? game.opponent : game.initiator;
-      const opponentPhoto =
-        allUsers[myOpponent.uid] && allUsers[myOpponent.uid].photoURL;
+      const opponentPhoto = myOpponent.photoURL ? myOpponent.photoURL : null;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <img src='${opponentPhoto}' alt='profile picture'>
@@ -324,8 +327,6 @@ async function loadGamesView(gamesObj) {
   </span>
 </li>`;
     } else {
-      const myOpponent =
-        game.initiator.uid === currentUser.uid ? game.opponent : game.initiator;
       let result = 'Tie game!';
       if (game.status === 'finished' && game.winner !== 'tie') {
         result = currentUser.uid === game.winner ? 'You won!!' : 'They won';
@@ -555,13 +556,11 @@ function showPuzzleView(game) {
 
   scores.classList.remove('displayNone');
   scores.classList.add('displayFlex');
-  const me =
-    getCurrentUserController().uid === game.initiator.uid
-      ? 'initiator'
-      : 'opponent';
-  const they = me === 'initiator' ? 'opponent' : 'initiator';
-  let myNickname = game[me].displayName;
-  let oppNickname = game[they].displayName;
+  const currentUser = getCurrentUserController();
+  const oppUid = getMyOpponentUidController();
+  const myUid = currentUser.uid;
+  let myNickname = game.players[myUid].displayName;
+  let oppNickname = game.players[oppUid].displayName;
 
   myNickname = myNickname.split(' ')[0];
   myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
@@ -571,7 +570,7 @@ function showPuzzleView(game) {
   oppName.innerText = oppNickname;
   if (game.emptySquares === 0) {
     let result = 'YOU WON!!';
-    if (game[me].score < game[they].score) {
+    if (game.players[myUid].score < game.players[oppUid].score) {
       result = 'You lost';
     } else {
       result = 'Tie game!';
@@ -856,16 +855,13 @@ function clueClicked(event, direction) {
  */
 function updateScoreboard(game) {
   console.log('Hello from updateScoreboard.');
-  const me =
-    getCurrentUserController().uid === game.initiator.uid
-      ? 'initiator'
-      : 'opponent';
-  const they = me === 'initiator' ? 'opponent' : 'initiator';
-  myScore.innerText = game[me].score;
-  oppScore.innerText = game[they].score;
-  myName.classList.add(game[me].bgColor.replace('bg', 'font'));
-  oppName.classList.add(game[they].bgColor.replace('bg', 'font'));
-  if (game.nextTurn === game[me].uid) {
+  const myUid = getCurrentUserController().uid;
+  const oppUid = getMyOpponentUidController();
+  myScore.innerText = game.players[myUid].score;
+  oppScore.innerText = game.players[oppUid].score;
+  myName.classList.add(game.players[myUid].bgColor.replace('bg', 'font'));
+  oppName.classList.add(game.players[oppUid].bgColor.replace('bg', 'font'));
+  if (game.nextTurn === myUid) {
     scores.children[0].classList.remove('bgColorTransWhite');
     scores.children[0].classList.add('bgColorTransGold');
     scores.children[2].classList.remove('bgColorTransGold');
@@ -1103,7 +1099,6 @@ function showReplayDialog(game, result) {
 
 /** Load game based on user selection */
 function replayOpponent() {
-  const currentUser = getCurrentUserController();
   const game = getCurrentGameController();
   let difficulty = radioMed.parentElement.classList.contains('is-checked')
     ? 'medium'
@@ -1111,23 +1106,13 @@ function replayOpponent() {
   difficulty = radioHard.parentElement.classList.contains('is-checked')
     ? 'hard'
     : difficulty;
-  const they =
-    currentUser.uid === game.initiator.uid ? 'opponent' : 'initiator';
-  // Emit startNewGame event from eventBus
   closeGamesDialog();
 
   // load puzzle based on uids of players
-  startNewGameController({
-    initiator: {
-      uid: currentUser.uid,
-      displayName: currentUser.displayName,
-    },
-    opponent: {
-      uid: game[they].uid,
-      displayName: game[they].displayName,
-    },
-    difficulty: difficulty,
-  });
+  const startGameParameters = {};
+  startGameParameters.difficulty = difficulty;
+  startGameParameters.players = game.players;
+  startNewGameController(startGameParameters);
 }
 
 /**
