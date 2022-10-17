@@ -1,5 +1,3 @@
-import { getGlobal } from '@firebase/util';
-import { startGame } from '../functions/index.js';
 import {
   authButtonClickedController,
   startNewGameController,
@@ -178,8 +176,8 @@ dialogList.addEventListener('click', async (event) => {
   while (target.id === '') {
     target = target.parentElement;
   }
-  const opponent = userList.target.id;
-  const oppUid = opponent.uid;
+  const oppUid = target.id;
+  const opponent = userList[oppUid];
   gameStartParameters.players[oppUid] = {};
   gameStartParameters.players[oppUid].bgColor = 'bgTransBlue';
   gameStartParameters.players[oppUid].displayName = opponent.displayName;
@@ -300,14 +298,19 @@ async function loadGamesView(gamesObj) {
   }
   keys.forEach((key) => {
     const game = gamesObj[key];
+    const players = game.players;
+    const myUid = getCurrentUserController().uid;
     const startDate = new Date(game.start).toLocaleDateString('en-us', {
       day: 'numeric',
       month: 'short',
     });
     let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
-    const myOpponent = game.players[getMyOpponentUidController()];
+    const oppUid =
+      game.viewableBy[0] === myUid ? game.viewableBy[1] : game.viewableBy[0];
     if (game.status === 'started') {
-      const opponentPhoto = myOpponent.photoURL ? myOpponent.photoURL : null;
+      const opponentPhoto = players[oppUid].photoURL
+        ? players[oppUid].photoURL
+        : null;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <img src='${opponentPhoto}' alt='profile picture'>
@@ -316,9 +319,9 @@ async function loadGamesView(gamesObj) {
       activeGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span class='mdl-list__item-primary-content'>
     ${avatar}
-    <span>${myOpponent.displayName}</span>
+    <span>${players[oppUid].displayName}</span>
     <span class='mdl-list__item-sub-title'>
-      ${currentUser.uid === game.nextTurn ? 'Your' : 'Their'} turn
+      ${myUid === game.nextTurn ? 'Your' : 'Their'} turn
     </span>
   </span>
   <span class='mdl-list__item-secondary-content'>
@@ -329,14 +332,15 @@ async function loadGamesView(gamesObj) {
     } else {
       let result = 'Tie game!';
       if (game.status === 'finished' && game.winner !== 'tie') {
-        result = currentUser.uid === game.winner ? 'You won!!' : 'They won';
+        result = myUid === game.winner ? 'You won!!' : 'They won';
       } else if (game.status === 'abandoned') {
         result = 'Game abandoned';
       }
       // pastGames[doc.id] = {};
       // pastGames[doc.id].difficulty = game.difficulty;
-      const opponentPhoto =
-        allUsers[myOpponent.uid] && allUsers[myOpponent.uid].photoURL;
+      const opponentPhoto = players[oppUid].photoURL
+        ? players[oppUid].photoURL
+        : null;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <img src='${opponentPhoto}' alt='profile picture'>
@@ -345,7 +349,7 @@ async function loadGamesView(gamesObj) {
       pastGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span class='mdl-list__item-primary-content'>
     ${avatar}
-    <span>${myOpponent.displayName}</span>
+    <span>${players[oppUid].displayName}</span>
     <span class='mdl-list__item-sub-title'>${result}</span>
   </span>
     <span class='mdl-list__item-secondary-content'>
@@ -472,7 +476,6 @@ function showPuzzleView(game) {
   kbContainer.classList.remove('displayNone');
   kbContainer.classList.add('displayFlex');
   clueContainer.classList.remove('displayNone');
-  clueContainer.classList.add('displayFlex');
   splash.classList.add('displayNone');
   concessionBtnContainer.classList.remove('displayNone');
 
@@ -602,6 +605,7 @@ function animateScoringView(scoreObj) {
   const playerScore = scoreElem.children[1];
   let animatedScore = parseInt(playerScore.textContent);
   let delay = 0;
+  let zIndex = 99;
   for (const letter of scoreObj.checkAnswerResult) {
     const index = letter.index;
     const columns = puzTable.firstChild.children.length;
@@ -623,15 +627,16 @@ function animateScoringView(scoreObj) {
     animatedCell.style.height = cellHeight + 'px';
     animatedCell.style.left = cellX + 'px';
     animatedCell.style.top = cellY + 'px';
-    animatedCell.style.zIndex = 10;
-    animatedCell.backgroundColor = cell.backgroundColor;
+    animatedCell.style.zIndex = (zIndex--).toString();
+    animatedCell.style.backgroundColor = letter.bgColor;
     animatedCell.classList = `displayFlex posFixed flexDirCol spaceAround animatedCell`;
     const square = document.createElement('div');
     square.classList = 'square';
     const letterBox = document.createElement('div');
     letterBox.classList = 'marginAuto';
-    cell.children[0].children[0].innerText = letter.guess;
-    letterBox.innerText = letter.guess;
+    const letterContent = letter.guess ? letter.guess : letter.correctLetter;
+    cell.children[0].children[0].innerText = letterContent;
+    letterBox.innerText = letterContent;
     square.appendChild(letterBox);
     animatedCell.appendChild(square);
     const clueNum = document.createElement('div');
@@ -648,7 +653,7 @@ function animateScoringView(scoreObj) {
       animatedCell.animate(
         [
           {
-            backgroundColor: 'red',
+            // backgroundColor: 'red',
             transform: 'scale(120%)',
             easing: 'linear',
             offset: 0.05,
@@ -665,7 +670,7 @@ function animateScoringView(scoreObj) {
             offset: 0.9,
           },
           {
-            backgroundColor: 'red',
+            // backgroundColor: 'red',
             top: `${windowHeight - cellHeight}px`,
             transform: 'scale(110%)',
             offset: 1,
@@ -680,7 +685,7 @@ function animateScoringView(scoreObj) {
       animatedCell.animate(
         [
           {
-            backgroundColor: 'red',
+            // backgroundColor: 'red',
             top: `${windowHeight - cellHeight}px`,
             transform: 'scale(110%)',
             easing: 'ease-out',

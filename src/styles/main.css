@@ -662,6 +662,7 @@ select {
   }
 
   #clueContainer {
+    display: flex;
     height: 45vw;
     width: 50vw;
   }

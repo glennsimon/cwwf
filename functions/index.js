@@ -57,7 +57,7 @@ exports.onUserStatusChanged = functions.database
       return null;
     }
     // Otherwise, we write it to Firestore.
-    const userStatusFirestoreRef = db.doc(`users/${context.params.uid}`);
+    const userStatusFirestoreRef = db.doc(`users/${context.auth.uid}`);
     return userStatusFirestoreRef.set(eventStatus, { merge: true });
   });
 
@@ -156,6 +156,7 @@ exports.notifyPlayer = functions.https.onCall((uid, context) => {
  * @return {Object} game
  */
 exports.startGame = functions.https.onCall((gameStartParameters, context) => {
+  // console.log('context: ', context);
   return db
     .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
     .get()
@@ -191,9 +192,10 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
 
       const gameListData = {};
       gameListData.players = gameStartParameters.players;
+      gameListData.viewableBy = Object.keys(gameStartParameters.players);
       gameListData.start = Date.now();
       gameListData.status = 'started';
-      gameListData.nextTurn = context.params.uid;
+      gameListData.nextTurn = context.auth.uid;
       batch.set(gameListDataRef, gameListData);
 
       const answersObj = {};
@@ -209,7 +211,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
       game.difficulty = gameStartParameters.difficulty;
       game.status = 'started';
       game.winner = null;
-      game.nextTurn = context.params.uid;
+      game.nextTurn = context.auth.uid;
       game.start = gameListData.start;
       game.lastTurnCheckObj = { newGame: true };
 
@@ -323,6 +325,9 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
       const player = answerObj.playerUid;
+      const bgColor = game.players[player].bgColor.match(/blue/i)
+        ? 'rgba(0, 0, 255, 0.5)'
+        : 'rgba(255, 0, 0, 0.5)';
       console.log('answerObj: ', answerObj);
       for (let index = 0; index < answerObj.guess.length; index++) {
         const correctValue = answers.answerKey[idxArray[index]];
@@ -349,16 +354,22 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
         console.log('Guess: ', guess);
         if (correctValue === guess) {
           gridElement.value = guess;
+          cellResult.bgColor = bgColor;
           if (
             gridElement.status === 'locked' &&
             lastTurnCheckObj.correctAnswer
           ) {
-            game[player].score += scoreValues[guess];
+            game.players[player].score += scoreValues[guess];
             cellResult.score = scoreValues[guess];
             checkAnswerResult.push(cellResult);
             console.log('letter score: ', scoreValues[guess]);
           } else if (gridElement.status !== 'locked') {
-            game[player].score += scoreCell(game, direction, idxArray[index]);
+            game.players[player].score += scoreCell(
+              game,
+              direction,
+              idxArray[index],
+              bgColor
+            );
             cellResult.score = scoreValues[guess];
             checkAnswerResult.push(cellResult);
             // console.log(
@@ -366,10 +377,11 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
             //   scoreCell(game, direction, idxArray[index])
             // );
             game.emptySquares--;
-            gridElement.bgColor = game[player].bgColor;
+            gridElement.bgColor = game.players[player].bgColor;
             gridElement.status = 'locked';
           }
         } else {
+          cellResult.bgColor = 'red';
           cellResult.score = 0;
           checkAnswerResult.push(cellResult);
         }
@@ -406,9 +418,10 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
  * @param {object} game game Object
  * @param {string} direction Direction of clue being solved ('across' or 'down')
  * @param {number} index index of puzzle grid square
+ * @param {string} bgColor Background color, css color or html color
  * @return {number} additional score due to completion of orthogonal word
  */
-function scoreCell(game, direction, index) {
+function scoreCell(game, direction, index, bgColor) {
   console.log('Hello from scoreCell.');
   // get direction for orthogonal word
   const orthoDir = direction === 'across' ? 'down' : 'across';
@@ -424,6 +437,7 @@ function scoreCell(game, direction, index) {
     cellResult.correctLetter = correctLetter;
     cellResult.index = idx;
     cellResult.score = scoreValues[correctLetter];
+    cellResult.bgColor = bgColor;
     if (idx !== index && game.puzzle.grid[idx].status !== 'locked') {
       addedScore = 0;
       addedResults = [];
@@ -489,7 +503,7 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
       const game = (await tx.get(gameRef)).data();
       const answers = (await tx.get(answersRef)).data().answerKey;
       const gameListDoc = (await tx.get(gameListRef)).data();
-      const myUid = context.params.uid;
+      const myUid = context.auth.uid;
       const oppUid = abandonObj.opponentUid;
       gameListDoc.status = 'finished';
       // console.log('gameListDoc: ', gameListDoc);
@@ -506,7 +520,7 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
         game.puzzle.grid[index].value = answers[index];
         game.puzzle.grid[index].guess = answers[index];
         game.puzzle.grid[index].status = 'locked';
-        game.puzzle.grid[index].bgColor = game[oppUid].bgColor;
+        game.puzzle.grid[index].bgColor = game.players[oppUid].bgColor;
         game.players[oppUid].score += scoreValues[letter];
       }
       game.status = 'finished';
