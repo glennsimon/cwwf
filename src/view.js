@@ -628,7 +628,7 @@ function animateScoringView(scoreObj) {
     animatedCell.style.left = cellX + 'px';
     animatedCell.style.top = cellY + 'px';
     animatedCell.style.zIndex = (zIndex--).toString();
-    animatedCell.style.backgroundColor = letter.bgColor;
+    // animatedCell.style.backgroundColor = letter.bgColor;
     animatedCell.classList = `displayFlex posFixed flexDirCol spaceAround animatedCell`;
     const square = document.createElement('div');
     square.classList = 'square';
@@ -652,17 +652,19 @@ function animateScoringView(scoreObj) {
       const horizontalBounce = windowWidth * (0.5 - Math.random());
       animatedCell.animate(
         [
+          { backgroundColor: 'white' },
           {
-            // backgroundColor: 'red',
-            transform: 'scale(120%)',
+            transform: 'scale(130%)',
             easing: 'linear',
             offset: 0.05,
+            backgroundColor: 'white',
           },
           {
             top: `${cellY}px`,
             transform: 'scale(110%) rotate(0deg)',
             easing: 'ease-in',
             offset: 0.1,
+            backgroundColor: 'red',
           },
           {
             top: `${windowHeight - cellHeight}px`,
@@ -670,10 +672,10 @@ function animateScoringView(scoreObj) {
             offset: 0.9,
           },
           {
-            // backgroundColor: 'red',
             top: `${windowHeight - cellHeight}px`,
             transform: 'scale(110%)',
             offset: 1,
+            backgroundColor: 'red',
           },
         ],
         {
@@ -685,7 +687,7 @@ function animateScoringView(scoreObj) {
       animatedCell.animate(
         [
           {
-            // backgroundColor: 'red',
+            backgroundColor: 'red',
             top: `${windowHeight - cellHeight}px`,
             transform: 'scale(110%)',
             easing: 'ease-out',
@@ -697,6 +699,7 @@ function animateScoringView(scoreObj) {
             easing: 'ease-in',
           },
           {
+            backgroundColor: 'red',
             top: `${windowHeight}px`,
             transform: 'scale(110%)',
             offset: 1,
@@ -726,25 +729,36 @@ function animateScoringView(scoreObj) {
         }
       );
     } else {
+      if (!cell.classList.value.match(/(blue|red)/i)) {
+        cell.style.backgroundColor = letter.bgColor;
+      }
       animatedCell.animate(
         [
-          { transform: 'scale(120%)', easing: 'linear', offset: 0.05 },
+          { backgroundColor: 'white' },
+          {
+            transform: 'scale(130%)',
+            easing: 'linear',
+            offset: 0.05,
+            backgroundColor: 'white',
+          },
           {
             left: `${cellX}px`,
             transform: 'scale(110%)',
             easing: 'ease-in',
             offset: 0.1,
+            backgroundColor: `${letter.bgColor}`,
           },
           {
             left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
             transform: 'scale(110%)',
             offset: 0.9,
           },
-          { transform: 'scale(120%)', easing: 'linear', offset: 0.95 },
+          { transform: 'scale(130%)', easing: 'linear', offset: 0.95 },
           {
             transform: 'scale(10%)',
             left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
             easing: 'linear',
+            backgroundColor: `${letter.bgColor}`,
           },
         ],
         {
