@@ -36,7 +36,7 @@ const vapidKey =
 let currentUser = null;
 let userStatusFirestoreRef = null;
 let userStatusDatabaseRef = null;
-let allGames = {};
+let myGames = [];
 let currentGame = null;
 let currentGameId = null;
 let myOpponentUid = null;
@@ -123,11 +123,11 @@ function getCurrentUserController() {
 }
 
 /**
- * Get the allGames Object. Should be used by all external modules.
- * @returns {Object} Returns allGames Object
+ * Get the myGames Object. Should be used by all external modules.
+ * @returns {Array} Returns myGames Array
  */
 function getAllGamesController() {
-  return allGames;
+  return myGames;
 }
 
 /**
@@ -321,23 +321,25 @@ function populateAllUsersController() {
  */
 async function populateAllGamesController(uid) {
   console.log('Hello from populateAllGamesController.');
+  myGames = [];
   try {
     const q = query(
       collection(db, 'gameListBuilder'),
       where('viewableBy', 'array-contains', `${uid}`),
       orderBy('start', 'desc'),
-      limit(10)
+      limit(30)
     );
     const querySnapshot = await getDocs(q);
-    allGames = {};
     if (querySnapshot.empty) {
-      console.warn('No games exist yet.');
+      console.log(`User has no ${i === 0 ? 'active' : 'past'} games.`);
     } else {
       querySnapshot.docs.forEach((doc) => {
-        allGames[doc.id] = doc.data();
+        const gameListItem = doc.data();
+        gameListItem.gameId = doc.id;
+        myGames.push(gameListItem);
       });
     }
-    loadGamesView(allGames);
+    loadGamesView(myGames);
   } catch (err) {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);

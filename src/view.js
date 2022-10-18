@@ -279,35 +279,39 @@ function loadUserList(usersObj, currentUser) {
 /**
  * Load game list with active and past games that the current user has
  * participated in.
- * @param {Object} gamesObj Object all games viewable by the current user
+ * @param {Array} myGames Object all games viewable by the current user
  */
-async function loadGamesView(gamesObj) {
+async function loadGamesView(myGames) {
   console.log('Hello from loadGamesView.');
-  const currentUser = getCurrentUserController();
-  const allUsers = await populateAllUsersController();
-  if (!currentUser) return;
-  let activeGamesHtml = '';
-  let pastGamesHtml = '';
-  const keys = Object.keys(gamesObj);
-  if (keys.length === 0) {
-    // gamesObj doesn't exist or is empty
-    activeGamesContainer.innerHTML = 'No active games. Start one!';
-    pastGamesContainer.innerHTML = 'No completed games yet';
+  if (myGames.length === 0) {
+    // myGames doesn't exist or is empty
     console.warn('No games exist yet.');
     return;
   }
-  keys.forEach((key) => {
-    const game = gamesObj[key];
-    const players = game.players;
+  const currentUser = getCurrentUserController();
+  if (!currentUser) return;
+  let activeGamesHtml = '';
+  let pastGamesHtml = '';
+  activeGamesContainer.innerHTML = 'No active games. Start one!';
+  pastGamesContainer.innerHTML = 'No completed games yet';
+  let pastGamesNumber = 0;
+  for (const gameListItem of myGames) {
+    const gameId = gameListItem.gameId;
+    const players = gameListItem.players;
     const myUid = getCurrentUserController().uid;
-    const startDate = new Date(game.start).toLocaleDateString('en-us', {
+    const startDate = new Date(gameListItem.start).toLocaleDateString('en-us', {
       day: 'numeric',
       month: 'short',
     });
     let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
     const oppUid =
-      game.viewableBy[0] === myUid ? game.viewableBy[1] : game.viewableBy[0];
-    if (game.status === 'started') {
+      gameListItem.viewableBy[0] === myUid
+        ? gameListItem.viewableBy[1]
+        : gameListItem.viewableBy[0];
+    if (gameListItem.status === 'started') {
+      // displays up to 25 active and 5 past games.
+      // Change query limit(30) in populateAllGamesController if different
+      // number is desired.  See else below.
       const opponentPhoto = players[oppUid].photoURL
         ? players[oppUid].photoURL
         : null;
@@ -316,12 +320,12 @@ async function loadGamesView(gamesObj) {
   <img src='${opponentPhoto}' alt='profile picture'>
 </span>`;
       }
-      activeGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
+      activeGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span class='mdl-list__item-primary-content'>
     ${avatar}
     <span>${players[oppUid].displayName}</span>
     <span class='mdl-list__item-sub-title'>
-      ${myUid === game.nextTurn ? 'Your' : 'Their'} turn
+      ${myUid === gameListItem.nextTurn ? 'Your' : 'Their'} turn
     </span>
   </span>
   <span class='mdl-list__item-secondary-content'>
@@ -329,11 +333,13 @@ async function loadGamesView(gamesObj) {
   <span>${startDate}</span>
   </span>
 </li>`;
-    } else {
+    } else if (pastGamesNumber < 5) {
+      // displays a max of 5 past games
+      pastGamesNumber++;
       let result = 'Tie game!';
-      if (game.status === 'finished' && game.winner !== 'tie') {
-        result = myUid === game.winner ? 'You won!!' : 'They won';
-      } else if (game.status === 'abandoned') {
+      if (gameListItem.status === 'finished' && gameListItem.winner !== 'tie') {
+        result = myUid === gameListItem.winner ? 'You won!!' : 'They won';
+      } else if (gameListItem.status === 'abandoned') {
         result = 'Game abandoned';
       }
       // pastGames[doc.id] = {};
@@ -346,7 +352,7 @@ async function loadGamesView(gamesObj) {
   <img src='${opponentPhoto}' alt='profile picture'>
 </span>`;
       }
-      pastGamesHtml += `<li id='${key}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
+      pastGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span class='mdl-list__item-primary-content'>
     ${avatar}
     <span>${players[oppUid].displayName}</span>
@@ -358,7 +364,7 @@ async function loadGamesView(gamesObj) {
   </span>
 </li>`;
     }
-  });
+  }
   activeGamesContainer.innerHTML = activeGamesHtml;
   pastGamesContainer.innerHTML = pastGamesHtml;
 
@@ -878,8 +884,12 @@ function updateScoreboard(game) {
   const oppUid = getMyOpponentUidController();
   myScore.innerText = game.players[myUid].score;
   oppScore.innerText = game.players[oppUid].score;
-  myName.classList.add(game.players[myUid].bgColor.replace('bg', 'font'));
-  oppName.classList.add(game.players[oppUid].bgColor.replace('bg', 'font'));
+  myName.classList.remove('fontRed', 'fontBlue');
+  myName.classList.add(game.players[myUid].bgColor.replace(/bgTrans/, 'font'));
+  oppName.classList.remove('fontRed', 'fontBlue');
+  oppName.classList.add(
+    game.players[oppUid].bgColor.replace(/bgTrans/, 'font')
+  );
   if (game.nextTurn === myUid) {
     scores.children[0].classList.remove('bgColorTransWhite');
     scores.children[0].classList.add('bgColorTransGold');

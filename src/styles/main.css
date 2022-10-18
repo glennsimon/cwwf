@@ -299,12 +299,12 @@ select {
   background-color: rgba(0, 0, 255, 0.5);
 }
 
-.fontTransRed {
-  color: rgba(255, 0, 0, 1);
+.fontRed {
+  color: #f00;
 }
 
-.fontTransBlue {
-  color: rgba(0, 0, 255, 1);
+.fontBlue {
+  color: #00f;
 }
 
 .bgTransGray {
