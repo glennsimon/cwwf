@@ -23,7 +23,7 @@ const uiConfig = {
   // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
   signInFlow: 'popup',
   // Url to redirect to after a successful sign-in.
-  signInSuccessUrl: '/',
+  signInSuccessUrl: './',
   callbacks: {
     signInSuccessWithAuthResult: function (user, credential, redirectUrl) {
       if (window.opener) {
@@ -76,9 +76,9 @@ const uiConfig = {
     // firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID,
   ],
   // Terms of service url.
-  tosUrl: '/#tos',
+  tosUrl: () => (location.hash = '#tos'),
   // Privacy policy url.
-  privacyPolicyUrl: '/#privacy',
+  privacyPolicyUrl: () => (location.hash = '#privacy'),
 };
 
 /**
