@@ -61,6 +61,10 @@ const puzTitle = document.getElementById('puzTitle');
 const logo = document.getElementById('logo');
 const replayButton = document.getElementById('replayButton');
 const returnToSignin = document.getElementById('returnToSignin');
+const gameLoadSpinner = document.getElementById('gameLoadSpinner');
+const gameLoadMessage = document.getElementById('gameLoadMessage');
+const turnProgressSpinner = document.getElementById('turnProgressSpinner');
+const turnProgressMessage = document.getElementById('turnProgressMessage');
 //#endregion
 
 let currentCell = null;
@@ -192,6 +196,8 @@ dialogList.addEventListener('click', async (event) => {
     : difficulty;
   gameStartParameters.difficulty = difficulty;
   closeGamesDialog();
+  gameLoadSpinner.classList.add('is-active');
+  gameLoadMessage.innerText = 'Starting a new game...';
   document.getElementById('puzTitle').innerText = 'Fetching new puzzle...';
   startNewGameController(gameStartParameters);
 });
@@ -283,8 +289,12 @@ function loadUserList(usersObj, currentUser) {
  */
 async function loadGamesView(myGames) {
   console.log('Hello from loadGamesView.');
+  gameLoadSpinner.classList.remove('is-active');
+  gameLoadMessage.innerText = '';
   if (myGames.length === 0) {
     // myGames doesn't exist or is empty
+    activeGamesContainer.innerHTML = 'No active games. Start one!';
+    pastGamesContainer.innerHTML = 'No completed games yet';
     console.warn('No games exist yet.');
     return;
   }
@@ -387,6 +397,8 @@ function loadGame(event) {
     if (eventTarget.nodeName.toLowerCase() === 'ul') return;
     eventTarget = eventTarget.parentElement;
   }
+  gameLoadSpinner.classList.add('is-active');
+  gameLoadMessage.innerText = 'Fetching your game...';
   puzTitle.innerText = 'Fetching data...';
   fetchPuzzleController(eventTarget.id);
 }
@@ -604,6 +616,8 @@ function showPuzzleView(game) {
  */
 function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
+  turnProgressSpinner.classList.remove('is-active');
+  turnProgressMessage.innerText = '';
   if (scoreObj.newGame) return;
   const myUid = getCurrentUserController().uid;
   const scoreElem =
@@ -1157,6 +1171,8 @@ function enterLetter(event) {
   const columns = getColumnsController();
   if (!kbContainer.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
+      turnProgressSpinner.classList.add('is-active');
+      turnProgressMessage.innerText = 'Checking answer...';
       playWordController();
       return;
     }
@@ -1279,7 +1295,11 @@ const keyList = kbContainer.getElementsByClassName('kbButton');
 for (const node of keyList) {
   node.addEventListener('click', enterLetter);
 }
-document.getElementById('enter').addEventListener('click', playWordController);
+document.getElementById('enter').addEventListener('click', () => {
+  turnProgressSpinner.classList.add('is-active');
+  turnProgressMessage.innerText = 'Checking answer...';
+  playWordController();
+});
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
 
 export {

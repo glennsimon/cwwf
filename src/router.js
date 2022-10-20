@@ -25,6 +25,8 @@ const returnToSignin = document.getElementById('returnToSignin');
 const firebaseuiAuthContainer = document.getElementById(
   'firebaseuiAuthContainer'
 );
+const gameLoadSpinner = document.getElementById('gameLoadSpinner');
+const gameLoadMessage = document.getElementById('gameLoadMessage');
 
 window.addEventListener('hashchange', navigate);
 
@@ -74,6 +76,8 @@ async function navigate() {
     firebaseuiAuthContainer.classList.remove('displayNone');
     setCurrentGameIdController(null);
   } else if (location.hash === '#games') {
+    gameLoadSpinner.classList.add('is-active');
+    gameLoadMessage.innerText = 'Loading your games...';
     try {
       gamesDialog.close();
     } catch (err) {

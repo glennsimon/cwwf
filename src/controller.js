@@ -331,7 +331,7 @@ async function populateAllGamesController(uid) {
     );
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
-      console.log(`User has no ${i === 0 ? 'active' : 'past'} games.`);
+      console.log(`User has no games.`);
     } else {
       querySnapshot.docs.forEach((doc) => {
         const gameListItem = doc.data();

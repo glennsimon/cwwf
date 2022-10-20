@@ -397,6 +397,10 @@ select {
   font-size: 2vw;
 }
 
+#turnProgressSpinner {
+  margin: auto;
+}
+
 #backspace {
   background-color: rgba(255, 64, 129, 0.6);
 }

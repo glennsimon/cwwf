@@ -40,6 +40,11 @@
       rel="stylesheet"
       href="https://code.getmdl.io/1.2.1/material.indigo-pink.min.css"
     />
+    <!-- Roboto font -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto"
+    />
     <style>
       .displayNone {
         display: none;
@@ -119,6 +124,11 @@
           <span id="title" class="mdl-layout-title displayNone"
             >CrosSwords</span
           >
+          <div class="mdl-layout-spacer"></div>
+          <p id="turnProgressSpinner" class="mdl-spinner mdl-js-spinner"></p>
+          <span>&nbsp;&nbsp;&nbsp;</span>
+          <span id="turnProgressMessage"></span>
+          <!-- </div> -->
           <div class="mdl-layout-spacer"></div>
           <div id="scores" class="displayNone">
             <div class="flexGrow-1 margin0px5px width60px bgColorTransWhite">
@@ -463,10 +473,7 @@
           id="gamesPanel"
           class="posAbsolute fullWidth height100pct displayFlex flexDirCol alignItemsCenter slideOut"
         >
-          <div
-            id="gamesPanelContainer"
-            class="displayFlex flexDirCol height100pct"
-          >
+          <div id="gamesPanelContainer" class="displayFlex flexDirCol">
             <div class="heading textAlignCenter">Games</div>
             <button
               id="startGameButton"
@@ -492,6 +499,8 @@
               </ul>
             </div>
           </div>
+          <p id="gameLoadSpinner" class="mdl-spinner mdl-js-spinner"></p>
+          <p id="gameLoadMessage"></p>
         </div>
       </main>
     </div>
