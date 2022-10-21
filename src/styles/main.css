@@ -449,6 +449,10 @@ select {
   width: 60px;
 }
 
+.maxHeight80pct {
+  max-height: 80%;
+}
+
 .maxWidth400px {
   max-width: 400px;
 }

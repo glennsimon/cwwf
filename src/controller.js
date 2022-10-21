@@ -57,6 +57,7 @@ let online = false;
  */
 let gameUnsubscribe = () => {};
 let connectionUnsubscribe = () => {};
+let myGamesUnsubscribe = () => {};
 
 /**
  * Get the currentGame. Should be used by all external modules.
@@ -222,7 +223,7 @@ onAuthStateChanged(auth, async (user) => {
     const authChanged = httpsCallable(functions, 'authChanged');
     await authChanged();
     await generateMessagingToken(uid);
-    await populateAllGamesController(uid);
+    await populateMyGames(uid);
   } catch (err) {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
@@ -315,36 +316,30 @@ function populateAllUsersController() {
 
 /**
  * Populate list of all games that is viewable to the current user
- * from firestore and return the list.
+ * from firestore when auth changes or when something changes in that list.
  * @param {string} uid User ID
- * @returns Object containing all games by gameId
  */
-async function populateAllGamesController(uid) {
-  console.log('Hello from populateAllGamesController.');
-  myGames = [];
-  try {
-    const q = query(
-      collection(db, 'gameListBuilder'),
-      where('viewableBy', 'array-contains', `${uid}`),
-      orderBy('start', 'desc'),
-      limit(30)
-    );
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) {
-      console.log(`User has no games.`);
-    } else {
-      querySnapshot.docs.forEach((doc) => {
-        const gameListItem = doc.data();
-        gameListItem.gameId = doc.id;
-        myGames.push(gameListItem);
-      });
-    }
+async function populateMyGames(uid) {
+  console.log('Hello from populateMyGames.');
+  if (!uid) return;
+  myGamesUnsubscribe();
+  // try {
+  const q = query(
+    collection(db, 'gameListBuilder'),
+    where('viewableBy', 'array-contains', `${uid}`),
+    orderBy('start', 'desc'),
+    limit(30)
+  );
+  myGamesUnsubscribe = onSnapshot(q, (snapshot) => {
+    myGames = [];
+    snapshot.forEach((doc) => {
+      // console.log('query snapshot doc.data(): ', doc.data());
+      const gameListItem = doc.data();
+      gameListItem.gameId = doc.id;
+      myGames.push(gameListItem);
+    });
     loadGamesView(myGames);
-  } catch (err) {
-    console.log('Error code: ', err.code);
-    console.log('Error message: ', err.message);
-    console.log('Error details: ', err.details);
-  }
+  });
 }
 
 /**
@@ -533,7 +528,6 @@ export {
   startNewGameController,
   getCurrentUserController,
   populateAllUsersController,
-  populateAllGamesController,
   getAllGamesController,
   fetchPuzzleController,
   savePuzzleController,

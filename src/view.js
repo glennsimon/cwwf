@@ -94,6 +94,8 @@ authButton.addEventListener('click', (event) => {
  */
 function authChangeView(user) {
   if (user) {
+    gameLoadSpinner.classList.add('is-active');
+    gameLoadMessage.innerText = 'Loading your games...';
     authButton.textContent = 'sign out';
     profileName.textContent = user.displayName;
     avatar.src = user.photoURL
@@ -105,7 +107,8 @@ function authChangeView(user) {
     authButton.textContent = 'sign in';
     profileName.textContent = 'N. E. Person';
     avatar.src = 'images/avatar_circle_black.png';
-    headerSignin.classList.remove('displayNone');
+    if (location.hash !== '#signin')
+      headerSignin.classList.remove('displayNone');
     puzTitle.innerText = 'No puzzle loaded';
     activeGamesContainer.innerHTML =
       'You must sign in to see your active games';
@@ -320,7 +323,7 @@ async function loadGamesView(myGames) {
         : gameListItem.viewableBy[0];
     if (gameListItem.status === 'started') {
       // displays up to 25 active and 5 past games.
-      // Change query limit(30) in populateAllGamesController if different
+      // Change query limit(30) in populateMyGames if different
       // number is desired.  See else below.
       const opponentPhoto = players[oppUid].photoURL
         ? players[oppUid].photoURL
@@ -606,6 +609,9 @@ function showPuzzleView(game) {
   }
   updateScoreboard(game);
   console.log(game);
+  gameLoadSpinner.classList.remove('is-active');
+  gameLoadMessage.innerText = '';
+
   // TODO: should this go here?
   location.hash = '#puzzle';
 }
@@ -773,7 +779,7 @@ function animateScoringView(scoreObj) {
             transform: 'scale(110%)',
             offset: 0.9,
           },
-          { transform: 'scale(130%)', easing: 'linear', offset: 0.95 },
+          // { transform: 'scale(130%)', easing: 'linear', offset: 0.95 },
           {
             transform: 'scale(10%)',
             left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
