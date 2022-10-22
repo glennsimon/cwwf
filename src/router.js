@@ -12,7 +12,6 @@ const gamesDialog = querySelector('#gamesDialog');
 const scores = querySelector('#scores');
 const concessionBtnContainer = querySelector('#concessionBtnContainer');
 const puzzleInfo = document.getElementById('puzzleInfo');
-// const puzTable = document.getElementById('puzTable');
 const clueContainer = document.getElementById('clueContainer');
 const kbContainer = document.getElementById('kbContainer');
 const splash = document.getElementById('splash');
@@ -47,7 +46,6 @@ async function navigate() {
     gamesPanel.classList.add('slideOut');
     appContainer.classList.add('slideIn');
     puzzleInfo.classList.remove('displayNone');
-    // puzTable.classList.remove('displayNone');
     headerSignin.classList.add('displayNone');
   } else if (location.hash === '#signin') {
     gamesPanel.classList.add('slideOut');
@@ -57,7 +55,6 @@ async function navigate() {
     concessionBtnContainer.classList.add('displayNone');
     puzzleInfo.classList.remove('displayFlex');
     puzzleInfo.classList.add('displayNone');
-    // puzTable.classList.add('displayNone');
     clueContainer.classList.add('displayNone');
     kbContainer.classList.add('displayNone');
     splash.classList.remove('displayNone');
@@ -84,7 +81,6 @@ async function navigate() {
     scores.classList.remove('displayFlex');
     scores.classList.add('displayNone');
     puzzleInfo.classList.add('displayNone');
-    // puzTable.classList.add('displayNone');
     const currentUser = getCurrentUserController();
     if (!currentUser) {
       headerSignin.classList.remove('displayNone');
@@ -97,7 +93,6 @@ async function navigate() {
     scores.classList.add('displayNone');
     concessionBtnContainer.classList.add('displayNone');
     puzzleInfo.classList.add('displayNone');
-    // puzTable.classList.add('displayNone');
     clueContainer.classList.add('displayNone');
     kbContainer.classList.add('displayNone');
     splash.classList.remove('displayNone');
@@ -114,7 +109,6 @@ async function navigate() {
     scores.classList.add('displayNone');
     concessionBtnContainer.classList.add('displayNone');
     puzzleInfo.classList.add('displayNone');
-    // puzTable.classList.add('displayNone');
     clueContainer.classList.add('displayNone');
     kbContainer.classList.add('displayNone');
     splash.classList.remove('displayNone');

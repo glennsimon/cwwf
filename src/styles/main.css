@@ -203,11 +203,16 @@ select {
 
 #puzTable td {
   position: relative;
-  border: 1px solid #000000;
 }
 
 #puzTable .black {
   background-color: black;
+}
+
+#svgGrid {
+  z-index: 2;
+  position: absolute;
+  background-color: transparent;
 }
 
 #kbContainer {
@@ -250,6 +255,10 @@ select {
 
 #puzTable .shade {
   background-color: lightgray;
+}
+
+.transparent {
+  background-color: transparent;
 }
 
 .clueNumber {

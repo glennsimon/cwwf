@@ -431,11 +431,11 @@ function showPuzzleView(game) {
     : '';
 
   const cellDim = getCellDim();
-  const tableDim = cellDim * game.puzzle.cols;
   let gridIndex = 0;
+  const puzWidth = puzTable.offsetWidth;
   for (let rowIndex = 0; rowIndex < game.puzzle.rows; rowIndex += 1) {
     const row = puzTable.insertRow(rowIndex);
-    row.style.width = `${tableDim}px`;
+    row.style.width = `${puzWidth}px`;
     for (let colIndex = 0; colIndex < game.puzzle.cols; colIndex += 1) {
       const squareData = game.puzzle.grid[gridIndex];
       const clueNumber = squareData.clueNum;
@@ -448,12 +448,13 @@ function showPuzzleView(game) {
       if (blackCell) {
         cell.className = 'black';
       } else {
-        cell.classList.add('cursorPointer');
+        cell.classList.add('cursorPointer', 'transparent');
         const squareDiv = document.createElement('div');
         const letterDiv = document.createElement('div');
         squareDiv.classList.add('square');
         letterDiv.classList.add('marginAuto');
         if (squareData.status === 'locked') {
+          cell.classList.remove('transparent');
           cell.classList.add(squareData.bgColor);
         }
         const guess = squareData.guess;
@@ -469,10 +470,11 @@ function showPuzzleView(game) {
         if (squareData.circle) {
           const halfCell = cellDim / 2;
           const radius = halfCell - 1.5;
-          let svgHtml = `<svg class='posAbsolute upperLeft'>
+          let svgHtml = `\
+<svg class='posAbsolute upperLeft'>
   <path d='M ${halfCell} ${halfCell}'/>
   <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black'
-    fill='transparent'/>
+    fill='transparent' stroke-width='0.5'/>
 </svg>`;
           if (squareData.clueNum) {
             // dimA and dimB values below are for 105 degree start point
@@ -483,7 +485,7 @@ function showPuzzleView(game) {
             svgHtml = `\
 <svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
   <path d='M ${dimA} ${dimB} A ${radius} ${radius} 0 1 0 ${halfCell} 1.5'
-    stroke='black' fill='transparent'/>
+    stroke='black' fill='transparent' stroke-width='0.5'/>
 </svg>`;
           }
           cell.innerHTML += svgHtml;
@@ -492,6 +494,8 @@ function showPuzzleView(game) {
       gridIndex += 1;
     }
   }
+  const puzHeight = puzTable.offsetHeight;
+  puzTable.innerHTML += drawSvgGrid(puzWidth, puzHeight);
   setCurrentGameController(game);
 
   kbContainer.classList.remove('displayNone');
@@ -614,6 +618,29 @@ function showPuzzleView(game) {
 
   // TODO: should this go here?
   location.hash = '#puzzle';
+}
+
+function drawSvgGrid(puzWidth, puzHeight) {
+  //   const columns = getColumnsController();
+  //   const cellWidth = puzWidth / columns;
+  //   const cellHeight = puzHeight / columns;
+  //   let innerHTML = `\
+  // <svg id='svgGrid' height='${puzHeight}' width='${puzWidth}' \
+  //   style='translate: 0px -${puzHeight}px;pointer-events: none'>
+  //   <path d='`;
+  //   for (let i = 0; i <= columns; i++) {
+  //     const lineY = cellHeight * i;
+  //     const lineX = cellWidth * i;
+  //     innerHTML += `M 0 ${lineY} L ${puzWidth} ${lineY} `;
+  //   }
+  //   for (let i = 0; i <= columns; i++) {
+  //     const lineX = cellWidth * i;
+  //     innerHTML += `M ${lineX} 0 L ${lineX} ${puzHeight} `;
+  //   }
+  //   innerHTML += `' stroke='black' fill='transparent' stroke-width='1'/>
+  // </svg>`;
+  //   return innerHTML;
+  return '';
 }
 
 /**
@@ -1251,13 +1278,13 @@ function resizePuzzle() {
   if (puzTable.children.length === 0) return;
   // console.log(puzTable.children[0]);
   const cellDim = getCellDim();
-  const tableDim = cellDim * getColumnsController();
+  const puzWidth = puzTable.offsetWidth;
   const rowArray = puzTable.children[0].children;
 
   const cells = puzTable.getElementsByTagName('td');
 
   for (const row of rowArray) {
-    row.style.width = tableDim + 'px';
+    row.style.width = puzWidth + 'px';
     const cellArray = row.children;
     for (const cell of cellArray) {
       cell.style.width = cellDim + 'px';
@@ -1289,6 +1316,9 @@ function resizePuzzle() {
       }
     }
   }
+  const puzHeight = puzTable.offsetHeight;
+  puzTable.remove(getElementById('svgGrid'));
+  puzTable.innerHTML += drawSvgGrid(puzWidth, puzHeight);
   if (currentCell) {
     const direction = getAcrossWordController() ? 'across' : 'down';
     selectBlock(direction, currentCell);
