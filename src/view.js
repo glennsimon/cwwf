@@ -432,6 +432,7 @@ function showPuzzleView(game) {
 
   const cellDim = getCellDim();
   let gridIndex = 0;
+  // below won't work - puzTable is empty.
   const puzWidth = puzTable.offsetWidth;
   for (let rowIndex = 0; rowIndex < game.puzzle.rows; rowIndex += 1) {
     const row = puzTable.insertRow(rowIndex);
@@ -495,7 +496,10 @@ function showPuzzleView(game) {
     }
   }
   const puzHeight = puzTable.offsetHeight;
-  puzTable.innerHTML += drawSvgGrid(puzWidth, puzHeight);
+  puzTable.innerHTML += generateGridElement(puzWidth, puzHeight);
+  // const gridElement = document.createElement('svg');
+  // puzTable.appendChild(gridElement);
+  // gridElement.innerHTML = generateGridElement(puzWidth, puzHeight);
   setCurrentGameController(game);
 
   kbContainer.classList.remove('displayNone');
@@ -620,27 +624,30 @@ function showPuzzleView(game) {
   location.hash = '#puzzle';
 }
 
-function drawSvgGrid(puzWidth, puzHeight) {
-  //   const columns = getColumnsController();
-  //   const cellWidth = puzWidth / columns;
-  //   const cellHeight = puzHeight / columns;
-  //   let innerHTML = `\
-  // <svg id='svgGrid' height='${puzHeight}' width='${puzWidth}' \
-  //   style='translate: 0px -${puzHeight}px;pointer-events: none'>
-  //   <path d='`;
-  //   for (let i = 0; i <= columns; i++) {
-  //     const lineY = cellHeight * i;
-  //     const lineX = cellWidth * i;
-  //     innerHTML += `M 0 ${lineY} L ${puzWidth} ${lineY} `;
-  //   }
-  //   for (let i = 0; i <= columns; i++) {
-  //     const lineX = cellWidth * i;
-  //     innerHTML += `M ${lineX} 0 L ${lineX} ${puzHeight} `;
-  //   }
-  //   innerHTML += `' stroke='black' fill='transparent' stroke-width='1'/>
-  // </svg>`;
-  //   return innerHTML;
-  return '';
+function generateGridElement(puzWidth, puzHeight) {
+  // const svgGrid = document.createElement('svg');
+  let svgGrid = `<svg id='svgGrid' height='${puzHeight}' width='${puzWidth}'
+  style='translate: 0px -${puzHeight}px;pointer-events=none;'>
+  <path d='`;
+  // svgGrid.id = 'svgGrid';
+  // svgGrid.style = `width: ${puzWidth};height: ${puzHeight};translate: 0px -${puzHeight}px; pointer-events: none;`;
+  // let pathInnerHTML = `<path d='`;
+
+  const columns = getColumnsController();
+  const cellWidth = puzWidth / columns;
+  const cellHeight = puzHeight / columns;
+  for (let i = 0; i <= columns; i++) {
+    const lineY = cellHeight * i;
+    svgGrid += `M 0 ${lineY} L ${puzWidth} ${lineY} `;
+  }
+  for (let i = 0; i <= columns; i++) {
+    const lineX = cellWidth * i;
+    svgGrid += `M ${lineX} 0 L ${lineX} ${puzHeight} `;
+  }
+  svgGrid += `' stroke='black' fill='transparent' stroke-width='0.5'/>
+  </svg>`;
+  // svgGrid.innerHTML += pathInnerHTML;
+  return svgGrid;
 }
 
 /**
@@ -1317,8 +1324,10 @@ function resizePuzzle() {
     }
   }
   const puzHeight = puzTable.offsetHeight;
-  puzTable.remove(getElementById('svgGrid'));
-  puzTable.innerHTML += drawSvgGrid(puzWidth, puzHeight);
+  document.getElementById('svgGrid').remove();
+  puzTable.innerHTML += generateGridElement(puzWidth, puzHeight);
+  // const gridElement = document.getElementById('svgGrid');
+  // gridElement.innerHTML = generateGridElement(puzWidth, puzHeight);
   if (currentCell) {
     const direction = getAcrossWordController() ? 'across' : 'down';
     selectBlock(direction, currentCell);
