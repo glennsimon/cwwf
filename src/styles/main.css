@@ -182,11 +182,11 @@ select {
   font-size: 12px;
 }
 
-/*#gridContainer {
-  height: calc(100vh - 10px);
-  align-self: stretch;
-  flex-grow: 10;
-}*/
+/* #gridContainer {
+  background-color: transparent;
+  border: 0.5px black;
+  padding: 0.25px;
+} */
 
 #puzNotepad {
   background-color: #ffffe0;
@@ -213,6 +213,7 @@ select {
   z-index: 2;
   position: absolute;
   background-color: transparent;
+  pointer-events: none;
 }
 
 #kbContainer {

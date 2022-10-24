@@ -496,10 +496,7 @@ function showPuzzleView(game) {
     }
   }
   const puzHeight = puzTable.offsetHeight;
-  puzTable.innerHTML += generateGridElement(puzWidth, puzHeight);
-  // const gridElement = document.createElement('svg');
-  // puzTable.appendChild(gridElement);
-  // gridElement.innerHTML = generateGridElement(puzWidth, puzHeight);
+  puzTable.appendChild(generateGridElement(puzWidth, puzHeight));
   setCurrentGameController(game);
 
   kbContainer.classList.remove('displayNone');
@@ -624,29 +621,34 @@ function showPuzzleView(game) {
   location.hash = '#puzzle';
 }
 
+/**
+ * Generates a div with a SVG grid in it, sized for the puzzle and offset
+ * to the correct location.
+ * @param {number} puzWidth
+ * @param {number} puzHeight
+ * @returns HTML grid element that can be appended to puzTable
+ */
 function generateGridElement(puzWidth, puzHeight) {
-  // const svgGrid = document.createElement('svg');
-  let svgGrid = `<svg id='svgGrid' height='${puzHeight}' width='${puzWidth}'
-  style='translate: 0px -${puzHeight}px;pointer-events=none;'>
+  const svgGrid = document.createElement('div');
+  svgGrid.id = 'svgGrid';
+  svgGrid.style = `translate: 0px -${puzHeight}px;`;
+  let innerHTML = `<svg height='${puzHeight}' width='${puzWidth}'>
   <path d='`;
-  // svgGrid.id = 'svgGrid';
-  // svgGrid.style = `width: ${puzWidth};height: ${puzHeight};translate: 0px -${puzHeight}px; pointer-events: none;`;
-  // let pathInnerHTML = `<path d='`;
 
   const columns = getColumnsController();
   const cellWidth = puzWidth / columns;
   const cellHeight = puzHeight / columns;
   for (let i = 0; i <= columns; i++) {
     const lineY = cellHeight * i;
-    svgGrid += `M 0 ${lineY} L ${puzWidth} ${lineY} `;
+    innerHTML += `M 0 ${lineY} L ${puzWidth} ${lineY} `;
   }
   for (let i = 0; i <= columns; i++) {
     const lineX = cellWidth * i;
-    svgGrid += `M ${lineX} 0 L ${lineX} ${puzHeight} `;
+    innerHTML += `M ${lineX} 0 L ${lineX} ${puzHeight} `;
   }
-  svgGrid += `' stroke='black' fill='transparent' stroke-width='0.5'/>
+  innerHTML += `' stroke='black' fill='transparent' stroke-width='0.5'/>
   </svg>`;
-  // svgGrid.innerHTML += pathInnerHTML;
+  svgGrid.innerHTML = innerHTML;
   return svgGrid;
 }
 
@@ -896,7 +898,6 @@ function cellClicked(event) {
   //   clearLetters();
   // }
   if (currentCell && currentCell === cell) {
-    // clearLetters();
     acrossWord = !acrossWord;
     setAcrossWordController(acrossWord);
   }
@@ -1055,6 +1056,7 @@ function selectBlock(direction, cell) {
   const clue = document.getElementById(
     direction + game.puzzle.grid[idxArray[0]].clueNum
   );
+  // for when clue lists are showing (landscape orientation)
   clue.classList.add('rangeHighlight', 'cluePop');
   const clueList = direction === 'across' ? acrossClues : downClues;
   clueList.scrollBy({
@@ -1062,6 +1064,7 @@ function selectBlock(direction, cell) {
     left: 0,
     behavior: 'smooth',
   });
+  // for when only a single clue is showing (portrait orientation)
   singleClue.innerText = clue.children[1].textContent;
 
   const begin = direction === 'across' ? 'Left' : 'Top';
@@ -1286,48 +1289,41 @@ function resizePuzzle() {
   // console.log(puzTable.children[0]);
   const cellDim = getCellDim();
   const puzWidth = puzTable.offsetWidth;
-  const rowArray = puzTable.children[0].children;
 
   const cells = puzTable.getElementsByTagName('td');
 
-  for (const row of rowArray) {
-    row.style.width = puzWidth + 'px';
-    const cellArray = row.children;
-    for (const cell of cellArray) {
-      cell.style.width = cellDim + 'px';
-      cell.style.height = cellDim + 'px';
-      // The only svg that could be in the cell is a circle, so this
-      // Tests for a circle and resizes it
-      const svgElements = cell.getElementsByTagName('svg');
-      if (svgElements.length === 1) {
-        const halfCell = cellDim / 2;
-        const radius = halfCell - 1.5;
-        let svgHtml = `<svg class='posAbsolute upperLeft'>
+  for (const cell of cells) {
+    cell.style.width = cellDim + 'px';
+    cell.style.height = cellDim + 'px';
+    // The only svg that could be in the cell is a circle, so this
+    // Tests for a circle and resizes it
+    const svgElements = cell.getElementsByTagName('svg');
+    if (svgElements.length === 1) {
+      const halfCell = cellDim / 2;
+      const radius = halfCell - 1.5;
+      let svgHtml = `<svg class='posAbsolute upperLeft'>
         <path d='M ${halfCell} ${halfCell}'/>
         <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black' fill='transparent'/>
         </svg>`;
-        const clueNumbers = cell.getElementsByClassName('clueNumber');
-        if (clueNumbers.length === 1) {
-          // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 24)) + 1.5; // 30 deg each direction
-          // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 24)) + 1.5; // from 135deg
-          let dimA = radius * 0.03407 + 1.5;
-          let dimB = radius * 0.74118 + 1.5;
-          svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
+      const clueNumbers = cell.getElementsByClassName('clueNumber');
+      if (clueNumbers.length === 1) {
+        // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 24)) + 1.5; // 30 deg each direction
+        // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 24)) + 1.5; // from 135deg
+        let dimA = radius * 0.03407 + 1.5;
+        let dimB = radius * 0.74118 + 1.5;
+        svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
           <path d='M ${dimA} ${dimB}
           A ${radius} ${radius} 0 1 0 ${halfCell} 1.5'
           stroke='black' fill='transparent'/>
           </svg>`;
-        }
-        cell.removeChild(svgElements[0]);
-        cell.innerHTML += svgHtml;
       }
+      cell.removeChild(svgElements[0]);
+      cell.innerHTML += svgHtml;
     }
   }
   const puzHeight = puzTable.offsetHeight;
   document.getElementById('svgGrid').remove();
-  puzTable.innerHTML += generateGridElement(puzWidth, puzHeight);
-  // const gridElement = document.getElementById('svgGrid');
-  // gridElement.innerHTML = generateGridElement(puzWidth, puzHeight);
+  puzTable.appendChild(generateGridElement(puzWidth, puzHeight));
   if (currentCell) {
     const direction = getAcrossWordController() ? 'across' : 'down';
     selectBlock(direction, currentCell);
