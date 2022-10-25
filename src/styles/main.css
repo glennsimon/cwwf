@@ -85,6 +85,11 @@ select {
   display: none;
 }
 
+.signInOut {
+  vertical-align: middle;
+  margin-bottom: 3px;
+}
+
 .currCellHighlight {
   background-color: yellow;
 }
@@ -470,8 +475,8 @@ select {
   width: 60px;
 }
 
-.maxHeight80pct {
-  max-height: 80%;
+.maxHeight90pct {
+  max-height: 90%;
 }
 
 .maxWidth400px {
@@ -494,10 +499,6 @@ select {
   height: 24px;
 }
 
-.height80pct {
-  height: 80%;
-}
-
 .height100pct {
   height: 100%;
 }
@@ -508,6 +509,10 @@ select {
 
 .spacer20px {
   width: 20px;
+}
+
+.spacer {
+  margin: 10px;
 }
 
 .overflowHidden {

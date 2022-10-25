@@ -4,6 +4,7 @@ import {
   showPuzzleView,
   loadGamesView,
   animateScoringView,
+  showErrorDialogView,
 } from './view.js';
 import {
   getDatabase,
@@ -403,7 +404,7 @@ function playWordController() {
   if (currentGame.status === 'finished') return;
   if (incomplete()) return;
   if (location.hash === '#puzzle' && !myTurn) {
-    alert("Your opponent hasn't played their turn yet!");
+    showErrorDialogView();
     return;
   }
   // TODO: something like this?:

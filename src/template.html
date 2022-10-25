@@ -29,6 +29,10 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0"
+    />
     <!-- Material Design Lite page styles:
     You can choose other color schemes from the CDN, more info here http://www.getmdl.io/customize/index.html
     Format: material.color1-color2.min.css, some examples:
@@ -143,8 +147,10 @@
               <div id="oppScore" class="textAlignCenter">30</div>
             </div>
           </div>
-          <span id="headerSignin" class="cursorPointer displayNone"
-            >SIGN IN
+          <span
+            id="headerSignin"
+            class="cursorPointer material-symbols-outlined"
+            >login
           </span>
         </div>
       </header>
@@ -169,9 +175,11 @@
           <div id="authBtnContainer" class="margin5pxAuto">
             <button
               id="authButton"
-              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent alignItemsCenter"
             >
-              sign in
+              sign in&nbsp;<span class="material-symbols-outlined signInOut"
+                >login
+              </span>
             </button>
           </div>
         </header>
@@ -475,7 +483,7 @@
         >
           <div
             id="gamesPanelContainer"
-            class="displayFlex flexDirCol maxHeight80pct"
+            class="displayFlex flexDirCol maxHeight90pct"
           >
             <div class="heading textAlignCenter">Games</div>
             <button
@@ -509,7 +517,7 @@
     </div>
     <dialog
       id="gamesDialog"
-      class="mdl-dialog height80pct"
+      class="mdl-dialog maxHeight90pct"
       style="width: 300px"
     >
       <div class="mdl-dialog__content displayFlex flexDirCol">
@@ -521,12 +529,12 @@
         </div>
         <div
           id="winMessage"
-          class="textAlignCenter fontSizeXLarge displayNone"
+          class="heading textAlignCenter fontSizeXLarge displayNone"
         ></div>
-        <div id="difficultyHeading" class="heading textAlignCenter">
+        <div id="difficultyHeading" class="fontWeightBold textAlignCenter">
           Difficulty level
         </div>
-        <div class="displayFlex spaceAround">
+        <div class="margin10px displayFlex spaceAround">
           <label
             class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
             for="radioEasy"
@@ -568,11 +576,8 @@
             <span class="mdl-radio__label">HARD</span>
           </label>
         </div>
-        <div
-          id="opponentHeading"
-          class="padding10px fontWeightBold textAlignCenter"
-        >
-          Choose your opponent
+        <div id="opponentHeading" class="fontWeightBold textAlignCenter">
+          Choose your opponent below:
         </div>
         <div id="opponentList" class="overflowYScroll">
           <ul id="dialogList" class="demo-list-action mdl-list">
@@ -584,6 +589,23 @@
           class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent cursorPointer"
         >
           Play Again!
+        </button>
+      </div>
+    </dialog>
+    <dialog id="errorDialog" class="mdl-dialog" style="width: 300px">
+      <div class="mdl-dialog__content displayFlex flexDirCol">
+        <div class="closeDialogPosition close noOutline cursorPointer">
+          <i class="material-icons">close</i>
+        </div>
+        <div id="errorMessage" class="textAlignCenter fontSizeXLarge">
+          Whoa there, Buckaroo... Your opponent hasn't played their turn yet!
+        </div>
+        <div class="spacer"></div>
+        <button
+          id="okButton"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent cursorPointer"
+        >
+          OK
         </button>
       </div>
     </dialog>

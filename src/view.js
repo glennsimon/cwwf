@@ -65,6 +65,8 @@ const gameLoadSpinner = document.getElementById('gameLoadSpinner');
 const gameLoadMessage = document.getElementById('gameLoadMessage');
 const turnProgressSpinner = document.getElementById('turnProgressSpinner');
 const turnProgressMessage = document.getElementById('turnProgressMessage');
+const errorDialog = document.getElementById('errorDialog');
+const okButton = document.getElementById('okButton');
 //#endregion
 
 let currentCell = null;
@@ -96,7 +98,8 @@ function authChangeView(user) {
   if (user) {
     gameLoadSpinner.classList.add('is-active');
     gameLoadMessage.innerText = 'Loading your games...';
-    authButton.textContent = 'sign out';
+    // authButton.textContent = 'sign out';
+    authButton.innerHTML = `sign out&nbsp;<span class='material-symbols-outlined signInOut'>logout </span>`;
     profileName.textContent = user.displayName;
     avatar.src = user.photoURL
       ? user.photoURL
@@ -104,16 +107,15 @@ function authChangeView(user) {
     location.hash = '#games';
     headerSignin.classList.add('displayNone');
   } else {
-    authButton.textContent = 'sign in';
+    // authButton.textContent = 'sign in';
+    authButton.innerHTML = `sign in&nbsp;<span class='material-symbols-outlined signInOut'>login </span>`;
     profileName.textContent = 'N. E. Person';
     avatar.src = 'images/avatar_circle_black.png';
     if (location.hash !== '#signin')
       headerSignin.classList.remove('displayNone');
     puzTitle.innerText = 'No puzzle loaded';
-    activeGamesContainer.innerHTML =
-      'You must sign in to see your active games';
-    pastGamesContainer.innerHTML =
-      'You must sign in to see your completed games';
+    activeGamesContainer.innerHTML = `You must sign in to see your active games`;
+    pastGamesContainer.innerHTML = `You must sign in to see your completed games`;
     clearPuzzle();
     if (location.hash !== '#tos' || location.hash !== '#privacy')
       location.hash = '#signin';
@@ -233,7 +235,7 @@ startGameButton.addEventListener('click', async () => {
     opponentHeading.classList.remove('displayNone');
     opponentList.classList.remove('displayNone');
     replayButton.classList.add('displayNone');
-    gamesDialog.classList.add('height80pct');
+    gamesDialog.classList.add('maxHeight90pct');
     gamesDialog.showModal();
   } else {
     // user is not logged in
@@ -1168,7 +1170,7 @@ function showReplayDialog(game, result) {
   winMessage.classList.remove('displayNone');
   opponentHeading.classList.add('displayNone');
   opponentList.classList.add('displayNone');
-  gamesDialog.classList.remove('height80pct');
+  gamesDialog.classList.remove('maxHeight90pct');
   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
   replayButton.classList.remove('displayNone');
   replayButton.addEventListener('click', replayOpponent);
@@ -1186,6 +1188,18 @@ function showReplayDialog(game, result) {
     radioEasy.setAttribute('checked', true);
   }
   if (!gamesDialog.open) gamesDialog.showModal();
+}
+
+function showErrorDialogView() {
+  turnProgressMessage.innerText = '';
+  turnProgressSpinner.remove('is-active');
+  okButton.addEventListener('click', () => {
+    errorDialog.close();
+  });
+  errorDialog.querySelector('.close').addEventListener('click', () => {
+    errorDialog.close();
+  });
+  errorDialog.showModal();
 }
 
 /** Load game based on user selection */
@@ -1354,4 +1368,5 @@ export {
   showPuzzleView,
   loadGamesView,
   animateScoringView,
+  showErrorDialogView,
 };
