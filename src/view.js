@@ -964,39 +964,35 @@ function updateScoreboard(game) {
  */
 function undoEntry() {
   console.log('Hello from undoEntry.');
-  const columns = getColumnsController();
   const game = getCurrentGameController();
+  const columns = game.puzzle.cols;
   if (currentCell) {
     let row = currentCell.parentElement.rowIndex;
     let col = currentCell.cellIndex;
     const index = row * columns + col;
-    // reverse copy idxArray so we go backwards instead of forwards
-    let localIdxArray = [];
     const idxArray = getIdxArrayController();
-    for (let i = 0, j = idxArray.length; i < idxArray.length; i++, j--) {
-      localIdxArray[i] = idxArray[j - 1];
-    }
-    const nextCellIndex = localIdxArray.indexOf(index) + 1;
-    localIdxArray = localIdxArray
-      .slice(nextCellIndex)
-      .concat(localIdxArray.slice(0, nextCellIndex));
-    const letterDiv = document.createElement('div');
-    // console.log(idxArray);
-    // console.log(localIdxArray);
+    // Reverse copy idxArray so we step through backwards instead of forwards
+    let idxArrayRev = [...idxArray].reverse();
 
-    if (game.puzzle.grid[index].status === 'locked') {
-      // alert('Sorry, that square is locked by a previous answer');
-      return;
-    }
+    // Move all elements of idxArrayRev up to and including the current index
+    // to the end of idxArrayRev (leapfrog)
+    const nextCellIndex = idxArrayRev.indexOf(index) + 1;
+    idxArrayRev = idxArrayRev
+      .slice(nextCellIndex)
+      .concat(idxArrayRev.slice(0, nextCellIndex));
+
+    const letterDiv = document.createElement('div');
     letterDiv.appendChild(document.createTextNode(''));
     letterDiv.classList.add('marginAuto');
+
+    // Replace letter div in the current cell with new empty letter div
     currentCell.children[0].replaceChild(
       letterDiv,
       currentCell.children[0].children[0]
     );
     currentCell.classList.remove('currCellHighlight');
     currentCell.classList.add('rangeHighlight');
-    for (const idx of localIdxArray) {
+    for (const idx of idxArrayRev) {
       if (game.puzzle.grid[idx].status !== 'locked') {
         row = Math.floor(idx / columns);
         col = idx - row * columns;
@@ -1016,7 +1012,7 @@ function undoEntry() {
 function getCellDim() {
   console.log('Hello from getCellDim.');
   const puzTableWidth = puzTable.offsetWidth;
-  return Math.floor(puzTableWidth / getColumnsController());
+  return puzTableWidth / getColumnsController();
 }
 
 /** Clears letters when user changes to a different clue */
@@ -1067,22 +1063,35 @@ function selectBlock(direction, cell) {
   // for when only a single clue is showing (portrait orientation)
   singleClue.innerText = clue.children[1].textContent;
 
-  const begin = direction === 'across' ? 'Left' : 'Top';
-  const end = direction === 'across' ? 'Right' : 'Bottom';
-  const sideA = direction === 'across' ? 'Top' : 'Left';
-  const sideB = direction === 'across' ? 'Bottom' : 'Right';
-  for (let idx = 0; idx < idxArray.length; idx++) {
+  const highlighter = document.createElement('div');
+  highlighter.id = 'highlighter';
+  highlighter.classList.add('highlightBorder'); //, 'displayFlex');
+  const cellDim = getCellDim();
+  const clueLength = idxArray.length;
+  if (direction === 'across') {
+    highlighter.style.width = `${clueLength * cellDim}px`;
+    highlighter.style.height = `${cellDim}px`;
+  } else {
+    highlighter.style.width = `${cellDim}px`;
+    highlighter.style.height = `${clueLength * cellDim}px`;
+    // highlighter.classList.add('flexDirCol');
+  }
+  const firstCellRow = Math.floor(idxArray[0] / columns);
+  const firstCellCol = idxArray[0] - firstCellRow * columns;
+  highlighter.style.translate = `${cellDim * firstCellCol - 2}px -${
+    puzTable.offsetHeight - cellDim * firstCellRow + 2
+  }px`;
+
+  for (let idx = 0; idx < clueLength; idx++) {
     const idxRow = Math.floor(idxArray[idx] / columns);
     const idxCol = idxArray[idx] - idxRow * columns;
     const currentCell = puzTable.firstChild.children[idxRow].children[idxCol];
+    currentCell.classList.remove('transparent');
     currentCell.classList.add(
       currentCell === cell ? 'currCellHighlight' : 'rangeHighlight'
     );
-    if (idx === 0) currentCell.classList.add(`border2px${begin}`);
-    currentCell.classList.add(`border2px${sideA}`, `border2px${sideB}`);
-    if (idx === idxArray.length - 1)
-      currentCell.classList.add(`border2px${end}`);
   }
+  puzTable.appendChild(highlighter);
 }
 
 /**
@@ -1126,20 +1135,16 @@ function getWordBlock(cell, direction) {
 /** Removes clue cell highlighting from all cells */
 function clearHighlights() {
   console.log('Hello from clearHighlights.');
+  const highlighter = document.getElementById('highlighter');
+  if (highlighter) highlighter.remove();
   // console.log(puzTable.children[0]);
   const rowArray = puzTable.children[0].children;
 
   for (const row of rowArray) {
     for (const cell of row.children) {
       if (cell.className !== 'black') {
-        cell.classList.remove(
-          'rangeHighlight',
-          'currCellHighlight',
-          'border2pxBottom',
-          'border2pxRight',
-          'border2pxLeft',
-          'border2pxTop'
-        );
+        cell.classList.remove('rangeHighlight', 'currCellHighlight');
+        cell.classList.add('transparent');
       }
     }
   }
@@ -1301,7 +1306,7 @@ function resizePuzzle() {
     if (svgElements.length === 1) {
       const halfCell = cellDim / 2;
       const radius = halfCell - 1.5;
-      let svgHtml = `<svg class='posAbsolute upperLeft'>
+      let svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
         <path d='M ${halfCell} ${halfCell}'/>
         <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black' fill='transparent'/>
         </svg>`;

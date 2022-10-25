@@ -301,6 +301,17 @@ select {
   border-right: 2px solid gold !important;
 }
 
+.highlightBorder {
+  border: 2px solid gold !important;
+}
+
+#highlighter {
+  pointer-events: none;
+  z-index: 3;
+  position: absolute;
+  box-sizing: content-box;
+}
+
 .bgTransRed {
   background-color: rgba(255, 0, 0, 0.5);
 }
