@@ -1,5 +1,10 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+// const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
+// const WebpackPwaManifest = require('webpack-pwa-manifest');
+const CopyPlugin = require('copy-webpack-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const BundleAnalyzerPlugin =
   require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -13,22 +18,23 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
+    // publicPath: '',
     filename: '[name].[contenthash].js',
-    clean: {
-      keep: /(images\/|app\.webmanifest)/,
-    },
+    assetModuleFilename: './assets/[name].[hash].[ext]',
+    clean: true,
   },
   optimization: {
     runtimeChunk: 'single',
     splitChunks: {
       chunks: 'all',
     },
+    minimizer: [`...`, new CssMinimizerPlugin()],
   },
   module: {
     rules: [
       {
         test: /\.css$/i,
-        use: ['style-loader', 'css-loader'],
+        use: [MiniCssExtractPlugin.loader, 'css-loader'],
       },
       {
         test: /\.js$/i,
@@ -40,6 +46,14 @@ module.exports = {
           },
         },
       },
+      {
+        test: /\.(svg|png|jpg|jpeg|gif)$/,
+        type: 'asset/resource',
+      },
+      // {
+      //   test: /\.html$/,
+      //   use: ['html-loader'],
+      // },
     ],
   },
   plugins: [
@@ -47,6 +61,16 @@ module.exports = {
       title: 'Crosswords WF',
       filename: 'index.html',
       template: 'src/template.html',
+    }),
+    new MiniCssExtractPlugin({ filename: './assets/[name].[contenthash].css' }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: './src/app.webmanifest',
+          to: './app.webmanifest',
+        },
+        { from: './src/images', to: './images' },
+      ],
     }),
     // new BundleAnalyzerPlugin(),  // to be used occassionally
   ],

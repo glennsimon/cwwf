@@ -11,15 +11,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= htmlWebpackPlugin.options.title %></title>
     <!-- Web Application Manifest -->
-    <link rel="manifest" href="/app.webmanifest" />
+    <link rel="manifest" href="./app.webmanifest" />
     <!-- Add to homescreen for Chrome on Android -->
-    <link
-      rel="icon"
-      sizes="192x192"
-      href="images/touch/chrome-touch-icon-192x192.png"
-    />
+    <link rel="icon" sizes="192x192" href="images/chrome-touch-icon-192.png" />
     <!-- Add to homescreen for Safari on iOS -->
-    <link rel="apple-touch-icon" href="images/touch/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
     <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
     <!--
     <link rel='canonical' href='http://www.example.com/'>
@@ -40,73 +36,16 @@
     material.blue-orange.min.css
     material.purple-indigo.min.css
     -->
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     <link
       rel="stylesheet"
-      href="https://code.getmdl.io/1.2.1/material.indigo-pink.min.css"
+      href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css"
     />
     <!-- Roboto font -->
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Roboto"
     />
-    <style>
-      .displayNone {
-        display: none;
-      }
-      .displayFlex {
-        display: flex;
-      }
-      .flexDirCol {
-        flex-direction: column;
-      }
-      .flexCenter {
-        justify-content: center;
-      }
-      #gamesPanel.slideOut {
-        transform: translate(-100%, 0);
-      }
-      #splash {
-        position: fixed;
-        width: 100%;
-        height: 100%;
-        align-content: center;
-        background-color: lightgray;
-        z-index: 1;
-      }
-      .spaceAround {
-        justify-content: space-around;
-      }
-      .flexWrap {
-        flex-wrap: wrap;
-      }
-      .posAbsolute {
-        position: absolute;
-      }
-      .fullWidth {
-        width: 100%;
-      }
-      #appContainer.slideIn {
-        transform: translate(0, 0);
-      }
-      .height100pct {
-        height: 100%;
-      }
-      #splashImage {
-        width: 20%;
-        height: auto;
-        margin: 5px auto;
-        aspect-ratio: 1;
-      }
-      .flexGrow-1 {
-        flex-grow: 1;
-      }
-      .margin5pxAuto {
-        margin: 5px auto;
-      }
-      .marginAuto {
-        margin: auto;
-      }
-    </style>
     <!-- webpack code will be added below -->
   </head>
 
@@ -118,7 +57,7 @@
         <div class="mdl-layout__header-row">
           <img
             id="logo"
-            src="images/xswordsLogo.png"
+            src="./images/xswordsLogo.png"
             alt="Crossed swords logo"
             height="40"
             width="40"
@@ -167,7 +106,7 @@
           <div class="picContainer">
             <img
               id="avatar"
-              src="images/avatar_circle_black.png"
+              src="./images/avatar_circle_black.png"
               alt="profile picture"
             />
           </div>
@@ -224,7 +163,7 @@
             >
               <img
                 id="splashImage"
-                src="./images/touch/chrome-touch-icon-192x192.png"
+                src="./images/chrome-touch-icon-192.png"
                 width="192"
                 height="192"
                 alt="logo"
@@ -611,7 +550,5 @@
     </dialog>
     <!-- Placeholder div for animated cell -->
     <div id="cellAnimator"></div>
-
-    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
   </body>
 </html>
