@@ -1192,7 +1192,7 @@ function showReplayDialog(game, result) {
 
 function showErrorDialogView() {
   turnProgressMessage.innerText = '';
-  turnProgressSpinner.remove('is-active');
+  turnProgressSpinner.classList.remove('is-active');
   okButton.addEventListener('click', () => {
     errorDialog.close();
   });
