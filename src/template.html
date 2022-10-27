@@ -143,8 +143,8 @@
               abandon game
             </button>
             <div class="margin10px">
-              Warning! Pressing this button will immediately end the current
-              game and give all remaining points to your opponent.
+              Warning! Pressing this button will end the current game and give
+              all remaining points to your opponent.
             </div>
           </div>
         </div>
@@ -546,6 +546,32 @@
         >
           OK
         </button>
+      </div>
+    </dialog>
+    <dialog id="abandonDialog" class="mdl-dialog" style="width: 300px">
+      <div class="mdl-dialog__content displayFlex flexDirCol">
+        <div class="closeDialogPosition close noOutline cursorPointer">
+          <i class="material-icons">close</i>
+        </div>
+        <div id="abandonMessage" class="textAlignCenter fontSizeLarge">
+          <b>Are you sure?</b> Pressing YES will end the current game, giving
+          all remaining points to your opponent. Pressing NO will return you to
+          the game.
+        </div>
+        <div class="spacer"></div>
+        <div class="displayFlex spaceAround">
+          <button
+            id="yesButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent cursorPointer colorRed"
+          >
+            YES</button
+          ><button
+            id="noButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent cursorPointer"
+          >
+            NO
+          </button>
+        </div>
       </div>
     </dialog>
     <!-- Placeholder div for animated cell -->

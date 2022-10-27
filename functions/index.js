@@ -531,6 +531,7 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
       } else if (game.players[myUid].score < game.players[oppUid].score) {
         game.winner = oppUid;
       }
+      game.lastTurnCheckObj = { abandoned: true };
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameListDoc);
     });

@@ -67,6 +67,9 @@ const turnProgressSpinner = document.getElementById('turnProgressSpinner');
 const turnProgressMessage = document.getElementById('turnProgressMessage');
 const errorDialog = document.getElementById('errorDialog');
 const okButton = document.getElementById('okButton');
+const abandonDialog = document.getElementById('abandonDialog');
+const yesButton = document.getElementById('yesButton');
+const noButton = document.getElementById('noButton');
 //#endregion
 
 let currentCell = null;
@@ -662,7 +665,7 @@ function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
   turnProgressSpinner.classList.remove('is-active');
   turnProgressMessage.innerText = '';
-  if (scoreObj.newGame) return;
+  if (scoreObj.newGame || scoreObj.abandoned) return;
   const myUid = getCurrentUserController().uid;
   const scoreElem =
     myUid === scoreObj.playerUid ? scores.children[0] : scores.children[2];
@@ -1190,18 +1193,6 @@ function showReplayDialog(game, result) {
   if (!gamesDialog.open) gamesDialog.showModal();
 }
 
-function showErrorDialogView() {
-  turnProgressMessage.innerText = '';
-  turnProgressSpinner.classList.remove('is-active');
-  okButton.addEventListener('click', () => {
-    errorDialog.close();
-  });
-  errorDialog.querySelector('.close').addEventListener('click', () => {
-    errorDialog.close();
-  });
-  errorDialog.showModal();
-}
-
 /** Load game based on user selection */
 function replayOpponent() {
   const game = getCurrentGameController();
@@ -1219,6 +1210,40 @@ function replayOpponent() {
   startGameParameters.players = game.players;
   startNewGameController(startGameParameters);
 }
+
+function showErrorDialogView() {
+  turnProgressMessage.innerText = '';
+  turnProgressSpinner.classList.remove('is-active');
+  okButton.addEventListener('click', () => {
+    errorDialog.close();
+  });
+  errorDialog.querySelector('.close').addEventListener('click', () => {
+    errorDialog.close();
+  });
+  errorDialog.showModal();
+}
+
+/**
+ * Open the abandonDialog, giving the user one more chance
+ * to decide if they want to abandon the game.
+ */
+concessionBtn.addEventListener('click', () => {
+  toggleDrawer();
+  abandonDialog.showModal();
+  abandonDialog.querySelector('.close').addEventListener('click', () => {
+    abandonDialog.close();
+  });
+  yesButton.addEventListener('click', () => {
+    turnProgressMessage.innerText = 'Working on it...';
+    turnProgressSpinner.classList.add('is-active');
+    concessionBtnContainer.classList.add('displayNone');
+    abandonCurrentGameController();
+    abandonDialog.close();
+  });
+  noButton.addEventListener('click', () => {
+    abandonDialog.close();
+  });
+});
 
 /**
  * Adds a letter to the puzzle from physical or virtual keyboard event and
@@ -1291,16 +1316,6 @@ function enterLetter(event) {
     }
   }
 }
-
-/**
- * Abandon the game immediately, adding all remaining
- * points to opponent's score
- */
-concessionBtn.addEventListener('click', () => {
-  toggleDrawer();
-  concessionBtnContainer.classList.add('displayNone');
-  abandonCurrentGameController();
-});
 
 /** Resizes puzzle based on available space */
 function resizePuzzle() {
