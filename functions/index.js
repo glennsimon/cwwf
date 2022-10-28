@@ -74,37 +74,39 @@ exports.userOffline = functions.https.onCall((statusUpdate, context) => {
 
 exports.authChanged = functions.https.onCall(async (data, context) => {
   if (context.auth && context.auth.token && context.auth.token.uid) {
-    // User is signed in. Updates every time the user signs in, in case there
-    // are changes to photo or whatever.
     console.log('auth token: ', context.auth.token);
     const uid = context.auth.token.uid;
-    const userData = {};
-    userData.displayName = context.auth.token.name
+    // Split data into two nested collections for public and private data
+    const batch = db.batch();
+    const publicDataRef = db.collection('users').doc(uid);
+    const privateDataRef = db
+      .collection('users')
+      .doc(uid)
+      .collection('private')
+      .doc('data');
+    // User is signed in. Updates every time the user signs in, in case there
+    // are changes to photo or whatever.
+    const publicData = {};
+    publicData.displayName = context.auth.token.name
       ? context.auth.token.name
       : null;
-    userData.photoURL = context.auth.token.picture
+    publicData.photoURL = context.auth.token.picture
       ? context.auth.token.picture
       : null;
-    userData.uid = uid;
-    userData.privateData = {
+    publicData.uid = uid;
+    publicData.signInProvider = context.auth.token.firebase.sign_in_provider;
+    const privateData = {
       email: context.auth.token.email ? context.auth.token.email : null,
       emailVerified: context.auth.token.email_verified
         ? context.auth.token.email_verified
         : null,
     };
-    userData.signInProvider = context.auth.token.firebase.sign_in_provider;
-    await db
-      .doc(`/users/${uid}`)
-      .set(userData, { merge: true })
-      .then(() => {
-        return uid;
-      })
-      .catch((err) => {
-        console.log('error: ', err);
-      });
-    return uid;
+    batch.set(publicDataRef, publicData, { merge: true });
+    batch.set(privateDataRef, privateData, { merge: true });
+    await batch.commit();
+    return;
   }
-  return null;
+  return;
 });
 
 /**
