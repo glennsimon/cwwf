@@ -57,7 +57,6 @@ let online = false;
  * if not subscribed to any game.
  */
 let gameUnsubscribe = () => {};
-let connectionUnsubscribe = () => {};
 let myGamesUnsubscribe = () => {};
 
 /**
@@ -171,42 +170,18 @@ function authState(state) {
 // when connection/disconnection with app is made.
 // If no user is logged in, this does nothing.
 onValue(ref(dbRT, '.info/connected'), (snapshot) => {
-  console.log(
-    'connected notification change fired. Connected: ',
-    `${snapshot.val()}`
-  );
+  online = snapshot.val();
+  console.log('connected notification change fired. Connected: ', `${online}`);
   // const uid = auth.currentUser ? auth.currentUser.uid : null;
   if (!currentUser) {
-    connectionUnsubscribe();
-    connectionUnsubscribe = () => {};
     return;
   }
-  if (snapshot.val() === false) {
-    setDoc(userStatusFirestoreRef, authState('offline'), { merge: true });
-    return;
-  }
-  // else if (uid) {
   onDisconnect(userStatusDatabaseRef)
     .set(authState('offline'))
     .then(() => {
       set(userStatusDatabaseRef, authState('online'));
-      // setDoc(userStatusFirestoreRef, authState('online'), { merge: true });
-      // return;
     });
-  // }
 });
-
-/**
- * Subscribe user to listen to monitor online status. Executing
- * `connectionUnsubscribe` unsubscribes the user.
- */
-connectionUnsubscribe = () => {
-  if (!userStatusFirestoreRef) return;
-  return onSnapshot(userStatusFirestoreRef, (snapshot) => {
-    let isOnline = snapshot.data().state === 'online';
-    // use isOnline if we need it...
-  });
-};
 
 /**
  * Firestore function that monitors auth state.
@@ -404,8 +379,18 @@ function playWordController() {
   if (currentGame.status === 'finished') return;
   if (incomplete()) return;
   if (location.hash === '#puzzle' && !myTurn) {
-    showErrorDialogView();
+    const errorMessage =
+      `Whoa there, Buckaroo... ` +
+      `Your opponent hasn't played their turn yet!`;
+    showErrorDialogView(errorMessage);
     return;
+  }
+  if (!online) {
+    const errorMessage =
+      `You are currently disconnected from the ` +
+      `internet. When connection is restored you may have to ` +
+      `play your turn again`;
+    showErrorDialogView(errorMessage);
   }
   // TODO: something like this?:
   // document.getElementById('puzTitle').innerText = 'Fetching data...';

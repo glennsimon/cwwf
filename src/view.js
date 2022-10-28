@@ -72,7 +72,7 @@ const abandonDialog = document.getElementById('abandonDialog');
 const yesButton = document.getElementById('yesButton');
 const noButton = document.getElementById('noButton');
 const navList = document.getElementById('navList');
-const gamesNav = document.getElementById('gamesNav');
+const errorMessage = document.getElementById('errorMessage');
 //#endregion
 
 let currentCell = null;
@@ -1214,9 +1214,14 @@ function replayOpponent() {
   startNewGameController(startGameParameters);
 }
 
-function showErrorDialogView() {
+/**
+ * Shows an error dialog with appropriate messaging
+ * @param {string} message Type of error
+ */
+function showErrorDialogView(message) {
   turnProgressMessage.innerText = '';
   turnProgressSpinner.classList.remove('is-active');
+  errorMessage.innerText = message;
   okButton.addEventListener('click', () => {
     errorDialog.close();
   });

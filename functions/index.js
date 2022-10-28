@@ -57,7 +57,7 @@ exports.onUserStatusChanged = functions.database
       return null;
     }
     // Otherwise, we write it to Firestore.
-    const userStatusFirestoreRef = db.doc(`users/${context.auth.uid}`);
+    const userStatusFirestoreRef = db.doc(`users/${context.params.uid}`);
     return userStatusFirestoreRef.set(eventStatus, { merge: true });
   });
 
@@ -364,12 +364,17 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
             checkAnswerResult.push(cellResult);
             console.log('letter score: ', scoreValues[guess]);
           } else if (gridElement.status !== 'locked') {
-            game.players[player].score += scoreCell(
+            const scoreObj = scoreCell(
               game,
               direction,
               idxArray[index],
               bgColor
             );
+            game.players[player].score += scoreObj.scoreChange;
+            if (scoreObj.pushClue)
+              game.puzzle.completedClues[scoreObj.dir].push(
+                parseInt(scoreObj.pushClue)
+              );
             cellResult.score = scoreValues[guess];
             checkAnswerResult.push(cellResult);
             // console.log(
@@ -426,10 +431,10 @@ function scoreCell(game, direction, index, bgColor) {
   // get direction for orthogonal word
   const orthoDir = direction === 'across' ? 'down' : 'across';
   const orthoWordArray = getOrthoWordArray(game, orthoDir, index);
-  // console.log(orthoWordArray);
   // console.log('direction: ', direction);
   let addedScore = 0;
   let addedResults = [];
+  let clueNum = game.puzzle.grid[orthoWordArray[0]].clueNum;
   console.log('ortho word array: ', orthoWordArray);
   for (const idx of orthoWordArray) {
     const correctLetter = game.puzzle.grid[idx].value;
@@ -441,6 +446,7 @@ function scoreCell(game, direction, index, bgColor) {
     if (idx !== index && game.puzzle.grid[idx].status !== 'locked') {
       addedScore = 0;
       addedResults = [];
+      clueNum = null;
       break;
     }
     addedScore += scoreValues[correctLetter];
@@ -458,7 +464,11 @@ function scoreCell(game, direction, index, bgColor) {
     'returned score: ',
     addedScore + scoreValues[game.puzzle.grid[index].value]
   );
-  return addedScore + scoreValues[game.puzzle.grid[index].value];
+  return {
+    scoreChange: addedScore + scoreValues[game.puzzle.grid[index].value],
+    pushClue: clueNum,
+    dir: orthoDir,
+  };
 }
 
 /**
