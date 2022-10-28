@@ -70,6 +70,7 @@ const okButton = document.getElementById('okButton');
 const abandonDialog = document.getElementById('abandonDialog');
 const yesButton = document.getElementById('yesButton');
 const noButton = document.getElementById('noButton');
+const navList = document.getElementById('navList');
 //#endregion
 
 let currentCell = null;
@@ -102,7 +103,7 @@ function authChangeView(user) {
     gameLoadSpinner.classList.add('is-active');
     gameLoadMessage.innerText = 'Loading your games...';
     // authButton.textContent = 'sign out';
-    authButton.innerHTML = `sign out&nbsp;<span class='material-symbols-outlined signInOut'>logout </span>`;
+    authButton.innerHTML = `sign out&nbsp;<span class='material-icons'>logout </span>`;
     profileName.textContent = user.displayName;
     avatar.src = user.photoURL
       ? user.photoURL
@@ -1376,6 +1377,18 @@ document.getElementById('enter').addEventListener('click', () => {
   playWordController();
 });
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
+
+navList.addEventListener('click', (event) => {
+  if (event.target.querySelector('i').innerText === 'refresh') {
+    location.reload();
+  }
+  if (event.target.querySelector('i').innerText === 'navigate_before') {
+    history.back();
+  }
+  if (event.target.querySelector('i').innerText === 'navigate_next') {
+    history.forward();
+  }
+});
 
 export {
   authChangeView,
