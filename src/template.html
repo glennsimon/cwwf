@@ -82,29 +82,29 @@
               <div id="oppScore" class="textAlignCenter">30</div>
             </div>
           </div>
-          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"
-            id="headerSignin">
-            <i class="material-icons">login</i></button>
+          <button
+            class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon displayNone"
+            id="headerSignin"
+          >
+            <i class="material-icons">login</i>
           </button>
-          <div id="searchButton" class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label">
-            <label class="mdl-button mdl-js-button mdl-button--icon" for="search">
-              <i class="material-icons">search</i>
-            </label>
-            <div class="mdl-textfield__expandable-holder">
-              <input class="mdl-textfield__input" type="text" id="search">
-              <label id="friendsLabel" class="mdl-textfield__label" for="search" style="color:lightgray;">Find your friends</label>
-            </div>
-          </div>
-          <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon" id="navBtn">
+          <button
+            class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"
+            id="navBtn"
+          >
             <i class="material-icons">more_vert</i>
           </button>
-          <ul id="navList" class="mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right" for="navBtn">
+          <ul
+            id="navList"
+            class="mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right"
+            for="navBtn"
+          >
             <li class="mdl-menu__item displayFlex">
-              <i class="material-icons alignSelfCenter">refresh</i>&nbsp;Refresh</li>
-            <li class="mdl-menu__item displayFlex">
-              <i class="material-icons alignSelfCenter">navigate_before</i>Go back</li>
-            <li class="mdl-menu__item displayFlex">
-              <i class="material-icons alignSelfCenter">navigate_next</i>Go forward</li>
+              <i class="material-icons alignSelfCenter">refresh</i>&nbsp;Refresh
+            </li>
+            <li id="gamesNav" disabled class="mdl-menu__item displayFlex">
+              <i class="material-icons alignSelfCenter">grid_on</i>&nbsp;Games
+            </li>
           </ul>
         </div>
       </header>
@@ -131,9 +131,7 @@
               id="authButton"
               class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent alignItemsCenter"
             >
-              sign in&nbsp;<span class="material-icons"
-                >login
-              </span>
+              sign in&nbsp;<span class="material-icons">login </span>
             </button>
           </div>
         </header>

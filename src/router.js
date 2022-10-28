@@ -23,8 +23,7 @@ const returnToSignin = document.getElementById('returnToSignin');
 const firebaseuiAuthContainer = document.getElementById(
   'firebaseuiAuthContainer'
 );
-const navBtn = document.getElementById('navBtn');
-const searchButton = document.getElementById('searchButton');
+const gamesNav = document.getElementById('gamesNav');
 
 window.addEventListener('hashchange', navigate);
 
@@ -49,7 +48,7 @@ async function navigate() {
     appContainer.classList.add('slideIn');
     puzzleInfo.classList.remove('displayNone');
     headerSignin.classList.add('displayNone');
-    searchButton.classList.add('displayNone');
+    gamesNav.removeAttribute('disabled');
   } else if (location.hash === '#signin') {
     gamesPanel.classList.add('slideOut');
     appContainer.classList.add('slideIn');
@@ -72,7 +71,7 @@ async function navigate() {
     }
     firebaseuiAuthContainer.classList.remove('displayNone');
     setCurrentGameIdController(null);
-    navBtn.classList.remove('displayNone');
+    gamesNav.setAttribute('disabled', '');
   } else if (location.hash === '#games') {
     try {
       gamesDialog.close();
@@ -90,8 +89,7 @@ async function navigate() {
       headerSignin.classList.remove('displayNone');
     }
     setCurrentGameIdController(null);
-    searchButton.classList.remove('displayNone');
-    navBtn.classList.remove('displayNone');
+    gamesNav.setAttribute('disabled', '');
   } else if (location.hash === '#tos') {
     gamesPanel.classList.add('slideOut');
     appContainer.classList.add('slideIn');
@@ -124,7 +122,6 @@ async function navigate() {
     signinMessage.classList.add('displayNone');
     firebaseuiAuthContainer.classList.add('displayNone');
     setCurrentGameIdController(null);
-    navBtn.classList.remove('displayNone');
   }
 }
 

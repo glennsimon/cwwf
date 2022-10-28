@@ -1,3 +1,4 @@
+import { doc } from 'firebase/firestore';
 import {
   authButtonClickedController,
   startNewGameController,
@@ -71,6 +72,7 @@ const abandonDialog = document.getElementById('abandonDialog');
 const yesButton = document.getElementById('yesButton');
 const noButton = document.getElementById('noButton');
 const navList = document.getElementById('navList');
+const gamesNav = document.getElementById('gamesNav');
 //#endregion
 
 let currentCell = null;
@@ -1382,11 +1384,8 @@ navList.addEventListener('click', (event) => {
   if (event.target.querySelector('i').innerText === 'refresh') {
     location.reload();
   }
-  if (event.target.querySelector('i').innerText === 'navigate_before') {
-    history.back();
-  }
-  if (event.target.querySelector('i').innerText === 'navigate_next') {
-    history.forward();
+  if (event.target.querySelector('i').innerText === 'grid_on') {
+    location.hash = '#games';
   }
 });
 
