@@ -1,10 +1,18 @@
-import { db, app, auth, functions, messaging } from './firebase-init.js';
+import {
+  db,
+  app,
+  auth,
+  functions,
+  messaging,
+  storage,
+} from './firebase-init.js';
 import {
   authChangeView,
   showPuzzleView,
   loadGamesView,
   animateScoringView,
   showErrorDialogView,
+  displaySettingsView,
 } from './view.js';
 import {
   getDatabase,
@@ -18,6 +26,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 
 import { getToken } from 'firebase/messaging';
 import {
   collection,
+  getDoc,
   getDocs,
   setDoc,
   doc,
@@ -28,6 +37,8 @@ import {
   where,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import { getDownloadURL, ref as refStorage } from 'firebase/storage';
+import { settings } from 'firebase/analytics';
 
 const dbRT = getDatabase(app);
 const vapidKey =
@@ -509,6 +520,31 @@ function abandonCurrentGameController() {
   });
 }
 
+async function populateSettingsController() {
+  const settingsObj = { photoUrl: null, userData: null };
+  const userImageRef = refStorage(
+    storage,
+    `users/${currentUser.uid}/avatar.jpg`
+  );
+
+  try {
+    const url = await getDownloadURL(userImageRef);
+    settingsObj.photoUrl = url;
+  } catch (error) {
+    switch (error.code) {
+      case 'storage/object-not-found':
+        // user image does not exist, object value remains null
+        break;
+      case 'storage/unauthorized':
+        console.warn('user does not have permission to access image file.');
+        break;
+    }
+  }
+  const userData = await getDoc(doc(db, `users/${currentUser.uid}`));
+  if (userData.handle) settingsObj.userData = userData;
+  displaySettingsView(settingsObj);
+}
+
 export {
   authButtonClickedController,
   startNewGameController,
@@ -530,4 +566,5 @@ export {
   setAcrossWordController,
   getMyOpponentUidController,
   getGameListParametersController,
+  populateSettingsController,
 };

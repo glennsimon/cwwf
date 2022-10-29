@@ -65,10 +65,13 @@
           >
           <div class="mdl-layout-spacer"></div>
           <p id="turnProgressSpinner" class="mdl-spinner mdl-js-spinner"></p>
-          <span>&nbsp;&nbsp;&nbsp;</span>
+          <div class="margin5px"></div>
           <span id="turnProgressMessage"></span>
-          <!-- </div> -->
           <div class="mdl-layout-spacer"></div>
+          <span id="wiFiBad" class="material-icons displayNone"
+            >signal_wifi_bad</span
+          >
+          <div class="margin5px"></div>
           <div id="scores" class="displayNone">
             <div class="flexGrow-1 margin0px5px width60px bgColorTransWhite">
               <div id="myName" class="textAlignCenter overflowHidden">Jill</div>
@@ -104,6 +107,10 @@
             </li>
             <li id="gamesNav" disabled class="mdl-menu__item displayFlex">
               <i class="material-icons alignSelfCenter">grid_on</i>&nbsp;Games
+            </li>
+            <li id="settings" class="mdl-menu__item displayFlex">
+              <i class="material-icons alignSelfCenter">settings</i
+              >&nbsp;Settings
             </li>
           </ul>
         </div>
@@ -587,6 +594,82 @@
         </div>
       </div>
     </dialog>
+    <div id="settingsContainer" class="displayNone" style="height: 100vh">
+      <div
+        id="settingsCard"
+        class="mdl-card-square mdl-card mdl-shadow--2dp marginAuto displayNone"
+      >
+        <div class="mdl-card__title">
+          <h2 class="mdl-card__title-text">Settings</h2>
+        </div>
+        <div class="mdl-card__supporting-text" style="width: 100%">
+          <form action="">
+            <div class="displayFlex flexDirCol">
+              <div class="picContainer">
+                <img
+                  id="avatarSettings"
+                  src="./images/avatar_circle_black.png"
+                  alt="profile picture"
+                />
+              </div>
+              <div class="textAlignCenter">
+                <label for="avatarPref" class="mdl-textfield"
+                  >Choose a different image:</label
+                >
+                <button
+                  id="avatarPref"
+                  class="mdl-button mdl-js-riple-effect mdl-button--raised"
+                  name="avatarPref"
+                  type="file"
+                  accept="image/*"
+                >
+                  select
+                </button>
+              </div>
+            </div>
+            <div
+              class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+            >
+              <input class="mdl-textfield__input" type="text" id="name" />
+              <label class="mdl-textfield__label" for="name">Full Name</label>
+            </div>
+            <div class="displayFlex alignItemsCenter spaceBetween">
+              <div
+                class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+                style="width: 200px"
+              >
+                <input class="mdl-textfield__input" type="text" id="handle" />
+                <label class="mdl-textfield__label" for="handle"
+                  >Game Persona</label
+                >
+              </div>
+              <button
+                id="checkAvailability"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+              >
+                check
+              </button>
+            </div>
+            <div
+              class="mdl-card__actions mdl-card--border displayFlex spaceBetween"
+            >
+              <button
+                id="cancelButton"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+              >
+                cancel
+              </button>
+              <button
+                type="submit"
+                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+              >
+                save settings
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
     <!-- Placeholder div for animated cell -->
     <div id="cellAnimator"></div>
   </body>

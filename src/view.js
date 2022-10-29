@@ -18,6 +18,7 @@ import {
   getAcrossWordController,
   getMyOpponentUidController,
   getGameListParametersController,
+  populateSettingsController,
 } from './controller.js';
 
 import './styles/main.css';
@@ -73,6 +74,7 @@ const yesButton = document.getElementById('yesButton');
 const noButton = document.getElementById('noButton');
 const navList = document.getElementById('navList');
 const errorMessage = document.getElementById('errorMessage');
+const settingsContainer = document.getElementById('settingsContainer');
 //#endregion
 
 let currentCell = null;
@@ -1392,7 +1394,34 @@ navList.addEventListener('click', (event) => {
   if (event.target.querySelector('i').innerText === 'grid_on') {
     location.hash = '#games';
   }
+  if (event.target.querySelector('i').innerText === 'settings') {
+    populateSettingsController();
+    settingsContainer.classList.remove('displayNone');
+    settingsContainer.classList.add('displayFlex');
+    const form = settingsContainer.querySelector('form');
+    form.addEventListener('submit', () => {
+      saveSettings(new FormData(form));
+      settingsContainer.classList.remove('displayFlex');
+      settingsContainer.classList.add('displayNone');
+    });
+    cancelButton.addEventListener('click', () => {
+      settingsContainer.classList.remove('displayFlex');
+      settingsContainer.classList.add('displayNone');
+    });
+  }
 });
+
+/**
+ * Capture settings values and initiate save.
+ * @param {object} formData `FormData` object
+ */
+function saveSettings(formData) {
+  console.log('formData: ', formData);
+}
+
+function displaySettingsView(settingsObj) {
+  console.log('settingsObj: ', settingsObj);
+}
 
 export {
   authChangeView,
@@ -1401,4 +1430,5 @@ export {
   loadGamesView,
   animateScoringView,
   showErrorDialogView,
+  displaySettingsView,
 };

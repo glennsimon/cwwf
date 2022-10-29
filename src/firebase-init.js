@@ -4,6 +4,7 @@ import { getAuth } from 'firebase/auth';
 import { getMessaging } from 'firebase/messaging';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { getAnalytics } from 'firebase/analytics';
+import { getStorage } from 'firebase/storage';
 
 let firebaseConfig = {
   apiKey: 'AIzaSyDNheDAGRrSjCgic20dgnuawMILWBrTNUk',
@@ -26,6 +27,7 @@ const db = getFirestore(app);
 const functions = getFunctions(app);
 const messaging = getMessaging(app);
 const auth = getAuth();
+const storage = getStorage(app);
 
 if (location.hostname === 'localhost') {
   connectFirestoreEmulator(db, 'localhost', 8080);
@@ -93,4 +95,4 @@ if (
     });
 }
 
-export { auth, app, db, analytics, functions, messaging };
+export { auth, app, db, analytics, functions, messaging, storage };
