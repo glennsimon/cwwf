@@ -18,6 +18,7 @@ import {
   getAcrossWordController,
   getMyOpponentUidController,
   getGameListParametersController,
+  populateSettingsController,
 } from './controller.js';
 
 import './styles/main.css';
@@ -1391,6 +1392,9 @@ navList.addEventListener('click', (event) => {
   }
   if (event.target.querySelector('i').innerText === 'grid_on') {
     location.hash = '#games';
+  }
+  if (event.target.querySelector('i').innerText === 'settings') {
+    populateSettingsController();
   }
 });
 

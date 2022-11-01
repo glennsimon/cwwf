@@ -1,4 +1,11 @@
-import { db, app, auth, functions, messaging } from './firebase-init.js';
+import {
+  db,
+  app,
+  auth,
+  functions,
+  messaging,
+  storage,
+} from './firebase-init.js';
 import {
   authChangeView,
   showPuzzleView,
@@ -6,6 +13,7 @@ import {
   animateScoringView,
   showErrorDialogView,
 } from './view.js';
+import { showSettings } from './settings.js';
 import {
   getDatabase,
   ref,
@@ -18,6 +26,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 
 import { getToken } from 'firebase/messaging';
 import {
   collection,
+  getDoc,
   getDocs,
   setDoc,
   doc,
@@ -26,8 +35,17 @@ import {
   orderBy,
   limit,
   where,
+  runTransaction,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import {
+  getDownloadURL,
+  ref as refStorage,
+  uploadBytes,
+} from 'firebase/storage';
+import { settings } from 'firebase/analytics';
+// import { runtime } from 'webpack';
+// import { settings } from 'firebase/analytics';
 
 const dbRT = getDatabase(app);
 const vapidKey =
@@ -509,6 +527,66 @@ function abandonCurrentGameController() {
   });
 }
 
+async function populateSettingsController() {
+  const settingsObj = { prefAvatarURL: null, userData: null };
+  const userDoc = await getDoc(doc(db, `users/${currentUser.uid}`));
+  settingsObj.userData = userDoc.data();
+
+  const userImageRef = refStorage(
+    storage,
+    `users/${currentUser.uid}/avatar.png`
+  );
+
+  try {
+    const url = await getDownloadURL(userImageRef);
+    settingsObj.prefAvatarURL = url;
+  } catch (error) {
+    switch (error.code) {
+      case 'storage/object-not-found':
+        settingsObj.prefAvatarURL = userDoc.data().photoURL;
+        break;
+      case 'storage/unauthorized':
+        console.warn('user does not have permission to access image file.');
+        break;
+    }
+  }
+  showSettings(settingsObj);
+}
+
+async function storeSettingsController(settingsPrefs) {
+  let prefAvatarUrl = null;
+  if (settingsPrefs.prefAvatar) {
+    const settingsRef = refStorage(
+      storage,
+      `users/${currentUser.uid}/avatar.png`
+    );
+    const metaData = { contentType: 'image/png' };
+    await uploadBytes(settingsRef, settingsPrefs.prefAvatar, metaData).catch(
+      (error) => {
+        console.log('Error uploading photo to storage: ', error);
+      }
+    );
+    prefAvatarUrl = await getDownloadURL(settingsRef);
+  }
+  const refUserData = doc(db, 'users', currentUser.uid);
+  try {
+    await runTransaction(db, async (transaction) => {
+      const userDoc = await transaction.get(refUserData);
+      if (!userDoc.exists()) throw 'User document does not exist!';
+
+      const prefName = settingsPrefs.prefName || null;
+      const prefHandle = settingsPrefs.prefHandle || null;
+      transaction.update(refUserData, {
+        prefName: prefName,
+        prefHandle: prefHandle,
+        prefAvatarUrl: prefAvatarUrl,
+      });
+    });
+  } catch (error) {
+    console.log('UserData update transaction failed: ', error);
+  }
+}
+
 export {
   authButtonClickedController,
   startNewGameController,
@@ -530,4 +608,6 @@ export {
   setAcrossWordController,
   getMyOpponentUidController,
   getGameListParametersController,
+  populateSettingsController,
+  storeSettingsController,
 };

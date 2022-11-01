@@ -47,6 +47,13 @@
     },
     "functions": {
       "port": 5001
-    }
+    },
+    "storage": {
+      "port": 9091
+    },
+    "singleProjectMode": true
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }
