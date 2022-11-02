@@ -355,6 +355,13 @@ async function loadGamesView(myGames) {
   </span>
 </li>`;
     } else if (pastGamesNumber < 5) {
+      const finishDate = new Date(gameListItem.finish).toLocaleDateString(
+        'en-us',
+        {
+          day: 'numeric',
+          month: 'short',
+        }
+      );
       // displays a max of 5 past games
       pastGamesNumber++;
       let result = 'Tie game!';
@@ -380,8 +387,8 @@ async function loadGamesView(myGames) {
     <span class='mdl-list__item-sub-title'>${result}</span>
   </span>
     <span class='mdl-list__item-secondary-content'>
-    <span class='mdl-list__item-secondary-info'>Started</span>
-    <span>${startDate}</span>
+    <span class='mdl-list__item-secondary-info'>Finished</span>
+    <span>${finishDate}</span>
   </span>
 </li>`;
     }
@@ -466,8 +473,10 @@ function showPuzzleView(game) {
           cell.classList.remove('transparent');
           cell.classList.add(squareData.bgColor);
         }
-        const guess = squareData.guess;
-        letterDiv.innerText = guess ? guess : '';
+        const guess = squareData.guessArray
+          ? squareData.guessArray[squareData.guessArray.length - 1]
+          : '';
+        letterDiv.innerText = guess;
         squareDiv.appendChild(letterDiv);
         cell.appendChild(squareDiv);
         if (clueNumber !== '') {
@@ -704,7 +713,7 @@ function animateScoringView(scoreObj) {
     square.classList = 'square';
     const letterBox = document.createElement('div');
     letterBox.classList = 'marginAuto';
-    const letterContent = letter.guess ? letter.guess : letter.correctLetter;
+    const letterContent = letter.guess || letter.correctLetter;
     cell.children[0].children[0].innerText = letterContent;
     letterBox.innerText = letterContent;
     square.appendChild(letterBox);

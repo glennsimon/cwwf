@@ -347,7 +347,11 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
         const gridElement = game.puzzle.grid[idxArray[index]];
         const correctValue = answers.answerKey[idxArray[index]];
         const guess = answerObj.guess[index];
-        gridElement.guess = guess;
+        if (gridElement.guessArray) {
+          gridElement.guessArray.push(guess);
+        } else {
+          gridElement.guessArray = [guess];
+        }
         const cellResult = {};
         cellResult.guess = guess;
         cellResult.correctLetter = correctValue;
@@ -405,7 +409,10 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
         }
         gameList.winner = game.winner;
         game.status = 'finished';
+        const finishDate = Date.now();
+        game.finish = finishDate;
         gameList.status = 'finished';
+        gameList.finish = finishDate;
       }
       lastTurnCheckObj.checkAnswerResult = checkAnswerResult;
       lastTurnCheckObj.playerUid = answerObj.playerUid;
@@ -531,12 +538,18 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
         if (game.puzzle.grid[index].status === 'locked') continue;
         const letter = answers[index];
         game.puzzle.grid[index].value = answers[index];
-        game.puzzle.grid[index].guess = answers[index];
+        if (game.puzzle.grid[index].guessArray) {
+          game.puzzle.grid[index].guessArray.push(answers[index]);
+        } else {
+          game.puzzle.grid[index].guessArray = [answers[index]];
+        }
         game.puzzle.grid[index].status = 'locked';
         game.puzzle.grid[index].bgColor = game.players[oppUid].bgColor;
         game.players[oppUid].score += scoreValues[letter];
       }
       game.status = 'finished';
+      const finishDate = Date.now();
+      game.finish = finishDate;
       game.winner = 'tie';
       game.emptySquares = 0;
       if (game.players[myUid].score > game.players[oppUid].score) {
@@ -545,6 +558,7 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
         game.winner = oppUid;
       }
       gameListDoc.winner = game.winner;
+      gameListDoc.finish = finishDate;
       game.lastTurnCheckObj = { abandoned: true };
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameListDoc);

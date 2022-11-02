@@ -392,8 +392,6 @@ function playWordController() {
       `play your turn again`;
     showErrorDialogView(errorMessage);
   }
-  // TODO: something like this?:
-  // document.getElementById('puzTitle').innerText = 'Fetching data...';
   const answerObj = {};
   answerObj.idxArray = idxArray;
   answerObj.gameId = currentGameId;
@@ -402,7 +400,11 @@ function playWordController() {
   answerObj.playerUid = currentUser.uid;
   answerObj.myOpponentUid = myOpponentUid;
   for (const index of idxArray) {
-    answerObj.guess.push(currentGame.puzzle.grid[index].guess);
+    answerObj.guess.push(
+      currentGame.puzzle.grid[index].guessArray[
+        currentGame.puzzle.grid[index].guessArray.length - 1
+      ]
+    );
   }
   const checkAnswer = httpsCallable(functions, 'checkAnswer');
   checkAnswer(answerObj)
@@ -429,8 +431,8 @@ function incomplete() {
   if (idxArray.length === 0) return true;
   for (const i of idxArray) {
     if (
-      !currentGame.puzzle.grid[i].guess ||
-      currentGame.puzzle.grid[i].guess === ''
+      !currentGame.puzzle.grid[i].guessArray ||
+      currentGame.puzzle.grid[i].guessArray.length === 0
     ) {
       return true;
     }
@@ -463,7 +465,11 @@ function startNewGameController(gameStartParameters) {
  * @param {number} index Index of square
  */
 function enterLetterController(letter, index) {
-  currentGame.puzzle.grid[index].guess = letter;
+  if (currentGame.puzzle.grid[index].guessArray) {
+    currentGame.puzzle.grid[index].guessArray.push(letter);
+  } else {
+    currentGame.puzzle.grid[index].guessArray = [letter];
+  }
 }
 
 /**
