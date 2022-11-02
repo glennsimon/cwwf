@@ -2,7 +2,6 @@ const functions = require('firebase-functions');
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
 const gaxios = require('gaxios');
-const { ContextExclusionPlugin } = require('webpack');
 // const { serverTimestamp } = require('firebase/firestore');
 
 // admin.initializeApp();
