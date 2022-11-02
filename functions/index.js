@@ -569,3 +569,71 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
   }
   return;
 });
+
+exports.updateData = functions.https.onRequest(async (req, res) => {
+  const gamesRef = db.collection('games');
+  const snapshot = await gamesRef.get();
+  if (snapshot.empty) {
+    console.log('No matching documents.');
+    return;
+  }
+  snapshot.forEach(async (doc) => {
+    const gameId = doc.id;
+    const gameRef = db.doc(`games/${gameId}`);
+    const answersRef = db.doc(`games/${gameId}/hidden/answers`);
+    const gameListRef = db.doc(`gameListBuilder/${gameId}`);
+    try {
+      await db.runTransaction(async (tx) => {
+        const game = (await tx.get(gameRef)).data();
+        const answers = (await tx.get(answersRef)).data().answerKey || [];
+        console.log('answers: ', answers);
+        const gameListDoc = (await tx.get(gameListRef)).data();
+        console.log('gameListDoc: ', gameListDoc);
+
+        // for (let index = 0; index < 225; index++) {
+        //   const gridIndex = game.puzzle.grid[index];
+        //   if (gridIndex.black) {
+        //     answers.push('.');
+        //   } else {
+        //     answers.push(game.puzzle.grid[index].value);
+        //   }
+        //   if (gridIndex.status !== 'locked') {
+        //     gridIndex.guessArray = [gridIndex.guess];
+        //   } else {
+        //     gridIndex.value = '';
+        //   }
+        //   const clueNumIndices = {};
+        //   if (gridIndex.clueNum !== '') {
+        //     clueNumIndices[gridIndex.clueNum] = index;
+        //   }
+        // }
+        // game.clueNumIndices = clueNumIndices;
+        // game.finish = game.start;
+
+        // const players = {};
+        // players[game.initiator.uid] = {};
+        // players[game.initiator.uid].bgColor = game.initiator.bgColor;
+        // players[game.initiator.uid].displayName = game.initiator.displayName;
+        // players[game.initiator.uid].photoURL = game.initiator.photoURL;
+        // players[game.opponent.uid] = {};
+        // players[game.opponent.uid].bgColor = game.opponent.bgColor;
+        // players[game.opponent.uid].displayName = game.opponent.displayName;
+        // players[game.opponent.uid].photoURL = game.opponent.photoURL;
+        // game.players = players;
+        // gameListDoc.players = players;
+        // gameListDoc.nextTurn = game.nextTurn;
+        // game.viewableBy = [game.initiator.uid, game.opponent.uid];
+        // gameListDoc.viewableBy = [game.initiator.uid, game.opponent.uid];
+        // gameListDoc.winner = game.winner;
+
+        tx.update(gameRef, game)
+          .update(gameListRef, gameListDoc)
+          .update(answersRef, answers);
+      });
+      functions.logger.log('updateData transaction success!');
+    } catch (error) {
+      functions.logger.error('updateData transaction failure: ', error);
+    }
+  });
+  res.status(200).send('{"updateData": "Success!"}'); //(formattedDate);
+});
