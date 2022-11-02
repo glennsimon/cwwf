@@ -403,6 +403,7 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
         } else {
           game.winner = 'tie';
         }
+        gameList.winner = game.winner;
         game.status = 'finished';
         gameList.status = 'finished';
       }
@@ -543,6 +544,7 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
       } else if (game.players[myUid].score < game.players[oppUid].score) {
         game.winner = oppUid;
       }
+      gameListDoc.winner = game.winner;
       game.lastTurnCheckObj = { abandoned: true };
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameListDoc);
