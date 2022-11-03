@@ -11,8 +11,8 @@
         "destination": "/index.html"
       },
       {
-        "source": "/onUserStatusChanged",
-        "function": "onUserStatusChanged"
+        "source": "/userStatusChanged",
+        "function": "userStatusChanged"
       },
       {
         "source": "/userOffline",
@@ -37,10 +37,6 @@
       {
         "source": "/abandonGame",
         "function": "abandonGame"
-      },
-      {
-        "source": "/updateData",
-        "function": "updateData"
       }
     ]
   },
