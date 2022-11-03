@@ -44,7 +44,7 @@ const scoreValues = {
 
 // Create a new function which is triggered on changes to /users/{uid}
 // Note: This is a Realtime Database trigger, *not* Cloud Firestore.
-exports.onUserStatusChanged = functions.database
+exports.userStatusChanged = functions.database
   .ref('/users/{uid}')
   .onUpdate(async (change, context) => {
     // Get the data written to Realtime Database
