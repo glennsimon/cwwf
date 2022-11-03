@@ -11,10 +11,6 @@
         "destination": "/index.html"
       },
       {
-        "source": "/userStatusChanged",
-        "function": "userStatusChanged"
-      },
-      {
         "source": "/userOffline",
         "function": "userOffline"
       },
