@@ -55,26 +55,29 @@ exports.userStatusChanged = functions.database
     console.log('eventStatus: ', eventStatus);
     // If the current timestamp for this data is newer than
     // the data that triggered this event, we exit this function.
-    if (status.lastChanged > eventStatus.lastChanged) {
+    if (Math.abs(status.lastChanged - eventStatus.lastChanged) < 2000) {
       return null;
     }
     // Otherwise, we write it to Firestore.
     const userStatusFirestoreRef = db.doc(`users/${context.params.uid}`);
-    return userStatusFirestoreRef.set(eventStatus, { merge: true });
+    userStatusFirestoreRef.set(eventStatus, { merge: true });
+    return null;
   });
 
-exports.userOffline = functions.https.onCall((statusUpdate, context) => {
+exports.userOffline = functions.https.onCall(async (statusUpdate, context) => {
   const uid = statusUpdate.uid;
-  return admin
+  await admin
     .database()
     .ref(`/users/${uid}`)
     .set(statusUpdate.authState)
     .catch((error) => {
       functions.logger.log('Error: ', error);
     });
+  return null;
 });
 
-exports.authChanged = functions.https.onCall(async (data, context) => {
+exports.authChange = functions.https.onCall(async (data, context) => {
+  functions.logger.log('context.rawRequest', context.rawRequest);
   if (context.auth && context.auth.token && context.auth.token.uid) {
     console.log('auth token: ', context.auth.token);
     const uid = context.auth.token.uid;
@@ -106,9 +109,9 @@ exports.authChanged = functions.https.onCall(async (data, context) => {
     batch.set(publicDataRef, publicData, { merge: true });
     batch.set(privateDataRef, privateData, { merge: true });
     await batch.commit();
-    return;
+    return null;
   }
-  return;
+  return null;
 });
 
 /**

@@ -196,8 +196,8 @@ onAuthStateChanged(auth, async (user) => {
   userStatusFirestoreRef = doc(db, `/users/${uid}`);
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
   try {
-    const authChanged = httpsCallable(functions, 'authChanged');
-    await authChanged();
+    const authChange = httpsCallable(functions, 'authChange');
+    await authChange();
     await generateMessagingToken(uid);
     await populateMyGames(uid);
   } catch (err) {
@@ -303,7 +303,7 @@ async function populateMyGames(uid) {
   const q = query(
     collection(db, 'gameListBuilder'),
     where('viewableBy', 'array-contains', `${uid}`),
-    orderBy('start', 'desc'),
+    // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
     limit(30)
   );
   myGamesUnsubscribe = onSnapshot(q, (snapshot) => {

@@ -9,30 +9,6 @@
       {
         "source": "**",
         "destination": "/index.html"
-      },
-      {
-        "source": "/userOffline",
-        "function": "userOffline"
-      },
-      {
-        "source": "/authChanged",
-        "function": "authChanged"
-      },
-      {
-        "source": "/notifyPlayer",
-        "function": "notifyPlayer"
-      },
-      {
-        "source": "/startGame",
-        "function": "startGame"
-      },
-      {
-        "source": "/checkAnswer",
-        "function": "checkAnswer"
-      },
-      {
-        "source": "/abandonGame",
-        "function": "abandonGame"
       }
     ]
   },
