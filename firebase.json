@@ -4,15 +4,43 @@
   },
   "hosting": {
     "public": "dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "**",
         "destination": "/index.html"
+      },
+      {
+        "source": "/onUserStatusChanged",
+        "function": "onUserStatusChanged"
+      },
+      {
+        "source": "/userOffline",
+        "function": "userOffline"
+      },
+      {
+        "source": "/authChanged",
+        "function": "authChanged"
+      },
+      {
+        "source": "/notifyPlayer",
+        "function": "notifyPlayer"
+      },
+      {
+        "source": "/startGame",
+        "function": "startGame"
+      },
+      {
+        "source": "/checkAnswer",
+        "function": "checkAnswer"
+      },
+      {
+        "source": "/abandonGame",
+        "function": "abandonGame"
+      },
+      {
+        "source": "/updateData",
+        "function": "updateData"
       }
     ]
   },
