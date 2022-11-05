@@ -47,6 +47,7 @@ const scoreValues = {
 exports.userStatusChanged = functions.database
   .ref('/users/{uid}')
   .onUpdate(async (change, context) => {
+    console.log('Hello from userStatusChanged.');
     // Get the data written to Realtime Database
     const eventStatus = change.after.val();
     const statusSnapshot = await change.after.ref.once('value');
@@ -55,7 +56,7 @@ exports.userStatusChanged = functions.database
     console.log('eventStatus: ', eventStatus);
     // If the current timestamp for this data is newer than
     // the data that triggered this event, we exit this function.
-    if (Math.abs(status.lastChanged - eventStatus.lastChanged) < 2000) {
+    if (status.lastChanged > eventStatus.lastChanged) {
       return null;
     }
     // Otherwise, we write it to Firestore.
@@ -65,6 +66,7 @@ exports.userStatusChanged = functions.database
   });
 
 exports.userOffline = functions.https.onCall(async (statusUpdate, context) => {
+  console.log('Hello from userOffline. authState: ', statusUpdate.authState);
   const uid = statusUpdate.uid;
   await admin
     .database()
@@ -77,7 +79,7 @@ exports.userOffline = functions.https.onCall(async (statusUpdate, context) => {
 });
 
 exports.authChange = functions.https.onCall(async (data, context) => {
-  functions.logger.log('context.rawRequest', context.rawRequest);
+  console.log('Hello from authChange. context.rawRequest', context.rawRequest);
   if (context.auth && context.auth.token && context.auth.token.uid) {
     console.log('auth token: ', context.auth.token);
     const uid = context.auth.token.uid;
@@ -119,6 +121,7 @@ exports.authChange = functions.https.onCall(async (data, context) => {
  * @param {string} uid uid of player
  */
 exports.notifyPlayer = functions.https.onCall((uid, context) => {
+  console.log('Hello from notifyPlayer.');
   return db
     .doc(`users/${uid}`)
     .get()
@@ -163,7 +166,7 @@ exports.notifyPlayer = functions.https.onCall((uid, context) => {
  * @return {Object} game
  */
 exports.startGame = functions.https.onCall((gameStartParameters, context) => {
-  // console.log('context: ', context);
+  console.log('Hello from startGame.');
   return db
     .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
     .get()
@@ -319,14 +322,15 @@ let checkAnswerResult = [];
  * @return {Object} Object with result of the checked answer
  */
 exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
+  console.log('Hello from checkAnswer. answerObj: ', answerObj);
   const gameRef = db.doc(`games/${answerObj.gameId}`);
   const answersRef = db.doc(`games/${answerObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${answerObj.gameId}`);
+  const answers = (await answersRef.get()).data();
   const lastTurnCheckObj = { correctAnswer: true };
   try {
     await db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
-      const answers = (await tx.get(answersRef)).data();
       const gameList = (await tx.get(gameListRef)).data();
       const idxArray = answerObj.idxArray;
       const direction = answerObj.acrossWord ? 'across' : 'down';
@@ -429,7 +433,7 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
   } catch (error) {
     functions.logger.error('checkAnswer transaction failure: ', error);
   }
-  return;
+  return null;
 });
 
 /**
@@ -520,24 +524,18 @@ function getOrthoWordArray(game, direction, index) {
 }
 
 exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
+  console.log('Hello from abandonGame.');
   const gameRef = db.doc(`games/${abandonObj.gameId}`);
   const answersRef = db.doc(`games/${abandonObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${abandonObj.gameId}`);
+  const answers = (await answersRef.get()).data().answerKey;
   try {
     await db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
-      const answers = (await tx.get(answersRef)).data().answerKey;
       const gameListDoc = (await tx.get(gameListRef)).data();
       const myUid = context.auth.uid;
       const oppUid = abandonObj.opponentUid;
       gameListDoc.status = 'finished';
-      // console.log('gameListDoc: ', gameListDoc);
-      // const they =
-      //   game.initiator.uid === abandonObj.opponentUid
-      //     ? 'initiator'
-      //     : 'opponent';
-      // const me = they === 'initiator' ? 'opponent' : 'initiator';
-      // console.log('abandonObj: ', abandonObj);
       for (let index = 0; index < answers.length; index++) {
         if (answers[index] === '.') continue;
         if (game.puzzle.grid[index].status === 'locked') continue;

@@ -374,7 +374,7 @@ function subscribeToGame(gameId) {
  * Play currentUser's turn. Executed when the player clicks the enter
  * button
  */
-function playWordController() {
+async function playWordController() {
   console.log('Hello from playWordController.');
   if (currentGame.status === 'finished') return;
   if (incomplete()) return;
@@ -407,19 +407,17 @@ function playWordController() {
     );
   }
   const checkAnswer = httpsCallable(functions, 'checkAnswer');
-  checkAnswer(answerObj)
-    .then(() => {
-      const notifyOpponent = httpsCallable(functions, 'notifyPlayer');
-      return notifyOpponent(answerObj.myOpponentUid).then((result) => {
-        console.log(result);
-        return;
-      });
-    })
-    .catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
+  await checkAnswer(answerObj).catch((err) => {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
+  });
+  const notifyOpponent = httpsCallable(functions, 'notifyPlayer');
+  return notifyOpponent(myOpponentUid).catch((err) => {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
+  });
 }
 
 /**
