@@ -1381,6 +1381,15 @@ function resizePuzzle() {
   }
 }
 
+navList.addEventListener('click', (event) => {
+  if (event.target.querySelector('i').innerText === 'refresh') {
+    location.reload();
+  }
+  if (event.target.querySelector('i').innerText === 'grid_on') {
+    location.hash = '#games';
+  }
+});
+
 document.addEventListener('keyup', enterLetter);
 window.addEventListener('resize', resizePuzzle);
 const keyList = kbContainer.getElementsByClassName('kbButton');
@@ -1393,15 +1402,6 @@ document.getElementById('enter').addEventListener('click', () => {
   playWordController();
 });
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
-
-navList.addEventListener('click', (event) => {
-  if (event.target.querySelector('i').innerText === 'refresh') {
-    location.reload();
-  }
-  if (event.target.querySelector('i').innerText === 'grid_on') {
-    location.hash = '#games';
-  }
-});
 
 export {
   authChangeView,

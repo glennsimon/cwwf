@@ -34,14 +34,6 @@ let signin = null;
  */
 async function navigate() {
   if (location.hash === '#puzzle') {
-    // try {
-    //   const replayButton = querySelector('#replayButton');
-    //   if (!replayButton) {
-    //     gamesDialog.close();
-    //   }
-    // } catch (err) {
-    //   // do nothing, error OK
-    // }
     splash.classList.remove('displayFlex');
     splash.classList.add('displayNone');
     gamesPanel.classList.add('slideOut');

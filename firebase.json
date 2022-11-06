@@ -9,6 +9,41 @@
       {
         "source": "**",
         "destination": "/index.html"
+      },
+      {
+        "source": "/userOffline",
+        "function": "userOffline"
+      },
+      {
+        "source": "/authChange",
+        "function": "authChange"
+      },
+      {
+        "source": "/notifyPlayer",
+        "function": "notifyPlayer"
+      },
+      {
+        "source": "/startGame",
+        "function": "startGame"
+      },
+      {
+        "source": "/checkAnswers",
+        "function": "checkAnswers"
+      },
+      {
+        "source": "/abandonGame",
+        "function": "abandonGame"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/@(authChange|notifyPlayer|startGame|checkAnswers|abandonGame)",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          }
+        ]
       }
     ]
   },

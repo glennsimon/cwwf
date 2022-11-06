@@ -15,8 +15,6 @@ const CLIENT_ID =
   '38205810024-ldpgeahe0cq1kt6r0am848qjqqu61fpd.apps.' +
   'googleusercontent.com';
 
-/** Initialize after document loads */
-// function initApp() {
 const ui = new firebaseui.auth.AuthUI(auth);
 
 const uiConfig = {
