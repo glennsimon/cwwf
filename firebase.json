@@ -27,8 +27,8 @@
         "function": "startGame"
       },
       {
-        "source": "/checkAnswers",
-        "function": "checkAnswers"
+        "source": "/checkAnswer",
+        "function": "checkAnswer"
       },
       {
         "source": "/abandonGame",

@@ -214,8 +214,8 @@ onAuthStateChanged(auth, async (user) => {
   userStatusFirestoreRef = doc(db, `/users/${uid}`);
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
   try {
-    const authChanged = httpsCallable(functions, 'authChanged');
-    await authChanged();
+    const authChange = httpsCallable(functions, 'authChange');
+    await authChange();
     await generateMessagingToken(uid);
     await populateMyGames(uid);
   } catch (err) {
