@@ -406,8 +406,8 @@ async function playWordController() {
       ]
     );
   }
-  const checkAnswer = httpsCallable(functions, 'checkAnswers');
-  await checkAnswer(answerObj).catch((err) => {
+  const checkAnswers = httpsCallable(functions, 'checkAnswers');
+  await checkAnswers(answerObj).catch((err) => {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
     console.log('Error details: ', err.details);

@@ -321,8 +321,8 @@ let checkAnswerResult = [];
  * @param {Object} answerObj Object containing player and difficulty information
  * @return {Object} Object with result of the checked answer
  */
-exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
-  console.log('Hello from checkAnswer. answerObj: ', answerObj);
+exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
+  console.log('Hello from checkAnswers. answerObj: ', answerObj);
   const gameRef = db.doc(`games/${answerObj.gameId}`);
   const answersRef = db.doc(`games/${answerObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${answerObj.gameId}`);
@@ -429,9 +429,9 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameList);
     });
-    functions.logger.log('checkAnswer transaction success!');
+    functions.logger.log('checkAnswers transaction success!');
   } catch (error) {
-    functions.logger.error('checkAnswer transaction failure: ', error);
+    functions.logger.error('checkAnswers transaction failure: ', error);
   }
   return null;
 });
