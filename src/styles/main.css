@@ -288,8 +288,9 @@ select {
 .square {
   display: flex;
   vertical-align: baseline;
-  font-size: 3vw;
-  line-height: 3vw;
+  font-size: 3.5vw;
+  line-height: 3.5vw;
+  font-weight: bold;
   pointer-events: none;
   box-sizing: border-box;
 }
@@ -654,6 +655,7 @@ select {
   .square {
     font-size: 2.5vh;
     line-height: 2.5vh;
+    font-weight: normal;
   }
 
   .clueNumber {
@@ -692,6 +694,7 @@ select {
   .square {
     font-size: 1.4vw;
     line-height: 1.4vh;
+    font-weight: bold;
   }
 
   .clueNumber {
