@@ -214,8 +214,8 @@ onAuthStateChanged(auth, async (user) => {
   userStatusFirestoreRef = doc(db, `/users/${uid}`);
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
   try {
-    const authChanged = httpsCallable(functions, 'authChanged');
-    await authChanged();
+    const authChange = httpsCallable(functions, 'authChange');
+    await authChange();
     await generateMessagingToken(uid);
     await populateMyGames(uid);
   } catch (err) {
@@ -294,7 +294,7 @@ function populateAllUsersController() {
   return getDocs(query(collection(db, 'users')))
     .then((snapshot) => {
       if (snapshot.empty) {
-        console.warn('No users exist yet.');
+        console.log('No users exist yet.');
         return;
       }
       const usersObj = {};
@@ -321,7 +321,7 @@ async function populateMyGames(uid) {
   const q = query(
     collection(db, 'gameListBuilder'),
     where('viewableBy', 'array-contains', `${uid}`),
-    orderBy('start', 'desc'),
+    // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
     limit(30)
   );
   myGamesUnsubscribe = onSnapshot(q, (snapshot) => {
@@ -392,7 +392,7 @@ function subscribeToGame(gameId) {
  * Play currentUser's turn. Executed when the player clicks the enter
  * button
  */
-function playWordController() {
+async function playWordController() {
   console.log('Hello from playWordController.');
   if (currentGame.status === 'finished') return;
   if (incomplete()) return;
@@ -410,8 +410,6 @@ function playWordController() {
       `play your turn again`;
     showErrorDialogView(errorMessage);
   }
-  // TODO: something like this?:
-  // document.getElementById('puzTitle').innerText = 'Fetching data...';
   const answerObj = {};
   answerObj.idxArray = idxArray;
   answerObj.gameId = currentGameId;
@@ -420,22 +418,24 @@ function playWordController() {
   answerObj.playerUid = currentUser.uid;
   answerObj.myOpponentUid = myOpponentUid;
   for (const index of idxArray) {
-    answerObj.guess.push(currentGame.puzzle.grid[index].guess);
+    answerObj.guess.push(
+      currentGame.puzzle.grid[index].guessArray[
+        currentGame.puzzle.grid[index].guessArray.length - 1
+      ]
+    );
   }
-  const checkAnswer = httpsCallable(functions, 'checkAnswer');
-  checkAnswer(answerObj)
-    .then(() => {
-      const notifyOpponent = httpsCallable(functions, 'notifyPlayer');
-      return notifyOpponent(answerObj.myOpponentUid).then((result) => {
-        console.log(result);
-        return;
-      });
-    })
-    .catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
+  const checkAnswers = httpsCallable(functions, 'checkAnswers');
+  await checkAnswers(answerObj).catch((err) => {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
+  });
+  const notifyOpponent = httpsCallable(functions, 'notifyPlayer');
+  return notifyOpponent(myOpponentUid).catch((err) => {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
+  });
 }
 
 /**
@@ -447,8 +447,8 @@ function incomplete() {
   if (idxArray.length === 0) return true;
   for (const i of idxArray) {
     if (
-      !currentGame.puzzle.grid[i].guess ||
-      currentGame.puzzle.grid[i].guess === ''
+      !currentGame.puzzle.grid[i].guessArray ||
+      currentGame.puzzle.grid[i].guessArray.length === 0
     ) {
       return true;
     }
@@ -481,7 +481,11 @@ function startNewGameController(gameStartParameters) {
  * @param {number} index Index of square
  */
 function enterLetterController(letter, index) {
-  currentGame.puzzle.grid[index].guess = letter;
+  if (currentGame.puzzle.grid[index].guessArray) {
+    currentGame.puzzle.grid[index].guessArray.push(letter);
+  } else {
+    currentGame.puzzle.grid[index].guessArray = [letter];
+  }
 }
 
 /**
@@ -502,18 +506,6 @@ function savePuzzleController(append) {
   );
 }
 
-/**
- * Appends the append Object to the base Object.
- * @param {object} base Base object to append to
- * @param {object} append Object to append to base
- */
-function appendObject(base, append) {
-  const keys = Object.keys(append);
-  keys.forEach((key) => {
-    base[key] = append[key];
-  });
-}
-
 function abandonCurrentGameController() {
   const abandonObj = {};
   abandonObj.gameId = currentGameId;
@@ -527,64 +519,16 @@ function abandonCurrentGameController() {
   });
 }
 
-async function populateSettingsController() {
-  const settingsObj = { prefAvatarURL: null, userData: null };
-  const userDoc = await getDoc(doc(db, `users/${currentUser.uid}`));
-  settingsObj.userData = userDoc.data();
-
-  const userImageRef = refStorage(
-    storage,
-    `users/${currentUser.uid}/avatar.png`
-  );
-
-  try {
-    const url = await getDownloadURL(userImageRef);
-    settingsObj.prefAvatarURL = url;
-  } catch (error) {
-    switch (error.code) {
-      case 'storage/object-not-found':
-        settingsObj.prefAvatarURL = userDoc.data().photoURL;
-        break;
-      case 'storage/unauthorized':
-        console.warn('user does not have permission to access image file.');
-        break;
-    }
-  }
-  showSettings(settingsObj);
-}
-
-async function storeSettingsController(settingsPrefs) {
-  let prefAvatarUrl = null;
-  if (settingsPrefs.prefAvatar) {
-    const settingsRef = refStorage(
-      storage,
-      `users/${currentUser.uid}/avatar.png`
-    );
-    const metaData = { contentType: 'image/png' };
-    await uploadBytes(settingsRef, settingsPrefs.prefAvatar, metaData).catch(
-      (error) => {
-        console.log('Error uploading photo to storage: ', error);
-      }
-    );
-    prefAvatarUrl = await getDownloadURL(settingsRef);
-  }
-  const refUserData = doc(db, 'users', currentUser.uid);
-  try {
-    await runTransaction(db, async (transaction) => {
-      const userDoc = await transaction.get(refUserData);
-      if (!userDoc.exists()) throw 'User document does not exist!';
-
-      const prefName = settingsPrefs.prefName || null;
-      const prefHandle = settingsPrefs.prefHandle || null;
-      transaction.update(refUserData, {
-        prefName: prefName,
-        prefHandle: prefHandle,
-        prefAvatarUrl: prefAvatarUrl,
-      });
-    });
-  } catch (error) {
-    console.log('UserData update transaction failed: ', error);
-  }
+/**
+ * Appends the append Object to the base Object.
+ * @param {object} base Base object to append to
+ * @param {object} append Object to append to base
+ */
+function appendObject(base, append) {
+  const keys = Object.keys(append);
+  keys.forEach((key) => {
+    base[key] = append[key];
+  });
 }
 
 export {

@@ -25,8 +25,8 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const functions = getFunctions(app);
-const messaging = getMessaging(app);
 const auth = getAuth();
+const messaging = getMessaging(app);
 const storage = getStorage(app);
 
 if (location.hostname === 'localhost') {

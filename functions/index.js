@@ -2,7 +2,9 @@ const functions = require('firebase-functions');
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
 const gaxios = require('gaxios');
-const { ContextExclusionPlugin } = require('webpack');
+// const cors = require('cors')({
+//   origin: true,
+// });
 // const { serverTimestamp } = require('firebase/firestore');
 
 // admin.initializeApp();
@@ -42,9 +44,10 @@ const scoreValues = {
 
 // Create a new function which is triggered on changes to /users/{uid}
 // Note: This is a Realtime Database trigger, *not* Cloud Firestore.
-exports.onUserStatusChanged = functions.database
+exports.userStatusChanged = functions.database
   .ref('/users/{uid}')
   .onUpdate(async (change, context) => {
+    console.log('Hello from userStatusChanged.');
     // Get the data written to Realtime Database
     const eventStatus = change.after.val();
     const statusSnapshot = await change.after.ref.once('value');
@@ -58,21 +61,25 @@ exports.onUserStatusChanged = functions.database
     }
     // Otherwise, we write it to Firestore.
     const userStatusFirestoreRef = db.doc(`users/${context.params.uid}`);
-    return userStatusFirestoreRef.set(eventStatus, { merge: true });
+    userStatusFirestoreRef.set(eventStatus, { merge: true });
+    return null;
   });
 
-exports.userOffline = functions.https.onCall((statusUpdate, context) => {
+exports.userOffline = functions.https.onCall(async (statusUpdate, context) => {
+  console.log('Hello from userOffline. authState: ', statusUpdate.authState);
   const uid = statusUpdate.uid;
-  return admin
+  await admin
     .database()
     .ref(`/users/${uid}`)
     .set(statusUpdate.authState)
     .catch((error) => {
       functions.logger.log('Error: ', error);
     });
+  return null;
 });
 
-exports.authChanged = functions.https.onCall(async (data, context) => {
+exports.authChange = functions.https.onCall(async (data, context) => {
+  console.log('Hello from authChange. context.rawRequest', context.rawRequest);
   if (context.auth && context.auth.token && context.auth.token.uid) {
     console.log('auth token: ', context.auth.token);
     const uid = context.auth.token.uid;
@@ -104,9 +111,9 @@ exports.authChanged = functions.https.onCall(async (data, context) => {
     batch.set(publicDataRef, publicData, { merge: true });
     batch.set(privateDataRef, privateData, { merge: true });
     await batch.commit();
-    return;
+    return null;
   }
-  return;
+  return null;
 });
 
 /**
@@ -114,6 +121,7 @@ exports.authChanged = functions.https.onCall(async (data, context) => {
  * @param {string} uid uid of player
  */
 exports.notifyPlayer = functions.https.onCall((uid, context) => {
+  console.log('Hello from notifyPlayer.');
   return db
     .doc(`users/${uid}`)
     .get()
@@ -158,7 +166,7 @@ exports.notifyPlayer = functions.https.onCall((uid, context) => {
  * @return {Object} game
  */
 exports.startGame = functions.https.onCall((gameStartParameters, context) => {
-  // console.log('context: ', context);
+  console.log('Hello from startGame.');
   return db
     .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
     .get()
@@ -313,15 +321,16 @@ let checkAnswerResult = [];
  * @param {Object} answerObj Object containing player and difficulty information
  * @return {Object} Object with result of the checked answer
  */
-exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
+exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
+  console.log('Hello from checkAnswers. answerObj: ', answerObj);
   const gameRef = db.doc(`games/${answerObj.gameId}`);
   const answersRef = db.doc(`games/${answerObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${answerObj.gameId}`);
+  const answers = (await answersRef.get()).data();
   const lastTurnCheckObj = { correctAnswer: true };
   try {
     await db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
-      const answers = (await tx.get(answersRef)).data();
       const gameList = (await tx.get(gameListRef)).data();
       const idxArray = answerObj.idxArray;
       const direction = answerObj.acrossWord ? 'across' : 'down';
@@ -347,7 +356,11 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
         const gridElement = game.puzzle.grid[idxArray[index]];
         const correctValue = answers.answerKey[idxArray[index]];
         const guess = answerObj.guess[index];
-        gridElement.guess = guess;
+        if (gridElement.guessArray) {
+          gridElement.guessArray.push(guess);
+        } else {
+          gridElement.guessArray = [guess];
+        }
         const cellResult = {};
         cellResult.guess = guess;
         cellResult.correctLetter = correctValue;
@@ -403,8 +416,12 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
         } else {
           game.winner = 'tie';
         }
+        gameList.winner = game.winner;
         game.status = 'finished';
+        const finishDate = Date.now();
+        game.finish = finishDate;
         gameList.status = 'finished';
+        gameList.finish = finishDate;
       }
       lastTurnCheckObj.checkAnswerResult = checkAnswerResult;
       lastTurnCheckObj.playerUid = answerObj.playerUid;
@@ -412,11 +429,11 @@ exports.checkAnswer = functions.https.onCall(async (answerObj, context) => {
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameList);
     });
-    functions.logger.log('checkAnswer transaction success!');
+    functions.logger.log('checkAnswers transaction success!');
   } catch (error) {
-    functions.logger.error('checkAnswer transaction failure: ', error);
+    functions.logger.error('checkAnswers transaction failure: ', error);
   }
-  return;
+  return null;
 });
 
 /**
@@ -507,35 +524,35 @@ function getOrthoWordArray(game, direction, index) {
 }
 
 exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
+  console.log('Hello from abandonGame.');
   const gameRef = db.doc(`games/${abandonObj.gameId}`);
   const answersRef = db.doc(`games/${abandonObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${abandonObj.gameId}`);
+  const answers = (await answersRef.get()).data().answerKey;
   try {
     await db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
-      const answers = (await tx.get(answersRef)).data().answerKey;
       const gameListDoc = (await tx.get(gameListRef)).data();
       const myUid = context.auth.uid;
       const oppUid = abandonObj.opponentUid;
       gameListDoc.status = 'finished';
-      // console.log('gameListDoc: ', gameListDoc);
-      // const they =
-      //   game.initiator.uid === abandonObj.opponentUid
-      //     ? 'initiator'
-      //     : 'opponent';
-      // const me = they === 'initiator' ? 'opponent' : 'initiator';
-      // console.log('abandonObj: ', abandonObj);
       for (let index = 0; index < answers.length; index++) {
         if (answers[index] === '.') continue;
         if (game.puzzle.grid[index].status === 'locked') continue;
         const letter = answers[index];
         game.puzzle.grid[index].value = answers[index];
-        game.puzzle.grid[index].guess = answers[index];
+        if (game.puzzle.grid[index].guessArray) {
+          game.puzzle.grid[index].guessArray.push(answers[index]);
+        } else {
+          game.puzzle.grid[index].guessArray = [answers[index]];
+        }
         game.puzzle.grid[index].status = 'locked';
         game.puzzle.grid[index].bgColor = game.players[oppUid].bgColor;
         game.players[oppUid].score += scoreValues[letter];
       }
       game.status = 'finished';
+      const finishDate = Date.now();
+      game.finish = finishDate;
       game.winner = 'tie';
       game.emptySquares = 0;
       if (game.players[myUid].score > game.players[oppUid].score) {
@@ -543,6 +560,8 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
       } else if (game.players[myUid].score < game.players[oppUid].score) {
         game.winner = oppUid;
       }
+      gameListDoc.winner = game.winner;
+      gameListDoc.finish = finishDate;
       game.lastTurnCheckObj = { abandoned: true };
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameListDoc);
@@ -553,3 +572,73 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
   }
   return;
 });
+
+// exports.updateData = functions.https.onRequest((req, res) => {
+//   cors(req, res, async () => {
+//     const gamesRef = db.collection('games');
+//     const snapshot = await gamesRef.get();
+//     if (snapshot.empty) {
+//       console.log('No matching documents.');
+//       return;
+//     }
+//     snapshot.forEach(async (doc) => {
+//       const gameId = doc.id;
+//       const gameRef = db.doc(`games/${gameId}`);
+//       const answersRef = db.doc(`games/${gameId}/hidden/answers`);
+//       const gameListRef = db.doc(`gameListBuilder/${gameId}`);
+//       try {
+//         await db.runTransaction(async (tx) => {
+//           const game = (await tx.get(gameRef)).data();
+//           const answers = (await tx.get(answersRef)).data().answerKey || [];
+//           console.log('answers: ', answers);
+//           const gameListDoc = (await tx.get(gameListRef)).data();
+//           console.log('gameListDoc: ', gameListDoc);
+
+//           // for (let index = 0; index < 225; index++) {
+//           //   const gridIndex = game.puzzle.grid[index];
+//           //   if (gridIndex.black) {
+//           //     answers.push('.');
+//           //   } else {
+//           //     answers.push(game.puzzle.grid[index].value);
+//           //   }
+//           //   if (gridIndex.status !== 'locked') {
+//           //     gridIndex.guessArray = [gridIndex.guess];
+//           //   } else {
+//           //     gridIndex.value = '';
+//           //   }
+//           //   const clueNumIndices = {};
+//           //   if (gridIndex.clueNum !== '') {
+//           //     clueNumIndices[gridIndex.clueNum] = index;
+//           //   }
+//           // }
+//           // game.clueNumIndices = clueNumIndices;
+//           // game.finish = game.start;
+
+//           // const players = {};
+//           // players[game.initiator.uid] = {};
+//           // players[game.initiator.uid].bgColor = game.initiator.bgColor;
+//           // players[game.initiator.uid].displayName = game.initiator.displayName;
+//           // players[game.initiator.uid].photoURL = game.initiator.photoURL;
+//           // players[game.opponent.uid] = {};
+//           // players[game.opponent.uid].bgColor = game.opponent.bgColor;
+//           // players[game.opponent.uid].displayName = game.opponent.displayName;
+//           // players[game.opponent.uid].photoURL = game.opponent.photoURL;
+//           // game.players = players;
+//           // gameListDoc.players = players;
+//           // gameListDoc.nextTurn = game.nextTurn;
+//           // game.viewableBy = [game.initiator.uid, game.opponent.uid];
+//           // gameListDoc.viewableBy = [game.initiator.uid, game.opponent.uid];
+//           // gameListDoc.winner = game.winner;
+
+//           tx.update(gameRef, game)
+//             .update(gameListRef, gameListDoc)
+//             .update(answersRef, answers);
+//         });
+//         functions.logger.log('updateData transaction success!');
+//       } catch (error) {
+//         functions.logger.error('updateData transaction failure: ', error);
+//       }
+//     });
+//     res.status(200).send('{"updateData": "Success!"}'); //(formattedDate);
+//   });
+// });

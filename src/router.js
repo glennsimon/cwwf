@@ -33,15 +33,8 @@ let signin = null;
  * Navigate based on hash change
  */
 async function navigate() {
+  console.log('navigating...');
   if (location.hash === '#puzzle') {
-    // try {
-    //   const replayButton = querySelector('#replayButton');
-    //   if (!replayButton) {
-    //     gamesDialog.close();
-    //   }
-    // } catch (err) {
-    //   // do nothing, error OK
-    // }
     splash.classList.remove('displayFlex');
     splash.classList.add('displayNone');
     gamesPanel.classList.add('slideOut');

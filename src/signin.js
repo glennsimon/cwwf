@@ -15,8 +15,6 @@ const CLIENT_ID =
   '38205810024-ldpgeahe0cq1kt6r0am848qjqqu61fpd.apps.' +
   'googleusercontent.com';
 
-/** Initialize after document loads */
-// function initApp() {
 const ui = new firebaseui.auth.AuthUI(auth);
 
 const uiConfig = {
@@ -82,19 +80,20 @@ const uiConfig = {
 };
 
 /**
+ * @return {string} The email signInMethod from the configuration.
+ */
+function getEmailSignInMethod() {
+  console.log('getEmailSignInMethod');
+  var config = parseQueryString(location.hash);
+  return config['emailSignInMethod'] === 'password' ? 'password' : 'emailLink';
+}
+
+/**
  * @return {string} The reCAPTCHA rendering mode from the configuration.
  */
 function getRecaptchaMode() {
   var config = parseQueryString(location.hash);
   return config['recaptcha'] === 'invisible' ? 'invisible' : 'normal';
-}
-
-/**
- * @return {string} The email signInMethod from the configuration.
- */
-function getEmailSignInMethod() {
-  var config = parseQueryString(location.hash);
-  return config['emailSignInMethod'] === 'password' ? 'password' : 'emailLink';
 }
 
 /**

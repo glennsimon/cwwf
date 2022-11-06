@@ -69,6 +69,10 @@ module.exports = {
           to: './app.webmanifest',
         },
         { from: './src/images', to: './images' },
+        {
+          from: './firebase-messaging-sw.js',
+          to: './firebase-messaging-sw.js',
+        },
       ],
     }),
     // new BundleAnalyzerPlugin(),  // to be used occassionally

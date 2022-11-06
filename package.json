@@ -28,7 +28,7 @@
     "workbox-webpack-plugin": "^6.5.4"
   },
   "engines": {
-    "node": ">=12"
+    "node": "16"
   },
   "private": true,
   "scripts": {
