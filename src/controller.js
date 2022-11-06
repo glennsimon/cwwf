@@ -276,7 +276,7 @@ function populateAllUsersController() {
   return getDocs(query(collection(db, 'users')))
     .then((snapshot) => {
       if (snapshot.empty) {
-        console.warn('No users exist yet.');
+        console.log('No users exist yet.');
         return;
       }
       const usersObj = {};

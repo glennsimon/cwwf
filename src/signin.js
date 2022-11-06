@@ -83,6 +83,7 @@ const uiConfig = {
  * @return {string} The email signInMethod from the configuration.
  */
 function getEmailSignInMethod() {
+  console.log('getEmailSignInMethod');
   var config = parseQueryString(location.hash);
   return config['emailSignInMethod'] === 'password' ? 'password' : 'emailLink';
 }

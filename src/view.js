@@ -1336,6 +1336,7 @@ function enterLetter(event) {
 
 /** Resizes puzzle based on available space */
 function resizePuzzle() {
+  console.log('Hello from resize puzzle.');
   if (puzTable.children.length === 0) return;
   // console.log(puzTable.children[0]);
   const cellDim = getCellDim();

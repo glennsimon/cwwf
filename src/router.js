@@ -33,7 +33,7 @@ let signin = null;
  * Navigate based on hash change
  */
 async function navigate() {
-  console.log('navigating');
+  console.log('navigating...');
   if (location.hash === '#puzzle') {
     splash.classList.remove('displayFlex');
     splash.classList.add('displayNone');

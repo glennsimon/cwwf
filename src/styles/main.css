@@ -586,6 +586,10 @@ select {
   font-size: x-large;
 }
 
+.unused {
+  width: 5px;
+}
+
 .cluePop {
   font-size: larger;
   padding: 5px 0;
