@@ -392,7 +392,7 @@ function subscribeToGame(gameId) {
  * Play currentUser's turn. Executed when the player clicks the enter
  * button
  */
-function playWordController() {
+async function playWordController() {
   console.log('Hello from playWordController.');
   if (currentGame.status === 'finished') return;
   if (incomplete()) return;
@@ -420,22 +420,24 @@ function playWordController() {
   answerObj.playerUid = currentUser.uid;
   answerObj.myOpponentUid = myOpponentUid;
   for (const index of idxArray) {
-    answerObj.guess.push(currentGame.puzzle.grid[index].guess);
+    answerObj.guess.push(
+      currentGame.puzzle.grid[index].guessArray[
+        currentGame.puzzle.grid[index].guessArray.length - 1
+      ]
+    );
   }
-  const checkAnswer = httpsCallable(functions, 'checkAnswer');
-  checkAnswer(answerObj)
-    .then(() => {
-      const notifyOpponent = httpsCallable(functions, 'notifyPlayer');
-      return notifyOpponent(answerObj.myOpponentUid).then((result) => {
-        console.log(result);
-        return;
-      });
-    })
-    .catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
+  const checkAnswers = httpsCallable(functions, 'checkAnswers');
+  await checkAnswers(answerObj).catch((err) => {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
+  });
+  const notifyOpponent = httpsCallable(functions, 'notifyPlayer');
+  return notifyOpponent(myOpponentUid).catch((err) => {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
+  });
 }
 
 /**
@@ -447,8 +449,8 @@ function incomplete() {
   if (idxArray.length === 0) return true;
   for (const i of idxArray) {
     if (
-      !currentGame.puzzle.grid[i].guess ||
-      currentGame.puzzle.grid[i].guess === ''
+      !currentGame.puzzle.grid[i].guessArray ||
+      currentGame.puzzle.grid[i].guessArray.length === 0
     ) {
       return true;
     }
@@ -481,7 +483,11 @@ function startNewGameController(gameStartParameters) {
  * @param {number} index Index of square
  */
 function enterLetterController(letter, index) {
-  currentGame.puzzle.grid[index].guess = letter;
+  if (currentGame.puzzle.grid[index].guessArray) {
+    currentGame.puzzle.grid[index].guessArray.push(letter);
+  } else {
+    currentGame.puzzle.grid[index].guessArray = [letter];
+  }
 }
 
 /**
