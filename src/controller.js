@@ -488,18 +488,6 @@ function savePuzzleController(append) {
   );
 }
 
-/**
- * Appends the append Object to the base Object.
- * @param {object} base Base object to append to
- * @param {object} append Object to append to base
- */
-function appendObject(base, append) {
-  const keys = Object.keys(append);
-  keys.forEach((key) => {
-    base[key] = append[key];
-  });
-}
-
 function abandonCurrentGameController() {
   const abandonObj = {};
   abandonObj.gameId = currentGameId;
@@ -510,6 +498,18 @@ function abandonCurrentGameController() {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
     console.log('Error details: ', err.details);
+  });
+}
+
+/**
+ * Appends the append Object to the base Object.
+ * @param {object} base Base object to append to
+ * @param {object} append Object to append to base
+ */
+function appendObject(base, append) {
+  const keys = Object.keys(append);
+  keys.forEach((key) => {
+    base[key] = append[key];
   });
 }
 

@@ -1390,8 +1390,8 @@ navList.addEventListener('click', (event) => {
   }
 });
 
-document.addEventListener('keyup', enterLetter);
 window.addEventListener('resize', resizePuzzle);
+document.addEventListener('keyup', enterLetter);
 const keyList = kbContainer.getElementsByClassName('kbButton');
 for (const node of keyList) {
   node.addEventListener('click', enterLetter);

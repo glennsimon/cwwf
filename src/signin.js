@@ -80,19 +80,19 @@ const uiConfig = {
 };
 
 /**
- * @return {string} The reCAPTCHA rendering mode from the configuration.
- */
-function getRecaptchaMode() {
-  var config = parseQueryString(location.hash);
-  return config['recaptcha'] === 'invisible' ? 'invisible' : 'normal';
-}
-
-/**
  * @return {string} The email signInMethod from the configuration.
  */
 function getEmailSignInMethod() {
   var config = parseQueryString(location.hash);
   return config['emailSignInMethod'] === 'password' ? 'password' : 'emailLink';
+}
+
+/**
+ * @return {string} The reCAPTCHA rendering mode from the configuration.
+ */
+function getRecaptchaMode() {
+  var config = parseQueryString(location.hash);
+  return config['recaptcha'] === 'invisible' ? 'invisible' : 'normal';
 }
 
 /**
