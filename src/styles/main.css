@@ -652,8 +652,8 @@ select {
 
 @media screen and (min-aspect-ratio: 7/10) {
   .square {
-    font-size: 2vh;
-    line-height: 2vh;
+    font-size: 2.5vh;
+    line-height: 2.5vh;
   }
 
   .clueNumber {

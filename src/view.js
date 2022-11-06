@@ -1276,7 +1276,7 @@ function enterLetter(event) {
   if (!kbContainer.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
       turnProgressSpinner.classList.add('is-active');
-      turnProgressMessage.innerText = 'Checking answer...';
+      turnProgressMessage.innerText = 'Working...';
       playWordController();
       return;
     }
@@ -1399,7 +1399,7 @@ for (const node of keyList) {
 }
 document.getElementById('enter').addEventListener('click', () => {
   turnProgressSpinner.classList.add('is-active');
-  turnProgressMessage.innerText = 'Checking answer...';
+  turnProgressMessage.innerText = 'Working...';
   playWordController();
 });
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
