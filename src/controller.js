@@ -377,7 +377,13 @@ function subscribeToGame(gameId) {
 async function playWordController() {
   console.log('Hello from playWordController.');
   if (currentGame.status === 'finished') return;
-  if (incomplete()) return;
+  if (incomplete()) {
+    const errorMessage =
+      `Entry is incomplete. No blank letters ` +
+      `allowed in highlighted range. Try again!`;
+    showErrorDialogView(errorMessage);
+    return;
+  }
   if (location.hash === '#puzzle' && !myTurn) {
     const errorMessage =
       `Whoa there, Buckaroo... ` +
