@@ -618,7 +618,7 @@ function showPuzzleView(game) {
     let result = 'YOU WON!!';
     if (game.players[myUid].score < game.players[oppUid].score) {
       result = 'You lost';
-    } else {
+    } else if (game.players[myUid].score === game.players[oppUid].score) {
       result = 'Tie game!';
     }
     if (!game.hideReplay) {
