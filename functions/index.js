@@ -120,10 +120,10 @@ exports.authChange = functions.https.onCall(async (data, context) => {
  * Sends FCM message to player to notify them that it is their turn.
  * @param {string} uid uid of player
  */
-exports.notifyPlayer = functions.https.onCall((uid, context) => {
+exports.notifyPlayer = functions.https.onCall((data, context) => {
   console.log('Hello from notifyPlayer.');
   return db
-    .doc(`users/${uid}`)
+    .doc(`users/${data.oppUid}`)
     .get()
     .then((doc) => {
       console.log('msgToken: ', doc.data().msgToken);
@@ -146,7 +146,7 @@ exports.notifyPlayer = functions.https.onCall((uid, context) => {
           collapseKey: 'your-turn',
           timeToLive: 86400,
         });
-        return `sent notification to ${uid}`;
+        return `sent notification to ${data.oppUid}`;
       }
       return 'no user key available';
     })
@@ -406,13 +406,14 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
           checkAnswerResult.push(cellResult);
         }
       }
-      game.nextTurn = answerObj.myOpponentUid;
-      gameList.nextTurn = answerObj.myOpponentUid;
+      const opponent = answerObj.myOpponentUid;
+      game.nextTurn = opponent;
+      gameList.nextTurn = opponent;
       if (game.emptySquares === 0) {
-        if (game[me].score > game[they].score) {
-          game.winner = game[me].uid;
-        } else if (game[me].score < game[they].score) {
-          game.winner = game[they].uid;
+        if (game.players[player].score > game.players[opponent].score) {
+          game.winner = player;
+        } else if (game.players[player].score < game.players[opponent].score) {
+          game.winner = opponent;
         } else {
           game.winner = 'tie';
         }

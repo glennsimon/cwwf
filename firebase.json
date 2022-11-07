@@ -37,7 +37,7 @@
     ],
     "headers": [
       {
-        "source": "/@(authChange|notifyPlayer|startGame|checkAnswers|abandonGame)",
+        "source": "/@(userOffline|authChange|notifyPlayer|startGame|checkAnswers|abandonGame)",
         "headers": [
           {
             "key": "Access-Control-Allow-Origin",

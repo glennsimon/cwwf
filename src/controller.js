@@ -412,8 +412,9 @@ async function playWordController() {
     console.log('Error message: ', err.message);
     console.log('Error details: ', err.details);
   });
+  const opponentUid = { oppUid: myOpponentUid };
   const notifyOpponent = httpsCallable(functions, 'notifyPlayer');
-  return notifyOpponent(myOpponentUid).catch((err) => {
+  return notifyOpponent(opponentUid).catch((err) => {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
     console.log('Error details: ', err.details);
