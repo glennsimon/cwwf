@@ -304,6 +304,7 @@ async function populateMyGames(uid) {
     collection(db, 'gameListBuilder'),
     where('viewableBy', 'array-contains', `${uid}`),
     // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
+    orderBy('start', 'desc'),
     limit(30)
   );
   myGamesUnsubscribe = onSnapshot(q, (snapshot) => {
