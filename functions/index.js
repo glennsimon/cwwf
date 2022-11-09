@@ -124,20 +124,20 @@ function notifyPlayer(uid) {
   return db
     .doc(`users/${uid}`)
     .get()
-    .then((doc) => {
+    .then(async (doc) => {
       // console.log('msgToken: ', doc.data().msgToken);
-      return doc.data().msgToken;
+      return await doc.data().msgToken;
     })
     .then(async (toKey) => {
       if (toKey) {
-        // functions.logger.log('got users messagetoken: ', toKey);
+        console.log('got users messagetoken: ', toKey);
 
         const payload = {
           notification: {
             title: 'Your turn!',
             body: 'Your opponent has played their turn',
             icon: 'images/favicon.ico',
-            clickAction: 'https://xwordswf.firebaseapp.com',
+            clickAction: 'https://xwordswf.web.app',
           },
         };
 
@@ -145,9 +145,11 @@ function notifyPlayer(uid) {
           collapseKey: 'your-turn',
           timeToLive: 86400,
         });
-        return `sent notification to ${uid}`;
+        console.log(`sent notification to ${uid}`);
+        return;
       }
-      return 'no user key available';
+      console.log('no user key available');
+      return;
     })
     .catch((error) => {
       functions.logger.log('Error: ', error);
