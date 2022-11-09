@@ -64,8 +64,8 @@ exports.userStatusChanged = functions.database
     return null;
   });
 
-exports.userOffline = functions.https.onCall(async (statusUpdate, context) => {
-  console.log('Hello from userOffline.');
+exports.userOffline2 = functions.https.onCall(async (statusUpdate, context) => {
+  console.log('Hello from userOffline2.');
   const uid = statusUpdate.uid;
   await admin
     .database()
@@ -524,8 +524,8 @@ function getOrthoWordArray(game, direction, index) {
   return orthoWordArray;
 }
 
-exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
-  console.log('Hello from abandonGame.');
+exports.abandonGame2 = functions.https.onCall(async (abandonObj, context) => {
+  console.log('Hello from abandonGame2.');
   const gameRef = db.doc(`games/${abandonObj.gameId}`);
   const answersRef = db.doc(`games/${abandonObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${abandonObj.gameId}`);
@@ -567,9 +567,9 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameListDoc);
     });
-    functions.logger.log('abandonGame transaction success!');
+    functions.logger.log('abandonGame2 transaction success!');
   } catch (error) {
-    functions.logger.error('abandonGame transaction failure: ', error);
+    functions.logger.error('abandonGame2 transaction failure: ', error);
   }
   return;
 });

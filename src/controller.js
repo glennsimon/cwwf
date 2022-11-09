@@ -255,8 +255,8 @@ async function authButtonClickedController() {
         const statusUpdate = {};
         statusUpdate.uid = uid;
         statusUpdate.authState = authState('offline');
-        const userOffline = httpsCallable(functions, 'userOffline');
-        userOffline(statusUpdate);
+        const userOffline2 = httpsCallable(functions, 'userOffline2');
+        userOffline2(statusUpdate);
       })
       .catch((error) => {
         console.log(error);
@@ -493,8 +493,8 @@ function abandonCurrentGameController() {
   abandonObj.gameId = currentGameId;
   abandonObj.opponentUid = myOpponentUid;
   abandonObj.playerUid = currentUser.uid;
-  const abandonGame = httpsCallable(functions, 'abandonGame');
-  abandonGame(abandonObj).catch((err) => {
+  const abandonGame2 = httpsCallable(functions, 'abandonGame2');
+  abandonGame2(abandonObj).catch((err) => {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
     console.log('Error details: ', err.details);
