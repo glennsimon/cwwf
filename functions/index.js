@@ -79,7 +79,7 @@ exports.userOffline = functions.https.onCall(async (statusUpdate, context) => {
 });
 
 exports.authChange = functions.https.onCall(async (data, context) => {
-  console.log('Hello from authChange. context.rawRequest', context.rawRequest);
+  console.log('Hello from authChange.');
   if (context.auth && context.auth.token && context.auth.token.uid) {
     console.log('auth token: ', context.auth.token);
     const uid = context.auth.token.uid;
@@ -120,16 +120,16 @@ exports.authChange = functions.https.onCall(async (data, context) => {
  * Sends FCM message to player to notify them that it is their turn.
  * @param {string} uid uid of player
  */
-exports.notifyPlayer = functions.https.onCall((data, context) => {
+function notifyPlayer(uid) {
   console.log('Hello from notifyPlayer.');
   return db
-    .doc(`users/${data.oppUid}`)
+    .doc(`users/${uid}`)
     .get()
     .then((doc) => {
       console.log('msgToken: ', doc.data().msgToken);
       return doc.data().msgToken;
     })
-    .then((toKey) => {
+    .then(async (toKey) => {
       if (toKey) {
         // functions.logger.log('got users messagetoken: ', toKey);
 
@@ -142,18 +142,18 @@ exports.notifyPlayer = functions.https.onCall((data, context) => {
           },
         };
 
-        admin.messaging().sendToDevice(toKey, payload, {
+        await admin.messaging().sendToDevice(toKey, payload, {
           collapseKey: 'your-turn',
           timeToLive: 86400,
         });
-        return `sent notification to ${data.oppUid}`;
+        return `sent notification to ${uid}`;
       }
       return 'no user key available';
     })
     .catch((error) => {
       functions.logger.log('Error: ', error);
     });
-});
+}
 
 /**
  * Firebase Cloud Function fetches a new game based on the gameStartParameters
@@ -429,6 +429,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       game.lastTurnCheckObj = lastTurnCheckObj;
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameList);
+      notifyPlayer(opponent);
     });
     functions.logger.log('checkAnswers transaction success!');
   } catch (error) {

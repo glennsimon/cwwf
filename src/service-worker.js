@@ -1,2 +1,1 @@
-// This file is intentionally without code.
-// It's present so that service worker registration will work when serving from the 'dist' directory.
+// intentionally empty, to be populated by workbox
