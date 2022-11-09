@@ -11,7 +11,6 @@ const gaxios = require('gaxios');
 admin.initializeApp();
 
 const db = admin.firestore();
-console.log('Hello from index.js');
 
 const scoreValues = {
   A: 1,
@@ -52,8 +51,8 @@ exports.userStatusChanged = functions.database
     const eventStatus = change.after.val();
     const statusSnapshot = await change.after.ref.once('value');
     const status = statusSnapshot.val();
-    console.log('status: ', status);
-    console.log('eventStatus: ', eventStatus);
+    // console.log('status: ', status);
+    // console.log('eventStatus: ', eventStatus);
     // If the current timestamp for this data is newer than
     // the data that triggered this event, we exit this function.
     if (status.lastChanged > eventStatus.lastChanged) {
@@ -66,7 +65,7 @@ exports.userStatusChanged = functions.database
   });
 
 exports.userOffline = functions.https.onCall(async (statusUpdate, context) => {
-  console.log('Hello from userOffline. authState: ', statusUpdate.authState);
+  console.log('Hello from userOffline.');
   const uid = statusUpdate.uid;
   await admin
     .database()
@@ -81,7 +80,7 @@ exports.userOffline = functions.https.onCall(async (statusUpdate, context) => {
 exports.authChange = functions.https.onCall(async (data, context) => {
   console.log('Hello from authChange.');
   if (context.auth && context.auth.token && context.auth.token.uid) {
-    console.log('auth token: ', context.auth.token);
+    // console.log('auth token: ', context.auth.token);
     const uid = context.auth.token.uid;
     // Split data into two nested collections for public and private data
     const batch = db.batch();
@@ -126,7 +125,7 @@ function notifyPlayer(uid) {
     .doc(`users/${uid}`)
     .get()
     .then((doc) => {
-      console.log('msgToken: ', doc.data().msgToken);
+      // console.log('msgToken: ', doc.data().msgToken);
       return doc.data().msgToken;
     })
     .then(async (toKey) => {
@@ -339,7 +338,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       const bgColor = game.players[player].bgColor.match(/blue/i)
         ? 'rgba(0, 0, 255, 0.5)'
         : 'rgba(255, 0, 0, 0.5)';
-      console.log('answerObj: ', answerObj);
+      // console.log('answerObj: ', answerObj);
       for (let index = 0; index < answerObj.guess.length; index++) {
         const correctValue = answers.answerKey[idxArray[index]];
         const guess = answerObj.guess[index];
@@ -347,7 +346,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
           lastTurnCheckObj.correctAnswer = false;
         }
       }
-      console.log('lastTurnCheckObj: ', lastTurnCheckObj);
+      // console.log('lastTurnCheckObj: ', lastTurnCheckObj);
       if (lastTurnCheckObj.correctAnswer) {
         game.puzzle.completedClues[direction].push(parseInt(clueNumber));
       }
@@ -365,8 +364,8 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
         cellResult.guess = guess;
         cellResult.correctLetter = correctValue;
         cellResult.index = idxArray[index];
-        console.log('Correct letter: ', correctValue);
-        console.log('Guess: ', guess);
+        // console.log('Correct letter: ', correctValue);
+        // console.log('Guess: ', guess);
         if (correctValue === guess) {
           gridElement.value = guess;
           cellResult.bgColor = bgColor;
@@ -377,7 +376,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
             game.players[player].score += scoreValues[guess];
             cellResult.score = scoreValues[guess];
             checkAnswerResult.push(cellResult);
-            console.log('letter score: ', scoreValues[guess]);
+            // console.log('letter score: ', scoreValues[guess]);
           } else if (gridElement.status !== 'locked') {
             const scoreObj = scoreCell(
               game,
@@ -456,7 +455,7 @@ function scoreCell(game, direction, index, bgColor) {
   let addedScore = 0;
   let addedResults = [];
   let clueNum = game.puzzle.grid[orthoWordArray[0]].clueNum;
-  console.log('ortho word array: ', orthoWordArray);
+  // console.log('ortho word array: ', orthoWordArray);
   for (const idx of orthoWordArray) {
     const correctLetter = game.puzzle.grid[idx].value;
     const cellResult = {};
@@ -474,17 +473,17 @@ function scoreCell(game, direction, index, bgColor) {
     addedResults.push(cellResult);
   }
   checkAnswerResult = checkAnswerResult.concat(addedResults);
-  console.log('game.puzzle.grid[index].value: ', game.puzzle.grid[index].value);
-  console.log(
-    'scoreValues[game.puzzle.grid[index].value]: ',
-    scoreValues[game.puzzle.grid[index].value]
-  );
-  console.log('added score: ', addedScore);
-  console.log('addedResults: ', addedResults);
-  console.log(
-    'returned score: ',
-    addedScore + scoreValues[game.puzzle.grid[index].value]
-  );
+  // console.log('game.puzzle.grid[index].value: ', game.puzzle.grid[index].value);
+  // console.log(
+  //   'scoreValues[game.puzzle.grid[index].value]: ',
+  //   scoreValues[game.puzzle.grid[index].value]
+  // );
+  // console.log('added score: ', addedScore);
+  // console.log('addedResults: ', addedResults);
+  // console.log(
+  //   'returned score: ',
+  //   addedScore + scoreValues[game.puzzle.grid[index].value]
+  // );
   return {
     scoreChange: addedScore + scoreValues[game.puzzle.grid[index].value],
     pushClue: clueNum,
