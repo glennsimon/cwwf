@@ -30,6 +30,9 @@ import {
 import { httpsCallable } from 'firebase/functions';
 
 const dbRT = getDatabase(app);
+const vapidKey =
+  'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4' +
+  'wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak';
 
 let currentUser = null;
 let userStatusFirestoreRef = null;
@@ -205,12 +208,14 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 /**
- * Configure messaging credentials
+ * Configure messaging credentials with FCM VAPID key
  * @param {string} uid User ID
  */
 async function generateMessagingToken(uid) {
   try {
-    const messagingToken = await getToken(messaging);
+    const messagingToken = await getToken(messaging, {
+      vapidKey: vapidKey,
+    });
     if (messagingToken) {
       sendTokenToServer(messagingToken, uid);
     }
