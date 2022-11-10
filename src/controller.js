@@ -302,18 +302,31 @@ async function populateMyGames(uid) {
   // try {
   const q = query(
     collection(db, 'gameListBuilder'),
-    where('viewableBy', 'array-contains', `${uid}`),
+    where('viewableBy', 'array-contains', `${uid}`)
     // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
-    limit(30)
+    // limit(30)
   );
   myGamesUnsubscribe = onSnapshot(q, (snapshot) => {
+    const myPastGames = [];
+    const myCurrGames = [];
     myGames = [];
     snapshot.forEach((doc) => {
       // console.log('query snapshot doc.data(): ', doc.data());
       const gameListItem = doc.data();
       gameListItem.gameId = doc.id;
-      myGames.push(gameListItem);
+      if (gameListItem.finish) {
+        myPastGames.push(gameListItem);
+      } else {
+        myCurrGames.push(gameListItem);
+      }
     });
+    myPastGames.sort((a, b) => {
+      return b.finish - a.finish;
+    });
+    myCurrGames.sort((a, b) => {
+      return b.start - a.start;
+    });
+    myGames = myCurrGames.concat(myPastGames);
     loadGamesView(myGames);
   });
 }
