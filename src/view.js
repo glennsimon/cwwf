@@ -633,6 +633,8 @@ function showPuzzleView(game) {
   console.log(game);
   gameLoadSpinner.classList.remove('is-active');
   gameLoadMessage.innerText = '';
+  turnProgressSpinner.classList.remove('is-active');
+  turnProgressMessage.innerText = '';
 
   // TODO: should this go here?
   location.hash = '#puzzle';
@@ -1215,7 +1217,8 @@ function replayOpponent() {
     ? 'hard'
     : difficulty;
   closeGamesDialog();
-
+  turnProgressSpinner.classList.add('is-active');
+  turnProgressMessage.innerText = 'Getting new game...';
   // load puzzle based on uids of players
   const startGameParameters = {};
   startGameParameters.difficulty = difficulty;
