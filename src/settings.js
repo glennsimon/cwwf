@@ -5,6 +5,9 @@ import {
 
 const settingsContainer = document.getElementById('settingsContainer');
 const avatarButton = document.getElementById('avatarButton');
+const avatar = document.getElementById('avatar');
+const profileName = document.getElementById('profileName');
+const myName = document.getElementById('myName');
 const checkAvailability = document.getElementById('checkAvailability');
 const saveSettings = document.getElementById('saveSettings');
 const cancelButton = document.getElementById('cancelButton');
@@ -12,7 +15,6 @@ const avatarSettings = document.getElementById('avatarSettings');
 const settingsName = document.getElementById('settingsName');
 const settingsHandle = document.getElementById('settingsHandle');
 const handleEntry = document.getElementById('handleEntry');
-const handleContainer = document.getElementById('handleContainer');
 const okLabel = document.getElementById('okLabel');
 
 let prefAvatar = null;
@@ -27,6 +29,9 @@ function updateSettings() {
   settingsPrefs.prefAvatar = prefAvatar;
   settingsPrefs.prefName = settingsName.value;
   settingsPrefs.prefHandle = settingsHandle.value;
+  avatar.src = prefAvatar;
+  profileName.innerText = settingsName.value;
+  myName.innerText = settingsHandle.value.slice(0, 8);
   storeSettingsController(settingsPrefs);
 }
 
@@ -87,9 +92,11 @@ function showSettings(settingsObj) {
   settingsHandle.parentElement.classList.add('is-dirty');
   settingsContainer.classList.remove('displayNone');
   settingsContainer.classList.add('displayFlex');
-  checkAvailability.addEventListener('click', (event) => {
+  checkAvailability.addEventListener('click', async (event) => {
     okLabel.innerText = '';
-    const available = handleCheckController(settingsHandle.value);
+    const available = await Promise.resolve(
+      handleCheckController(settingsHandle.value)
+    );
     if (!available) {
       handleEntry.classList.add('is-invalid');
     } else {
@@ -101,10 +108,12 @@ function showSettings(settingsObj) {
     updateSettings();
     settingsContainer.classList.remove('displayFlex');
     settingsContainer.classList.add('displayNone');
+    okLabel.innerText = '';
   });
   cancelButton.addEventListener('click', (event) => {
     settingsContainer.classList.remove('displayFlex');
     settingsContainer.classList.add('displayNone');
+    okLabel.innerText = '';
   });
 }
 

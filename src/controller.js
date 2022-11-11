@@ -207,12 +207,13 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
 onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
-  authChangeView(user);
   currentUser = user;
   if (!uid) return;
   // previousUser = currentUser;
   userStatusFirestoreRef = doc(db, `/users/${uid}`);
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
+  const userData = (await getDoc(userStatusFirestoreRef)).data();
+  authChangeView(userData);
   try {
     const authChange = httpsCallable(functions, 'authChange');
     await authChange();
@@ -612,16 +613,13 @@ async function storeSettingsController(settingsPrefs) {
  * @returns {boolean} true if handle is available, false otherwise
  */
 async function handleCheckController(handle) {
-  const available = false;
-  const q = query(collection(db, 'users'), where('prefHandle', '!=', false));
-  return await getDocs(q).then((snapshot) => {
-    snapshot.forEach((doc) => {
-      if (doc.data().prefHandle === handle && currentUser.uid !== doc.id) {
-        return false;
-      }
-    });
-    return true;
+  const q = query(collection(db, 'users'), where('prefHandle', '==', handle));
+  const docs = await getDocs(q);
+  let available = true;
+  docs.forEach((doc) => {
+    if (doc.id !== currentUser.uid) available = false;
   });
+  return available;
 }
 
 export {

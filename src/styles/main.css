@@ -179,6 +179,10 @@ select {
   padding: 0;
 }
 
+.noPaddingTop {
+  padding-top: 0;
+}
+
 .webkitMargin0 {
   -webkit-margin-before: 0;
   -webkit-margin-after: 0;

@@ -107,10 +107,9 @@ function authChangeView(user) {
     gameLoadMessage.innerText = 'Loading your games...';
     // authButton.textContent = 'sign out';
     authButton.innerHTML = `sign out&nbsp;<span class='material-icons'>logout </span>`;
-    profileName.textContent = user.displayName;
-    avatar.src = user.photoURL
-      ? user.photoURL
-      : 'images/avatar_circle_black.png';
+    profileName.textContent = user.prefName || user.displayName;
+    avatar.src =
+      user.prefAvatarUrl || user.photoURL || 'images/avatar_circle_black.png';
     location.hash = '#games';
     headerSignin.classList.add('displayNone');
   } else {
@@ -184,10 +183,10 @@ dialogList.addEventListener('click', async (event) => {
   gameStartParameters.players = {};
   gameStartParameters.players[myUid] = {};
   gameStartParameters.players[myUid].bgColor = 'bgTransRed';
-  gameStartParameters.players[myUid].displayName = currentUser.displayName;
-  gameStartParameters.players[myUid].photoURL = currentUser.photoURL
-    ? currentUser.photoURL
-    : null;
+  // gameStartParameters.players[myUid].displayName = currentUser.displayName;
+  // gameStartParameters.players[myUid].photoURL = currentUser.photoURL
+  //   ? currentUser.photoURL
+  //   : null;
   let target = event.target;
   while (target.id === '') {
     target = target.parentElement;
@@ -196,10 +195,10 @@ dialogList.addEventListener('click', async (event) => {
   const opponent = userList[oppUid];
   gameStartParameters.players[oppUid] = {};
   gameStartParameters.players[oppUid].bgColor = 'bgTransBlue';
-  gameStartParameters.players[oppUid].displayName = opponent.displayName;
-  gameStartParameters.players[oppUid].photoURL = opponent.photoURL
-    ? opponent.photoURL
-    : null;
+  // gameStartParameters.players[oppUid].displayName = opponent.displayName;
+  // gameStartParameters.players[oppUid].photoURL = opponent.photoURL
+  //   ? opponent.photoURL
+  //   : null;
   let difficulty = radioMed.parentElement.classList.contains('is-checked')
     ? 'medium'
     : 'easy';
@@ -269,9 +268,9 @@ function loadUserList(usersObj, currentUser) {
     // console.log(doc.id, ' => ', doc.data());
     if (uid !== currentUser.uid) {
       let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
-      if (user.photoURL) {
+      if (user.prefAvatarUrl || user.photoURL) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <img src='${user.photoURL}' alt='profile picture'>
+  <img src='${user.prefAvatarUrl || user.photoURL}' alt='profile picture'>
 </span>`;
       }
       userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
@@ -334,9 +333,8 @@ async function loadGamesView(myGames) {
       // displays up to 25 active and 5 past games.
       // Change query limit(30) in populateMyGames if different
       // number is desired.  See else below.
-      const opponentPhoto = players[oppUid].photoURL
-        ? players[oppUid].photoURL
-        : null;
+      const opponentPhoto =
+        players[oppUid].prefAvatarUrl || players[oppUid].photoURL;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <img src='${opponentPhoto}' alt='profile picture'>
@@ -373,9 +371,8 @@ async function loadGamesView(myGames) {
       }
       // pastGames[doc.id] = {};
       // pastGames[doc.id].difficulty = game.difficulty;
-      const opponentPhoto = players[oppUid].photoURL
-        ? players[oppUid].photoURL
-        : null;
+      const opponentPhoto =
+        players[oppUid].prefAvatarUrl || players[oppUid].photoURL;
       if (opponentPhoto) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <img src='${opponentPhoto}' alt='profile picture'>
@@ -606,8 +603,14 @@ function showPuzzleView(game) {
   const currentUser = getCurrentUserController();
   const oppUid = getMyOpponentUidController();
   const myUid = currentUser.uid;
-  let myNickname = game.players[myUid].displayName;
-  let oppNickname = game.players[oppUid].displayName;
+  let myNickname =
+    game.players[myUid].prefHandle ||
+    game.players[myUid].prefName ||
+    game.players[myUid].displayName;
+  let oppNickname =
+    game.players[oppUid].prefHandle ||
+    game.players[oppUid].prefName ||
+    game.players[oppUid].displayName;
 
   myNickname = myNickname.split(' ')[0];
   myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
