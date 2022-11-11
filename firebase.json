@@ -11,16 +11,12 @@
         "destination": "/index.html"
       },
       {
-        "source": "/userOffline",
-        "function": "userOffline"
+        "source": "/userOffline2",
+        "function": "userOffline2"
       },
       {
         "source": "/authChange",
         "function": "authChange"
-      },
-      {
-        "source": "/notifyPlayer",
-        "function": "notifyPlayer"
       },
       {
         "source": "/startGame",
@@ -31,13 +27,13 @@
         "function": "checkAnswer"
       },
       {
-        "source": "/abandonGame",
-        "function": "abandonGame"
+        "source": "/abandonGame2",
+        "function": "abandonGame2"
       }
     ],
     "headers": [
       {
-        "source": "/@(authChange|notifyPlayer|startGame|checkAnswers|abandonGame)",
+        "source": "/@(userOffline2|authChange|startGame|checkAnswers|abandonGame2)",
         "headers": [
           {
             "key": "Access-Control-Allow-Origin",

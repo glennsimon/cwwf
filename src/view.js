@@ -619,7 +619,7 @@ function showPuzzleView(game) {
     let result = 'YOU WON!!';
     if (game.players[myUid].score < game.players[oppUid].score) {
       result = 'You lost';
-    } else {
+    } else if (game.players[myUid].score === game.players[oppUid].score) {
       result = 'Tie game!';
     }
     if (!game.hideReplay) {
@@ -634,6 +634,8 @@ function showPuzzleView(game) {
   console.log(game);
   gameLoadSpinner.classList.remove('is-active');
   gameLoadMessage.innerText = '';
+  turnProgressSpinner.classList.remove('is-active');
+  turnProgressMessage.innerText = '';
 
   // TODO: should this go here?
   location.hash = '#puzzle';
@@ -1216,7 +1218,8 @@ function replayOpponent() {
     ? 'hard'
     : difficulty;
   closeGamesDialog();
-
+  turnProgressSpinner.classList.add('is-active');
+  turnProgressMessage.innerText = 'Getting new game...';
   // load puzzle based on uids of players
   const startGameParameters = {};
   startGameParameters.difficulty = difficulty;

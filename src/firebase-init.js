@@ -6,7 +6,7 @@ import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { getAnalytics } from 'firebase/analytics';
 import { getStorage } from 'firebase/storage';
 
-let firebaseConfig = {
+const firebaseConfig = {
   apiKey: 'AIzaSyDNheDAGRrSjCgic20dgnuawMILWBrTNUk',
   authDomain: 'xwordswf.firebaseapp.com',
   databaseURL: 'https://xwordswf.firebaseio.com',

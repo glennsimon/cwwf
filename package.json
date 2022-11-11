@@ -32,7 +32,7 @@
   },
   "private": true,
   "scripts": {
-    "start": "webpack --config webpack.dev.js --watch",
+    "start": "webpack --config webpack.dev.js --watch --progress",
     "build": "webpack --config webpack.prod.js"
   },
   "eslintConfig": {

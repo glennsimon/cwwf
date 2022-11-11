@@ -11,7 +11,6 @@ const gaxios = require('gaxios');
 admin.initializeApp();
 
 const db = admin.firestore();
-console.log('Hello from index.js');
 
 const scoreValues = {
   A: 1,
@@ -52,8 +51,8 @@ exports.userStatusChanged = functions.database
     const eventStatus = change.after.val();
     const statusSnapshot = await change.after.ref.once('value');
     const status = statusSnapshot.val();
-    console.log('status: ', status);
-    console.log('eventStatus: ', eventStatus);
+    // console.log('status: ', status);
+    // console.log('eventStatus: ', eventStatus);
     // If the current timestamp for this data is newer than
     // the data that triggered this event, we exit this function.
     if (status.lastChanged > eventStatus.lastChanged) {
@@ -65,8 +64,8 @@ exports.userStatusChanged = functions.database
     return null;
   });
 
-exports.userOffline = functions.https.onCall(async (statusUpdate, context) => {
-  console.log('Hello from userOffline. authState: ', statusUpdate.authState);
+exports.userOffline2 = functions.https.onCall(async (statusUpdate, context) => {
+  console.log('Hello from userOffline2.');
   const uid = statusUpdate.uid;
   await admin
     .database()
@@ -79,9 +78,9 @@ exports.userOffline = functions.https.onCall(async (statusUpdate, context) => {
 });
 
 exports.authChange = functions.https.onCall(async (data, context) => {
-  console.log('Hello from authChange. context.rawRequest', context.rawRequest);
+  console.log('Hello from authChange.');
   if (context.auth && context.auth.token && context.auth.token.uid) {
-    console.log('auth token: ', context.auth.token);
+    // console.log('auth token: ', context.auth.token);
     const uid = context.auth.token.uid;
     // Split data into two nested collections for public and private data
     const batch = db.batch();
@@ -120,40 +119,42 @@ exports.authChange = functions.https.onCall(async (data, context) => {
  * Sends FCM message to player to notify them that it is their turn.
  * @param {string} uid uid of player
  */
-exports.notifyPlayer = functions.https.onCall((uid, context) => {
+function notifyPlayer(uid) {
   console.log('Hello from notifyPlayer.');
   return db
     .doc(`users/${uid}`)
     .get()
-    .then((doc) => {
-      console.log('msgToken: ', doc.data().msgToken);
-      return doc.data().msgToken;
+    .then(async (doc) => {
+      // console.log('msgToken: ', doc.data().msgToken);
+      return await doc.data().msgToken;
     })
-    .then((toKey) => {
+    .then(async (toKey) => {
       if (toKey) {
-        // functions.logger.log('got users messagetoken: ', toKey);
+        console.log('got users messagetoken: ', toKey);
 
         const payload = {
           notification: {
             title: 'Your turn!',
             body: 'Your opponent has played their turn',
             icon: 'images/favicon.ico',
-            clickAction: 'https://xwordswf.firebaseapp.com',
+            clickAction: 'https://xwordswf.web.app',
           },
         };
 
-        admin.messaging().sendToDevice(toKey, payload, {
+        await admin.messaging().sendToDevice(toKey, payload, {
           collapseKey: 'your-turn',
           timeToLive: 86400,
         });
-        return `sent notification to ${uid}`;
+        console.log(`sent notification to ${uid}`);
+        return;
       }
-      return 'no user key available';
+      console.log('no user key available');
+      return;
     })
     .catch((error) => {
       functions.logger.log('Error: ', error);
     });
-});
+}
 
 /**
  * Firebase Cloud Function fetches a new game based on the gameStartParameters
@@ -339,7 +340,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       const bgColor = game.players[player].bgColor.match(/blue/i)
         ? 'rgba(0, 0, 255, 0.5)'
         : 'rgba(255, 0, 0, 0.5)';
-      console.log('answerObj: ', answerObj);
+      // console.log('answerObj: ', answerObj);
       for (let index = 0; index < answerObj.guess.length; index++) {
         const correctValue = answers.answerKey[idxArray[index]];
         const guess = answerObj.guess[index];
@@ -347,7 +348,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
           lastTurnCheckObj.correctAnswer = false;
         }
       }
-      console.log('lastTurnCheckObj: ', lastTurnCheckObj);
+      // console.log('lastTurnCheckObj: ', lastTurnCheckObj);
       if (lastTurnCheckObj.correctAnswer) {
         game.puzzle.completedClues[direction].push(parseInt(clueNumber));
       }
@@ -365,8 +366,8 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
         cellResult.guess = guess;
         cellResult.correctLetter = correctValue;
         cellResult.index = idxArray[index];
-        console.log('Correct letter: ', correctValue);
-        console.log('Guess: ', guess);
+        // console.log('Correct letter: ', correctValue);
+        // console.log('Guess: ', guess);
         if (correctValue === guess) {
           gridElement.value = guess;
           cellResult.bgColor = bgColor;
@@ -377,7 +378,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
             game.players[player].score += scoreValues[guess];
             cellResult.score = scoreValues[guess];
             checkAnswerResult.push(cellResult);
-            console.log('letter score: ', scoreValues[guess]);
+            // console.log('letter score: ', scoreValues[guess]);
           } else if (gridElement.status !== 'locked') {
             const scoreObj = scoreCell(
               game,
@@ -406,13 +407,14 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
           checkAnswerResult.push(cellResult);
         }
       }
-      game.nextTurn = answerObj.myOpponentUid;
-      gameList.nextTurn = answerObj.myOpponentUid;
+      const opponent = answerObj.myOpponentUid;
+      game.nextTurn = opponent;
+      gameList.nextTurn = opponent;
       if (game.emptySquares === 0) {
-        if (game[me].score > game[they].score) {
-          game.winner = game[me].uid;
-        } else if (game[me].score < game[they].score) {
-          game.winner = game[they].uid;
+        if (game.players[player].score > game.players[opponent].score) {
+          game.winner = player;
+        } else if (game.players[player].score < game.players[opponent].score) {
+          game.winner = opponent;
         } else {
           game.winner = 'tie';
         }
@@ -428,6 +430,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       game.lastTurnCheckObj = lastTurnCheckObj;
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameList);
+      notifyPlayer(opponent);
     });
     functions.logger.log('checkAnswers transaction success!');
   } catch (error) {
@@ -454,7 +457,7 @@ function scoreCell(game, direction, index, bgColor) {
   let addedScore = 0;
   let addedResults = [];
   let clueNum = game.puzzle.grid[orthoWordArray[0]].clueNum;
-  console.log('ortho word array: ', orthoWordArray);
+  // console.log('ortho word array: ', orthoWordArray);
   for (const idx of orthoWordArray) {
     const correctLetter = game.puzzle.grid[idx].value;
     const cellResult = {};
@@ -472,17 +475,17 @@ function scoreCell(game, direction, index, bgColor) {
     addedResults.push(cellResult);
   }
   checkAnswerResult = checkAnswerResult.concat(addedResults);
-  console.log('game.puzzle.grid[index].value: ', game.puzzle.grid[index].value);
-  console.log(
-    'scoreValues[game.puzzle.grid[index].value]: ',
-    scoreValues[game.puzzle.grid[index].value]
-  );
-  console.log('added score: ', addedScore);
-  console.log('addedResults: ', addedResults);
-  console.log(
-    'returned score: ',
-    addedScore + scoreValues[game.puzzle.grid[index].value]
-  );
+  // console.log('game.puzzle.grid[index].value: ', game.puzzle.grid[index].value);
+  // console.log(
+  //   'scoreValues[game.puzzle.grid[index].value]: ',
+  //   scoreValues[game.puzzle.grid[index].value]
+  // );
+  // console.log('added score: ', addedScore);
+  // console.log('addedResults: ', addedResults);
+  // console.log(
+  //   'returned score: ',
+  //   addedScore + scoreValues[game.puzzle.grid[index].value]
+  // );
   return {
     scoreChange: addedScore + scoreValues[game.puzzle.grid[index].value],
     pushClue: clueNum,
@@ -523,8 +526,8 @@ function getOrthoWordArray(game, direction, index) {
   return orthoWordArray;
 }
 
-exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
-  console.log('Hello from abandonGame.');
+exports.abandonGame2 = functions.https.onCall(async (abandonObj, context) => {
+  console.log('Hello from abandonGame2.');
   const gameRef = db.doc(`games/${abandonObj.gameId}`);
   const answersRef = db.doc(`games/${abandonObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${abandonObj.gameId}`);
@@ -566,9 +569,9 @@ exports.abandonGame = functions.https.onCall(async (abandonObj, context) => {
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameListDoc);
     });
-    functions.logger.log('abandonGame transaction success!');
+    functions.logger.log('abandonGame2 transaction success!');
   } catch (error) {
-    functions.logger.error('abandonGame transaction failure: ', error);
+    functions.logger.error('abandonGame2 transaction failure: ', error);
   }
   return;
 });

@@ -273,8 +273,8 @@ async function authButtonClickedController() {
         const statusUpdate = {};
         statusUpdate.uid = uid;
         statusUpdate.authState = authState('offline');
-        const userOffline = httpsCallable(functions, 'userOffline');
-        userOffline(statusUpdate);
+        const userOffline2 = httpsCallable(functions, 'userOffline2');
+        userOffline2(statusUpdate);
       })
       .catch((error) => {
         console.log(error);
@@ -320,18 +320,31 @@ async function populateMyGames(uid) {
   // try {
   const q = query(
     collection(db, 'gameListBuilder'),
-    where('viewableBy', 'array-contains', `${uid}`),
-    orderBy('start', 'desc'),
-    limit(30)
+    where('viewableBy', 'array-contains', `${uid}`)
+    // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
+    // limit(30)
   );
   myGamesUnsubscribe = onSnapshot(q, (snapshot) => {
+    const myPastGames = [];
+    const myCurrGames = [];
     myGames = [];
     snapshot.forEach((doc) => {
       // console.log('query snapshot doc.data(): ', doc.data());
       const gameListItem = doc.data();
       gameListItem.gameId = doc.id;
-      myGames.push(gameListItem);
+      if (gameListItem.finish) {
+        myPastGames.push(gameListItem);
+      } else {
+        myCurrGames.push(gameListItem);
+      }
     });
+    myPastGames.sort((a, b) => {
+      return b.finish - a.finish;
+    });
+    myCurrGames.sort((a, b) => {
+      return b.start - a.start;
+    });
+    myGames = myCurrGames.concat(myPastGames);
     loadGamesView(myGames);
   });
 }
@@ -395,7 +408,13 @@ function subscribeToGame(gameId) {
 async function playWordController() {
   console.log('Hello from playWordController.');
   if (currentGame.status === 'finished') return;
-  if (incomplete()) return;
+  if (incomplete()) {
+    const errorMessage =
+      `Entry is incomplete. No blank letters ` +
+      `allowed in highlighted range. Try again!`;
+    showErrorDialogView(errorMessage);
+    return;
+  }
   if (location.hash === '#puzzle' && !myTurn) {
     const errorMessage =
       `Whoa there, Buckaroo... ` +
@@ -428,12 +447,6 @@ async function playWordController() {
   }
   const checkAnswers = httpsCallable(functions, 'checkAnswers');
   await checkAnswers(answerObj).catch((err) => {
-    console.log('Error code: ', err.code);
-    console.log('Error message: ', err.message);
-    console.log('Error details: ', err.details);
-  });
-  const notifyOpponent = httpsCallable(functions, 'notifyPlayer');
-  return notifyOpponent(myOpponentUid).catch((err) => {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
     console.log('Error details: ', err.details);
@@ -525,8 +538,8 @@ function abandonCurrentGameController() {
   abandonObj.gameId = currentGameId;
   abandonObj.opponentUid = myOpponentUid;
   abandonObj.playerUid = currentUser.uid;
-  const abandonGame = httpsCallable(functions, 'abandonGame');
-  abandonGame(abandonObj).catch((err) => {
+  const abandonGame2 = httpsCallable(functions, 'abandonGame2');
+  abandonGame2(abandonObj).catch((err) => {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
     console.log('Error details: ', err.details);
@@ -593,6 +606,24 @@ async function storeSettingsController(settingsPrefs) {
   }
 }
 
+/**
+ * Check availability of unique handle for for users preferred handle.
+ * @param {string} handle
+ * @returns {boolean} true if handle is available, false otherwise
+ */
+async function handleCheckController(handle) {
+  const available = false;
+  const q = query(collection(db, 'users'), where('prefHandle', '!=', false));
+  return await getDocs(q).then((snapshot) => {
+    snapshot.forEach((doc) => {
+      if (doc.data().prefHandle === handle && currentUser.uid !== doc.id) {
+        return false;
+      }
+    });
+    return true;
+  });
+}
+
 export {
   authButtonClickedController,
   startNewGameController,
@@ -616,4 +647,5 @@ export {
   getGameListParametersController,
   populateSettingsController,
   storeSettingsController,
+  handleCheckController,
 };

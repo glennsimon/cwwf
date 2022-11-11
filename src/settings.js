@@ -1,4 +1,7 @@
-import { storeSettingsController } from './controller.js';
+import {
+  storeSettingsController,
+  handleCheckController,
+} from './controller.js';
 
 const settingsContainer = document.getElementById('settingsContainer');
 const avatarButton = document.getElementById('avatarButton');
@@ -8,6 +11,9 @@ const cancelButton = document.getElementById('cancelButton');
 const avatarSettings = document.getElementById('avatarSettings');
 const settingsName = document.getElementById('settingsName');
 const settingsHandle = document.getElementById('settingsHandle');
+const handleEntry = document.getElementById('handleEntry');
+const handleContainer = document.getElementById('handleContainer');
+const okLabel = document.getElementById('okLabel');
 
 let prefAvatar = null;
 
@@ -67,23 +73,30 @@ avatarButton.addEventListener('change', async (event) => {
 });
 
 function showSettings(settingsObj) {
+  const userData = settingsObj.userData;
   if (settingsObj.prefAvatarURL) {
     avatarSettings.src = settingsObj.prefAvatarURL;
   } else {
     avatarSettings.src = './images/avatar_circle_black.png';
   }
-  if (settingsObj.userData.prefName) {
-    settingsName.value = settingsObj.userData.prefName;
-    settingsName.parentElement.classList.add('is-dirty');
-  }
-  if (settingsObj.userData.prefHandle) {
-    settingsHandle.value = settingsObj.userData.prefHandle;
-    settingsHandle.parentElement.classList.add('is-dirty');
-  }
+  settingsName.value = userData.prefName || userData.displayName;
+  settingsName.parentElement.classList.add('is-dirty');
+  let nickname = userData.displayName.split(' ')[0];
+  nickname = nickname.length > 8 ? nickname.slice(0, 8) : nickname;
+  settingsHandle.value = userData.prefHandle || nickname;
+  settingsHandle.parentElement.classList.add('is-dirty');
   settingsContainer.classList.remove('displayNone');
   settingsContainer.classList.add('displayFlex');
-  avatarButton.addEventListener('click', (event) => {});
-  checkAvailability.addEventListener('click', (event) => {});
+  checkAvailability.addEventListener('click', (event) => {
+    okLabel.innerText = '';
+    const available = handleCheckController(settingsHandle.value);
+    if (!available) {
+      handleEntry.classList.add('is-invalid');
+    } else {
+      handleEntry.classList.remove('is-invalid');
+      okLabel.innerText = 'OK!';
+    }
+  });
   saveSettings.addEventListener('click', (event) => {
     updateSettings();
     settingsContainer.classList.remove('displayFlex');

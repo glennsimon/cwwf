@@ -263,7 +263,10 @@
               </div>
             </div>
           </div>
-          <div id="kbContainer" class="fullWidth flexDirCol displayNone">
+          <div
+            id="kbContainer"
+            class="fullWidth flexDirCol displayNone userSelectNone"
+          >
             <div class="displayFlex flexCenter fullWidth flexGrow-1">
               <div class="kbButton width9pct bgColorWhite">
                 <div class="displayFlex marginAuto">
@@ -621,24 +624,36 @@
                 name="avatarButton"
                 type="file"
                 accept="image/*"
-              >
-              </input>
+              />
             </div>
           </div>
           <div
             class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
           >
             <input class="mdl-textfield__input" type="text" id="settingsName" />
-            <label class="mdl-textfield__label" for="settingsName">Full Name</label>
+            <label class="mdl-textfield__label" for="settingsName"
+              >Full Name</label
+            >
           </div>
-          <div class="displayFlex alignItemsCenter spaceBetween">
+          <div
+            id="handleContainer"
+            class="displayFlex alignItemsCenter spaceBetween"
+          >
             <div
+              id="handleEntry"
               class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
               style="width: 200px"
             >
-              <input class="mdl-textfield__input" type="text" id="settingsHandle" />
+              <input
+                class="mdl-textfield__input"
+                type="text"
+                id="settingsHandle"
+              />
               <label class="mdl-textfield__label" for="settingsHandle"
                 >Game Persona</label
+              >
+              <span class="mdl-textfield__error"
+                >Sorry, that handle is taken. Try again</span
               >
             </div>
             <button
@@ -647,6 +662,7 @@
             >
               check
             </button>
+            <div id="okLabel"></div>
           </div>
           <div
             class="mdl-card__actions mdl-card--border displayFlex spaceBetween"
