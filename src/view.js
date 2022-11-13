@@ -297,8 +297,9 @@ function loadUserList(usersObj, currentUser) {
  * Load game list with active and past games that the current user has
  * participated in.
  * @param {Array} myGames Object all games viewable by the current user
+ * @param {object} userData Object with all public user data for users in myGames
  */
-async function loadGamesView(myGames) {
+async function loadGamesView(myGames, userData) {
   console.log('Hello from loadGamesView.');
   gameLoadSpinner.classList.remove('is-active');
   gameLoadMessage.innerText = '';
@@ -318,7 +319,7 @@ async function loadGamesView(myGames) {
   let pastGamesNumber = 0;
   for (const gameListItem of myGames) {
     const gameId = gameListItem.gameId;
-    const players = gameListItem.players;
+    // const players = gameListItem.players;
     const myUid = getCurrentUserController().uid;
     const startDate = new Date(gameListItem.start).toLocaleDateString('en-us', {
       day: 'numeric',
@@ -333,17 +334,17 @@ async function loadGamesView(myGames) {
       // displays up to 25 active and 5 past games.
       // Change query limit(30) in populateMyGames if different
       // number is desired.  See else below.
-      const opponentPhoto =
-        players[oppUid].prefAvatarUrl || players[oppUid].photoURL;
-      if (opponentPhoto) {
+      const opponentPhotoUrl =
+        userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL;
+      if (opponentPhotoUrl) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <img src='${opponentPhoto}' alt='profile picture'>
+  <img src='${opponentPhotoUrl}' alt='profile picture'>
 </span>`;
       }
       activeGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span class='mdl-list__item-primary-content'>
     ${avatar}
-    <span>${players[oppUid].displayName}</span>
+    <span>${userData[oppUid].prefName || userData[oppUid].displayName}</span>
     <span class='mdl-list__item-sub-title'>
       ${myUid === gameListItem.nextTurn ? 'Your' : 'Their'} turn
     </span>
@@ -371,17 +372,17 @@ async function loadGamesView(myGames) {
       }
       // pastGames[doc.id] = {};
       // pastGames[doc.id].difficulty = game.difficulty;
-      const opponentPhoto =
-        players[oppUid].prefAvatarUrl || players[oppUid].photoURL;
-      if (opponentPhoto) {
+      const opponentPhotoUrl =
+        userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL;
+      if (opponentPhotoUrl) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <img src='${opponentPhoto}' alt='profile picture'>
+  <img src='${opponentPhotoUrl}' alt='profile picture'>
 </span>`;
       }
       pastGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span class='mdl-list__item-primary-content'>
     ${avatar}
-    <span>${players[oppUid].displayName}</span>
+    <span>${userData[oppUid].prefName || userData[oppUid].displayName}</span>
     <span class='mdl-list__item-sub-title'>${result}</span>
   </span>
     <span class='mdl-list__item-secondary-content'>

@@ -325,10 +325,10 @@ async function populateMyGames(uid) {
     // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
     // limit(30)
   );
-  myGamesUnsubscribe = onSnapshot(q, (snapshot) => {
+  myGamesUnsubscribe = onSnapshot(q, async (snapshot) => {
     const myPastGames = [];
     const myCurrGames = [];
-    myGames = [];
+    const userIds = [];
     snapshot.forEach((doc) => {
       // console.log('query snapshot doc.data(): ', doc.data());
       const gameListItem = doc.data();
@@ -338,6 +338,9 @@ async function populateMyGames(uid) {
       } else {
         myCurrGames.push(gameListItem);
       }
+      for (const uid of gameListItem.viewableBy) {
+        if (!userIds.includes(uid)) userIds.push(uid);
+      }
     });
     myPastGames.sort((a, b) => {
       return b.finish - a.finish;
@@ -345,8 +348,22 @@ async function populateMyGames(uid) {
     myCurrGames.sort((a, b) => {
       return b.start - a.start;
     });
+    // const userIds = [];
     myGames = myCurrGames.concat(myPastGames);
-    loadGamesView(myGames);
+    // for (const gameListItem of myGames) {
+    //   for (const uid of gameListItem.viewableBy) {
+    //     if (!userIds.includes(uid)) userIds.push(uid);
+    //   }
+    // }
+    const q2 = query(collection(db, 'users'), where('uid', 'in', userIds));
+    const userDocs = await getDocs(q2);
+    const count = userDocs.size;
+    console.log('count: ', count);
+    let userData = {};
+    userDocs.forEach((doc) => {
+      userData[doc.id] = doc.data();
+    });
+    loadGamesView(myGames, userData);
   });
 }
 

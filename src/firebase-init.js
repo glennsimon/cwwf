@@ -4,7 +4,7 @@ import { getAuth } from 'firebase/auth';
 import { getMessaging } from 'firebase/messaging';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { getAnalytics } from 'firebase/analytics';
-import { getStorage } from 'firebase/storage';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDNheDAGRrSjCgic20dgnuawMILWBrTNUk',
@@ -32,6 +32,7 @@ const storage = getStorage(app);
 if (location.hostname === 'localhost') {
   connectFirestoreEmulator(db, 'localhost', 8080);
   connectFunctionsEmulator(functions, 'localhost', 5001);
+  connectStorageEmulator(storage, 'localhost', 9091);
 }
 
 // Check to make sure service workers are supported in the current browser,
