@@ -228,14 +228,25 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
 
       // console.log('New parsed puzzle: ', game);
 
+      const gameId = gamesDocRef.id;
       batch.set(gamesDocRef, game);
 
       await batch.commit();
+      return gameId;
+    })
+    .then(async (gameId) => {
+      const opponentUid =
+        context.auth.uid === gameStartParameters.viewableBy[0]
+          ? gameStartParameters.viewableBy[1]
+          : gameStartParameters.viewableBy[0];
 
+      const opponent = await db.doc(`users/${opponentUid}`).get();
       const gameObj = {};
-      gameObj.game = game;
+      gameObj.opponent = opponent.data();
+      // gameObj.game = game; - don't need game - listening on client
       // gameObj.gameListData = gameListData;
-      gameObj.gameId = gamesDocRef.id;
+      gameObj.gameId = gameId;
+      console.log('gameObj: ', gameObj);
       return gameObj;
     })
     .catch((error) => {
@@ -407,7 +418,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
           checkAnswerResult.push(cellResult);
         }
       }
-      const opponent = answerObj.myOpponentUid;
+      const opponent = answerObj.opponentUid;
       game.nextTurn = opponent;
       gameList.nextTurn = opponent;
       if (game.emptySquares === 0) {

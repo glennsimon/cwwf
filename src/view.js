@@ -4,6 +4,7 @@ import {
   startNewGameController,
   populateAllUsersController,
   getCurrentUserController,
+  getCurrentOppController,
   fetchPuzzleController,
   playWordController,
   getColumnsController,
@@ -16,10 +17,11 @@ import {
   savePuzzleController,
   setAcrossWordController,
   getAcrossWordController,
-  getMyOpponentUidController,
-  getGameListParametersController,
-  populateSettingsController,
+  // getMyOpponentUidController,
+  // getGameListParametersController,
+  // populateSettingsController,
 } from './controller.js';
+import { showSettingsView } from './views/settingsView.js';
 
 import './styles/main.css';
 
@@ -93,6 +95,7 @@ returnToSignin.addEventListener('click', () => (location.hash = '#signin'));
  */
 authButton.addEventListener('click', (event) => {
   if (drawer.classList.contains('is-visible')) toggleDrawer();
+  clearPuzzle();
   authButtonClickedController();
 });
 
@@ -153,6 +156,8 @@ function clearPuzzle() {
   console.log('Hello from clearPuzzle.');
   puzTitle.innerText = 'Puzzle info will appear here';
   // clear out old puzzle and clues
+  const svgGrid = document.getElementById('svgGrid');
+  if (svgGrid) svgGrid.remove();
   puzTable.innerHTML = '';
   puzAuthor.innerText = '';
   puzNotepad.classList.add('displayNone');
@@ -183,6 +188,9 @@ dialogList.addEventListener('click', async (event) => {
   gameStartParameters.players = {};
   gameStartParameters.players[myUid] = {};
   gameStartParameters.players[myUid].bgColor = 'bgTransRed';
+  gameStartParameters.viewableBy = [];
+  gameStartParameters.viewableBy.push(myUid);
+
   // gameStartParameters.players[myUid].displayName = currentUser.displayName;
   // gameStartParameters.players[myUid].photoURL = currentUser.photoURL
   //   ? currentUser.photoURL
@@ -195,6 +203,7 @@ dialogList.addEventListener('click', async (event) => {
   const opponent = userList[oppUid];
   gameStartParameters.players[oppUid] = {};
   gameStartParameters.players[oppUid].bgColor = 'bgTransBlue';
+  gameStartParameters.viewableBy.push(oppUid);
   // gameStartParameters.players[oppUid].displayName = opponent.displayName;
   // gameStartParameters.players[oppUid].photoURL = opponent.photoURL
   //   ? opponent.photoURL
@@ -342,7 +351,7 @@ async function loadGamesView(myGames, userData) {
 </span>`;
       }
       activeGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-  <span class='mdl-list__item-primary-content'>
+  <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
     <span>${userData[oppUid].prefName || userData[oppUid].displayName}</span>
     <span class='mdl-list__item-sub-title'>
@@ -380,7 +389,7 @@ async function loadGamesView(myGames, userData) {
 </span>`;
       }
       pastGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-  <span class='mdl-list__item-primary-content'>
+  <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
     <span>${userData[oppUid].prefName || userData[oppUid].displayName}</span>
     <span class='mdl-list__item-sub-title'>${result}</span>
@@ -405,19 +414,30 @@ pastGamesContainer.addEventListener('click', loadGame);
 /**
  * Fetch an existing game from firestore via the controller.
  * @param {MouseEvent} event
- * @returns null
+ * @returns void
  */
 function loadGame(event) {
   console.log('User selected a game to view.');
   let eventTarget = event.target;
   while (!eventTarget.id) {
-    if (eventTarget.nodeName.toLowerCase() === 'ul') return;
     eventTarget = eventTarget.parentElement;
   }
+  if (eventTarget.nodeName.toLowerCase() === 'ul') return;
+  if (eventTarget.nodeName.toLowerCase() === 'li') {
+    eventTarget = eventTarget.children[0];
+  }
+  const gameObj = {};
+  if (eventTarget.nodeName.toLowerCase() === 'span') {
+    gameObj.opponentUid = eventTarget.id;
+    eventTarget = eventTarget.parentElement;
+  } else {
+    return;
+  }
+  gameObj.gameId = eventTarget.id;
   gameLoadSpinner.classList.add('is-active');
   gameLoadMessage.innerText = 'Fetching your game...';
   puzTitle.innerText = 'Fetching data...';
-  fetchPuzzleController(eventTarget.id);
+  fetchPuzzleController(gameObj);
 }
 
 /**
@@ -425,8 +445,10 @@ function loadGame(event) {
  * a grid and clues. The HTML table element is a placeholder and the rows and
  * cells are created on the fly. The fetched puzzle is stored as an object in
  * the variable "game".
+ * @param {object} game current game object
+ * @param {object} opponent current opponent user object
  */
-function showPuzzleView(game) {
+function showPuzzleView(game, opponent) {
   console.log('Hello from showPuzzleView.');
   // clear previous puzzle if it exists
   if (puzTable.children) {
@@ -602,16 +624,13 @@ function showPuzzleView(game) {
   scores.classList.remove('displayNone');
   scores.classList.add('displayFlex');
   const currentUser = getCurrentUserController();
-  const oppUid = getMyOpponentUidController();
+  const currentOpp = getCurrentOppController();
+  const oppUid = currentOpp.uid;
   const myUid = currentUser.uid;
   let myNickname =
-    game.players[myUid].prefHandle ||
-    game.players[myUid].prefName ||
-    game.players[myUid].displayName;
+    currentUser.prefHandle || currentUser.prefName || currentUser.displayName;
   let oppNickname =
-    game.players[oppUid].prefHandle ||
-    game.players[oppUid].prefName ||
-    game.players[oppUid].displayName;
+    opponent.prefHandle || opponent.prefName || opponent.displayName;
 
   myNickname = myNickname.split(' ')[0];
   myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
@@ -960,7 +979,7 @@ function clueClicked(event, direction) {
 function updateScoreboard(game) {
   console.log('Hello from updateScoreboard.');
   const myUid = getCurrentUserController().uid;
-  const oppUid = getMyOpponentUidController();
+  const oppUid = getCurrentOppController().uid;
   myScore.innerText = game.players[myUid].score;
   oppScore.innerText = game.players[oppUid].score;
   myName.classList.remove('fontRed', 'fontBlue');
@@ -1411,7 +1430,7 @@ navList.addEventListener('click', (event) => {
     location.hash = '#games';
   }
   if (event.target.querySelector('i').innerText === 'settings') {
-    populateSettingsController();
+    showSettingsView();
   }
 });
 

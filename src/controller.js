@@ -13,7 +13,6 @@ import {
   animateScoringView,
   showErrorDialogView,
 } from './view.js';
-import { showSettings } from './settings.js';
 import {
   getDatabase,
   ref,
@@ -53,12 +52,13 @@ const vapidKey =
   'wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak';
 
 let currentUser = null;
+let currentOpp = null;
 let userStatusFirestoreRef = null;
 let userStatusDatabaseRef = null;
 let myGames = [];
 let currentGame = null;
 let currentGameId = null;
-let myOpponentUid = null;
+// let myOpponentUid = null;
 let acrossWord = true;
 let columns = null;
 let idxArray = [];
@@ -85,13 +85,13 @@ function getCurrentGameController() {
   return currentGame;
 }
 
-/**
- * Get myOpponentUid. Should be used by all external modules.
- * @returns {object} Returns myOpponentUid or null
- */
-function getMyOpponentUidController() {
-  return myOpponentUid;
-}
+// /**
+//  * Get myOpponentUid. Should be used by all external modules.
+//  * @returns {object} Returns myOpponentUid or null
+//  */
+// function getMyOpponentUidController() {
+//   return myOpponentUid;
+// }
 
 /**
  * Get gameListParameters. Should be used by all external modules.
@@ -139,6 +139,14 @@ function setAcrossWordController(across) {
  */
 function getCurrentUserController() {
   return currentUser;
+}
+
+/**
+ * Get currentOpp. Should be used by all external modules.
+ * @returns {object} Returns currentOpp user object
+ */
+function getCurrentOppController() {
+  return currentOpp;
 }
 
 /**
@@ -207,12 +215,12 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
 onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
-  currentUser = user;
   if (!uid) return;
   // previousUser = currentUser;
   userStatusFirestoreRef = doc(db, `/users/${uid}`);
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
   const userData = (await getDoc(userStatusFirestoreRef)).data();
+  currentUser = userData;
   authChangeView(userData);
   try {
     const authChange = httpsCallable(functions, 'authChange');
@@ -281,10 +289,8 @@ async function authButtonClickedController() {
         console.log(error);
       });
   }
-  // else {
-  //   // keep this else - location should change only if signOut successful
-  //   location.hash = '#signin';
-  // }
+  // keep this else - location should change only if signOut successful
+  location.hash = '#signin';
 }
 
 /**
@@ -370,17 +376,18 @@ async function populateMyGames(uid) {
 /**
  * This function fetches an active puzzle based on the user's selection
  * and then calls functions to format and display the puzzle
- * @param {String} puzzleId Firestore game (puzzle) id
+ * @param {object} gameObj Object with gameId and opponentUid
  */
-function fetchPuzzleController(puzzleId) {
+async function fetchPuzzleController(gameObj) {
   console.log('Hello from fetchPuzzleController.');
-  subscribeToGame(puzzleId);
+  currentOpp = (await getDoc(doc(db, `users/${gameObj.opponentUid}`))).data();
+  subscribeToGame(gameObj.gameId);
 }
 
 /**
  * Unsubscribe from listening for changes on previous game, and start listening
- * for changes on gameId game.
- * @param {string} gameId
+ * for changes on gameObj game.
+ * @param {string} gameId game id string
  */
 function subscribeToGame(gameId) {
   console.log('Hello from subscribeToGame.');
@@ -395,23 +402,23 @@ function subscribeToGame(gameId) {
   // Start listening to current puzzle changes
   gameUnsubscribe = onSnapshot(
     doc(db, 'games', gameId),
-    async (doc) => {
+    async (gameSnap) => {
       const prevGameId = currentGameId;
-      currentGame = doc.data();
+      currentGame = gameSnap.data();
       currentGameId = gameId;
-      if (currentGame.status === 'started') {
-        const keys = Object.keys(currentGame.players);
-        for (const key of keys) {
-          if (key !== currentUser.uid) myOpponentUid = key;
-        }
-      }
+      // if (currentGame.status === 'started') {
+      //   const keys = Object.keys(currentGame.players);
+      //   for (const key of keys) {
+      //     if (key !== currentUser.uid) myOpponentUid = key;
+      //   }
+      // }
       idxArray = [];
       columns = currentGame.puzzle.cols;
       myTurn = currentUser.uid === currentGame.nextTurn;
       if (prevGameId === gameId) {
         await animateScoringView(currentGame.lastTurnCheckObj);
       }
-      showPuzzleView(currentGame);
+      showPuzzleView(currentGame, currentOpp);
     },
     (error) => {
       console.error('Error subscribing to puzzle: ', error);
@@ -455,7 +462,7 @@ async function playWordController() {
   answerObj.acrossWord = acrossWord;
   answerObj.guess = [];
   answerObj.playerUid = currentUser.uid;
-  answerObj.myOpponentUid = myOpponentUid;
+  answerObj.opponentUid = currentOpp.uid;
   for (const index of idxArray) {
     answerObj.guess.push(
       currentGame.puzzle.grid[index].guessArray[
@@ -498,8 +505,11 @@ function startNewGameController(gameStartParameters) {
   const startGame = httpsCallable(functions, 'startGame');
   startGame(gameStartParameters)
     .then((gameObjData) => {
-      subscribeToGame(gameObjData.data.gameId);
-      return gameObjData.data.game;
+      const gameObj = gameObjData.data;
+      currentOpp = gameObj.opponent;
+      currentGameId = gameObj.gameId;
+      subscribeToGame(currentGameId);
+      return; // gameObjData.data.game;
     })
     .catch((err) => {
       console.log('Error code: ', err.code);
@@ -554,7 +564,7 @@ function appendObject(base, append) {
 function abandonCurrentGameController() {
   const abandonObj = {};
   abandonObj.gameId = currentGameId;
-  abandonObj.opponentUid = myOpponentUid;
+  abandonObj.opponentUid = currentOpp.uid;
   abandonObj.playerUid = currentUser.uid;
   const abandonGame2 = httpsCallable(functions, 'abandonGame2');
   abandonGame2(abandonObj).catch((err) => {
@@ -564,31 +574,31 @@ function abandonCurrentGameController() {
   });
 }
 
-async function populateSettingsController() {
-  const settingsObj = { prefAvatarURL: null, userData: null };
-  const userDoc = await getDoc(doc(db, `users/${currentUser.uid}`));
-  settingsObj.userData = userDoc.data();
+// async function populateSettingsController() {
+//   const settingsObj = { prefAvatarURL: null, userData: null };
+//   const userDoc = getCurrentUserController();
+//   settingsObj.userData = userDoc.data();
 
-  const userImageRef = refStorage(
-    storage,
-    `users/${currentUser.uid}/avatar.png`
-  );
+//   const userImageRef = refStorage(
+//     storage,
+//     `users/${currentUser.uid}/avatar.png`
+//   );
 
-  try {
-    const url = await getDownloadURL(userImageRef);
-    settingsObj.prefAvatarURL = url;
-  } catch (error) {
-    switch (error.code) {
-      case 'storage/object-not-found':
-        settingsObj.prefAvatarURL = userDoc.data().photoURL;
-        break;
-      case 'storage/unauthorized':
-        console.warn('user does not have permission to access image file.');
-        break;
-    }
-  }
-  showSettings(settingsObj);
-}
+//   try {
+//     const url = await getDownloadURL(userImageRef);
+//     settingsObj.prefAvatarURL = url;
+//   } catch (error) {
+//     switch (error.code) {
+//       case 'storage/object-not-found':
+//         settingsObj.prefAvatarURL = userDoc.data().photoURL;
+//         break;
+//       case 'storage/unauthorized':
+//         console.warn('user does not have permission to access image file.');
+//         break;
+//     }
+//   }
+//   showSettings(settingsObj);
+// }
 
 async function storeSettingsController(settingsPrefs) {
   let prefAvatarUrl = null;
@@ -611,13 +621,17 @@ async function storeSettingsController(settingsPrefs) {
       const userDoc = await transaction.get(refUserData);
       if (!userDoc.exists()) throw 'User document does not exist!';
 
-      const prefName = settingsPrefs.prefName || null;
-      const prefHandle = settingsPrefs.prefHandle || null;
-      transaction.update(refUserData, {
-        prefName: prefName,
-        prefHandle: prefHandle,
-        prefAvatarUrl: prefAvatarUrl,
-      });
+      currentUser.prefName = settingsPrefs.prefName || null;
+      currentUser.prefHandle = settingsPrefs.prefHandle || null;
+      const updateData = {
+        prefName: currentUser.prefName,
+        prefHandle: currentUser.prefHandle,
+      };
+      if (prefAvatarUrl) {
+        currentUser.prefAvatarUrl = prefAvatarUrl;
+        updateData.prefAvatarUrl = prefAvatarUrl;
+      }
+      transaction.update(refUserData, updateData);
     });
   } catch (error) {
     console.log('UserData update transaction failed: ', error);
@@ -643,6 +657,7 @@ export {
   authButtonClickedController,
   startNewGameController,
   getCurrentUserController,
+  getCurrentOppController,
   populateAllUsersController,
   getAllGamesController,
   fetchPuzzleController,
@@ -658,9 +673,9 @@ export {
   abandonCurrentGameController,
   getAcrossWordController,
   setAcrossWordController,
-  getMyOpponentUidController,
+  // getMyOpponentUidController,
   getGameListParametersController,
-  populateSettingsController,
+  // populateSettingsController,
   storeSettingsController,
   handleCheckController,
 };
