@@ -4,7 +4,7 @@
     "@babel/core": "^7.19.1",
     "@babel/preset-env": "^7.19.1",
     "apache-server-configs": "^4.1.0",
-    "babel-loader": "^8.2.5",
+    "babel-loader": "^8.3.0",
     "browser-sync": "^2.26.14",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
