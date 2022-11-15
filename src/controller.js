@@ -363,11 +363,9 @@ function subscribeToGame(gameId) {
       const prevGameId = currentGameId;
       currentGame = doc.data();
       currentGameId = gameId;
-      if (currentGame.status === 'started') {
-        const keys = Object.keys(currentGame.players);
-        for (const key of keys) {
-          if (key !== currentUser.uid) myOpponentUid = key;
-        }
+      const keys = Object.keys(currentGame.players);
+      for (const key of keys) {
+        if (key !== currentUser.uid) myOpponentUid = key;
       }
       idxArray = [];
       columns = currentGame.puzzle.cols;
