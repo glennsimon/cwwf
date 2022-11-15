@@ -330,7 +330,7 @@ async function loadGamesView(myGames) {
         ? gameListItem.viewableBy[1]
         : gameListItem.viewableBy[0];
     if (gameListItem.status === 'started') {
-      // displays up to 25 active and 5 past games.
+      // displays up to 20 active and 10 past games.
       // Change query limit(30) in populateMyGames if different
       // number is desired.  See else below.
       const opponentPhoto = players[oppUid].photoURL
@@ -354,7 +354,7 @@ async function loadGamesView(myGames) {
   <span>${startDate}</span>
   </span>
 </li>`;
-    } else if (pastGamesNumber < 5) {
+    } else if (pastGamesNumber < 10) {
       const finishDate = new Date(gameListItem.finish).toLocaleDateString(
         'en-us',
         {
@@ -362,7 +362,7 @@ async function loadGamesView(myGames) {
           month: 'short',
         }
       );
-      // displays a max of 5 past games
+      // displays a max of 10 past games
       pastGamesNumber++;
       let result = 'Tie game!';
       if (gameListItem.status === 'finished' && gameListItem.winner !== 'tie') {
