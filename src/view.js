@@ -17,6 +17,7 @@ import {
   savePuzzleController,
   setAcrossWordController,
   getAcrossWordController,
+  populateFriendsController,
   // getMyOpponentUidController,
   // getGameListParametersController,
   // populateSettingsController,
@@ -76,6 +77,7 @@ const yesButton = document.getElementById('yesButton');
 const noButton = document.getElementById('noButton');
 const navList = document.getElementById('navList');
 const errorMessage = document.getElementById('errorMessage');
+const startGameButton = document.getElementById('startGameButton');
 //#endregion
 
 let currentCell = null;
@@ -242,8 +244,8 @@ startGameButton.addEventListener('click', async () => {
   const currentUser = getCurrentUserController();
   if (currentUser) {
     // user is logged in
-    const usersObj = await populateAllUsersController();
-    loadUserList(usersObj, currentUser);
+    const friendsObj = await populateFriendsController();
+    loadUserList(friendsObj);
     gameOverHeading.classList.add('displayNone');
     winMessage.classList.add('displayNone');
     gamesDialog.children[0].classList.add('padding0', 'height100pct');
@@ -267,7 +269,7 @@ function loadUserList(usersObj, currentUser) {
   console.log('Hello from loadUserList.');
   let userList = '';
   if (usersObj.empty) {
-    console.warn('No users exist yet.');
+    console.warn('No users in list.');
     return;
   }
   let uids = Object.keys(usersObj);
@@ -275,14 +277,13 @@ function loadUserList(usersObj, currentUser) {
     const user = usersObj[uid];
     // doc.data() is never undefined for query doc snapshots
     // console.log(doc.id, ' => ', doc.data());
-    if (uid !== currentUser.uid) {
-      let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
-      if (user.prefAvatarUrl || user.photoURL) {
-        avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
+    let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
+    if (user.prefAvatarUrl || user.photoURL) {
+      avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <img src='${user.prefAvatarUrl || user.photoURL}' alt='profile picture'>
 </span>`;
-      }
-      userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
+    }
+    userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
     ${avatar}
     <div class='overflowHidden' style='width: 115px;'>${user.displayName}</div>
@@ -295,7 +296,6 @@ function loadUserList(usersObj, currentUser) {
     <i class='material-icons'>grid_on</i>
   </span>
 </li>`;
-    }
   });
   // allUsers = usersObj;
   // console.log(userList);

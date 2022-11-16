@@ -308,11 +308,35 @@ function populateAllUsersController() {
       snapshot.docs.forEach((doc) => {
         // console.log(doc.data());
         const user = doc.data();
-        usersObj[user.uid] = user;
+        if (user.uid !== currentUser.uid) usersObj[user.uid] = user;
       });
       return usersObj;
     })
     .catch((error) => console.log('Error getting list of users: ', error));
+}
+
+/**
+ * Populate list of all users from firestore and return the list.
+ * @returns Object containing all users by uid
+ */
+function populateFriendsController() {
+  const myFriends = currentUser.friends;
+  if (!myFriends) return;
+  return getDocs(query(collection(db, 'users'), where('uid', 'in', myFriends)))
+    .then((snapshot) => {
+      if (snapshot.empty) {
+        console.log('No friends added yet.');
+        return;
+      }
+      const friendsObj = {};
+      snapshot.docs.forEach((doc) => {
+        // console.log(doc.data());
+        const user = doc.data();
+        if (user.uid !== currentUser.uid) friendsObj[user.uid] = user;
+      });
+      return friendsObj;
+    })
+    .catch((error) => console.log('Error getting list of friends: ', error));
 }
 
 /**
@@ -678,4 +702,5 @@ export {
   // populateSettingsController,
   storeSettingsController,
   handleCheckController,
+  populateFriendsController,
 };

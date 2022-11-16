@@ -29,11 +29,15 @@
       {
         "source": "/abandonGame2",
         "function": "abandonGame2"
+      },
+      {
+        "source": "/updateFriends",
+        "function": "updateFriends"
       }
     ],
     "headers": [
       {
-        "source": "/@(userOffline2|authChange|startGame|checkAnswers|abandonGame2)",
+        "source": "/@(userOffline2|authChange|startGame|checkAnswers|abandonGame2|updateFriends)",
         "headers": [
           {
             "key": "Access-Control-Allow-Origin",

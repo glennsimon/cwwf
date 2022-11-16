@@ -496,8 +496,8 @@ select {
   width: 60px;
 }
 
-.maxHeight90pct {
-  max-height: 90%;
+.maxHeight85pct {
+  max-height: 85%;
 }
 
 .maxWidth400px {
@@ -671,7 +671,9 @@ select {
 }
 
 @media screen and (min-width: 420px) {
-  #gamesPanelContainer {
+  #gamesPanelContainer,
+  #gamesDialog,
+  #friendsDialog {
     min-width: 400px;
   }
 }

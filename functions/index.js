@@ -64,6 +64,15 @@ exports.userStatusChanged = functions.database
     return null;
   });
 
+exports.newUser = functions.firestore
+  .document('users/{userId}')
+  .onCreate((snapshot, context) => {
+    const friends = {
+      friends: ['3eoDltvYiwYfjPviYRRQ2agbsAz1', 'pOsPH8X3DQdVvcfuHgxqEij5LSH2'],
+    };
+    snapshot.ref.set(friends, { merge: true });
+  });
+
 exports.userOffline2 = functions.https.onCall(async (statusUpdate, context) => {
   console.log('Hello from userOffline2.');
   const uid = statusUpdate.uid;
@@ -111,6 +120,50 @@ exports.authChange = functions.https.onCall(async (data, context) => {
     batch.set(privateDataRef, privateData, { merge: true });
     await batch.commit();
     return null;
+  }
+  return null;
+});
+
+exports.updateFriends = functions.https.onCall(async (data, context) => {
+  const publicDataRef = db.collection('users').doc(uid);
+  try {
+    await db.runTransaction(async (tx) => {
+      const user = (await tx.get(publicDataRef)).data();
+      let friends = user.friends || [];
+      let blocked = user.blocked || [];
+      let unblocked = data.unblocked;
+      for (const friend of data.friends) {
+        if (
+          !friends.includes(friend) &&
+          !blocked.includes(friend) &&
+          !data.blocked.includes(friend)
+        ) {
+          friends.push(friend);
+        }
+      }
+      for (const pest of data.blocked) {
+        if (!blocked.includes(pest)) blocked.push(pest);
+        if (friends.includes(pest)) {
+          const location = friends.indexOf(pest);
+          friends.splice(location, 1);
+        }
+      }
+      for (const friend of unblocked) {
+        if (blocked.includes(friend)) {
+          const location = blocked.indexOf(friend);
+          blocked.splice(location, 1);
+        }
+        if (!friends.includes(friend)) {
+          friends.push(friend);
+        }
+      }
+      user.friends = friends;
+      user.blocked = blocked;
+      tx.update(publicDataRef, user);
+    });
+    functions.logger.log('addFriends transaction success!');
+  } catch (error) {
+    functions.logger.error('addFriends transaction failure: ', error);
   }
   return null;
 });

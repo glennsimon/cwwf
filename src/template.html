@@ -445,7 +445,7 @@
         >
           <div
             id="gamesPanelContainer"
-            class="displayFlex flexDirCol maxHeight90pct"
+            class="displayFlex flexDirCol maxHeight85pct"
           >
             <div class="heading textAlignCenter">Games</div>
             <button
@@ -479,7 +479,7 @@
     </div>
     <dialog
       id="gamesDialog"
-      class="mdl-dialog maxHeight90pct"
+      class="mdl-dialog maxHeight85pct"
       style="width: 300px"
     >
       <div class="mdl-dialog__content displayFlex flexDirCol">
@@ -546,11 +546,60 @@
             Empty list
           </ul>
         </div>
+        <div class="margin5pxAuto">Don't see your friend in the list?</div>
+        <button
+          id="addFriendsButton"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+        >
+          Add friends!
+        </button>
         <button
           id="replayButton"
-          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent cursorPointer"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
         >
           Play Again!
+        </button>
+        <div
+          id="friendsProgressContainer"
+          class="margin5pxAuto alignItemsCenter displayNone"
+        >
+          <p
+            id="friendsLoadSpinner"
+            class="mdl-spinner mdl-js-spinner"
+            style="margin: 0"
+          ></p>
+          <div class="margin5px"></div>
+          <span id="friendsLoadMessage">Adding Friends to list...</span>
+        </div>
+      </div>
+    </dialog>
+    <dialog
+      id="friendsDialog"
+      class="mdl-dialog maxHeight85pct"
+      style="width: 300px"
+    >
+      <div class="mdl-dialog__content displayFlex flexDirCol">
+        <div class="closeDialogPosition close noOutline cursorPointer">
+          <i class="material-icons">close</i>
+        </div>
+        <div id="friendsHeading" class="heading textAlignCenter">
+          Add friends
+        </div>
+        <div id="friendsList" class="overflowYScroll">
+          <ul id="friendsDialogList" class="demo-list-action mdl-list"></ul>
+        </div>
+        <button
+          id="doneButton"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+        >
+          done
+        </button>
+        <div class="margin5pxAuto">Still don't see your friend?</div>
+        <button
+          id="inviteFriend"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+        >
+          Invite them to play!
         </button>
       </div>
     </dialog>
