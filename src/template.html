@@ -451,19 +451,19 @@
             <button
               id="startGameButton"
               type="button"
-              class="minHt36px mdl-button mdl-js-button mdl-button--raised mdl-button--accent"
+              class="minHt36px mdl-button mdl-js-button mdl-button--raised mdl-button--accent margin5pxAuto"
             >
               start a new game
             </button>
             <div class="overflowYScroll">
-              <div class="padding10px fontWeightBold">Active games</div>
+              <div class="gamesHeading fontWeightBold">Active games</div>
               <ul
                 id="activeGamesContainer"
                 class="demo-list-two mdl-list webkitMargin0"
               >
                 You must sign in to see your active games
               </ul>
-              <div class="padding10px fontWeightBold">Past games</div>
+              <div class="gamesHeading fontWeightBold">Past games</div>
               <ul
                 id="pastGamesContainer"
                 class="demo-list-two mdl-list webkitMargin0"
@@ -486,13 +486,13 @@
         <div class="closeDialogPosition close noOutline cursorPointer">
           <i class="material-icons">close</i>
         </div>
-        <div id="gameOverHeading" class="heading textAlignCenter displayNone">
-          Game Over
+        <div id="gameOverHeading" class="displayNone">
+          <div class="heading textAlignCenter displayNone">Game Over</div>
+          <div
+            id="winMessage"
+            class="heading textAlignCenter fontSizeXLarge displayNone"
+          ></div>
         </div>
-        <div
-          id="winMessage"
-          class="heading textAlignCenter fontSizeXLarge displayNone"
-        ></div>
         <div id="difficultyHeading" class="fontWeightBold textAlignCenter">
           Difficulty level
         </div>
@@ -538,27 +538,29 @@
             <span class="mdl-radio__label">HARD</span>
           </label>
         </div>
-        <div id="opponentHeading" class="fontWeightBold textAlignCenter">
-          Choose your opponent below:
-        </div>
-        <div id="opponentList" class="overflowYScroll">
-          <ul id="dialogList" class="demo-list-action mdl-list">
-            Empty list
-          </ul>
-        </div>
-        <div class="margin5pxAuto">Don't see your friend in the list?</div>
-        <button
-          id="addFriendsButton"
-          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
-        >
-          Add friends!
-        </button>
         <button
           id="replayButton"
-          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
         >
-          Play Again!
+          Rematch!
         </button>
+        <div id="friendsChooser" class="displayFlex flexDirCol">
+          <div class="fontWeightBold textAlignCenter">
+            Choose your opponent below:
+          </div>
+          <div class="overflowYScroll">
+            <ul id="dialogList" class="demo-list-action mdl-list">
+              Empty list
+            </ul>
+          </div>
+          <div class="margin5pxAuto">Don't see your friend in the list?</div>
+          <button
+            id="addFriendsButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+          >
+            Add friends!
+          </button>
+        </div>
         <div
           id="friendsProgressContainer"
           class="margin5pxAuto alignItemsCenter displayNone"
@@ -578,12 +580,15 @@
       class="mdl-dialog maxHeight85pct"
       style="width: 300px"
     >
-      <div class="mdl-dialog__content displayFlex flexDirCol">
+      <div
+        class="mdl-dialog__content displayFlex flexDirCol"
+        style="padding: 20px 15px 0"
+      >
         <div class="closeDialogPosition close noOutline cursorPointer">
           <i class="material-icons">close</i>
         </div>
         <div id="friendsHeading" class="heading textAlignCenter">
-          Add friends
+          Add / block players
         </div>
         <div id="friendsList" class="overflowYScroll">
           <ul id="friendsDialogList" class="demo-list-action mdl-list"></ul>
@@ -597,7 +602,7 @@
         <div class="margin5pxAuto">Still don't see your friend?</div>
         <button
           id="inviteFriend"
-          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+          class="mdl-button mdl-js-button mdl-js-ripple-effect"
         >
           Invite them to play!
         </button>

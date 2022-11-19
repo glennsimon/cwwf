@@ -43,6 +43,7 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { settings } from 'firebase/analytics';
+import { loadFriendsSettingsView } from './views/settingsView.js';
 // import { runtime } from 'webpack';
 // import { settings } from 'firebase/analytics';
 
@@ -66,6 +67,7 @@ let myTurn = null;
 let gameListParameters = {};
 // TODO: should this be tracked, and what can be done while offline?
 let online = false;
+let myFriends = {};
 
 // webpack dynamic imports:
 // let mySignOut = () => {};
@@ -76,6 +78,14 @@ let online = false;
  */
 let gameUnsubscribe = () => {};
 let myGamesUnsubscribe = () => {};
+
+/**
+ * Get myFriends. Should be used by all external modules.
+ * @returns {object} Returns my friends users objects
+ */
+function getMyFriendsController() {
+  return myFriends;
+}
 
 /**
  * Get the currentGame. Should be used by all external modules.
@@ -227,6 +237,7 @@ onAuthStateChanged(auth, async (user) => {
     await authChange();
     await generateMessagingToken(uid);
     await populateMyGames(uid);
+    myFriends = await populateMyFriends();
   } catch (err) {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
@@ -315,28 +326,68 @@ function populateAllUsersController() {
     .catch((error) => console.log('Error getting list of users: ', error));
 }
 
+// /**
+//  * Populate list of all users from firestore and return the list.
+//  * @returns Object containing all users by uid
+//  */
+// function populateFriendsController() {
+//   const myFriends = currentUser.friends;
+//   if (!myFriends) return;
+//   return getDocs(query(collection(db, 'users'), where('uid', 'in', myFriends)))
+//     .then((snapshot) => {
+//       if (snapshot.empty) {
+//         console.log('No friends added yet.');
+//         return;
+//       }
+//       const friendsObj = {};
+//       snapshot.docs.forEach((doc) => {
+//         // console.log(doc.data());
+//         const user = doc.data();
+//         if (user.uid !== currentUser.uid) friendsObj[user.uid] = user;
+//       });
+//       return friendsObj;
+//     })
+//     .catch((error) => console.log('Error getting list of friends: ', error));
+// }
+
+/**
+ * Update the users friends and blocked values in Firestore via cloud function
+ * @param {object} adjustedFriendsObject contains friends and blocked uid arrays
+ */
+async function updateFriendsController(adjustedFriendsObject) {
+  currentUser.friends = adjustedFriendsObject.friends;
+  currentUser.blocked = adjustedFriendsObject.blocked;
+  adjustedFriendsObject.uid = currentUser.uid;
+  const updateFriends = httpsCallable(functions, 'updateFriends');
+  updateFriends(adjustedFriendsObject);
+  myFriends = await populateMyFriends();
+  loadFriendsSettingsView(myFriends);
+}
+
 /**
  * Populate list of all users from firestore and return the list.
- * @returns Object containing all users by uid
+ * @returns Object containing friends of currentUser
  */
-function populateFriendsController() {
-  const myFriends = currentUser.friends;
-  if (!myFriends) return;
-  return getDocs(query(collection(db, 'users'), where('uid', 'in', myFriends)))
-    .then((snapshot) => {
-      if (snapshot.empty) {
-        console.log('No friends added yet.');
-        return;
-      }
-      const friendsObj = {};
-      snapshot.docs.forEach((doc) => {
-        // console.log(doc.data());
-        const user = doc.data();
-        if (user.uid !== currentUser.uid) friendsObj[user.uid] = user;
-      });
-      return friendsObj;
-    })
-    .catch((error) => console.log('Error getting list of friends: ', error));
+function populateMyFriends() {
+  console.log('Hello from populateMyFriends');
+  if (!currentUser.uid) return;
+  const friends = {};
+  const q = query(
+    collection(db, 'users'),
+    where('uid', 'in', currentUser.friends)
+  );
+  return getDocs(q).then((snapshot) => {
+    if (snapshot.empty) {
+      console.log('No friends added yet.');
+      return {};
+    }
+    snapshot.docs.forEach((doc) => {
+      // console.log(doc.data());
+      const user = doc.data();
+      if (doc.id !== currentUser.uid) friends[doc.id] = user;
+    });
+    return friends;
+  });
 }
 
 /**
@@ -702,5 +753,7 @@ export {
   // populateSettingsController,
   storeSettingsController,
   handleCheckController,
-  populateFriendsController,
+  // populateFriendsController,
+  updateFriendsController,
+  getMyFriendsController,
 };

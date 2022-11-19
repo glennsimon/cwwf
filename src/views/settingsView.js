@@ -3,6 +3,7 @@ import {
   handleCheckController,
   getCurrentUserController,
   populateAllUsersController,
+  updateFriendsController,
 } from '../controller.js';
 import { showErrorDialogView } from '../view.js';
 
@@ -23,13 +24,19 @@ const addFriendsButton = document.getElementById('addFriendsButton');
 const friendsProgressContainer = document.getElementById(
   'friendsProgressContainer'
 );
+const friendsLoadMessage = document.getElementById('friendsLoadMessage');
 const friendsLoadSpinner = document.getElementById('friendsLoadSpinner');
 const gamesDialog = document.getElementById('gamesDialog');
+const friendsDialog = document.getElementById('friendsDialog');
+const friendsDialogList = document.getElementById('friendsDialogList');
+const dialogList = document.getElementById('dialogList');
+const doneButton = document.getElementById('doneButton');
 
 let prefAvatar = null;
 let prefAvatarUrl = null;
 let handleCheck = false;
 let initialHandle = '';
+let adjustedFriendsObject = {};
 
 /**
  * Displays settings card for user to personalize settings
@@ -172,24 +179,100 @@ avatarButton.addEventListener('change', async (event) => {
 addFriendsButton.addEventListener('click', async (event) => {
   gamesDialog.close();
   friendsDialog.showModal();
+  initFriendsList();
   const usersObj = await populateAllUsersController();
   loadUserSelectionList(usersObj);
 });
 
 /**
+ * Initializes `adjustedFriendsObject` with only the friends currently has
+ */
+function initFriendsList() {
+  const currentUser = getCurrentUserController();
+  adjustedFriendsObject.friends = currentUser.friends || [];
+  adjustedFriendsObject.blocked = currentUser.blocked || [];
+}
+
+/**
  * Load list of potential opponents with list of all firebase users.
- * @param {Object} usersObj Object containing all users by uid
  */
 function loadUserSelectionList(usersObj) {
-  console.log('Hello from loadUserList.');
+  console.log('Hello from loadUserSelectionList.');
   let userList = '';
-  if (usersObj.empty) {
+  let uids = Object.keys(usersObj);
+  if (uids.length === 0) {
+    console.warn('No users yet.');
+    return;
+  }
+  let itemNumber = 0;
+  uids.forEach((uid) => {
+    const friend = adjustedFriendsObject.friends.includes(uid);
+    const block = adjustedFriendsObject.blocked.includes(uid);
+    const user = usersObj[uid];
+    let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
+    if (user.prefAvatarUrl || user.photoURL) {
+      avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
+  <img src='${user.prefAvatarUrl || user.photoURL}' alt='profile picture'>
+</span>`;
+    }
+    let friendChecked = friend ? 'checked' : ' ';
+    let blockChecked = block ? 'checked' : ' ';
+    userList += `<li id='${uid}'
+      class='mdl-list__item mdl-list__item--two-line'
+      style='background-color: inherit'>
+  <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
+    ${avatar}
+    <div class='overflowHidden' style='width: 115px;'>${user.displayName}</div>
+    <span class='mdl-list__item-sub-title'>
+      ${user.signInProvider ? user.signInProvider.split('.')[0] : 'none'}
+    </span>
+  </span>
+  <span class='mdl-list__item-secondary-action'>
+    <div class="displayFlex flexDirCol">
+      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+          for="addFriend${itemNumber}"
+          style="font-size: 12px;display: flex;align-items: center;">
+        <input type="radio" id="addFriend${itemNumber}"
+            class="mdl-radio__button" name='friends${itemNumber}'
+            value='friend' ${friendChecked}>
+        <div class="margin5px"></div>
+        <span class="material-icons" style="font-size: 20px;">add</span>
+      </label>
+      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" 
+          for="blockPest${itemNumber}"
+          style="font-size: 12px;display: flex;align-items: center;">
+        <input type="radio" id="blockPest${itemNumber}"
+            class="mdl-radio__button" name='friends${itemNumber}'
+            value='block' ${blockChecked}>
+        <div class="margin5px"></div>
+        <span class="material-icons" style="font-size: 20px;">block</span>
+      </label>
+    </div>
+  </span>
+</li>`;
+    itemNumber++;
+  });
+  friendsDialogList.innerHTML = userList;
+  const radioButtons = friendsDialogList.querySelectorAll('label input');
+  for (const radioButton of radioButtons) {
+    radioButton.addEventListener('change', adjustFriendsList);
+  }
+}
+
+/**
+ * Load list of players friends into dialogList element.
+ * @param {Object} friends Object containing friends by uid
+ */
+function loadFriendsSettingsView(friends) {
+  console.log('Hello from loadFriendsList.');
+  let userList = '';
+  let uids = Object.keys(friends);
+  if (uids.length === 0) {
     console.warn('No users in list.');
     return;
   }
-  let uids = Object.keys(usersObj);
   uids.forEach((uid) => {
-    const user = usersObj[uid];
+    const user = friends[uid];
     // doc.data() is never undefined for query doc snapshots
     // console.log(doc.id, ' => ', doc.data());
     let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
@@ -215,10 +298,53 @@ function loadUserSelectionList(usersObj) {
   // allUsers = usersObj;
   // console.log(userList);
   dialogList.innerHTML = userList;
+  friendsProgressContainer.classList.add('displayNone');
+  friendsProgressContainer.classList.remove('displayFlex');
+  friendsLoadSpinner.classList.remove('is-active');
+  friendsLoadMessage.innerText = '';
 }
+
+/**
+ * Adds or removes ids from
+ * @param {Event} changeEvent event on one of the checkboxes
+ */
+function adjustFriendsList(changeEvent) {
+  let target = changeEvent.target;
+  const radioId = target.id;
+  do {
+    target = target.parentElement;
+  } while (!target.id);
+  const uid = target.id;
+  if (changeEvent.target.checked && radioId.includes('addFriend')) {
+    if (!adjustedFriendsObject.friends.includes(uid)) {
+      adjustedFriendsObject.friends.push(uid);
+    }
+    if (adjustedFriendsObject.blocked.includes(uid)) {
+      const index = adjustedFriendsObject.blocked.indexOf(uid);
+      adjustedFriendsObject.blocked.splice(index, 1);
+    }
+  }
+  if (changeEvent.target.checked && radioId.includes('blockPest')) {
+    if (!adjustedFriendsObject.blocked.includes(uid)) {
+      adjustedFriendsObject.blocked.push(uid);
+    }
+    if (adjustedFriendsObject.friends.includes(uid)) {
+      const index = adjustedFriendsObject.friends.indexOf(uid);
+      adjustedFriendsObject.friends.splice(index, 1);
+    }
+  }
+  console.log('friends: ', adjustedFriendsObject.friends);
+  console.log('blocked: ', adjustedFriendsObject.blocked);
+}
+
+doneButton.addEventListener('click', () => {
+  friendsDialog.close();
+  gamesDialog.showModal();
+  updateFriendsController(adjustedFriendsObject);
+});
 
 friendsDialog.querySelector('.close').addEventListener('click', () => {
   friendsDialog.close();
 });
 
-export { showSettingsView };
+export { showSettingsView, loadFriendsSettingsView };

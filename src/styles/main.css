@@ -558,6 +558,10 @@ select {
   transform: translate(-100%, 0);
 }
 
+.gamesHeading {
+  padding: 10px 20px 0;
+}
+
 #appContainer {
   transform: translate(100%, 0);
   transition: transform 0.3s ease;
@@ -675,6 +679,10 @@ select {
   #gamesDialog,
   #friendsDialog {
     min-width: 400px;
+  }
+
+  #friendsDialog .mdl-dialog__content {
+    padding: 20px 15px 0;
   }
 }
 

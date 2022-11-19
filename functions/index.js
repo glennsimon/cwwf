@@ -125,40 +125,12 @@ exports.authChange = functions.https.onCall(async (data, context) => {
 });
 
 exports.updateFriends = functions.https.onCall(async (data, context) => {
-  const publicDataRef = db.collection('users').doc(uid);
+  const publicDataRef = db.collection('users').doc(data.uid);
   try {
     await db.runTransaction(async (tx) => {
       const user = (await tx.get(publicDataRef)).data();
-      let friends = user.friends || [];
-      let blocked = user.blocked || [];
-      let unblocked = data.unblocked;
-      for (const friend of data.friends) {
-        if (
-          !friends.includes(friend) &&
-          !blocked.includes(friend) &&
-          !data.blocked.includes(friend)
-        ) {
-          friends.push(friend);
-        }
-      }
-      for (const pest of data.blocked) {
-        if (!blocked.includes(pest)) blocked.push(pest);
-        if (friends.includes(pest)) {
-          const location = friends.indexOf(pest);
-          friends.splice(location, 1);
-        }
-      }
-      for (const friend of unblocked) {
-        if (blocked.includes(friend)) {
-          const location = blocked.indexOf(friend);
-          blocked.splice(location, 1);
-        }
-        if (!friends.includes(friend)) {
-          friends.push(friend);
-        }
-      }
-      user.friends = friends;
-      user.blocked = blocked;
+      user.friends = data.friends;
+      user.blocked = data.blocked;
       tx.update(publicDataRef, user);
     });
     functions.logger.log('addFriends transaction success!');

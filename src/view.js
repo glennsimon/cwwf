@@ -1,4 +1,3 @@
-import { doc } from 'firebase/firestore';
 import {
   authButtonClickedController,
   startNewGameController,
@@ -17,12 +16,16 @@ import {
   savePuzzleController,
   setAcrossWordController,
   getAcrossWordController,
+  getMyFriendsController,
   populateFriendsController,
   // getMyOpponentUidController,
   // getGameListParametersController,
   // populateSettingsController,
 } from './controller.js';
-import { showSettingsView } from './views/settingsView.js';
+import {
+  showSettingsView,
+  loadFriendsSettingsView,
+} from './views/settingsView.js';
 
 import './styles/main.css';
 
@@ -35,8 +38,7 @@ const gamesDialog = document.getElementById('gamesDialog');
 const headerSignin = document.getElementById('headerSignin');
 const gameOverHeading = document.getElementById('gameOverHeading');
 const winMessage = document.getElementById('winMessage');
-const opponentHeading = document.getElementById('opponentHeading');
-const opponentList = document.getElementById('opponentList');
+const friendsChooser = document.getElementById('friendsChooser');
 const radioEasy = document.getElementById('radioEasy');
 const radioMed = document.getElementById('radioMed');
 const radioHard = document.getElementById('radioHard');
@@ -78,6 +80,8 @@ const noButton = document.getElementById('noButton');
 const navList = document.getElementById('navList');
 const errorMessage = document.getElementById('errorMessage');
 const startGameButton = document.getElementById('startGameButton');
+const friendsLoadSpinner = document.getElementById('friendsLoadSpinner');
+const friendsLoadMessage = document.getElementById('friendsLoadMessage');
 //#endregion
 
 let currentCell = null;
@@ -241,16 +245,19 @@ function closeGamesDialog() {
  */
 startGameButton.addEventListener('click', async () => {
   console.log('startGameButton clicked.');
+  friendsLoadSpinner.classList.add('is-active');
+  friendsLoadMessage.innerText = 'Loading list...';
   const currentUser = getCurrentUserController();
   if (currentUser) {
     // user is logged in
-    const friendsObj = await populateFriendsController();
-    loadUserList(friendsObj);
+    // const friendsObj = await populateFriendsController();
+    const myFriends = await getMyFriendsController();
+    loadFriendsSettingsView(myFriends);
     gameOverHeading.classList.add('displayNone');
     winMessage.classList.add('displayNone');
     gamesDialog.children[0].classList.add('padding0', 'height100pct');
-    opponentHeading.classList.remove('displayNone');
-    opponentList.classList.remove('displayNone');
+    friendsChooser.classList.add('displayFlex');
+    friendsChooser.classList.remove('displayNone');
     replayButton.classList.add('displayNone');
     gamesDialog.classList.add('maxHeight90pct');
     gamesDialog.showModal();
@@ -259,48 +266,6 @@ startGameButton.addEventListener('click', async () => {
     location.hash = '#signin';
   }
 });
-
-/**
- * Load list of potential opponents with list of all firebase users.
- * @param {Object} usersObj Object containing all users by uid
- * @param {object} currentUser Current User
- */
-function loadUserList(usersObj, currentUser) {
-  console.log('Hello from loadUserList.');
-  let userList = '';
-  if (usersObj.empty) {
-    console.warn('No users in list.');
-    return;
-  }
-  let uids = Object.keys(usersObj);
-  uids.forEach((uid) => {
-    const user = usersObj[uid];
-    // doc.data() is never undefined for query doc snapshots
-    // console.log(doc.id, ' => ', doc.data());
-    let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
-    if (user.prefAvatarUrl || user.photoURL) {
-      avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <img src='${user.prefAvatarUrl || user.photoURL}' alt='profile picture'>
-</span>`;
-    }
-    userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-  <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
-    ${avatar}
-    <div class='overflowHidden' style='width: 115px;'>${user.displayName}</div>
-    <span class='mdl-list__item-sub-title'>
-      ${user.signInProvider ? user.signInProvider.split('.')[0] : 'none'}
-    </span>
-  </span>
-  <span class='mdl-list__item-secondary-content'>
-    <span class='mdl-list__item-secondary-info'>Play</span>
-    <i class='material-icons'>grid_on</i>
-  </span>
-</li>`;
-  });
-  // allUsers = usersObj;
-  // console.log(userList);
-  dialogList.innerHTML = userList;
-}
 
 /**
  * Load game list with active and past games that the current user has
@@ -1209,8 +1174,8 @@ function showReplayDialog(game, result) {
   winMessage.innerText = result;
   gameOverHeading.classList.remove('displayNone');
   winMessage.classList.remove('displayNone');
-  opponentHeading.classList.add('displayNone');
-  opponentList.classList.add('displayNone');
+  friendsChooser.classList.add('displayNone');
+  friendsChooser.classList.remove('displayFlex');
   gamesDialog.classList.remove('maxHeight90pct');
   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
   replayButton.classList.remove('displayNone');
