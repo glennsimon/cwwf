@@ -575,11 +575,7 @@
         </div>
       </div>
     </dialog>
-    <dialog
-      id="friendsDialog"
-      class="mdl-dialog maxHeight85pct"
-      style="width: 300px"
-    >
+    <dialog id="friendsDialog" class="mdl-dialog" style="width: 300px">
       <div
         class="mdl-dialog__content displayFlex flexDirCol"
         style="padding: 20px 15px 0"
@@ -590,7 +586,7 @@
         <div id="friendsHeading" class="heading textAlignCenter">
           Add / block players
         </div>
-        <div id="friendsList" class="overflowYScroll">
+        <div id="friendsList" class="overflowYScroll maxHeight50pct">
           <ul id="friendsDialogList" class="demo-list-action mdl-list"></ul>
         </div>
         <button
@@ -601,7 +597,7 @@
         </button>
         <div class="margin5pxAuto">Still don't see your friend?</div>
         <button
-          id="inviteFriend"
+          id="inviteFriendButton"
           class="mdl-button mdl-js-button mdl-js-ripple-effect"
         >
           Invite them to play!
@@ -649,6 +645,50 @@
             NO
           </button>
         </div>
+      </div>
+    </dialog>
+    <dialog id="inviteDialog" class="mdl-dialog" style="width: 300px">
+      <div class="mdl-dialog__content displayFlex flexDirCol">
+        <div class="closeDialogPosition close noOutline cursorPointer">
+          <i class="material-icons">close</i>
+        </div>
+        <div id="inviteHeading" class="heading textAlignCenter">
+          Invite a friend to play
+        </div>
+        <div>
+          Enter your friend's email address, and when you hit send, your default
+          email app will open with a message you can send as is or modify before
+          sending.
+        </div>
+        <div
+          class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+        >
+          <input class="mdl-textfield__input" type="text" id="inviteEmail" />
+          <label class="mdl-textfield__label" for="inviteEmail"
+            >Friend's email address</label
+          >
+          <span class="mdl-textfield__error">Invalid email</span>
+        </div>
+        <div class="mdl-card__actions mdl-card--border displayFlex marginAuto">
+          <button
+            id="sendButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+          >
+            send
+          </button>
+        </div>
+      </div>
+      <div
+        id="inviteProgressContainer"
+        class="margin5pxAuto alignItemsCenter displayNone"
+      >
+        <p
+          id="inviteLoadSpinner"
+          class="mdl-spinner mdl-js-spinner"
+          style="margin: 0"
+        ></p>
+        <div class="margin5px"></div>
+        <span>Getting information for email...</span>
       </div>
     </dialog>
     <div id="settingsContainer" class="displayNone" style="height: 100vh">

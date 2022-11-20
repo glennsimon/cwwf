@@ -33,11 +33,19 @@
       {
         "source": "/updateFriends",
         "function": "updateFriends"
+      },
+      {
+        "source": "/pendingPlayer",
+        "function": "pendingPlayer"
+      },
+      {
+        "source": "/updatePendingPlayer",
+        "function": "updatePendingPlayer"
       }
     ],
     "headers": [
       {
-        "source": "/@(userOffline2|authChange|startGame|checkAnswers|abandonGame2|updateFriends)",
+        "source": "/@(userOffline2|authChange|startGame|checkAnswers|abandonGame2|updateFriends|pendingPlayer|updatePendingPlayer)",
         "headers": [
           {
             "key": "Access-Control-Allow-Origin",

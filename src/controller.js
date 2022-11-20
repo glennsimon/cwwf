@@ -578,13 +578,13 @@ function incomplete() {
 function startNewGameController(gameStartParameters) {
   console.log('Attempting to start a new game.');
   const startGame = httpsCallable(functions, 'startGame');
-  startGame(gameStartParameters)
+  return startGame(gameStartParameters)
     .then((gameObjData) => {
       const gameObj = gameObjData.data;
       currentOpp = gameObj.opponent;
       currentGameId = gameObj.gameId;
       subscribeToGame(currentGameId);
-      return; // gameObjData.data.game;
+      return currentGameId; // gameObjData.data.game;
     })
     .catch((err) => {
       console.log('Error code: ', err.code);
@@ -728,6 +728,19 @@ async function handleCheckController(handle) {
   return available;
 }
 
+/**
+ * Creates a minimal pendingPlayer and adds to Firestore, then returns the
+ * document id for the pendingPlayer.
+ * @param {string} emailString Email string for pending player
+ * @returns document id for pendingPlayer
+ */
+async function pendingPlayerController(emailString) {
+  const pendingPlayer = httpsCallable(functions, 'pendingPlayer');
+  return pendingPlayer({ email: emailString }).then((docId) => {
+    return docId.data;
+  });
+}
+
 export {
   authButtonClickedController,
   startNewGameController,
@@ -756,4 +769,5 @@ export {
   // populateFriendsController,
   updateFriendsController,
   getMyFriendsController,
+  pendingPlayerController,
 };

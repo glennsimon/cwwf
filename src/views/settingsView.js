@@ -4,6 +4,8 @@ import {
   getCurrentUserController,
   populateAllUsersController,
   updateFriendsController,
+  startNewGameController,
+  pendingPlayerController,
 } from '../controller.js';
 import { showErrorDialogView } from '../view.js';
 
@@ -31,6 +33,16 @@ const friendsDialog = document.getElementById('friendsDialog');
 const friendsDialogList = document.getElementById('friendsDialogList');
 const dialogList = document.getElementById('dialogList');
 const doneButton = document.getElementById('doneButton');
+const inviteFriendButton = document.getElementById('inviteFriendButton');
+const inviteDialog = document.getElementById('inviteDialog');
+const gameLoadSpinner = document.getElementById('gameLoadSpinner');
+const gameLoadMessage = document.getElementById('inviteDialog');
+const inviteEmail = document.getElementById('inviteEmail');
+const inviteProgressContainer = document.getElementById(
+  'inviteProgressContainer'
+);
+const inviteLoadSpinner = document.getElementById('inviteLoadSpinner');
+const sendButton = document.getElementById('sendButton');
 
 let prefAvatar = null;
 let prefAvatarUrl = null;
@@ -345,6 +357,62 @@ doneButton.addEventListener('click', () => {
 
 friendsDialog.querySelector('.close').addEventListener('click', () => {
   friendsDialog.close();
+});
+
+inviteDialog.querySelector('.close').addEventListener('click', () => {
+  inviteDialog.close();
+});
+
+inviteFriendButton.addEventListener('click', (event) => {
+  friendsDialog.close();
+  inviteDialog.showModal();
+});
+
+sendButton.addEventListener('click', async () => {
+  console.log('Player hit the email send button.');
+  inviteProgressContainer.classList.add('displayFlex');
+  inviteProgressContainer.classList.remove('displayNone');
+  inviteLoadSpinner.classList.add('is-active');
+  const currentUser = getCurrentUserController();
+  const gameStartParameters = {};
+  const myUid = currentUser.uid;
+  gameStartParameters.players = {};
+  gameStartParameters.players[myUid] = {};
+  gameStartParameters.players[myUid].bgColor = 'bgTransRed';
+  gameStartParameters.viewableBy = [];
+  gameStartParameters.viewableBy.push(myUid);
+  // opponent - assume never signed in
+  const pendingUid = await pendingPlayerController(inviteEmail.value);
+  console.log('pendingUid: ', pendingUid);
+  gameStartParameters.players[pendingUid] = {};
+  gameStartParameters.players[pendingUid].bgColor = 'bgTransBlue';
+  gameStartParameters.viewableBy.push(pendingUid);
+  // for first game, default to 'easy' game
+  gameStartParameters.difficulty = 'easy';
+  const gameId = await startNewGameController(gameStartParameters);
+  inviteProgressContainer.classList.add('displayNone');
+  inviteProgressContainer.classList.remove('displayFlex');
+  inviteLoadSpinner.classList.remove('is-active');
+  inviteDialog.close();
+
+  const encodedSubj = encodeURIComponent(
+    `I've invited you to play a CrosSword game!`
+  );
+  const encodedBody = encodeURIComponent(
+    `I found a crossword game that two people can play against each other, ` +
+      `and I'd like to try playing it with you.\n\nHere is the link to the ` +
+      `game I started:\n${document.location.origin}?pending=${pendingUid}` +
+      `&sender=${myUid}&game=${gameId}` +
+      `\n\nIf you click on the link and sign in, the game will show up in ` +
+      `your Active Games list so we can play. Cookies have to be enabled ` +
+      `in your browser in order for the link to work.\n\nLet's try it!`
+  );
+
+  window.location.href = `mailto:${inviteEmail.value}?subject=${encodedSubj}&body=${encodedBody}`;
+});
+
+inviteEmail.addEventListener('focusout', (event) => {
+  // TODO: optionally validate email address format
 });
 
 export { showSettingsView, loadFriendsSettingsView };

@@ -496,6 +496,10 @@ select {
   width: 60px;
 }
 
+.maxHeight50pct {
+  max-height: 50%;
+}
+
 .maxHeight85pct {
   max-height: 85%;
 }
@@ -677,12 +681,17 @@ select {
 @media screen and (min-width: 420px) {
   #gamesPanelContainer,
   #gamesDialog,
-  #friendsDialog {
+  #friendsDialog,
+  #inviteDialog {
     min-width: 400px;
   }
 
   #friendsDialog .mdl-dialog__content {
     padding: 20px 15px 0;
+  }
+
+  #inviteDialog .mdl-dialog__content {
+    padding: 20px 0 0;
   }
 }
 

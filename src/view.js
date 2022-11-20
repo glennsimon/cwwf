@@ -197,23 +197,14 @@ dialogList.addEventListener('click', async (event) => {
   gameStartParameters.viewableBy = [];
   gameStartParameters.viewableBy.push(myUid);
 
-  // gameStartParameters.players[myUid].displayName = currentUser.displayName;
-  // gameStartParameters.players[myUid].photoURL = currentUser.photoURL
-  //   ? currentUser.photoURL
-  //   : null;
   let target = event.target;
   while (target.id === '') {
     target = target.parentElement;
   }
   const oppUid = target.id;
-  const opponent = userList[oppUid];
   gameStartParameters.players[oppUid] = {};
   gameStartParameters.players[oppUid].bgColor = 'bgTransBlue';
   gameStartParameters.viewableBy.push(oppUid);
-  // gameStartParameters.players[oppUid].displayName = opponent.displayName;
-  // gameStartParameters.players[oppUid].photoURL = opponent.photoURL
-  //   ? opponent.photoURL
-  //   : null;
   let difficulty = radioMed.parentElement.classList.contains('is-checked')
     ? 'medium'
     : 'easy';
@@ -259,7 +250,7 @@ startGameButton.addEventListener('click', async () => {
     friendsChooser.classList.add('displayFlex');
     friendsChooser.classList.remove('displayNone');
     replayButton.classList.add('displayNone');
-    gamesDialog.classList.add('maxHeight90pct');
+    gamesDialog.classList.add('maxHeight85pct');
     gamesDialog.showModal();
   } else {
     // user is not logged in
@@ -1176,7 +1167,7 @@ function showReplayDialog(game, result) {
   winMessage.classList.remove('displayNone');
   friendsChooser.classList.add('displayNone');
   friendsChooser.classList.remove('displayFlex');
-  gamesDialog.classList.remove('maxHeight90pct');
+  gamesDialog.classList.remove('maxHeight85pct');
   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
   replayButton.classList.remove('displayNone');
   replayButton.addEventListener('click', replayOpponent);
