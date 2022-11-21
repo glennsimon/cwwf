@@ -226,7 +226,6 @@ onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
   if (!uid) return;
-  // previousUser = currentUser;
   userStatusFirestoreRef = doc(db, `/users/${uid}`);
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
   const userData = (await getDoc(userStatusFirestoreRef)).data();
@@ -237,6 +236,8 @@ onAuthStateChanged(auth, async (user) => {
     await authChange();
     await generateMessagingToken(uid);
     await populateMyGames(uid);
+    const pendingResult = await checkForPendingPlayer();
+    console.log(pendingResult);
     myFriends = await populateMyFriends();
   } catch (err) {
     console.log('Error code: ', err.code);
@@ -244,6 +245,37 @@ onAuthStateChanged(auth, async (user) => {
     console.log('Error details: ', err.details);
   }
 });
+
+async function checkForPendingPlayer() {
+  // if there is a 'xwwf_invite' cookie, use it to create a new user from
+  // the pending player object in Firestore
+  console.log('document.cookie: ', document.cookie);
+  console.log('auth.currentUser: ', auth.currentUser);
+  if (document.cookie.includes('xwwf_invite')) {
+    const cookies = document.cookie.split(';');
+    console.log('cookies array: ', cookies);
+    for (const cookie of cookies) {
+      if (cookie.trim().startsWith('xwwf_invite=')) {
+        const uidStrings = cookie.slice(13).split('&');
+        const pendingUid = uidStrings[0].split('=')[1];
+        const senderUid = uidStrings[1].split('=')[1];
+        const gameId = uidStrings[2].split('=')[1];
+        const newUserObject = {};
+        newUserObject.pendingUid = pendingUid;
+        newUserObject.senderUid = senderUid;
+        newUserObject.gameId = gameId;
+        console.log('newUserObject: ', newUserObject);
+        const updatePendingPlayer = httpsCallable(
+          functions,
+          'updatePendingPlayer'
+        );
+        // document.cookie = 'xwwf_invite=done; max-age=0';
+        return await updatePendingPlayer(newUserObject);
+      }
+    }
+  }
+  return 'No xwwf_invite cookie found.';
+}
 
 /**
  * Configure messaging credentials with FCM VAPID key
@@ -368,15 +400,16 @@ async function updateFriendsController(adjustedFriendsObject) {
  * Populate list of all users from firestore and return the list.
  * @returns Object containing friends of currentUser
  */
-function populateMyFriends() {
+async function populateMyFriends() {
   console.log('Hello from populateMyFriends');
   if (!currentUser.uid) return;
+  if (currentUser.friends.length === 0) return {};
   const friends = {};
   const q = query(
     collection(db, 'users'),
     where('uid', 'in', currentUser.friends)
   );
-  return getDocs(q).then((snapshot) => {
+  return await getDocs(q).then((snapshot) => {
     if (snapshot.empty) {
       console.log('No friends added yet.');
       return {};
@@ -436,15 +469,18 @@ async function populateMyGames(uid) {
     //     if (!userIds.includes(uid)) userIds.push(uid);
     //   }
     // }
-    const q2 = query(collection(db, 'users'), where('uid', 'in', userIds));
-    const userDocs = await getDocs(q2);
-    const count = userDocs.size;
-    console.log('count: ', count);
-    let userData = {};
-    userDocs.forEach((doc) => {
-      userData[doc.id] = doc.data();
-    });
-    loadGamesView(myGames, userData);
+    if (userIds.length !== 0) {
+      const q2 = query(collection(db, 'users'), where('uid', 'in', userIds));
+      const userDocs = await getDocs(q2);
+      const count = userDocs.size;
+      console.log('count: ', count);
+      let userData = {};
+      userDocs.forEach((doc) => {
+        userData[doc.id] = doc.data();
+      });
+      loadGamesView(myGames, userData);
+    }
+    return;
   });
 }
 
@@ -648,32 +684,6 @@ function abandonCurrentGameController() {
     console.log('Error details: ', err.details);
   });
 }
-
-// async function populateSettingsController() {
-//   const settingsObj = { prefAvatarURL: null, userData: null };
-//   const userDoc = getCurrentUserController();
-//   settingsObj.userData = userDoc.data();
-
-//   const userImageRef = refStorage(
-//     storage,
-//     `users/${currentUser.uid}/avatar.png`
-//   );
-
-//   try {
-//     const url = await getDownloadURL(userImageRef);
-//     settingsObj.prefAvatarURL = url;
-//   } catch (error) {
-//     switch (error.code) {
-//       case 'storage/object-not-found':
-//         settingsObj.prefAvatarURL = userDoc.data().photoURL;
-//         break;
-//       case 'storage/unauthorized':
-//         console.warn('user does not have permission to access image file.');
-//         break;
-//     }
-//   }
-//   showSettings(settingsObj);
-// }
 
 async function storeSettingsController(settingsPrefs) {
   let prefAvatarUrl = null;

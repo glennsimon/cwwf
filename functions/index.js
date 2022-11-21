@@ -68,9 +68,9 @@ exports.newUser = functions.firestore
   .document('users/{userId}')
   .onCreate((snapshot, context) => {
     const friends = {
-      friends: ['3eoDltvYiwYfjPviYRRQ2agbsAz1', 'pOsPH8X3DQdVvcfuHgxqEij5LSH2'],
+      friends: [], //DEPLOY: uncomment: '3eoDltvYiwYfjPviYRRQ2agbsAz1', 'pOsPH8X3DQdVvcfuHgxqEij5LSH2'],
     };
-    snapshot.ref.set(friends, { merge: true });
+    return snapshot.ref.set(friends, { merge: true });
   });
 
 exports.userOffline2 = functions.https.onCall(async (statusUpdate, context) => {
@@ -174,26 +174,39 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
     await db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
       const gameListDoc = (await tx.get(gameListRef)).data();
+      console.log('gameListDoc: ', gameListDoc);
       game.players[uid] = game.players[data.pendingUid];
       delete game.players[data.pendingUid];
-      game.viewableBy.splice(indexOf(data.pendingUid), 1, uid);
+      console.log('gameListDoc.viewableBy: ', gameListDoc.viewableBy);
+      gameListDoc.viewableBy.splice(
+        gameListDoc.viewableBy.indexOf(data.pendingUid),
+        1,
+        uid
+      );
+      gameListDoc.players[uid] = gameListDoc.players[data.pendingUid];
+      delete gameListDoc.players[data.pendingUid];
+      gameListDoc.viewableBy.splice(
+        gameListDoc.viewableBy.indexOf(data.pendingUid),
+        1,
+        uid
+      );
+      if (gameListDoc.nextTurn === data.pendingUid) gameListDoc.nextTurn = uid;
+      if (gameListDoc.winner === data.pendingUid) gameListDoc.winner = uid;
       if (game.nextTurn === data.pendingUid) game.nextTurn = uid;
       if (game.winner === data.pendingUid) game.winner = uid;
       if (game.lastTurnCheckObj.playerUid === data.pendingUid)
         game.lastTurnCheckObj.playerUid = uid;
-      gameListDoc.players[uid] = gameListDoc.players[data.pendingUid];
-      delete gameListDoc.players[data.pendingUid];
-      gameListDoc.viewableBy.splice(indexOf(data.pendingUid), 1, uid);
-      if (gameListDoc.nextTurn === data.pendingUid) gameListDoc.nextTurn = uid;
-      if (gameListDoc.winner === data.pendingUid) gameListDoc.winner = uid;
 
       const sender = (await tx.get(senderRef)).data();
       if (sender.friends.includes(data.pendingUid))
-        sender.friends.splice(indexOf(data.pendingUid), 1, uid);
+        sender.friends.splice(sender.friends.indexOf(data.pendingUid), 1, uid);
       if (sender.blocked.includes(data.pendingUid))
-        sender.blocked.splice(indexOf(data.pendingUid), 1, uid);
+        sender.blocked.splice(sender.blocked.indexOf(data.pendingUid), 1, uid);
       const newUser = (await tx.get(newUserRef)).data();
-      newUser.friends.push(data.senderUid);
+      console.log('newUser: ', newUser);
+      newUser.friends = newUser.friends
+        ? newUser.friends.push(data.senderUid)
+        : [data.senderUid];
 
       tx.update(gameRef, game).update(gameListRef, gameListDoc);
     });
@@ -201,8 +214,9 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
     functions.logger.log('updatePendingPlayer transaction success!');
   } catch (error) {
     functions.logger.error('updatePendingPlayer transaction failure: ', error);
+    return 'updatePendingPlayer transaction failure.';
   }
-  return;
+  return 'updatePendingPlayer transaction success!';
 });
 
 /**

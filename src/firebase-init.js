@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getMessaging } from 'firebase/messaging';
 import {
   getFunctions,
@@ -37,47 +37,22 @@ if (location.hostname === 'localhost') {
   connectFirestoreEmulator(db, 'localhost', 8080);
   connectFunctionsEmulator(functions, 'localhost', 5001);
   connectStorageEmulator(storage, 'localhost', 9091);
+  connectAuthEmulator(auth, 'http://localhost:9099');
 }
 
 console.log('document.cookie: ', document.cookie);
-
-// if there is a cookie, use it to create a new user from the pending user
-if (
-  document.cookie.includes('xwwf_invite') &&
-  auth.currentUser &&
-  auth.currentUser.uid
-) {
-  const cookies = document.cookie.split(';');
-  for (const cookie of cookies) {
-    if (cookie.trim().startsWith('xwwf_invite=')) {
-      const uidStrings = cookie.slice(13).split('&');
-      const pendingUid = uidStrings[0].split('=')[1];
-      const senderUid = uidStrings[1].split('=')[1];
-      const gameId = uidStrings[2].split('=')[1];
-      const newUserObject = {};
-      newUserObject.pendingUid = pendingUid;
-      newUserObject.senderUid = senderUid;
-      newUserObject.gameId = gameId;
-      const updatePendingPlayer = httpsCallable(
-        functions,
-        'updatePendingPlayer'
-      );
-      updatePendingPlayer(newUserObject);
-    }
-    document.cookie = 'xwwf_invite=done; max-age=0';
-  }
-}
 
 // if there is a search string and no xwwf_invite cookie, create cookie
 const searchString = document.location.search;
 console.log('document.location: ', document.location);
 console.log('document.location.search: ', searchString);
-// cookie will only last one hour after first use
-const timeInSeconds = 60 * 60;
-if (document.location.search && !document.cookie.includes('xwwf_invite'))
+if (document.location.search && !document.cookie.includes('xwwf_invite')) {
+  // cookie will only last one hour after first use
+  const timeInSeconds = 60 * 60;
   document.cookie =
     `xwwf_invite=${document.location.search}; ` +
     `max-age=${timeInSeconds}; path=/`;
+}
 
 // Check to make sure service workers are supported in the current browser,
 // and that the current page is accessed from a secure origin. Using a

@@ -62,7 +62,7 @@ function showSettingsView() {
     './images/avatar_circle_black.png';
   settingsName.value = currentUser.prefName || currentUser.displayName;
   settingsName.parentElement.classList.add('is-dirty');
-  let nickname = currentUser.prefName || currentUser.displayName;
+  let nickname = currentUser.prefName || currentUser.displayName || 'NoName';
   nickname = nickname.split(' ')[0];
   settingsHandle.value = currentUser.prefHandle || nickname;
   initialHandle = settingsHandle.value.toLowerCase();
@@ -133,7 +133,7 @@ function updateSettings() {
   const settingsPrefs = {};
   settingsPrefs.prefAvatar = prefAvatar;
   settingsPrefs.prefName = settingsName.value;
-  let nickname = settingsHandle.value;
+  let nickname = settingsHandle.value || 'NoName';
   nickname = nickname.length > 8 ? nickname.slice(0, 8) : nickname;
   myName.innerText = nickname;
   settingsPrefs.prefHandle = settingsHandle.value;

@@ -588,10 +588,10 @@ function showPuzzleView(game, opponent) {
   let oppNickname =
     opponent.prefHandle || opponent.prefName || opponent.displayName;
 
-  myNickname = myNickname.split(' ')[0];
+  myNickname = myNickname ? myNickname.split(' ')[0] : 'NoName';
   myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
   myName.innerText = myNickname;
-  oppNickname = oppNickname.split(' ')[0];
+  oppNickname = oppNickname ? oppNickname.split(' ')[0] : 'NoName';
   oppNickname = oppNickname.length > 8 ? oppNickname.slice(0, 8) : oppNickname;
   oppName.innerText = oppNickname;
   if (game.emptySquares === 0) {
