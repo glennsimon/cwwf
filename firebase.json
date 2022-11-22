@@ -23,17 +23,29 @@
         "function": "startGame"
       },
       {
-        "source": "/checkAnswers",
-        "function": "checkAnswers"
+        "source": "/checkAnswer",
+        "function": "checkAnswer"
       },
       {
         "source": "/abandonGame2",
         "function": "abandonGame2"
+      },
+      {
+        "source": "/updateFriends",
+        "function": "updateFriends"
+      },
+      {
+        "source": "/pendingPlayer",
+        "function": "pendingPlayer"
+      },
+      {
+        "source": "/updatePendingPlayer",
+        "function": "updatePendingPlayer"
       }
     ],
     "headers": [
       {
-        "source": "/@(userOffline2|authChange|startGame|checkAnswers|abandonGame2)",
+        "source": "/@(userOffline2|authChange|startGame|checkAnswers|abandonGame2|updateFriends|pendingPlayer|updatePendingPlayer)",
         "headers": [
           {
             "key": "Access-Control-Allow-Origin",
@@ -74,6 +86,13 @@
     },
     "functions": {
       "port": 5001
-    }
+    },
+    "storage": {
+      "port": 9091
+    },
+    "singleProjectMode": true
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }
