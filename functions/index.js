@@ -199,6 +199,8 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
       newUser.friends = newUser.friends
         ? newUser.friends.push(initiatorUid)
         : [initiatorUid];
+      newUser.displayName =
+        newUser.displayName || pendingUser.displayName.split(' ')[0];
       const initiatorRef = db.doc(`users/${initiatorUid}`);
       const initiator = (await tx.get(initiatorRef)).data();
       if (initiator.friends && initiator.friends.includes(data.pendingUid))
@@ -223,9 +225,9 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
     functions.logger.log('updatePendingPlayer transaction success!');
   } catch (error) {
     functions.logger.error('updatePendingPlayer transaction failure: ', error);
-    return 'updatePendingPlayer transaction failure.';
+    return false;
   }
-  return 'updatePendingPlayer transaction success!';
+  return true;
 });
 
 /**

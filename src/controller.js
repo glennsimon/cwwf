@@ -267,8 +267,9 @@ async function checkForPendingPlayer() {
           functions,
           'updatePendingPlayer'
         );
-        // document.cookie = 'xwwf_invite=done; max-age=0';
-        return await updatePendingPlayer(newUserObject);
+        const success = await updatePendingPlayer(newUserObject);
+        if (success) document.cookie = 'xwwf_invite=done; max-age=0';
+        return 'xwwf_invite cookie used and deleted';
       }
     }
   }
