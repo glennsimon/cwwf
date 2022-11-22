@@ -1,9 +1,9 @@
-import { doc } from 'firebase/firestore';
 import {
   authButtonClickedController,
   startNewGameController,
   populateAllUsersController,
   getCurrentUserController,
+  getCurrentOppController,
   fetchPuzzleController,
   playWordController,
   getColumnsController,
@@ -16,9 +16,16 @@ import {
   savePuzzleController,
   setAcrossWordController,
   getAcrossWordController,
-  getMyOpponentUidController,
-  getGameListParametersController,
+  getMyFriendsController,
+  populateFriendsController,
+  // getMyOpponentUidController,
+  // getGameListParametersController,
+  // populateSettingsController,
 } from './controller.js';
+import {
+  showSettingsView,
+  loadFriendsSettingsView,
+} from './views/settingsView.js';
 
 import './styles/main.css';
 
@@ -31,8 +38,7 @@ const gamesDialog = document.getElementById('gamesDialog');
 const headerSignin = document.getElementById('headerSignin');
 const gameOverHeading = document.getElementById('gameOverHeading');
 const winMessage = document.getElementById('winMessage');
-const opponentHeading = document.getElementById('opponentHeading');
-const opponentList = document.getElementById('opponentList');
+const friendsChooser = document.getElementById('friendsChooser');
 const radioEasy = document.getElementById('radioEasy');
 const radioMed = document.getElementById('radioMed');
 const radioHard = document.getElementById('radioHard');
@@ -73,6 +79,9 @@ const yesButton = document.getElementById('yesButton');
 const noButton = document.getElementById('noButton');
 const navList = document.getElementById('navList');
 const errorMessage = document.getElementById('errorMessage');
+const startGameButton = document.getElementById('startGameButton');
+const friendsLoadSpinner = document.getElementById('friendsLoadSpinner');
+const friendsLoadMessage = document.getElementById('friendsLoadMessage');
 //#endregion
 
 let currentCell = null;
@@ -92,6 +101,7 @@ returnToSignin.addEventListener('click', () => (location.hash = '#signin'));
  */
 authButton.addEventListener('click', (event) => {
   if (drawer.classList.contains('is-visible')) toggleDrawer();
+  clearPuzzle();
   authButtonClickedController();
 });
 
@@ -106,10 +116,9 @@ function authChangeView(user) {
     gameLoadMessage.innerText = 'Loading your games...';
     // authButton.textContent = 'sign out';
     authButton.innerHTML = `sign out&nbsp;<span class='material-icons'>logout </span>`;
-    profileName.textContent = user.displayName;
-    avatar.src = user.photoURL
-      ? user.photoURL
-      : 'images/avatar_circle_black.png';
+    profileName.textContent = user.prefName || user.displayName;
+    avatar.src =
+      user.prefAvatarUrl || user.photoURL || 'images/avatar_circle_black.png';
     location.hash = '#games';
     headerSignin.classList.add('displayNone');
   } else {
@@ -117,14 +126,12 @@ function authChangeView(user) {
     authButton.innerHTML = `sign in&nbsp;<span class='material-symbols-outlined signInOut'>login </span>`;
     profileName.textContent = 'N. E. Person';
     avatar.src = 'images/avatar_circle_black.png';
-    if (location.hash !== '#signin')
-      headerSignin.classList.remove('displayNone');
+    location.hash = '#signin';
+    // headerSignin.classList.remove('displayNone');
     puzTitle.innerText = 'No puzzle loaded';
     activeGamesContainer.innerHTML = `You must sign in to see your active games`;
     pastGamesContainer.innerHTML = `You must sign in to see your completed games`;
     clearPuzzle();
-    if (location.hash !== '#tos' || location.hash !== '#privacy')
-      location.hash = '#signin';
   }
   if (drawer.classList.contains('is-visible')) toggleDrawer();
   // TODO: get rid of local variables - currentUser should be available only
@@ -153,6 +160,8 @@ function clearPuzzle() {
   console.log('Hello from clearPuzzle.');
   puzTitle.innerText = 'Puzzle info will appear here';
   // clear out old puzzle and clues
+  const svgGrid = document.getElementById('svgGrid');
+  if (svgGrid) svgGrid.remove();
   puzTable.innerHTML = '';
   puzAuthor.innerText = '';
   puzNotepad.classList.add('displayNone');
@@ -183,22 +192,17 @@ dialogList.addEventListener('click', async (event) => {
   gameStartParameters.players = {};
   gameStartParameters.players[myUid] = {};
   gameStartParameters.players[myUid].bgColor = 'bgTransRed';
-  gameStartParameters.players[myUid].displayName = currentUser.displayName;
-  gameStartParameters.players[myUid].photoURL = currentUser.photoURL
-    ? currentUser.photoURL
-    : null;
+  gameStartParameters.viewableBy = [];
+  gameStartParameters.viewableBy.push(myUid);
+
   let target = event.target;
   while (target.id === '') {
     target = target.parentElement;
   }
   const oppUid = target.id;
-  const opponent = userList[oppUid];
   gameStartParameters.players[oppUid] = {};
   gameStartParameters.players[oppUid].bgColor = 'bgTransBlue';
-  gameStartParameters.players[oppUid].displayName = opponent.displayName;
-  gameStartParameters.players[oppUid].photoURL = opponent.photoURL
-    ? opponent.photoURL
-    : null;
+  gameStartParameters.viewableBy.push(oppUid);
   let difficulty = radioMed.parentElement.classList.contains('is-checked')
     ? 'medium'
     : 'easy';
@@ -230,18 +234,21 @@ function closeGamesDialog() {
  */
 startGameButton.addEventListener('click', async () => {
   console.log('startGameButton clicked.');
+  friendsLoadSpinner.classList.add('is-active');
+  friendsLoadMessage.innerText = 'Loading list...';
   const currentUser = getCurrentUserController();
   if (currentUser) {
     // user is logged in
-    const usersObj = await populateAllUsersController();
-    loadUserList(usersObj, currentUser);
+    // const friendsObj = await populateFriendsController();
+    const myFriends = await getMyFriendsController();
+    loadFriendsSettingsView(myFriends);
     gameOverHeading.classList.add('displayNone');
-    winMessage.classList.add('displayNone');
-    gamesDialog.children[0].classList.add('padding0', 'height100pct');
-    opponentHeading.classList.remove('displayNone');
-    opponentList.classList.remove('displayNone');
+    friendsChooser.classList.add('displayFlex');
+    friendsChooser.classList.remove('displayNone');
+    dialogList.classList.remove('displayNone');
+    gamesDialog.querySelector('footer').classList.remove('displayNone');
     replayButton.classList.add('displayNone');
-    gamesDialog.classList.add('maxHeight90pct');
+    gamesDialog.classList.add('maxHeight85pct');
     gamesDialog.showModal();
   } else {
     // user is not logged in
@@ -250,55 +257,12 @@ startGameButton.addEventListener('click', async () => {
 });
 
 /**
- * Load list of potential opponents with list of all firebase users.
- * @param {Object} usersObj Object containing all users by uid
- * @param {object} currentUser Current User
- */
-function loadUserList(usersObj, currentUser) {
-  console.log('Hello from loadUserList.');
-  let userList = '';
-  if (usersObj.empty) {
-    console.warn('No users exist yet.');
-    return;
-  }
-  let uids = Object.keys(usersObj);
-  uids.forEach((uid) => {
-    const user = usersObj[uid];
-    // doc.data() is never undefined for query doc snapshots
-    // console.log(doc.id, ' => ', doc.data());
-    if (uid !== currentUser.uid) {
-      let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
-      if (user.photoURL) {
-        avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <img src='${user.photoURL}' alt='profile picture'>
-</span>`;
-      }
-      userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-  <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
-    ${avatar}
-    <div class='overflowHidden' style='width: 115px;'>${user.displayName}</div>
-    <span class='mdl-list__item-sub-title'>
-      ${user.signInProvider ? user.signInProvider.split('.')[0] : 'none'}
-    </span>
-  </span>
-  <span class='mdl-list__item-secondary-content'>
-    <span class='mdl-list__item-secondary-info'>Play</span>
-    <i class='material-icons'>grid_on</i>
-  </span>
-</li>`;
-    }
-  });
-  // allUsers = usersObj;
-  // console.log(userList);
-  dialogList.innerHTML = userList;
-}
-
-/**
  * Load game list with active and past games that the current user has
  * participated in.
  * @param {Array} myGames Object all games viewable by the current user
+ * @param {object} userData Object with all public user data for users in myGames
  */
-async function loadGamesView(myGames) {
+async function loadGamesView(myGames, userData) {
   console.log('Hello from loadGamesView.');
   gameLoadSpinner.classList.remove('is-active');
   gameLoadMessage.innerText = '';
@@ -318,7 +282,7 @@ async function loadGamesView(myGames) {
   let pastGamesNumber = 0;
   for (const gameListItem of myGames) {
     const gameId = gameListItem.gameId;
-    const players = gameListItem.players;
+    // const players = gameListItem.players;
     const myUid = getCurrentUserController().uid;
     const startDate = new Date(gameListItem.start).toLocaleDateString('en-us', {
       day: 'numeric',
@@ -333,18 +297,17 @@ async function loadGamesView(myGames) {
       // displays up to 20 active and 10 past games.
       // Change query limit(30) in populateMyGames if different
       // number is desired.  See else below.
-      const opponentPhoto = players[oppUid].photoURL
-        ? players[oppUid].photoURL
-        : null;
-      if (opponentPhoto) {
+      const opponentPhotoUrl =
+        userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL;
+      if (opponentPhotoUrl) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <img src='${opponentPhoto}' alt='profile picture'>
+  <img src='${opponentPhotoUrl}' alt='profile picture'>
 </span>`;
       }
       activeGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-  <span class='mdl-list__item-primary-content'>
+  <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
-    <span>${players[oppUid].displayName}</span>
+    <span>${userData[oppUid].prefName || userData[oppUid].displayName}</span>
     <span class='mdl-list__item-sub-title'>
       ${myUid === gameListItem.nextTurn ? 'Your' : 'Their'} turn
     </span>
@@ -372,18 +335,17 @@ async function loadGamesView(myGames) {
       }
       // pastGames[doc.id] = {};
       // pastGames[doc.id].difficulty = game.difficulty;
-      const opponentPhoto = players[oppUid].photoURL
-        ? players[oppUid].photoURL
-        : null;
-      if (opponentPhoto) {
+      const opponentPhotoUrl =
+        userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL;
+      if (opponentPhotoUrl) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <img src='${opponentPhoto}' alt='profile picture'>
+  <img src='${opponentPhotoUrl}' alt='profile picture'>
 </span>`;
       }
       pastGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-  <span class='mdl-list__item-primary-content'>
+  <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
-    <span>${players[oppUid].displayName}</span>
+    <span>${userData[oppUid].prefName || userData[oppUid].displayName}</span>
     <span class='mdl-list__item-sub-title'>${result}</span>
   </span>
     <span class='mdl-list__item-secondary-content'>
@@ -406,19 +368,30 @@ pastGamesContainer.addEventListener('click', loadGame);
 /**
  * Fetch an existing game from firestore via the controller.
  * @param {MouseEvent} event
- * @returns null
+ * @returns void
  */
 function loadGame(event) {
   console.log('User selected a game to view.');
   let eventTarget = event.target;
   while (!eventTarget.id) {
-    if (eventTarget.nodeName.toLowerCase() === 'ul') return;
     eventTarget = eventTarget.parentElement;
   }
+  if (eventTarget.nodeName.toLowerCase() === 'ul') return;
+  if (eventTarget.nodeName.toLowerCase() === 'li') {
+    eventTarget = eventTarget.children[0];
+  }
+  const gameObj = {};
+  if (eventTarget.nodeName.toLowerCase() === 'span') {
+    gameObj.opponentUid = eventTarget.id;
+    eventTarget = eventTarget.parentElement;
+  } else {
+    return;
+  }
+  gameObj.gameId = eventTarget.id;
   gameLoadSpinner.classList.add('is-active');
   gameLoadMessage.innerText = 'Fetching your game...';
   puzTitle.innerText = 'Fetching data...';
-  fetchPuzzleController(eventTarget.id);
+  fetchPuzzleController(gameObj);
 }
 
 /**
@@ -426,8 +399,10 @@ function loadGame(event) {
  * a grid and clues. The HTML table element is a placeholder and the rows and
  * cells are created on the fly. The fetched puzzle is stored as an object in
  * the variable "game".
+ * @param {object} game current game object
+ * @param {object} opponent current opponent user object
  */
-function showPuzzleView(game) {
+function showPuzzleView(game, opponent) {
   console.log('Hello from showPuzzleView.');
   // clear previous puzzle if it exists
   if (puzTable.children) {
@@ -603,15 +578,18 @@ function showPuzzleView(game) {
   scores.classList.remove('displayNone');
   scores.classList.add('displayFlex');
   const currentUser = getCurrentUserController();
-  const oppUid = getMyOpponentUidController();
+  const currentOpp = getCurrentOppController();
+  const oppUid = currentOpp.uid;
   const myUid = currentUser.uid;
-  let myNickname = game.players[myUid].displayName;
-  let oppNickname = game.players[oppUid].displayName;
+  let myNickname =
+    currentUser.prefHandle || currentUser.prefName || currentUser.displayName;
+  let oppNickname =
+    opponent.prefHandle || opponent.prefName || opponent.displayName;
 
-  myNickname = myNickname.split(' ')[0];
+  myNickname = myNickname ? myNickname.split(' ')[0] : 'NoName';
   myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
   myName.innerText = myNickname;
-  oppNickname = oppNickname.split(' ')[0];
+  oppNickname = oppNickname ? oppNickname.split(' ')[0] : 'NoName';
   oppNickname = oppNickname.length > 8 ? oppNickname.slice(0, 8) : oppNickname;
   oppName.innerText = oppNickname;
   if (game.emptySquares === 0) {
@@ -955,7 +933,7 @@ function clueClicked(event, direction) {
 function updateScoreboard(game) {
   console.log('Hello from updateScoreboard.');
   const myUid = getCurrentUserController().uid;
-  const oppUid = getMyOpponentUidController();
+  const oppUid = getCurrentOppController().uid;
   myScore.innerText = game.players[myUid].score;
   oppScore.innerText = game.players[oppUid].score;
   myName.classList.remove('fontRed', 'fontBlue');
@@ -1184,10 +1162,11 @@ function showReplayDialog(game, result) {
   console.log('Hello from showReplayDialog.');
   winMessage.innerText = result;
   gameOverHeading.classList.remove('displayNone');
-  winMessage.classList.remove('displayNone');
-  opponentHeading.classList.add('displayNone');
-  opponentList.classList.add('displayNone');
-  gamesDialog.classList.remove('maxHeight90pct');
+  friendsChooser.classList.add('displayNone');
+  friendsChooser.classList.remove('displayFlex');
+  dialogList.classList.add('displayNone');
+  gamesDialog.querySelector('footer').classList.add('displayNone');
+  gamesDialog.classList.remove('maxHeight85pct');
   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
   replayButton.classList.remove('displayNone');
   replayButton.addEventListener('click', replayOpponent);
@@ -1339,7 +1318,7 @@ function enterLetter(event) {
 
 /** Resizes puzzle based on available space */
 function resizePuzzle() {
-  console.log('Hello from resize puzzle.');
+  console.log('Hello from resizePuzzle.');
   if (puzTable.children.length === 0) return;
   // console.log(puzTable.children[0]);
   const cellDim = getCellDim();
@@ -1385,17 +1364,8 @@ function resizePuzzle() {
   }
 }
 
-navList.addEventListener('click', (event) => {
-  if (event.target.querySelector('i').innerText === 'refresh') {
-    location.reload();
-  }
-  if (event.target.querySelector('i').innerText === 'grid_on') {
-    location.hash = '#games';
-  }
-});
-
-window.addEventListener('resize', resizePuzzle);
 document.addEventListener('keyup', enterLetter);
+window.addEventListener('resize', resizePuzzle);
 const keyList = kbContainer.getElementsByClassName('kbButton');
 for (const node of keyList) {
   node.addEventListener('click', enterLetter);
@@ -1406,6 +1376,18 @@ document.getElementById('enter').addEventListener('click', () => {
   playWordController();
 });
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
+
+navList.addEventListener('click', (event) => {
+  if (event.target.querySelector('i').innerText === 'refresh') {
+    location.reload();
+  }
+  if (event.target.querySelector('i').innerText === 'grid_on') {
+    location.hash = '#games';
+  }
+  if (event.target.querySelector('i').innerText === 'settings') {
+    showSettingsView();
+  }
+});
 
 export {
   authChangeView,

@@ -1,3 +1,5 @@
+import { auth } from './firebase-init.js';
+import { uiStart } from './signin';
 import {
   getCurrentUserController,
   setCurrentGameIdController,
@@ -15,7 +17,7 @@ const puzzleInfo = document.getElementById('puzzleInfo');
 const clueContainer = document.getElementById('clueContainer');
 const kbContainer = document.getElementById('kbContainer');
 const splash = document.getElementById('splash');
-const headerSignin = document.getElementById('headerSignin');
+// const headerSignin = document.getElementById('headerSignin');
 const signinMessage = document.getElementById('signinMessage');
 const tos = document.getElementById('tos');
 const privacy = document.getElementById('privacy');
@@ -25,6 +27,15 @@ const firebaseuiAuthContainer = document.getElementById(
 );
 const gamesNav = document.getElementById('gamesNav');
 
+window.addEventListener('load', () => {
+  uiStart();
+  if (auth.currentUser && auth.currentUser.uid) {
+    location.hash = '#games';
+  } else {
+    location.hash = '#signin';
+    firebaseuiAuthContainer.classList.remove('displayNone');
+  }
+});
 window.addEventListener('hashchange', navigate);
 
 let signin = null;
@@ -34,13 +45,16 @@ let signin = null;
  */
 async function navigate() {
   console.log('navigating...');
+  const currentUser = getCurrentUserController();
+  if (!currentUser && location.hash !== '#tos' && location.hash !== '#privacy')
+    location.hash = '#signin';
   if (location.hash === '#puzzle') {
     splash.classList.remove('displayFlex');
     splash.classList.add('displayNone');
     gamesPanel.classList.add('slideOut');
     appContainer.classList.add('slideIn');
     puzzleInfo.classList.remove('displayNone');
-    headerSignin.classList.add('displayNone');
+    // headerSignin.classList.add('displayNone');
     gamesNav.removeAttribute('disabled');
   } else if (location.hash === '#signin') {
     gamesPanel.classList.add('slideOut');
@@ -54,7 +68,7 @@ async function navigate() {
     kbContainer.classList.add('displayNone');
     splash.classList.remove('displayNone');
     splash.classList.add('displayFlex');
-    headerSignin.classList.add('displayNone');
+    // headerSignin.classList.add('displayNone');
     signinMessage.classList.remove('displayNone');
     tos.classList.add('displayNone');
     privacy.classList.add('displayNone');
@@ -77,10 +91,11 @@ async function navigate() {
     scores.classList.remove('displayFlex');
     scores.classList.add('displayNone');
     puzzleInfo.classList.add('displayNone');
-    const currentUser = getCurrentUserController();
-    if (!currentUser) {
-      headerSignin.classList.remove('displayNone');
-    }
+    // if (currentUser) {
+    //   headerSignin.classList.add('displayNone');
+    // } else {
+    //   headerSignin.classList.remove('displayNone');
+    // }
     setCurrentGameIdController(null);
     gamesNav.setAttribute('disabled', '');
   } else if (location.hash === '#tos') {
@@ -121,11 +136,13 @@ async function navigate() {
 /**
  * Lazy load signin module only if user needs to log in.
  */
-function loadSigninModule() {
+async function loadSigninModule() {
   console.log('Hello from loadSigninModule.');
-  import(/* webpackChunkName: 'signin' */ './signin.js').then((module) => {
-    signin = module.default;
-  });
+  return await import(/* webpackChunkName: 'signin' */ './signin.js').then(
+    (module) => {
+      signin = module.default;
+    }
+  );
 }
 
 navigate();

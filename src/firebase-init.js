@@ -2,8 +2,13 @@ import { initializeApp } from 'firebase/app';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getMessaging } from 'firebase/messaging';
-import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import {
+  getFunctions,
+  connectFunctionsEmulator,
+  httpsCallable,
+} from 'firebase/functions';
 import { getAnalytics } from 'firebase/analytics';
+import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDNheDAGRrSjCgic20dgnuawMILWBrTNUk',
@@ -24,13 +29,29 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const functions = getFunctions(app);
-const auth = getAuth();
 const messaging = getMessaging(app);
+const auth = getAuth();
+const storage = getStorage(app);
 
 if (location.hostname === 'localhost') {
   connectFirestoreEmulator(db, 'localhost', 8080);
   connectFunctionsEmulator(functions, 'localhost', 5001);
+  connectStorageEmulator(storage, 'localhost', 9091);
   connectAuthEmulator(auth, 'http://localhost:9099');
+}
+
+console.log('document.cookie: ', document.cookie);
+
+// if there is a search string and no xwwf_invite cookie, create cookie
+const searchString = document.location.search;
+console.log('document.location: ', document.location);
+console.log('document.location.search: ', searchString);
+if (document.location.search && !document.cookie.includes('xwwf_invite')) {
+  // cookie will only last one week max
+  const timeInSeconds = 60 * 60 * 24 * 7;
+  document.cookie =
+    `xwwf_invite=${document.location.search}; ` +
+    `max-age=${timeInSeconds}; path=/`;
 }
 
 // Check to make sure service workers are supported in the current browser,
@@ -94,4 +115,4 @@ if (
     });
 }
 
-export { auth, app, db, analytics, functions, messaging };
+export { auth, app, db, analytics, functions, messaging, storage };

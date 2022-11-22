@@ -49,9 +49,9 @@ const uiConfig = {
     {
       provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
       signInMethod: getEmailSignInMethod(),
-      disableSignUp: {
-        status: getDisableSignUpStatus(),
-      },
+      // disableSignUp: {
+      //   status: getDisableSignUpStatus(),
+      // },
     },
     // // To add phone signin, uncomment the object below and
     // // prompt the user for a unique name in the onAuthStateChanged
@@ -127,5 +127,13 @@ function parseQueryString(queryString) {
   return config;
 }
 
-// The start method will wait until the DOM is loaded.
-ui.start('#firebaseuiAuthContainer', uiConfig);
+let uiStarted = false;
+
+const uiStart = () => {
+  if (uiStarted) return;
+  // The start method will wait until the DOM is loaded.
+  ui.start('#firebaseuiAuthContainer', uiConfig);
+  uiStarted = true;
+};
+
+export { uiStart };

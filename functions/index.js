@@ -64,6 +64,15 @@ exports.userStatusChanged = functions.database
     return null;
   });
 
+exports.newUser = functions.firestore
+  .document('users/{userId}')
+  .onCreate((snapshot, context) => {
+    const friends = {
+      friends: [], //DEPLOY: uncomment: '3eoDltvYiwYfjPviYRRQ2agbsAz1', 'pOsPH8X3DQdVvcfuHgxqEij5LSH2'],
+    };
+    return snapshot.ref.set(friends, { merge: true });
+  });
+
 exports.userOffline2 = functions.https.onCall(async (statusUpdate, context) => {
   console.log('Hello from userOffline2.');
   const uid = statusUpdate.uid;
@@ -113,6 +122,112 @@ exports.authChange = functions.https.onCall(async (data, context) => {
     return null;
   }
   return null;
+});
+
+exports.updateFriends = functions.https.onCall(async (data, context) => {
+  const publicDataRef = db.collection('users').doc(data.uid);
+  try {
+    await db.runTransaction(async (tx) => {
+      const user = (await tx.get(publicDataRef)).data();
+      user.friends = data.friends;
+      user.blocked = data.blocked;
+      tx.update(publicDataRef, user);
+    });
+    functions.logger.log('addFriends transaction success!');
+  } catch (error) {
+    functions.logger.error('addFriends transaction failure: ', error);
+  }
+  return null;
+});
+
+exports.pendingPlayer = functions.https.onCall(async (data, context) => {
+  console.log('Hello from pendingPlayer.');
+  if (context.auth && context.auth.token && context.auth.token.uid) {
+    // console.log('auth token: ', context.auth.token);
+    const uid = context.auth.token.uid;
+    // Split data into two nested collections for public and private data
+    const publicDataRef = db.collection('users').doc();
+    const user = {
+      initiator: uid,
+      uid: publicDataRef.id,
+      friends: [uid],
+      photoURL: null,
+      signInProvider: 'none',
+      displayName: data.firstName + ' (pending)',
+    };
+    return await publicDataRef.set(user).then(() => {
+      return publicDataRef.id;
+    });
+  }
+  return null;
+});
+
+exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
+  console.log('Hello from updatePendingPlayer.');
+  // console.log('auth token: ', context.auth.token);
+  const uid = context.auth.token.uid;
+  const gameRef = db.doc(`games/${data.gameId}`);
+  const gameListRef = db.doc(`gameListBuilder/${data.gameId}`);
+  const pendingRef = db.doc(`users/${data.pendingUid}`);
+  const newUserRef = db.doc(`users/${uid}`);
+  try {
+    await db.runTransaction(async (tx) => {
+      const game = (await tx.get(gameRef)).data();
+      const gameListDoc = (await tx.get(gameListRef)).data();
+      console.log('gameListDoc: ', gameListDoc);
+      game.players[uid] = game.players[data.pendingUid];
+      delete game.players[data.pendingUid];
+      console.log('gameListDoc.viewableBy: ', gameListDoc.viewableBy);
+      gameListDoc.players[uid] = gameListDoc.players[data.pendingUid];
+      delete gameListDoc.players[data.pendingUid];
+      gameListDoc.viewableBy.splice(
+        gameListDoc.viewableBy.indexOf(data.pendingUid),
+        1,
+        uid
+      );
+      if (gameListDoc.nextTurn === data.pendingUid) gameListDoc.nextTurn = uid;
+      if (gameListDoc.winner === data.pendingUid) gameListDoc.winner = uid;
+      if (game.nextTurn === data.pendingUid) game.nextTurn = uid;
+      if (game.winner === data.pendingUid) game.winner = uid;
+      if (game.lastTurnCheckObj.playerUid === data.pendingUid)
+        game.lastTurnCheckObj.playerUid = uid;
+
+      const pendingUser = (await tx.get(pendingRef)).data();
+      const initiatorUid = pendingUser.initiator;
+      const newUser = (await tx.get(newUserRef)).data();
+      console.log('newUser: ', newUser);
+      newUser.friends = newUser.friends
+        ? newUser.friends.push(initiatorUid)
+        : [initiatorUid];
+      newUser.displayName =
+        newUser.displayName || pendingUser.displayName.split(' ')[0];
+      const initiatorRef = db.doc(`users/${initiatorUid}`);
+      const initiator = (await tx.get(initiatorRef)).data();
+      if (initiator.friends && initiator.friends.includes(data.pendingUid))
+        initiator.friends.splice(
+          initiator.friends.indexOf(data.pendingUid),
+          1,
+          uid
+        );
+      if (initiator.blocked && initiator.blocked.includes(data.pendingUid))
+        initiator.blocked.splice(
+          initiator.blocked.indexOf(data.pendingUid),
+          1,
+          uid
+        );
+
+      tx.update(gameRef, game)
+        .update(gameListRef, gameListDoc)
+        .update(newUserRef, newUser)
+        .update(initiatorRef, initiator)
+        .delete(pendingRef);
+    });
+    functions.logger.log('updatePendingPlayer transaction success!');
+  } catch (error) {
+    functions.logger.error('updatePendingPlayer transaction failure: ', error);
+    return false;
+  }
+  return true;
 });
 
 /**
@@ -228,14 +343,25 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
 
       // console.log('New parsed puzzle: ', game);
 
+      const gameId = gamesDocRef.id;
       batch.set(gamesDocRef, game);
 
       await batch.commit();
+      return gameId;
+    })
+    .then(async (gameId) => {
+      const opponentUid =
+        context.auth.uid === gameStartParameters.viewableBy[0]
+          ? gameStartParameters.viewableBy[1]
+          : gameStartParameters.viewableBy[0];
 
+      const opponent = await db.doc(`users/${opponentUid}`).get();
       const gameObj = {};
-      gameObj.game = game;
+      gameObj.opponent = opponent.data();
+      // gameObj.game = game; - don't need game - listening on client
       // gameObj.gameListData = gameListData;
-      gameObj.gameId = gamesDocRef.id;
+      gameObj.gameId = gameId;
+      console.log('gameObj: ', gameObj);
       return gameObj;
     })
     .catch((error) => {
@@ -407,7 +533,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
           checkAnswerResult.push(cellResult);
         }
       }
-      const opponent = answerObj.myOpponentUid;
+      const opponent = answerObj.opponentUid;
       game.nextTurn = opponent;
       gameList.nextTurn = opponent;
       if (game.emptySquares === 0) {
@@ -575,73 +701,3 @@ exports.abandonGame2 = functions.https.onCall(async (abandonObj, context) => {
   }
   return;
 });
-
-// exports.updateData = functions.https.onRequest((req, res) => {
-//   cors(req, res, async () => {
-//     const gamesRef = db.collection('games');
-//     const snapshot = await gamesRef.get();
-//     if (snapshot.empty) {
-//       console.log('No matching documents.');
-//       return;
-//     }
-//     snapshot.forEach(async (doc) => {
-//       const gameId = doc.id;
-//       const gameRef = db.doc(`games/${gameId}`);
-//       const answersRef = db.doc(`games/${gameId}/hidden/answers`);
-//       const gameListRef = db.doc(`gameListBuilder/${gameId}`);
-//       try {
-//         await db.runTransaction(async (tx) => {
-//           const game = (await tx.get(gameRef)).data();
-//           const answers = (await tx.get(answersRef)).data().answerKey || [];
-//           console.log('answers: ', answers);
-//           const gameListDoc = (await tx.get(gameListRef)).data();
-//           console.log('gameListDoc: ', gameListDoc);
-
-//           // for (let index = 0; index < 225; index++) {
-//           //   const gridIndex = game.puzzle.grid[index];
-//           //   if (gridIndex.black) {
-//           //     answers.push('.');
-//           //   } else {
-//           //     answers.push(game.puzzle.grid[index].value);
-//           //   }
-//           //   if (gridIndex.status !== 'locked') {
-//           //     gridIndex.guessArray = [gridIndex.guess];
-//           //   } else {
-//           //     gridIndex.value = '';
-//           //   }
-//           //   const clueNumIndices = {};
-//           //   if (gridIndex.clueNum !== '') {
-//           //     clueNumIndices[gridIndex.clueNum] = index;
-//           //   }
-//           // }
-//           // game.clueNumIndices = clueNumIndices;
-//           // game.finish = game.start;
-
-//           // const players = {};
-//           // players[game.initiator.uid] = {};
-//           // players[game.initiator.uid].bgColor = game.initiator.bgColor;
-//           // players[game.initiator.uid].displayName = game.initiator.displayName;
-//           // players[game.initiator.uid].photoURL = game.initiator.photoURL;
-//           // players[game.opponent.uid] = {};
-//           // players[game.opponent.uid].bgColor = game.opponent.bgColor;
-//           // players[game.opponent.uid].displayName = game.opponent.displayName;
-//           // players[game.opponent.uid].photoURL = game.opponent.photoURL;
-//           // game.players = players;
-//           // gameListDoc.players = players;
-//           // gameListDoc.nextTurn = game.nextTurn;
-//           // game.viewableBy = [game.initiator.uid, game.opponent.uid];
-//           // gameListDoc.viewableBy = [game.initiator.uid, game.opponent.uid];
-//           // gameListDoc.winner = game.winner;
-
-//           tx.update(gameRef, game)
-//             .update(gameListRef, gameListDoc)
-//             .update(answersRef, answers);
-//         });
-//         functions.logger.log('updateData transaction success!');
-//       } catch (error) {
-//         functions.logger.error('updateData transaction failure: ', error);
-//       }
-//     });
-//     res.status(200).send('{"updateData": "Success!"}'); //(formattedDate);
-//   });
-// });

@@ -11,7 +11,7 @@ app.yaml
 **/service-account.json
 **/temp.txt
 **/notify.js
-ui-debug.log
-database-debug.log
-firestore-debug.log
-firebase-debug.log
+**/ui-debug.log
+**/database-debug.log
+**/firestore-debug.log
+**/firebase-debug.log

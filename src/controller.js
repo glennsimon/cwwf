@@ -1,4 +1,11 @@
-import { db, app, auth, functions, messaging } from './firebase-init.js';
+import {
+  db,
+  app,
+  auth,
+  functions,
+  messaging,
+  storage,
+} from './firebase-init.js';
 import {
   authChangeView,
   showPuzzleView,
@@ -18,6 +25,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 
 import { getToken } from 'firebase/messaging';
 import {
   collection,
+  getDoc,
   getDocs,
   setDoc,
   doc,
@@ -26,8 +34,18 @@ import {
   orderBy,
   limit,
   where,
+  runTransaction,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import {
+  getDownloadURL,
+  ref as refStorage,
+  uploadBytes,
+} from 'firebase/storage';
+import { settings } from 'firebase/analytics';
+import { loadFriendsSettingsView } from './views/settingsView.js';
+// import { runtime } from 'webpack';
+// import { settings } from 'firebase/analytics';
 
 const dbRT = getDatabase(app);
 const vapidKey =
@@ -35,12 +53,13 @@ const vapidKey =
   'wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak';
 
 let currentUser = null;
+let currentOpp = null;
 let userStatusFirestoreRef = null;
 let userStatusDatabaseRef = null;
 let myGames = [];
 let currentGame = null;
 let currentGameId = null;
-let myOpponentUid = null;
+// let myOpponentUid = null;
 let acrossWord = true;
 let columns = null;
 let idxArray = [];
@@ -48,6 +67,7 @@ let myTurn = null;
 let gameListParameters = {};
 // TODO: should this be tracked, and what can be done while offline?
 let online = false;
+let myFriends = {};
 
 // webpack dynamic imports:
 // let mySignOut = () => {};
@@ -60,6 +80,14 @@ let gameUnsubscribe = () => {};
 let myGamesUnsubscribe = () => {};
 
 /**
+ * Get myFriends. Should be used by all external modules.
+ * @returns {object} Returns my friends users objects
+ */
+function getMyFriendsController() {
+  return myFriends;
+}
+
+/**
  * Get the currentGame. Should be used by all external modules.
  * @returns {object} Returns currentGame or null
  */
@@ -67,13 +95,13 @@ function getCurrentGameController() {
   return currentGame;
 }
 
-/**
- * Get myOpponentUid. Should be used by all external modules.
- * @returns {object} Returns myOpponentUid or null
- */
-function getMyOpponentUidController() {
-  return myOpponentUid;
-}
+// /**
+//  * Get myOpponentUid. Should be used by all external modules.
+//  * @returns {object} Returns myOpponentUid or null
+//  */
+// function getMyOpponentUidController() {
+//   return myOpponentUid;
+// }
 
 /**
  * Get gameListParameters. Should be used by all external modules.
@@ -121,6 +149,14 @@ function setAcrossWordController(across) {
  */
 function getCurrentUserController() {
   return currentUser;
+}
+
+/**
+ * Get currentOpp. Should be used by all external modules.
+ * @returns {object} Returns currentOpp user object
+ */
+function getCurrentOppController() {
+  return currentOpp;
 }
 
 /**
@@ -189,23 +225,56 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
 onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
-  authChangeView(user);
-  currentUser = user;
   if (!uid) return;
-  // previousUser = currentUser;
   userStatusFirestoreRef = doc(db, `/users/${uid}`);
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
+  const userData = (await getDoc(userStatusFirestoreRef)).data();
+  currentUser = userData;
+  authChangeView(userData);
   try {
     const authChange = httpsCallable(functions, 'authChange');
     await authChange();
     await generateMessagingToken(uid);
     await populateMyGames(uid);
+    const pendingResult = await checkForPendingPlayer();
+    console.log(pendingResult);
+    myFriends = await populateMyFriends();
   } catch (err) {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
     console.log('Error details: ', err.details);
   }
 });
+
+async function checkForPendingPlayer() {
+  // if there is a 'xwwf_invite' cookie, use it to create a new user from
+  // the pending player object in Firestore
+  console.log('document.cookie: ', document.cookie);
+  console.log('auth.currentUser: ', auth.currentUser);
+  if (document.cookie.includes('xwwf_invite')) {
+    const cookies = document.cookie.split(';');
+    console.log('cookies array: ', cookies);
+    for (const cookie of cookies) {
+      if (cookie.trim().startsWith('xwwf_invite=')) {
+        const uidStrings = cookie.slice(13).split('&');
+        const pendingUid = uidStrings[0].split('=')[1];
+        const gameId = uidStrings[1].split('=')[1];
+        const newUserObject = {};
+        newUserObject.pendingUid = pendingUid;
+        newUserObject.gameId = gameId;
+        console.log('newUserObject: ', newUserObject);
+        const updatePendingPlayer = httpsCallable(
+          functions,
+          'updatePendingPlayer'
+        );
+        const success = await updatePendingPlayer(newUserObject);
+        if (success) document.cookie = 'xwwf_invite=done; max-age=0';
+        return 'xwwf_invite cookie used and deleted';
+      }
+    }
+  }
+  return 'No xwwf_invite cookie found.';
+}
 
 /**
  * Configure messaging credentials with FCM VAPID key
@@ -245,9 +314,7 @@ async function sendTokenToServer(messagingToken, uid) {
 /**
  * Called by the view, signs the user out or takes them to the #signin page.
  */
-async function authButtonClickedController() {
-  // const { signOut } = await import('firebase/auth');
-
+function authButtonClickedController() {
   if (currentUser) {
     const uid = currentUser.uid;
     signOut(auth)
@@ -257,15 +324,13 @@ async function authButtonClickedController() {
         statusUpdate.authState = authState('offline');
         const userOffline2 = httpsCallable(functions, 'userOffline2');
         userOffline2(statusUpdate);
+        currentUser = null;
+        authChangeView(null);
       })
       .catch((error) => {
         console.log(error);
       });
   }
-  // else {
-  //   // keep this else - location should change only if signOut successful
-  //   location.hash = '#signin';
-  // }
 }
 
 /**
@@ -276,18 +341,83 @@ function populateAllUsersController() {
   return getDocs(query(collection(db, 'users')))
     .then((snapshot) => {
       if (snapshot.empty) {
-        console.log('No users exist yet.');
+        console.warn('No users exist yet.');
         return;
       }
       const usersObj = {};
       snapshot.docs.forEach((doc) => {
         // console.log(doc.data());
         const user = doc.data();
-        usersObj[user.uid] = user;
+        if (user.uid !== currentUser.uid) usersObj[user.uid] = user;
       });
       return usersObj;
     })
     .catch((error) => console.log('Error getting list of users: ', error));
+}
+
+// /**
+//  * Populate list of all users from firestore and return the list.
+//  * @returns Object containing all users by uid
+//  */
+// function populateFriendsController() {
+//   const myFriends = currentUser.friends;
+//   if (!myFriends) return;
+//   return getDocs(query(collection(db, 'users'), where('uid', 'in', myFriends)))
+//     .then((snapshot) => {
+//       if (snapshot.empty) {
+//         console.log('No friends added yet.');
+//         return;
+//       }
+//       const friendsObj = {};
+//       snapshot.docs.forEach((doc) => {
+//         // console.log(doc.data());
+//         const user = doc.data();
+//         if (user.uid !== currentUser.uid) friendsObj[user.uid] = user;
+//       });
+//       return friendsObj;
+//     })
+//     .catch((error) => console.log('Error getting list of friends: ', error));
+// }
+
+/**
+ * Update the users friends and blocked values in Firestore via cloud function
+ * @param {object} adjustedFriendsObject contains friends and blocked uid arrays
+ */
+async function updateFriendsController(adjustedFriendsObject) {
+  currentUser.friends = adjustedFriendsObject.friends;
+  currentUser.blocked = adjustedFriendsObject.blocked;
+  adjustedFriendsObject.uid = currentUser.uid;
+  const updateFriends = httpsCallable(functions, 'updateFriends');
+  updateFriends(adjustedFriendsObject);
+  myFriends = await populateMyFriends();
+  loadFriendsSettingsView(myFriends);
+}
+
+/**
+ * Populate list of all users from firestore and return the list.
+ * @returns Object containing friends of currentUser
+ */
+async function populateMyFriends() {
+  console.log('Hello from populateMyFriends');
+  if (!currentUser.uid) return;
+  if (currentUser.friends.length === 0) return {};
+  const friends = {};
+  const q = query(
+    collection(db, 'users'),
+    where('uid', 'in', currentUser.friends)
+  );
+  return await getDocs(q).then((snapshot) => {
+    if (snapshot.empty) {
+      console.log('No friends added yet.');
+      return {};
+    }
+    snapshot.docs.forEach((doc) => {
+      // console.log(doc.data());
+      const user = doc.data();
+      if (doc.id !== currentUser.uid) friends[doc.id] = user;
+    });
+    return friends;
+  });
 }
 
 /**
@@ -306,10 +436,10 @@ async function populateMyGames(uid) {
     // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
     // limit(30)
   );
-  myGamesUnsubscribe = onSnapshot(q, (snapshot) => {
+  myGamesUnsubscribe = onSnapshot(q, async (snapshot) => {
     const myPastGames = [];
     const myCurrGames = [];
-    myGames = [];
+    const userIds = [];
     snapshot.forEach((doc) => {
       // console.log('query snapshot doc.data(): ', doc.data());
       const gameListItem = doc.data();
@@ -319,6 +449,9 @@ async function populateMyGames(uid) {
       } else {
         myCurrGames.push(gameListItem);
       }
+      for (const uid of gameListItem.viewableBy) {
+        if (!userIds.includes(uid)) userIds.push(uid);
+      }
     });
     myPastGames.sort((a, b) => {
       return b.finish - a.finish;
@@ -326,25 +459,43 @@ async function populateMyGames(uid) {
     myCurrGames.sort((a, b) => {
       return b.start - a.start;
     });
+    // const userIds = [];
     myGames = myCurrGames.concat(myPastGames);
-    loadGamesView(myGames);
+    // for (const gameListItem of myGames) {
+    //   for (const uid of gameListItem.viewableBy) {
+    //     if (!userIds.includes(uid)) userIds.push(uid);
+    //   }
+    // }
+    if (userIds.length !== 0) {
+      const q2 = query(collection(db, 'users'), where('uid', 'in', userIds));
+      const userDocs = await getDocs(q2);
+      const count = userDocs.size;
+      console.log('count: ', count);
+      let userData = {};
+      userDocs.forEach((doc) => {
+        userData[doc.id] = doc.data();
+      });
+      loadGamesView(myGames, userData);
+    }
+    return;
   });
 }
 
 /**
  * This function fetches an active puzzle based on the user's selection
  * and then calls functions to format and display the puzzle
- * @param {String} puzzleId Firestore game (puzzle) id
+ * @param {object} gameObj Object with gameId and opponentUid
  */
-function fetchPuzzleController(puzzleId) {
+async function fetchPuzzleController(gameObj) {
   console.log('Hello from fetchPuzzleController.');
-  subscribeToGame(puzzleId);
+  currentOpp = (await getDoc(doc(db, `users/${gameObj.opponentUid}`))).data();
+  subscribeToGame(gameObj.gameId);
 }
 
 /**
  * Unsubscribe from listening for changes on previous game, and start listening
- * for changes on gameId game.
- * @param {string} gameId
+ * for changes on gameObj game.
+ * @param {string} gameId game id string
  */
 function subscribeToGame(gameId) {
   console.log('Hello from subscribeToGame.');
@@ -359,13 +510,15 @@ function subscribeToGame(gameId) {
   // Start listening to current puzzle changes
   gameUnsubscribe = onSnapshot(
     doc(db, 'games', gameId),
-    async (doc) => {
+    async (gameSnap) => {
       const prevGameId = currentGameId;
-      currentGame = doc.data();
+      currentGame = gameSnap.data();
       currentGameId = gameId;
-      const keys = Object.keys(currentGame.players);
-      for (const key of keys) {
-        if (key !== currentUser.uid) myOpponentUid = key;
+      if (currentGame.status === 'started') {
+        const keys = Object.keys(currentGame.players);
+        for (const key of keys) {
+          if (key !== currentUser.uid) myOpponentUid = key;
+        }
       }
       idxArray = [];
       columns = currentGame.puzzle.cols;
@@ -373,7 +526,7 @@ function subscribeToGame(gameId) {
       if (prevGameId === gameId) {
         await animateScoringView(currentGame.lastTurnCheckObj);
       }
-      showPuzzleView(currentGame);
+      showPuzzleView(currentGame, currentOpp);
     },
     (error) => {
       console.error('Error subscribing to puzzle: ', error);
@@ -409,13 +562,15 @@ async function playWordController() {
       `play your turn again`;
     showErrorDialogView(errorMessage);
   }
+  // TODO: something like this?:
+  // document.getElementById('puzTitle').innerText = 'Fetching data...';
   const answerObj = {};
   answerObj.idxArray = idxArray;
   answerObj.gameId = currentGameId;
   answerObj.acrossWord = acrossWord;
   answerObj.guess = [];
   answerObj.playerUid = currentUser.uid;
-  answerObj.myOpponentUid = myOpponentUid;
+  answerObj.opponentUid = currentOpp.uid;
   for (const index of idxArray) {
     answerObj.guess.push(
       currentGame.puzzle.grid[index].guessArray[
@@ -456,10 +611,13 @@ function incomplete() {
 function startNewGameController(gameStartParameters) {
   console.log('Attempting to start a new game.');
   const startGame = httpsCallable(functions, 'startGame');
-  startGame(gameStartParameters)
+  return startGame(gameStartParameters)
     .then((gameObjData) => {
-      subscribeToGame(gameObjData.data.gameId);
-      return gameObjData.data.game;
+      const gameObj = gameObjData.data;
+      currentOpp = gameObj.opponent;
+      currentGameId = gameObj.gameId;
+      subscribeToGame(currentGameId);
+      return currentGameId; // gameObjData.data.game;
     })
     .catch((err) => {
       console.log('Error code: ', err.code);
@@ -499,19 +657,6 @@ function savePuzzleController(append) {
   );
 }
 
-function abandonCurrentGameController() {
-  const abandonObj = {};
-  abandonObj.gameId = currentGameId;
-  abandonObj.opponentUid = myOpponentUid;
-  abandonObj.playerUid = currentUser.uid;
-  const abandonGame2 = httpsCallable(functions, 'abandonGame2');
-  abandonGame2(abandonObj).catch((err) => {
-    console.log('Error code: ', err.code);
-    console.log('Error message: ', err.message);
-    console.log('Error details: ', err.details);
-  });
-}
-
 /**
  * Appends the append Object to the base Object.
  * @param {object} base Base object to append to
@@ -524,10 +669,90 @@ function appendObject(base, append) {
   });
 }
 
+function abandonCurrentGameController() {
+  const abandonObj = {};
+  abandonObj.gameId = currentGameId;
+  abandonObj.opponentUid = currentOpp.uid;
+  abandonObj.playerUid = currentUser.uid;
+  const abandonGame2 = httpsCallable(functions, 'abandonGame2');
+  abandonGame2(abandonObj).catch((err) => {
+    console.log('Error code: ', err.code);
+    console.log('Error message: ', err.message);
+    console.log('Error details: ', err.details);
+  });
+}
+
+async function storeSettingsController(settingsPrefs) {
+  let prefAvatarUrl = null;
+  if (settingsPrefs.prefAvatar) {
+    const settingsRef = refStorage(
+      storage,
+      `users/${currentUser.uid}/avatar.png`
+    );
+    const metaData = { contentType: 'image/png' };
+    await uploadBytes(settingsRef, settingsPrefs.prefAvatar, metaData).catch(
+      (error) => {
+        console.log('Error uploading photo to storage: ', error);
+      }
+    );
+    prefAvatarUrl = await getDownloadURL(settingsRef);
+  }
+  const refUserData = doc(db, 'users', currentUser.uid);
+  try {
+    await runTransaction(db, async (transaction) => {
+      const userDoc = await transaction.get(refUserData);
+      if (!userDoc.exists()) throw 'User document does not exist!';
+
+      currentUser.prefName = settingsPrefs.prefName || null;
+      currentUser.prefHandle = settingsPrefs.prefHandle || null;
+      const updateData = {
+        prefName: currentUser.prefName,
+        prefHandle: currentUser.prefHandle,
+      };
+      if (prefAvatarUrl) {
+        currentUser.prefAvatarUrl = prefAvatarUrl;
+        updateData.prefAvatarUrl = prefAvatarUrl;
+      }
+      transaction.update(refUserData, updateData);
+    });
+  } catch (error) {
+    console.log('UserData update transaction failed: ', error);
+  }
+}
+
+/**
+ * Check availability of unique handle for for users preferred handle.
+ * @param {string} handle
+ * @returns {boolean} true if handle is available, false otherwise
+ */
+async function handleCheckController(handle) {
+  const q = query(collection(db, 'users'), where('prefHandle', '==', handle));
+  const docs = await getDocs(q);
+  let available = true;
+  docs.forEach((doc) => {
+    if (doc.id !== currentUser.uid) available = false;
+  });
+  return available;
+}
+
+/**
+ * Creates a minimal pendingPlayer and adds to Firestore, then returns the
+ * document id for the pendingPlayer.
+ * @param {object} nameObject object with `firstName` for pending player
+ * @returns document id for pendingPlayer
+ */
+async function pendingPlayerController(nameObject) {
+  const pendingPlayer = httpsCallable(functions, 'pendingPlayer');
+  return pendingPlayer(nameObject).then((docId) => {
+    return docId.data;
+  });
+}
+
 export {
   authButtonClickedController,
   startNewGameController,
   getCurrentUserController,
+  getCurrentOppController,
   populateAllUsersController,
   getAllGamesController,
   fetchPuzzleController,
@@ -543,6 +768,13 @@ export {
   abandonCurrentGameController,
   getAcrossWordController,
   setAcrossWordController,
-  getMyOpponentUidController,
+  // getMyOpponentUidController,
   getGameListParametersController,
+  // populateSettingsController,
+  storeSettingsController,
+  handleCheckController,
+  // populateFriendsController,
+  updateFriendsController,
+  getMyFriendsController,
+  pendingPlayerController,
 };
