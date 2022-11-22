@@ -126,14 +126,12 @@ function authChangeView(user) {
     authButton.innerHTML = `sign in&nbsp;<span class='material-symbols-outlined signInOut'>login </span>`;
     profileName.textContent = 'N. E. Person';
     avatar.src = 'images/avatar_circle_black.png';
-    if (location.hash !== '#signin')
-      headerSignin.classList.remove('displayNone');
+    location.hash = '#signin';
+    // headerSignin.classList.remove('displayNone');
     puzTitle.innerText = 'No puzzle loaded';
     activeGamesContainer.innerHTML = `You must sign in to see your active games`;
     pastGamesContainer.innerHTML = `You must sign in to see your completed games`;
     clearPuzzle();
-    if (location.hash !== '#tos' || location.hash !== '#privacy')
-      location.hash = '#signin';
   }
   if (drawer.classList.contains('is-visible')) toggleDrawer();
   // TODO: get rid of local variables - currentUser should be available only
@@ -246,7 +244,6 @@ startGameButton.addEventListener('click', async () => {
     loadFriendsSettingsView(myFriends);
     gameOverHeading.classList.add('displayNone');
     winMessage.classList.add('displayNone');
-    gamesDialog.children[0].classList.add('padding0', 'height100pct');
     friendsChooser.classList.add('displayFlex');
     friendsChooser.classList.remove('displayNone');
     replayButton.classList.add('displayNone');

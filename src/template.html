@@ -48,7 +48,10 @@
   <body>
     <!-- The drawer is always open in large screens. The header is always shown,
       even in small screens. -->
-    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <div
+      class="mdl-layout mdl-js-layout mdl-layout--fixed-header"
+      style="overflow: hidden"
+    >
       <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
           <img
@@ -456,14 +459,18 @@
               start a new game
             </button>
             <div class="overflowYScroll">
-              <div class="gamesHeading fontWeightBold">Active games</div>
+              <div class="gamesHeading fontWeightBold textAlignCenter">
+                Active games
+              </div>
               <ul
                 id="activeGamesContainer"
                 class="demo-list-two mdl-list webkitMargin0"
               >
                 You must sign in to see your active games
               </ul>
-              <div class="gamesHeading fontWeightBold">Past games</div>
+              <div class="gamesHeading fontWeightBold textAlignCenter">
+                Past games
+              </div>
               <ul
                 id="pastGamesContainer"
                 class="demo-list-two mdl-list webkitMargin0"
@@ -479,80 +486,86 @@
     </div>
     <dialog
       id="gamesDialog"
-      class="mdl-dialog maxHeight85pct"
+      class="mdl-dialog maxHeight85pct displayFlex flexDirCol"
       style="width: 300px"
     >
-      <div class="mdl-dialog__content displayFlex flexDirCol">
-        <div class="closeDialogPosition close noOutline cursorPointer">
-          <i class="material-icons">close</i>
-        </div>
-        <div id="gameOverHeading" class="displayNone">
-          <div class="heading textAlignCenter displayNone">Game Over</div>
-          <div
-            id="winMessage"
-            class="heading textAlignCenter fontSizeXLarge displayNone"
-          ></div>
-        </div>
-        <div id="difficultyHeading" class="fontWeightBold textAlignCenter">
-          Difficulty level
-        </div>
-        <div class="margin10px displayFlex spaceAround">
-          <label
-            class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
-            for="radioEasy"
-          >
-            <input
-              type="radio"
-              id="radioEasy"
-              class="mdl-radio__button"
-              name="difficulty"
-              value="easy"
-              checked
-            />
-            <span class="mdl-radio__label">EASY</span>
-          </label>
-          <label
-            class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
-            for="radioMed"
-          >
-            <input
-              type="radio"
-              id="radioMed"
-              class="mdl-radio__button"
-              name="difficulty"
-              value="medium"
-            />
-            <span class="mdl-radio__label">MED</span>
-          </label>
-          <label
-            class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
-            for="radioHard"
-          >
-            <input
-              type="radio"
-              id="radioHard"
-              class="mdl-radio__button"
-              name="difficulty"
-              value="hard"
-            />
-            <span class="mdl-radio__label">HARD</span>
-          </label>
-        </div>
-        <button
-          id="replayButton"
-          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
-        >
-          Rematch!
-        </button>
-        <div id="friendsChooser" class="displayFlex flexDirCol">
-          <div class="fontWeightBold textAlignCenter">
-            Choose your opponent below:
+      <header>
+        <div class="mdl-dialog__content displayFlex flexDirCol">
+          <div class="closeDialogPosition close noOutline cursorPointer">
+            <i class="material-icons">close</i>
           </div>
-          <div class="overflowYScroll">
-            <ul id="dialogList" class="demo-list-action mdl-list">
-              Empty list
-            </ul>
+          <div id="gameOverHeading" class="displayNone">
+            <div class="heading textAlignCenter displayNone">Game Over</div>
+            <div
+              id="winMessage"
+              class="heading textAlignCenter fontSizeXLarge displayNone"
+            ></div>
           </div>
+          <div id="difficultyHeading" class="fontWeightBold textAlignCenter">
+            Difficulty level
+          </div>
+          <div class="margin10px displayFlex spaceAround">
+            <label
+              class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+              for="radioEasy"
+            >
+              <input
+                type="radio"
+                id="radioEasy"
+                class="mdl-radio__button"
+                name="difficulty"
+                value="easy"
+                checked
+              />
+              <span class="mdl-radio__label">EASY</span>
+            </label>
+            <label
+              class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+              for="radioMed"
+            >
+              <input
+                type="radio"
+                id="radioMed"
+                class="mdl-radio__button"
+                name="difficulty"
+                value="medium"
+              />
+              <span class="mdl-radio__label">MED</span>
+            </label>
+            <label
+              class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+              for="radioHard"
+            >
+              <input
+                type="radio"
+                id="radioHard"
+                class="mdl-radio__button"
+                name="difficulty"
+                value="hard"
+              />
+              <span class="mdl-radio__label">HARD</span>
+            </label>
+          </div>
+          <button
+            id="replayButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+          >
+            Rematch!
+          </button>
+          <div id="friendsChooser" class="displayFlex flexDirCol">
+            <div class="fontWeightBold textAlignCenter">
+              Choose your opponent below:
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="overflowYScroll">
+        <ul id="dialogList" class="demo-list-action mdl-list">
+          Empty list
+        </ul>
+      </div>
+      <footer>
+        <div class="displayFlex flexDirCol alignItemsCenter">
           <div class="margin5pxAuto">Don't see your friend in the list?</div>
           <button
             id="addFriendsButton"
@@ -560,49 +573,59 @@
           >
             Add friends!
           </button>
+          <div
+            id="friendsProgressContainer"
+            class="margin5pxAuto alignItemsCenter displayNone"
+          >
+            <p
+              id="friendsLoadSpinner"
+              class="mdl-spinner mdl-js-spinner"
+              style="margin: 0"
+            ></p>
+            <div class="margin5px"></div>
+            <span id="friendsLoadMessage">Adding Friends to list...</span>
+          </div>
         </div>
-        <div
-          id="friendsProgressContainer"
-          class="margin5pxAuto alignItemsCenter displayNone"
-        >
-          <p
-            id="friendsLoadSpinner"
-            class="mdl-spinner mdl-js-spinner"
-            style="margin: 0"
-          ></p>
-          <div class="margin5px"></div>
-          <span id="friendsLoadMessage">Adding Friends to list...</span>
-        </div>
-      </div>
+      </footer>
     </dialog>
-    <dialog id="friendsDialog" class="mdl-dialog" style="width: 300px">
-      <div
-        class="mdl-dialog__content displayFlex flexDirCol"
-        style="padding: 20px 15px 0"
-      >
-        <div class="closeDialogPosition close noOutline cursorPointer">
-          <i class="material-icons">close</i>
-        </div>
-        <div id="friendsHeading" class="heading textAlignCenter">
-          Add / block players
-        </div>
-        <div id="friendsList" class="overflowYScroll maxHeight50pct">
-          <ul id="friendsDialogList" class="demo-list-action mdl-list"></ul>
-        </div>
-        <button
-          id="doneButton"
-          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+    <dialog
+      id="friendsDialog"
+      class="mdl-dialog maxHeight85pct displayFlex flexDirCol"
+      style="width: 300px"
+    >
+      <header>
+        <div
+          class="mdl-dialog__content displayFlex flexDirCol"
+          style="padding: 20px 15px 0"
         >
-          done
-        </button>
-        <div class="margin5pxAuto">Still don't see your friend?</div>
-        <button
-          id="inviteFriendButton"
-          class="mdl-button mdl-js-button mdl-js-ripple-effect"
-        >
-          Invite them to play!
-        </button>
+          <div class="closeDialogPosition close noOutline cursorPointer">
+            <i class="material-icons">close</i>
+          </div>
+          <div id="friendsHeading" class="heading textAlignCenter">
+            Add / block players
+          </div>
+        </div>
+      </header>
+      <div id="friendsList" class="overflowYScroll">
+        <ul id="friendsDialogList" class="demo-list-action mdl-list"></ul>
       </div>
+      <footer>
+        <div class="displayFlex flexDirCol alignItemsCenter">
+          <button
+            id="doneButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+          >
+            done
+          </button>
+          <div class="margin5pxAuto">Still don't see your friend?</div>
+          <button
+            id="inviteFriendButton"
+            class="mdl-button mdl-js-button mdl-js-ripple-effect"
+          >
+            Invite them to play!
+          </button>
+        </div>
+      </footer>
     </dialog>
     <dialog id="errorDialog" class="mdl-dialog" style="width: 300px">
       <div class="mdl-dialog__content displayFlex flexDirCol">
@@ -648,7 +671,7 @@
       </div>
     </dialog>
     <dialog id="inviteDialog" class="mdl-dialog" style="width: 300px">
-      <div class="mdl-dialog__content displayFlex flexDirCol">
+      <div class="mdl-dialog__content displayFlex flexDirCol alignItemsCenter">
         <div class="closeDialogPosition close noOutline cursorPointer">
           <i class="material-icons">close</i>
         </div>
@@ -656,9 +679,17 @@
           Invite a friend to play
         </div>
         <div>
-          Enter your friend's email address, and when you hit send, your default
-          email app will open with a message you can send as is or modify before
-          sending.
+          Enter your friend's first name and email address, and when you tap
+          send, your default email app will open with a message you can send as
+          is or modify before sending.
+        </div>
+        <div
+          class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+        >
+          <input class="mdl-textfield__input" type="text" id="firstName" />
+          <label class="mdl-textfield__label" for="firstName"
+            >Friend's first name</label
+          >
         </div>
         <div
           class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
@@ -672,7 +703,7 @@
         <div class="mdl-card__actions mdl-card--border displayFlex marginAuto">
           <button
             id="sendButton"
-            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect marginAuto"
           >
             send
           </button>
@@ -688,7 +719,7 @@
           style="margin: 0"
         ></p>
         <div class="margin5px"></div>
-        <span>Getting information for email...</span>
+        <span>Preparing game and email...</span>
       </div>
     </dialog>
     <div id="settingsContainer" class="displayNone" style="height: 100vh">

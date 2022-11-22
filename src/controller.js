@@ -315,9 +315,7 @@ async function sendTokenToServer(messagingToken, uid) {
 /**
  * Called by the view, signs the user out or takes them to the #signin page.
  */
-async function authButtonClickedController() {
-  // const { signOut } = await import('firebase/auth');
-
+function authButtonClickedController() {
   if (currentUser) {
     const uid = currentUser.uid;
     signOut(auth)
@@ -327,13 +325,13 @@ async function authButtonClickedController() {
         statusUpdate.authState = authState('offline');
         const userOffline2 = httpsCallable(functions, 'userOffline2');
         userOffline2(statusUpdate);
+        currentUser = null;
+        authChangeView(null);
       })
       .catch((error) => {
         console.log(error);
       });
   }
-  // keep this else - location should change only if signOut successful
-  location.hash = '#signin';
 }
 
 /**

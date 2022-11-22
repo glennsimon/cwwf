@@ -396,13 +396,13 @@ sendButton.addEventListener('click', async () => {
   inviteDialog.close();
 
   const encodedSubj = encodeURIComponent(
-    `I've invited you to play a CrosSword game!`
+    `I've invited you to play a Crossword game!`
   );
   const encodedBody = encodeURIComponent(
     `I found a crossword game that two people can play against each other, ` +
       `and I'd like to try playing it with you.\n\nHere is the link to the ` +
       `game I started:\n${document.location.origin}?pending=${pendingUid}` +
-      `&sender=${myUid}&game=${gameId}` +
+      `&sender=${myUid}&game=${gameId}#signin` +
       `\n\nIf you click on the link and sign in, the game will show up in ` +
       `your Active Games list so we can play. Cookies have to be enabled ` +
       `in your browser in order for the link to work.\n\nLet's try it!`
