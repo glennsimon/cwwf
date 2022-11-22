@@ -59,7 +59,6 @@ let userStatusDatabaseRef = null;
 let myGames = [];
 let currentGame = null;
 let currentGameId = null;
-// let myOpponentUid = null;
 let acrossWord = true;
 let columns = null;
 let idxArray = [];
@@ -94,14 +93,6 @@ function getMyFriendsController() {
 function getCurrentGameController() {
   return currentGame;
 }
-
-// /**
-//  * Get myOpponentUid. Should be used by all external modules.
-//  * @returns {object} Returns myOpponentUid or null
-//  */
-// function getMyOpponentUidController() {
-//   return myOpponentUid;
-// }
 
 /**
  * Get gameListParameters. Should be used by all external modules.
@@ -514,12 +505,6 @@ function subscribeToGame(gameId) {
       const prevGameId = currentGameId;
       currentGame = gameSnap.data();
       currentGameId = gameId;
-      if (currentGame.status === 'started') {
-        const keys = Object.keys(currentGame.players);
-        for (const key of keys) {
-          if (key !== currentUser.uid) myOpponentUid = key;
-        }
-      }
       idxArray = [];
       columns = currentGame.puzzle.cols;
       myTurn = currentUser.uid === currentGame.nextTurn;
@@ -768,7 +753,6 @@ export {
   abandonCurrentGameController,
   getAcrossWordController,
   setAcrossWordController,
-  // getMyOpponentUidController,
   getGameListParametersController,
   // populateSettingsController,
   storeSettingsController,
