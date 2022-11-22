@@ -243,9 +243,10 @@ startGameButton.addEventListener('click', async () => {
     const myFriends = await getMyFriendsController();
     loadFriendsSettingsView(myFriends);
     gameOverHeading.classList.add('displayNone');
-    winMessage.classList.add('displayNone');
     friendsChooser.classList.add('displayFlex');
     friendsChooser.classList.remove('displayNone');
+    dialogList.classList.remove('displayNone');
+    gamesDialog.querySelector('footer').classList.remove('displayNone');
     replayButton.classList.add('displayNone');
     gamesDialog.classList.add('maxHeight85pct');
     gamesDialog.showModal();
@@ -1161,9 +1162,10 @@ function showReplayDialog(game, result) {
   console.log('Hello from showReplayDialog.');
   winMessage.innerText = result;
   gameOverHeading.classList.remove('displayNone');
-  winMessage.classList.remove('displayNone');
   friendsChooser.classList.add('displayNone');
   friendsChooser.classList.remove('displayFlex');
+  dialogList.classList.add('displayNone');
+  gamesDialog.querySelector('footer').classList.add('displayNone');
   gamesDialog.classList.remove('maxHeight85pct');
   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
   replayButton.classList.remove('displayNone');

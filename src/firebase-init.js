@@ -47,8 +47,8 @@ const searchString = document.location.search;
 console.log('document.location: ', document.location);
 console.log('document.location.search: ', searchString);
 if (document.location.search && !document.cookie.includes('xwwf_invite')) {
-  // cookie will only last one hour after first use
-  const timeInSeconds = 60 * 60;
+  // cookie will only last one week max
+  const timeInSeconds = 60 * 60 * 24 * 7;
   document.cookie =
     `xwwf_invite=${document.location.search}; ` +
     `max-age=${timeInSeconds}; path=/`;

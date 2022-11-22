@@ -148,12 +148,12 @@ exports.pendingPlayer = functions.https.onCall(async (data, context) => {
     // Split data into two nested collections for public and private data
     const publicDataRef = db.collection('users').doc();
     const user = {
+      initiator: uid,
       uid: publicDataRef.id,
       friends: [uid],
       photoURL: null,
       signInProvider: 'none',
-      displayName:
-        data.email.split('@')[0].split('.')[0].split('_')[0] + ' pending ',
+      displayName: data.firstName + ' (pending)',
     };
     return await publicDataRef.set(user).then(() => {
       return publicDataRef.id;
@@ -168,7 +168,7 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
   const uid = context.auth.token.uid;
   const gameRef = db.doc(`games/${data.gameId}`);
   const gameListRef = db.doc(`gameListBuilder/${data.gameId}`);
-  const senderRef = db.doc(`users/${data.senderUid}`);
+  const pendingRef = db.doc(`users/${data.pendingUid}`);
   const newUserRef = db.doc(`users/${uid}`);
   try {
     await db.runTransaction(async (tx) => {
@@ -178,11 +178,6 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
       game.players[uid] = game.players[data.pendingUid];
       delete game.players[data.pendingUid];
       console.log('gameListDoc.viewableBy: ', gameListDoc.viewableBy);
-      gameListDoc.viewableBy.splice(
-        gameListDoc.viewableBy.indexOf(data.pendingUid),
-        1,
-        uid
-      );
       gameListDoc.players[uid] = gameListDoc.players[data.pendingUid];
       delete gameListDoc.players[data.pendingUid];
       gameListDoc.viewableBy.splice(
@@ -197,20 +192,34 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
       if (game.lastTurnCheckObj.playerUid === data.pendingUid)
         game.lastTurnCheckObj.playerUid = uid;
 
-      const sender = (await tx.get(senderRef)).data();
-      if (sender.friends.includes(data.pendingUid))
-        sender.friends.splice(sender.friends.indexOf(data.pendingUid), 1, uid);
-      if (sender.blocked.includes(data.pendingUid))
-        sender.blocked.splice(sender.blocked.indexOf(data.pendingUid), 1, uid);
+      const pendingUser = (await tx.get(pendingRef)).data();
+      const initiatorUid = pendingUser.initiator;
       const newUser = (await tx.get(newUserRef)).data();
       console.log('newUser: ', newUser);
       newUser.friends = newUser.friends
-        ? newUser.friends.push(data.senderUid)
-        : [data.senderUid];
+        ? newUser.friends.push(initiatorUid)
+        : [initiatorUid];
+      const initiatorRef = db.doc(`users/${initiatorUid}`);
+      const initiator = (await tx.get(initiatorRef)).data();
+      if (initiator.friends && initiator.friends.includes(data.pendingUid))
+        initiator.friends.splice(
+          initiator.friends.indexOf(data.pendingUid),
+          1,
+          uid
+        );
+      if (initiator.blocked && initiator.blocked.includes(data.pendingUid))
+        initiator.blocked.splice(
+          initiator.blocked.indexOf(data.pendingUid),
+          1,
+          uid
+        );
 
-      tx.update(gameRef, game).update(gameListRef, gameListDoc);
+      tx.update(gameRef, game)
+        .update(gameListRef, gameListDoc)
+        .update(newUserRef, newUser)
+        .update(initiatorRef, initiator)
+        .delete(pendingRef);
     });
-    await db.doc(`users/${data.pendingUid}`).delete();
     functions.logger.log('updatePendingPlayer transaction success!');
   } catch (error) {
     functions.logger.error('updatePendingPlayer transaction failure: ', error);

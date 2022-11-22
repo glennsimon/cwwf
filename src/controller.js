@@ -258,11 +258,9 @@ async function checkForPendingPlayer() {
       if (cookie.trim().startsWith('xwwf_invite=')) {
         const uidStrings = cookie.slice(13).split('&');
         const pendingUid = uidStrings[0].split('=')[1];
-        const senderUid = uidStrings[1].split('=')[1];
-        const gameId = uidStrings[2].split('=')[1];
+        const gameId = uidStrings[1].split('=')[1];
         const newUserObject = {};
         newUserObject.pendingUid = pendingUid;
-        newUserObject.senderUid = senderUid;
         newUserObject.gameId = gameId;
         console.log('newUserObject: ', newUserObject);
         const updatePendingPlayer = httpsCallable(
@@ -739,12 +737,12 @@ async function handleCheckController(handle) {
 /**
  * Creates a minimal pendingPlayer and adds to Firestore, then returns the
  * document id for the pendingPlayer.
- * @param {string} emailString Email string for pending player
+ * @param {object} nameObject object with `firstName` for pending player
  * @returns document id for pendingPlayer
  */
-async function pendingPlayerController(emailString) {
+async function pendingPlayerController(nameObject) {
   const pendingPlayer = httpsCallable(functions, 'pendingPlayer');
-  return pendingPlayer({ email: emailString }).then((docId) => {
+  return pendingPlayer(nameObject).then((docId) => {
     return docId.data;
   });
 }

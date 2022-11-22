@@ -43,6 +43,7 @@ const inviteProgressContainer = document.getElementById(
 );
 const inviteLoadSpinner = document.getElementById('inviteLoadSpinner');
 const sendButton = document.getElementById('sendButton');
+const firstName = document.getElementById('firstName');
 
 let prefAvatar = null;
 let prefAvatarUrl = null;
@@ -296,7 +297,9 @@ function loadFriendsSettingsView(friends) {
     userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
     ${avatar}
-    <div class='overflowHidden' style='width: 115px;'>${user.displayName}</div>
+    <div class='overflowHidden' style='width: 115px;'>${
+      user.prefName || user.displayName
+    }</div>
     <span class='mdl-list__item-sub-title'>
       ${user.signInProvider ? user.signInProvider.split('.')[0] : 'none'}
     </span>
@@ -382,7 +385,8 @@ sendButton.addEventListener('click', async () => {
   gameStartParameters.viewableBy = [];
   gameStartParameters.viewableBy.push(myUid);
   // opponent - assume never signed in
-  const pendingUid = await pendingPlayerController(inviteEmail.value);
+  const oppName = firstName.value || 'Friend';
+  const pendingUid = await pendingPlayerController({ firstName: oppName });
   console.log('pendingUid: ', pendingUid);
   gameStartParameters.players[pendingUid] = {};
   gameStartParameters.players[pendingUid].bgColor = 'bgTransBlue';
@@ -402,7 +406,7 @@ sendButton.addEventListener('click', async () => {
     `I found a crossword game that two people can play against each other, ` +
       `and I'd like to try playing it with you.\n\nHere is the link to the ` +
       `game I started:\n${document.location.origin}?pending=${pendingUid}` +
-      `&sender=${myUid}&game=${gameId}#signin` +
+      `&game=${gameId}#signin` +
       `\n\nIf you click on the link and sign in, the game will show up in ` +
       `your Active Games list so we can play. Cookies have to be enabled ` +
       `in your browser in order for the link to work.\n\nLet's try it!`
