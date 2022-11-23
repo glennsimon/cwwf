@@ -283,6 +283,7 @@ function notifyPlayer(uid) {
  */
 exports.startGame = functions.https.onCall((gameStartParameters, context) => {
   console.log('Hello from startGame.');
+  const viewableBy = Object.keys(gameStartParameters.players);
   return db
     .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
     .get()
@@ -318,7 +319,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
 
       const gameListData = {};
       gameListData.players = gameStartParameters.players;
-      gameListData.viewableBy = Object.keys(gameStartParameters.players);
+      gameListData.viewableBy = viewableBy;
       gameListData.start = Date.now();
       gameListData.status = 'started';
       gameListData.nextTurn = context.auth.uid;
@@ -351,15 +352,10 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
     })
     .then(async (gameId) => {
       const opponentUid =
-        context.auth.uid === gameStartParameters.viewableBy[0]
-          ? gameStartParameters.viewableBy[1]
-          : gameStartParameters.viewableBy[0];
-
+        context.auth.uid === viewableBy[0] ? viewableBy[1] : viewableBy[0];
       const opponent = await db.doc(`users/${opponentUid}`).get();
       const gameObj = {};
       gameObj.opponent = opponent.data();
-      // gameObj.game = game; - don't need game - listening on client
-      // gameObj.gameListData = gameListData;
       gameObj.gameId = gameId;
       console.log('gameObj: ', gameObj);
       return gameObj;
