@@ -297,8 +297,9 @@ async function loadGamesView(myGames, userData) {
       // displays up to 20 active and 10 past games.
       // Change query limit(30) in populateMyGames if different
       // number is desired.  See else below.
-      const opponentPhotoUrl =
-        userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL;
+      const opponentPhotoUrl = userData[oppUid]
+        ? userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL
+        : null;
       if (opponentPhotoUrl) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <img src='${opponentPhotoUrl}' alt='profile picture'>
@@ -335,8 +336,9 @@ async function loadGamesView(myGames, userData) {
       }
       // pastGames[doc.id] = {};
       // pastGames[doc.id].difficulty = game.difficulty;
-      const opponentPhotoUrl =
-        userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL;
+      const opponentPhotoUrl = userData[oppUid]
+        ? userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL
+        : null;
       if (opponentPhotoUrl) {
         avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
   <img src='${opponentPhotoUrl}' alt='profile picture'>
