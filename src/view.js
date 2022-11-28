@@ -232,7 +232,7 @@ function closeGamesDialog() {
  * Fires an event with user data to populate, update and open the new game
  * dialog in the view, or send user to the login page if no one is logged in.
  */
-startGameButton.addEventListener('click', async () => {
+startGameButton.addEventListener('click', () => {
   console.log('startGameButton clicked.');
   friendsLoadSpinner.classList.add('is-active');
   friendsLoadMessage.innerText = 'Loading list...';
@@ -240,7 +240,8 @@ startGameButton.addEventListener('click', async () => {
   if (currentUser) {
     // user is logged in
     // const friendsObj = await populateFriendsController();
-    const myFriends = await getMyFriendsController();
+    const myFriends = getMyFriendsController();
+    if (!myFriends) return;
     loadFriendsSettingsView(myFriends);
     gameOverHeading.classList.add('displayNone');
     friendsChooser.classList.add('displayFlex');
@@ -266,24 +267,36 @@ async function loadGamesView(myGames, userData) {
   console.log('Hello from loadGamesView.');
   gameLoadSpinner.classList.remove('is-active');
   gameLoadMessage.innerText = '';
+  activeGamesContainer.innerHTML = 'No active games. Start one!';
+  pastGamesContainer.innerHTML = 'No completed games yet';
   if (myGames.length === 0) {
     // myGames doesn't exist or is empty
-    activeGamesContainer.innerHTML = 'No active games. Start one!';
-    pastGamesContainer.innerHTML = 'No completed games yet';
     console.warn('No games exist yet.');
     return;
   }
   const currentUser = getCurrentUserController();
   if (!currentUser) return;
+  const myUid = currentUser.uid;
   let activeGamesHtml = '';
   let pastGamesHtml = '';
-  activeGamesContainer.innerHTML = 'No active games. Start one!';
-  pastGamesContainer.innerHTML = 'No completed games yet';
   let pastGamesNumber = 0;
   for (const gameListItem of myGames) {
+    if (
+      !(
+        gameListItem &&
+        gameListItem.gameId &&
+        gameListItem.start &&
+        typeof gameListItem.start === 'number' &&
+        isFinite(gameListItem.start) &&
+        gameListItem.viewableBy &&
+        gameListItem.viewableBy[0] &&
+        gameListItem.viewableBy[1] &&
+        gameListItem.status
+      )
+    )
+      continue;
     const gameId = gameListItem.gameId;
     // const players = gameListItem.players;
-    const myUid = getCurrentUserController().uid;
     const startDate = new Date(gameListItem.start).toLocaleDateString('en-us', {
       day: 'numeric',
       month: 'short',
@@ -308,7 +321,11 @@ async function loadGamesView(myGames, userData) {
       activeGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
-    <span>${userData[oppUid].prefName || userData[oppUid].displayName}</span>
+    <span>${
+      userData[oppUid]
+        ? userData[oppUid].prefName || userData[oppUid].displayName
+        : 'NoName'
+    }</span>
     <span class='mdl-list__item-sub-title'>
       ${myUid === gameListItem.nextTurn ? 'Your' : 'Their'} turn
     </span>
@@ -347,7 +364,11 @@ async function loadGamesView(myGames, userData) {
       pastGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
-    <span>${userData[oppUid].prefName || userData[oppUid].displayName}</span>
+    <span>${
+      userData[oppUid]
+        ? userData[oppUid].prefName || userData[oppUid].displayName
+        : 'NoName'
+    }</span>
     <span class='mdl-list__item-sub-title'>${result}</span>
   </span>
     <span class='mdl-list__item-secondary-content'>
@@ -1391,6 +1412,15 @@ navList.addEventListener('click', (event) => {
   }
 });
 
+function stopAllSpinnersView() {
+  gameLoadSpinner.classList.remove('is-active');
+  turnProgressSpinner.classList.remove('is-active');
+  friendsLoadSpinner.classList.remove('is-active');
+  gameLoadMessage.innerText = '';
+  turnProgressMessage.innerText = '';
+  friendsLoadMessage.innerText = '';
+}
+
 export {
   authChangeView,
   signedOutView,
@@ -1398,4 +1428,5 @@ export {
   loadGamesView,
   animateScoringView,
   showErrorDialogView,
+  stopAllSpinnersView,
 };

@@ -41,11 +41,15 @@
       {
         "source": "/updatePendingPlayer",
         "function": "updatePendingPlayer"
+      },
+      {
+        "source": "/deleteFailedGame",
+        "function": "deleteFailedGame"
       }
     ],
     "headers": [
       {
-        "source": "/@(userOffline2|authChange|startGame|checkAnswers|abandonGame2|updateFriends|pendingPlayer|updatePendingPlayer)",
+        "source": "/@(userOffline2|authChange|startGame|checkAnswers|abandonGame2|updateFriends|pendingPlayer|updatePendingPlayer|deleteFailedGame)",
         "headers": [
           {
             "key": "Access-Control-Allow-Origin",

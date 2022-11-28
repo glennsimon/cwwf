@@ -218,7 +218,8 @@ function loadUserSelectionList(usersObj) {
     return;
   }
   let itemNumber = 0;
-  uids.forEach((uid) => {
+  for (const uid of uids) {
+    if (!(uid && usersObj[uid])) continue;
     const friend = adjustedFriendsObject.friends.includes(uid);
     const block = adjustedFriendsObject.blocked.includes(uid);
     const user = usersObj[uid];
@@ -264,7 +265,7 @@ function loadUserSelectionList(usersObj) {
   </span>
 </li>`;
     itemNumber++;
-  });
+  }
   friendsDialogList.innerHTML = userList;
   const radioButtons = friendsDialogList.querySelectorAll('label input');
   for (const radioButton of radioButtons) {
@@ -284,7 +285,8 @@ function loadFriendsSettingsView(friends) {
     console.warn('No users in list.');
     return;
   }
-  uids.forEach((uid) => {
+  for (const uid of uids) {
+    if (!(uid && friends[uid])) continue;
     const user = friends[uid];
     // doc.data() is never undefined for query doc snapshots
     // console.log(doc.id, ' => ', doc.data());
@@ -309,7 +311,7 @@ function loadFriendsSettingsView(friends) {
     <i class='material-icons'>grid_on</i>
   </span>
 </li>`;
-  });
+  }
   // allUsers = usersObj;
   // console.log(userList);
   dialogList.innerHTML = userList;
