@@ -104,6 +104,7 @@ exports.authChange = functions.https.onCall(async (data, context) => {
         publicData.photoURL = context.auth.token.picture || null;
         publicData.signInProvider =
           context.auth.token.firebase.sign_in_provider || 'none';
+        publicData.uid = uid;
         if (!privateData) privateData = {};
         privateData.email =
           context.auth.token.email || privateData.email || null;
@@ -116,13 +117,11 @@ exports.authChange = functions.https.onCall(async (data, context) => {
           privateData,
           { merge: true }
         );
-        return publicData;
       });
     } catch (error) {
       functions.logger.error('addFriends transaction failure: ', error);
     }
   }
-  return null;
 });
 
 exports.updateFriends = functions.https.onCall(async (data, context) => {
@@ -172,7 +171,7 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
   const pendingRef = db.doc(`users/${data.pendingUid}`);
   const newUserRef = db.doc(`users/${uid}`);
   try {
-    await db.runTransaction(async (tx) => {
+    return db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
       const gameListDoc = (await tx.get(gameListRef)).data();
       console.log('gameListDoc: ', gameListDoc);
@@ -193,15 +192,25 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
         game.lastTurnCheckObj.playerUid = uid;
 
       const pendingUser = (await tx.get(pendingRef)).data();
+      if (!pendingUser) return null;
+      // console.log('pendingUser: ', pendingUser);
       const initiatorUid = pendingUser.initiator;
       let newUser = (await tx.get(newUserRef)).data();
-      if (!newUser) newUser = {};
-      console.log('newUser: ', newUser);
-      if (newUser.friends && !newUser.friends.includes(initiatorUid)) {
-        newUser.friends.push(initiatorUid);
-      }
+      // console.log('newUser before: ', newUser);
+      // if (!newUser) {
+      newUser = { friends: [initiatorUid] };
       newUser.displayName =
         newUser.displayName || pendingUser.displayName.split(' ')[0];
+      newUser.uid = uid;
+      newUser.photoURL = context.auth.token.picture || null;
+      newUser.blocked = [];
+      newUser.prefName = newUser.displayName;
+      newUser.signInProvider =
+        context.auth.token.firebase.sign_in_provider || 'none';
+      // } else {
+      //   newUser.friends.push(initiatorUid);
+      // }
+      // console.log('newUser after: ', newUser);
       const initiatorRef = db.doc(`users/${initiatorUid}`);
       const initiator = (await tx.get(initiatorRef)).data();
       if (initiator.friends && initiator.friends.includes(data.pendingUid))
@@ -222,13 +231,13 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
         .update(newUserRef, newUser)
         .update(initiatorRef, initiator)
         .delete(pendingRef);
+      functions.logger.log('updatePendingPlayer transaction success!');
+      return newUser;
     });
-    functions.logger.log('updatePendingPlayer transaction success!');
   } catch (error) {
     functions.logger.error('updatePendingPlayer transaction failure: ', error);
-    return false;
+    return null;
   }
-  return true;
 });
 
 /**

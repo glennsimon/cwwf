@@ -48,7 +48,8 @@ console.log('document.location: ', document.location);
 console.log('document.location.search: ', searchString);
 if (
   document.location.search &&
-  document.location.search.includes('xwwf_invite')
+  document.location.search.includes('pending') &&
+  document.location.search.includes('game')
 ) {
   // cookie will only last one week max
   const timeInSeconds = 60 * 60 * 24 * 7;

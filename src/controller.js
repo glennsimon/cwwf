@@ -214,36 +214,43 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
  * Firestore function that monitors auth state.
  */
 onAuthStateChanged(auth, async (user) => {
-  // const uid = user ? user.uid : null;
-  // console.log('Hello from onAuthStateChanged. Current user: ', user);
-  // if (!uid) return;
-  // userStatusFirestoreRef = doc(db, `/users/${uid}`);
-  // userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
-  // const userData = (await getDoc(userStatusFirestoreRef)).data();
-  // currentUser = userData;
-  // authChangeView(userData);
-  // try {
-  //   const authChange = httpsCallable(functions, 'authChange');
-  //   await authChange();
-  //   await generateMessagingToken(uid);
-  //   await populateMyGames(uid);
-  //   const pendingResult = await checkForPendingPlayer();
-  //   console.log(pendingResult);
-  //   myFriends = await populateMyFriends();
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
   if (!uid) return;
+
+  /** NEW CODE */
+
+  let userFirestoreRef = doc(db, `/users/${uid}`);
+  const snapshot = await getDoc(userFirestoreRef);
+  if (snapshot.exists()) {
+    currentUser = snapshot.data();
+  }
+  // else {
+  //   currentUser = {
+  //     uid: uid,
+  //     displayName: user.displayName,
+  //     photoURL: user.photoURL || null,
+  //     signInProvider: null,
+  //     friends: [],
+  //     blocked: [],
+  //   };
+  //   await setDoc(userFirestoreRef, currentUser);
+  // }
+
+  /** END NEW CODE */
+
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
   myFriends = {};
   try {
     const authChange = httpsCallable(functions, 'authChange');
-    currentUser = await authChange().data;
-    currentUser.uid = uid;
+    let authChangeData = await authChange().data;
+    console.log('authChangeData: ', authChangeData);
+    // currentUser.uid = uid;
     const pendingResult = await checkForPendingPlayer();
     authChangeView(currentUser);
     generateMessagingToken();
     populateMyGames(uid);
-    populateMyFriends();
+    await populateMyFriends();
   } catch (err) {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
@@ -272,8 +279,9 @@ async function checkForPendingPlayer() {
           functions,
           'updatePendingPlayer'
         );
-        const success = await updatePendingPlayer(newUserObject);
-        if (success) document.cookie = 'xwwf_invite=done; max-age=0';
+        currentUser = (await updatePendingPlayer(newUserObject)).data;
+        console.log('currentUser: ', currentUser);
+        if (currentUser) document.cookie = 'xwwf_invite=done; max-age=0';
         return 'xwwf_invite cookie used and deleted';
       }
     }

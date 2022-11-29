@@ -705,21 +705,23 @@
             id="sendButton"
             class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect marginAuto"
           >
-            send
+            open mail app
           </button>
         </div>
       </div>
       <div
         id="inviteProgressContainer"
-        class="margin5pxAuto alignItemsCenter displayNone"
+        class="margin5pxAuto alignItemsCenter flexDirCol displayNone"
       >
-        <p
-          id="inviteLoadSpinner"
-          class="mdl-spinner mdl-js-spinner"
-          style="margin: 0"
-        ></p>
-        <div class="margin5px"></div>
-        <span>Preparing game and email...</span>
+        <div class="displayFlex flexDirRow">
+          <p
+            id="inviteLoadSpinner"
+            class="mdl-spinner mdl-js-spinner"
+            style="margin: 0"
+          ></p>
+          <div class="margin5px"></div>
+          <span>Preparing game and email...</span>
+        </div>
       </div>
     </dialog>
     <div id="settingsContainer" class="displayNone" style="height: 100vh">
