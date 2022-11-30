@@ -389,10 +389,10 @@ sendButton.addEventListener('click', async () => {
   // opponent - assume never signed in
   const oppName = firstName.value || 'Friend';
   const pendUid = await pendingPlayerController({ firstName: oppName });
-  console.log('pendingUid: ', pendingUid);
-  gameStartParameters.players[pendingUid] = {};
-  gameStartParameters.players[pendingUid].bgColor = 'bgTransBlue';
-  gameStartParameters.viewableBy.push(pendingUid);
+  console.log('pendUid: ', pendUid);
+  gameStartParameters.players[pendUid] = {};
+  gameStartParameters.players[pendUid].bgColor = 'bgTransBlue';
+  gameStartParameters.viewableBy.push(pendUid);
   // for first game, default to 'easy' game
   gameStartParameters.difficulty = 'easy';
   const gameId = await startNewGameController(gameStartParameters);
@@ -410,8 +410,7 @@ sendButton.addEventListener('click', async () => {
       `Here is the link to the game I started:\n` +
       `${document.location.origin}?pending=${pendUid}&game=${gameId}#signin` +
       `\n\nIf you click on the link and sign in, the game will show up in ` +
-      `your Active Games list so we can play. Cookies have to be enabled ` +
-      `in your browser in order for the link to work.\n\nLet's try it!`
+      `your Active Games list so we can play.\n\nLet's try it!`
   );
 
   window.location.href =
