@@ -70,8 +70,8 @@ const replayButton = document.getElementById('replayButton');
 const returnToSignin = document.getElementById('returnToSignin');
 const gameLoadSpinner = document.getElementById('gameLoadSpinner');
 const gameLoadMessage = document.getElementById('gameLoadMessage');
-const turnProgressSpinner = document.getElementById('turnProgressSpinner');
-const turnProgressMessage = document.getElementById('turnProgressMessage');
+const headerSpinner = document.getElementById('headerSpinner');
+const headerMessage = document.getElementById('headerMessage');
 const errorDialog = document.getElementById('errorDialog');
 const okButton = document.getElementById('okButton');
 const abandonDialog = document.getElementById('abandonDialog');
@@ -82,6 +82,9 @@ const errorMessage = document.getElementById('errorMessage');
 const startGameButton = document.getElementById('startGameButton');
 const friendsLoadSpinner = document.getElementById('friendsLoadSpinner');
 const friendsLoadMessage = document.getElementById('friendsLoadMessage');
+const firebaseuiAuthContainer = document.getElementById(
+  'firebaseuiAuthContainer'
+);
 //#endregion
 
 let currentCell = null;
@@ -380,7 +383,7 @@ async function loadGamesView(myGames, userData) {
   }
   activeGamesContainer.innerHTML = activeGamesHtml;
   pastGamesContainer.innerHTML = pastGamesHtml;
-
+  stopAllSpinnersView();
   // console.log(dialogList);
 }
 
@@ -634,8 +637,8 @@ function showPuzzleView(game, opponent) {
   console.log(game);
   gameLoadSpinner.classList.remove('is-active');
   gameLoadMessage.innerText = '';
-  turnProgressSpinner.classList.remove('is-active');
-  turnProgressMessage.innerText = '';
+  headerSpinner.classList.remove('is-active');
+  headerMessage.innerText = '';
 
   // TODO: should this go here?
   location.hash = '#puzzle';
@@ -678,8 +681,8 @@ function generateGridElement(puzWidth, puzHeight) {
  */
 function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
-  turnProgressSpinner.classList.remove('is-active');
-  turnProgressMessage.innerText = '';
+  headerSpinner.classList.remove('is-active');
+  headerMessage.innerText = '';
   if (scoreObj.newGame || scoreObj.abandoned) return;
   const myUid = getCurrentUserController().uid;
   const scoreElem =
@@ -1219,8 +1222,8 @@ function replayOpponent() {
     ? 'hard'
     : difficulty;
   closeGamesDialog();
-  turnProgressSpinner.classList.add('is-active');
-  turnProgressMessage.innerText = 'Getting new game...';
+  headerSpinner.classList.add('is-active');
+  headerMessage.innerText = 'Getting new game...';
   // load puzzle based on uids of players
   const startGameParameters = {};
   startGameParameters.difficulty = difficulty;
@@ -1233,8 +1236,8 @@ function replayOpponent() {
  * @param {string} message Type of error
  */
 function showErrorDialogView(message) {
-  turnProgressMessage.innerText = '';
-  turnProgressSpinner.classList.remove('is-active');
+  headerMessage.innerText = '';
+  headerSpinner.classList.remove('is-active');
   errorMessage.innerText = message;
   okButton.addEventListener('click', () => {
     errorDialog.close();
@@ -1256,8 +1259,8 @@ concessionBtn.addEventListener('click', () => {
     abandonDialog.close();
   });
   yesButton.addEventListener('click', () => {
-    turnProgressMessage.innerText = 'Working on it...';
-    turnProgressSpinner.classList.add('is-active');
+    headerMessage.innerText = 'Working on it...';
+    headerSpinner.classList.add('is-active');
     concessionBtnContainer.classList.add('displayNone');
     abandonCurrentGameController();
     abandonDialog.close();
@@ -1280,8 +1283,8 @@ function enterLetter(event) {
   const columns = getColumnsController();
   if (!kbContainer.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
-      turnProgressSpinner.classList.add('is-active');
-      turnProgressMessage.innerText = 'Working...';
+      headerSpinner.classList.add('is-active');
+      headerMessage.innerText = 'Working...';
       playWordController();
       return;
     }
@@ -1394,8 +1397,8 @@ for (const node of keyList) {
   node.addEventListener('click', enterLetter);
 }
 document.getElementById('enter').addEventListener('click', () => {
-  turnProgressSpinner.classList.add('is-active');
-  turnProgressMessage.innerText = 'Working...';
+  headerSpinner.classList.add('is-active');
+  headerMessage.innerText = 'Working...';
   playWordController();
 });
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
@@ -1412,12 +1415,30 @@ navList.addEventListener('click', (event) => {
   }
 });
 
+function showHeaderActivityView(message) {
+  showActivity(headerSpinner, headerMessage, message);
+}
+
+/**
+ * Display activity spinner and message
+ * @param {HTMLElement} spinnerElem activity spinner element
+ * @param {HTMLElement} messageElem activity message element
+ * @param {string} message message to display
+ */
+function showActivity(spinnerElem, messageElem, message) {
+  spinnerElem.classList.add('is-active');
+  messageElem.innerText = message;
+}
+
+/**
+ * Stop and hide all activity messages
+ */
 function stopAllSpinnersView() {
   gameLoadSpinner.classList.remove('is-active');
-  turnProgressSpinner.classList.remove('is-active');
+  headerSpinner.classList.remove('is-active');
   friendsLoadSpinner.classList.remove('is-active');
   gameLoadMessage.innerText = '';
-  turnProgressMessage.innerText = '';
+  headerMessage.innerText = '';
   friendsLoadMessage.innerText = '';
 }
 
@@ -1429,4 +1450,5 @@ export {
   animateScoringView,
   showErrorDialogView,
   stopAllSpinnersView,
+  showHeaderActivityView,
 };

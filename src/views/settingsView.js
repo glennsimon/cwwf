@@ -388,7 +388,7 @@ sendButton.addEventListener('click', async () => {
   gameStartParameters.viewableBy.push(myUid);
   // opponent - assume never signed in
   const oppName = firstName.value || 'Friend';
-  const pendingUid = await pendingPlayerController({ firstName: oppName });
+  const pendUid = await pendingPlayerController({ firstName: oppName });
   console.log('pendingUid: ', pendingUid);
   gameStartParameters.players[pendingUid] = {};
   gameStartParameters.players[pendingUid].bgColor = 'bgTransBlue';
@@ -405,16 +405,18 @@ sendButton.addEventListener('click', async () => {
     `I've invited you to play a Crossword game!`
   );
   const encodedBody = encodeURIComponent(
-    `I found a crossword game that two people can play against each other, ` +
-      `and I'd like to try playing it with you.\n\nHere is the link to the ` +
-      `game I started:\n${document.location.origin}?pending=${pendingUid}` +
-      `&game=${gameId}#signin` +
+    `${oppName},\n\nI found a crossword game that two people can play ` +
+      `against each other, and I'd like to try playing it with you.\n\n` +
+      `Here is the link to the game I started:\n` +
+      `${document.location.origin}?pending=${pendUid}&game=${gameId}#signin` +
       `\n\nIf you click on the link and sign in, the game will show up in ` +
       `your Active Games list so we can play. Cookies have to be enabled ` +
       `in your browser in order for the link to work.\n\nLet's try it!`
   );
 
-  window.location.href = `mailto:${inviteEmail.value}?subject=${encodedSubj}&body=${encodedBody}`;
+  window.location.href =
+    `mailto:${inviteEmail.value}?subject=${encodedSubj}` +
+    `&body=${encodedBody}`;
 });
 
 inviteEmail.addEventListener('focusout', (event) => {

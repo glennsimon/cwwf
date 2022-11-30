@@ -13,6 +13,7 @@ import {
   animateScoringView,
   showErrorDialogView,
   stopAllSpinnersView,
+  showHeaderActivityView,
 } from './view.js';
 import {
   getDatabase,
@@ -217,28 +218,12 @@ onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
   if (!uid) return;
-
-  /** NEW CODE */
-
+  showHeaderActivityView('Signing in, fetching games...');
   let userFirestoreRef = doc(db, `/users/${uid}`);
   const snapshot = await getDoc(userFirestoreRef);
   if (snapshot.exists()) {
     currentUser = snapshot.data();
   }
-  // else {
-  //   currentUser = {
-  //     uid: uid,
-  //     displayName: user.displayName,
-  //     photoURL: user.photoURL || null,
-  //     signInProvider: null,
-  //     friends: [],
-  //     blocked: [],
-  //   };
-  //   await setDoc(userFirestoreRef, currentUser);
-  // }
-
-  /** END NEW CODE */
-
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
   myFriends = {};
   try {
@@ -404,7 +389,7 @@ async function updateFriendsController(adjustedFriendsObject) {
  */
 function populateMyFriends() {
   console.log('Hello from populateMyFriends');
-  if (!currentUser.uid) return;
+  if (!currentUser) return;
   if (currentUser.friends.length === 0) return;
   const q = query(
     collection(db, 'users'),
@@ -533,6 +518,7 @@ function subscribeToGame(gameId) {
     async (gameSnap) => {
       const prevGameId = currentGameId;
       currentGame = gameSnap.data();
+      if (!currentGame) return;
       currentGameId = gameId;
       idxArray = [];
       columns = currentGame.puzzle.cols;
