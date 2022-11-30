@@ -174,7 +174,7 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
     return db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
       const gameListDoc = (await tx.get(gameListRef)).data();
-      console.log('gameListDoc: ', gameListDoc);
+      console.log('gameListDoc before: ', gameListDoc);
       game.players[uid] = game.players[data.pendingUid];
       delete game.players[data.pendingUid];
       gameListDoc.players[uid] = gameListDoc.players[data.pendingUid];
@@ -190,12 +190,15 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
       if (game.winner === data.pendingUid) game.winner = uid;
       if (game.lastTurnCheckObj.playerUid === data.pendingUid)
         game.lastTurnCheckObj.playerUid = uid;
+      console.log('gameListDoc after: ', gameListDoc);
 
       const pendingUser = (await tx.get(pendingRef)).data();
+      console.log('pendingUser: ', pendingUser);
       if (!pendingUser) return null;
       // console.log('pendingUser: ', pendingUser);
       const initiatorUid = pendingUser.initiator;
       let newUser = (await tx.get(newUserRef)).data();
+      console.log('newUser: ', newUser);
       // console.log('newUser before: ', newUser);
       // if (!newUser) {
       newUser = { friends: [initiatorUid] };
@@ -479,6 +482,7 @@ let checkAnswerResult = [];
  */
 exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
   // console.log('Hello from checkAnswers. answerObj: ', answerObj);
+  const uid = context.auth.uid;
   const gameRef = db.doc(`games/${answerObj.gameId}`);
   const answersRef = db.doc(`games/${answerObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${answerObj.gameId}`);
@@ -491,7 +495,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       const idxArray = answerObj.idxArray;
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
-      const player = answerObj.playerUid;
+      const player = uid;
       const bgColor = game.players[player].bgColor.match(/blue/i)
         ? 'rgba(0, 0, 255, 0.5)'
         : 'rgba(255, 0, 0, 0.5)';
@@ -562,7 +566,10 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
           checkAnswerResult.push(cellResult);
         }
       }
-      const opponent = answerObj.opponentUid;
+      const opponent =
+        gameList.viewableBy[0] === uid
+          ? gameList.viewableBy[1]
+          : gameList.viewableBy[0];
       game.nextTurn = opponent;
       gameList.nextTurn = opponent;
       if (game.emptySquares === 0) {
@@ -581,7 +588,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
         gameList.finish = finishDate;
       }
       lastTurnCheckObj.checkAnswerResult = checkAnswerResult;
-      lastTurnCheckObj.playerUid = answerObj.playerUid;
+      lastTurnCheckObj.playerUid = uid;
       game.lastTurnCheckObj = lastTurnCheckObj;
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameList);

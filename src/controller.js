@@ -231,7 +231,7 @@ onAuthStateChanged(auth, async (user) => {
     let authChangeData = await authChange().data;
     console.log('authChangeData: ', authChangeData);
     // currentUser.uid = uid;
-    const pendingResult = await checkForPendingPlayer();
+    await checkForPendingPlayer();
     authChangeView(currentUser);
     generateMessagingToken();
     populateMyGames(uid);
@@ -430,8 +430,9 @@ async function populateMyGames(uid) {
   );
   myGamesUnsubscribe = onSnapshot(q, async (snapshot) => {
     const myPastGames = [];
-    const myCurrGames = [];
+    const myActiveGames = [];
     const userIds = [];
+    let currentOpponentUid = null;
     snapshot.forEach((doc) => {
       // console.log('query snapshot doc.data(): ', doc.data());
       const gameListItem = doc.data();
@@ -439,20 +440,26 @@ async function populateMyGames(uid) {
       if (gameListItem.finish) {
         myPastGames.push(gameListItem);
       } else {
-        myCurrGames.push(gameListItem);
+        myActiveGames.push(gameListItem);
       }
       for (const uid of gameListItem.viewableBy) {
         if (!userIds.includes(uid)) userIds.push(uid);
+      }
+      if (doc.id === currentGameId) {
+        currentOpponentUid =
+          gameListItem.viewableBy[0] === currentUser.uid
+            ? gameListItem.viewableBy[1]
+            : gameListItem.viewableBy[0];
       }
     });
     myPastGames.sort((a, b) => {
       return b.finish - a.finish;
     });
-    myCurrGames.sort((a, b) => {
+    myActiveGames.sort((a, b) => {
       return b.start - a.start;
     });
     // const userIds = [];
-    myGames = myCurrGames.concat(myPastGames);
+    myGames = myActiveGames.concat(myPastGames);
     // for (const gameListItem of myGames) {
     //   for (const uid of gameListItem.viewableBy) {
     //     if (!userIds.includes(uid)) userIds.push(uid);
@@ -466,6 +473,7 @@ async function populateMyGames(uid) {
       let userData = {};
       userDocs.forEach((doc) => {
         userData[doc.id] = doc.data();
+        if (doc.id === currentOpponentUid) currentOpp = doc.data();
       });
       loadGamesView(myGames, userData);
     }
@@ -569,8 +577,8 @@ async function playWordController() {
   answerObj.gameId = currentGameId;
   answerObj.acrossWord = acrossWord;
   answerObj.guess = [];
-  answerObj.playerUid = currentUser.uid;
-  answerObj.opponentUid = currentOpp.uid;
+  // answerObj.playerUid = currentUser.uid;
+  // answerObj.opponentUid = currentOpp.uid;
   for (const index of idxArray) {
     answerObj.guess.push(
       currentGame.puzzle.grid[index].guessArray[
