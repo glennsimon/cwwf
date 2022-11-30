@@ -70,8 +70,8 @@ const replayButton = document.getElementById('replayButton');
 const returnToSignin = document.getElementById('returnToSignin');
 const gameLoadSpinner = document.getElementById('gameLoadSpinner');
 const gameLoadMessage = document.getElementById('gameLoadMessage');
-const turnProgressSpinner = document.getElementById('turnProgressSpinner');
-const turnProgressMessage = document.getElementById('turnProgressMessage');
+const headerSpinner = document.getElementById('headerSpinner');
+const headerMessage = document.getElementById('headerMessage');
 const errorDialog = document.getElementById('errorDialog');
 const okButton = document.getElementById('okButton');
 const abandonDialog = document.getElementById('abandonDialog');
@@ -82,6 +82,9 @@ const errorMessage = document.getElementById('errorMessage');
 const startGameButton = document.getElementById('startGameButton');
 const friendsLoadSpinner = document.getElementById('friendsLoadSpinner');
 const friendsLoadMessage = document.getElementById('friendsLoadMessage');
+const firebaseuiAuthContainer = document.getElementById(
+  'firebaseuiAuthContainer'
+);
 //#endregion
 
 let currentCell = null;
@@ -232,7 +235,7 @@ function closeGamesDialog() {
  * Fires an event with user data to populate, update and open the new game
  * dialog in the view, or send user to the login page if no one is logged in.
  */
-startGameButton.addEventListener('click', async () => {
+startGameButton.addEventListener('click', () => {
   console.log('startGameButton clicked.');
   friendsLoadSpinner.classList.add('is-active');
   friendsLoadMessage.innerText = 'Loading list...';
@@ -240,7 +243,8 @@ startGameButton.addEventListener('click', async () => {
   if (currentUser) {
     // user is logged in
     // const friendsObj = await populateFriendsController();
-    const myFriends = await getMyFriendsController();
+    const myFriends = getMyFriendsController();
+    if (!myFriends) return;
     loadFriendsSettingsView(myFriends);
     gameOverHeading.classList.add('displayNone');
     friendsChooser.classList.add('displayFlex');
@@ -266,24 +270,36 @@ async function loadGamesView(myGames, userData) {
   console.log('Hello from loadGamesView.');
   gameLoadSpinner.classList.remove('is-active');
   gameLoadMessage.innerText = '';
+  activeGamesContainer.innerHTML = 'No active games. Start one!';
+  pastGamesContainer.innerHTML = 'No completed games yet';
   if (myGames.length === 0) {
     // myGames doesn't exist or is empty
-    activeGamesContainer.innerHTML = 'No active games. Start one!';
-    pastGamesContainer.innerHTML = 'No completed games yet';
     console.warn('No games exist yet.');
     return;
   }
   const currentUser = getCurrentUserController();
   if (!currentUser) return;
+  const myUid = currentUser.uid;
   let activeGamesHtml = '';
   let pastGamesHtml = '';
-  activeGamesContainer.innerHTML = 'No active games. Start one!';
-  pastGamesContainer.innerHTML = 'No completed games yet';
   let pastGamesNumber = 0;
   for (const gameListItem of myGames) {
+    if (
+      !(
+        gameListItem &&
+        gameListItem.gameId &&
+        gameListItem.start &&
+        typeof gameListItem.start === 'number' &&
+        isFinite(gameListItem.start) &&
+        gameListItem.viewableBy &&
+        gameListItem.viewableBy[0] &&
+        gameListItem.viewableBy[1] &&
+        gameListItem.status
+      )
+    )
+      continue;
     const gameId = gameListItem.gameId;
     // const players = gameListItem.players;
-    const myUid = getCurrentUserController().uid;
     const startDate = new Date(gameListItem.start).toLocaleDateString('en-us', {
       day: 'numeric',
       month: 'short',
@@ -308,7 +324,11 @@ async function loadGamesView(myGames, userData) {
       activeGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
-    <span>${userData[oppUid].prefName || userData[oppUid].displayName}</span>
+    <span>${
+      userData[oppUid]
+        ? userData[oppUid].prefName || userData[oppUid].displayName
+        : 'NoName'
+    }</span>
     <span class='mdl-list__item-sub-title'>
       ${myUid === gameListItem.nextTurn ? 'Your' : 'Their'} turn
     </span>
@@ -347,7 +367,11 @@ async function loadGamesView(myGames, userData) {
       pastGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
   <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
-    <span>${userData[oppUid].prefName || userData[oppUid].displayName}</span>
+    <span>${
+      userData[oppUid]
+        ? userData[oppUid].prefName || userData[oppUid].displayName
+        : 'NoName'
+    }</span>
     <span class='mdl-list__item-sub-title'>${result}</span>
   </span>
     <span class='mdl-list__item-secondary-content'>
@@ -359,7 +383,7 @@ async function loadGamesView(myGames, userData) {
   }
   activeGamesContainer.innerHTML = activeGamesHtml;
   pastGamesContainer.innerHTML = pastGamesHtml;
-
+  stopAllSpinnersView();
   // console.log(dialogList);
 }
 
@@ -613,8 +637,8 @@ function showPuzzleView(game, opponent) {
   console.log(game);
   gameLoadSpinner.classList.remove('is-active');
   gameLoadMessage.innerText = '';
-  turnProgressSpinner.classList.remove('is-active');
-  turnProgressMessage.innerText = '';
+  headerSpinner.classList.remove('is-active');
+  headerMessage.innerText = '';
 
   // TODO: should this go here?
   location.hash = '#puzzle';
@@ -657,8 +681,8 @@ function generateGridElement(puzWidth, puzHeight) {
  */
 function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
-  turnProgressSpinner.classList.remove('is-active');
-  turnProgressMessage.innerText = '';
+  headerSpinner.classList.remove('is-active');
+  headerMessage.innerText = '';
   if (scoreObj.newGame || scoreObj.abandoned) return;
   const myUid = getCurrentUserController().uid;
   const scoreElem =
@@ -1198,8 +1222,8 @@ function replayOpponent() {
     ? 'hard'
     : difficulty;
   closeGamesDialog();
-  turnProgressSpinner.classList.add('is-active');
-  turnProgressMessage.innerText = 'Getting new game...';
+  headerSpinner.classList.add('is-active');
+  headerMessage.innerText = 'Getting new game...';
   // load puzzle based on uids of players
   const startGameParameters = {};
   startGameParameters.difficulty = difficulty;
@@ -1212,8 +1236,8 @@ function replayOpponent() {
  * @param {string} message Type of error
  */
 function showErrorDialogView(message) {
-  turnProgressMessage.innerText = '';
-  turnProgressSpinner.classList.remove('is-active');
+  headerMessage.innerText = '';
+  headerSpinner.classList.remove('is-active');
   errorMessage.innerText = message;
   okButton.addEventListener('click', () => {
     errorDialog.close();
@@ -1235,8 +1259,8 @@ concessionBtn.addEventListener('click', () => {
     abandonDialog.close();
   });
   yesButton.addEventListener('click', () => {
-    turnProgressMessage.innerText = 'Working on it...';
-    turnProgressSpinner.classList.add('is-active');
+    headerMessage.innerText = 'Working on it...';
+    headerSpinner.classList.add('is-active');
     concessionBtnContainer.classList.add('displayNone');
     abandonCurrentGameController();
     abandonDialog.close();
@@ -1259,8 +1283,8 @@ function enterLetter(event) {
   const columns = getColumnsController();
   if (!kbContainer.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
-      turnProgressSpinner.classList.add('is-active');
-      turnProgressMessage.innerText = 'Working...';
+      headerSpinner.classList.add('is-active');
+      headerMessage.innerText = 'Working...';
       playWordController();
       return;
     }
@@ -1373,8 +1397,8 @@ for (const node of keyList) {
   node.addEventListener('click', enterLetter);
 }
 document.getElementById('enter').addEventListener('click', () => {
-  turnProgressSpinner.classList.add('is-active');
-  turnProgressMessage.innerText = 'Working...';
+  headerSpinner.classList.add('is-active');
+  headerMessage.innerText = 'Working...';
   playWordController();
 });
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
@@ -1391,6 +1415,33 @@ navList.addEventListener('click', (event) => {
   }
 });
 
+function showHeaderActivityView(message) {
+  showActivity(headerSpinner, headerMessage, message);
+}
+
+/**
+ * Display activity spinner and message
+ * @param {HTMLElement} spinnerElem activity spinner element
+ * @param {HTMLElement} messageElem activity message element
+ * @param {string} message message to display
+ */
+function showActivity(spinnerElem, messageElem, message) {
+  spinnerElem.classList.add('is-active');
+  messageElem.innerText = message;
+}
+
+/**
+ * Stop and hide all activity messages
+ */
+function stopAllSpinnersView() {
+  gameLoadSpinner.classList.remove('is-active');
+  headerSpinner.classList.remove('is-active');
+  friendsLoadSpinner.classList.remove('is-active');
+  gameLoadMessage.innerText = '';
+  headerMessage.innerText = '';
+  friendsLoadMessage.innerText = '';
+}
+
 export {
   authChangeView,
   signedOutView,
@@ -1398,4 +1449,6 @@ export {
   loadGamesView,
   animateScoringView,
   showErrorDialogView,
+  stopAllSpinnersView,
+  showHeaderActivityView,
 };

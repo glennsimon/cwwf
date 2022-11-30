@@ -64,15 +64,6 @@ exports.userStatusChanged = functions.database
     return null;
   });
 
-exports.newUser = functions.firestore
-  .document('users/{userId}')
-  .onCreate((snapshot, context) => {
-    const friends = {
-      friends: [], //DEPLOY: uncomment: '3eoDltvYiwYfjPviYRRQ2agbsAz1', 'pOsPH8X3DQdVvcfuHgxqEij5LSH2'],
-    };
-    return snapshot.ref.set(friends, { merge: true });
-  });
-
 exports.userOffline2 = functions.https.onCall(async (statusUpdate, context) => {
   console.log('Hello from userOffline2.');
   const uid = statusUpdate.uid;
@@ -92,7 +83,6 @@ exports.authChange = functions.https.onCall(async (data, context) => {
     // console.log('auth token: ', context.auth.token);
     const uid = context.auth.token.uid;
     // Split data into two nested collections for public and private data
-    const batch = db.batch();
     const publicDataRef = db.collection('users').doc(uid);
     const privateDataRef = db
       .collection('users')
@@ -101,27 +91,37 @@ exports.authChange = functions.https.onCall(async (data, context) => {
       .doc('data');
     // User is signed in. Updates every time the user signs in, in case there
     // are changes to photo or whatever.
-    const publicData = {};
-    publicData.displayName = context.auth.token.name
-      ? context.auth.token.name
-      : null;
-    publicData.photoURL = context.auth.token.picture
-      ? context.auth.token.picture
-      : null;
-    publicData.uid = uid;
-    publicData.signInProvider = context.auth.token.firebase.sign_in_provider;
-    const privateData = {
-      email: context.auth.token.email ? context.auth.token.email : null,
-      emailVerified: context.auth.token.email_verified
-        ? context.auth.token.email_verified
-        : null,
-    };
-    batch.set(publicDataRef, publicData, { merge: true });
-    batch.set(privateDataRef, privateData, { merge: true });
-    await batch.commit();
-    return null;
+    try {
+      return db.runTransaction(async (tx) => {
+        let publicData = (await tx.get(publicDataRef)).data();
+        let privateData = (await tx.get(privateDataRef)).data();
+        if (!publicData)
+          publicData = { friends: ['3eoDltvYiwYfjPviYRRQ2agbsAz1'] };
+        publicData.blocked = publicData.blocked || [];
+        publicData.displayName =
+          context.auth.token.name || publicData.displayName || null;
+        publicData.prefName = publicData.prefName || publicData.displayName;
+        publicData.photoURL = context.auth.token.picture || null;
+        publicData.signInProvider =
+          context.auth.token.firebase.sign_in_provider || 'none';
+        publicData.uid = uid;
+        if (!privateData) privateData = {};
+        privateData.email =
+          context.auth.token.email || privateData.email || null;
+        privateData.emailVerified =
+          context.auth.token.email_verified ||
+          privateData.emailVerified ||
+          null;
+        tx.set(publicDataRef, publicData, { merge: true }).set(
+          privateDataRef,
+          privateData,
+          { merge: true }
+        );
+      });
+    } catch (error) {
+      functions.logger.error('addFriends transaction failure: ', error);
+    }
   }
-  return null;
 });
 
 exports.updateFriends = functions.https.onCall(async (data, context) => {
@@ -171,13 +171,12 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
   const pendingRef = db.doc(`users/${data.pendingUid}`);
   const newUserRef = db.doc(`users/${uid}`);
   try {
-    await db.runTransaction(async (tx) => {
+    return db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
       const gameListDoc = (await tx.get(gameListRef)).data();
       console.log('gameListDoc: ', gameListDoc);
       game.players[uid] = game.players[data.pendingUid];
       delete game.players[data.pendingUid];
-      console.log('gameListDoc.viewableBy: ', gameListDoc.viewableBy);
       gameListDoc.players[uid] = gameListDoc.players[data.pendingUid];
       delete gameListDoc.players[data.pendingUid];
       gameListDoc.viewableBy.splice(
@@ -193,14 +192,25 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
         game.lastTurnCheckObj.playerUid = uid;
 
       const pendingUser = (await tx.get(pendingRef)).data();
+      if (!pendingUser) return null;
+      // console.log('pendingUser: ', pendingUser);
       const initiatorUid = pendingUser.initiator;
-      const newUser = (await tx.get(newUserRef)).data();
-      console.log('newUser: ', newUser);
-      newUser.friends = newUser.friends
-        ? newUser.friends.push(initiatorUid)
-        : [initiatorUid];
+      let newUser = (await tx.get(newUserRef)).data();
+      // console.log('newUser before: ', newUser);
+      // if (!newUser) {
+      newUser = { friends: [initiatorUid] };
       newUser.displayName =
         newUser.displayName || pendingUser.displayName.split(' ')[0];
+      newUser.uid = uid;
+      newUser.photoURL = context.auth.token.picture || null;
+      newUser.blocked = [];
+      newUser.prefName = newUser.displayName;
+      newUser.signInProvider =
+        context.auth.token.firebase.sign_in_provider || 'none';
+      // } else {
+      //   newUser.friends.push(initiatorUid);
+      // }
+      // console.log('newUser after: ', newUser);
       const initiatorRef = db.doc(`users/${initiatorUid}`);
       const initiator = (await tx.get(initiatorRef)).data();
       if (initiator.friends && initiator.friends.includes(data.pendingUid))
@@ -221,13 +231,13 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
         .update(newUserRef, newUser)
         .update(initiatorRef, initiator)
         .delete(pendingRef);
+      functions.logger.log('updatePendingPlayer transaction success!');
+      return newUser;
     });
-    functions.logger.log('updatePendingPlayer transaction success!');
   } catch (error) {
     functions.logger.error('updatePendingPlayer transaction failure: ', error);
-    return false;
+    return null;
   }
-  return true;
 });
 
 /**
@@ -256,12 +266,16 @@ function notifyPlayer(uid) {
           },
         };
 
-        await admin.messaging().sendToDevice(toKey, payload, {
-          collapseKey: 'your-turn',
-          timeToLive: 86400,
-        });
-        console.log(`sent notification to ${uid}`);
-        return;
+        const messagingResponse = await admin
+          .messaging()
+          .sendToDevice(toKey, payload, {
+            collapseKey: 'your-turn',
+            timeToLive: 86400,
+          });
+        console.log(`messagingResponse.results: ${messagingResponse.results}`);
+        // TODO: handle failed notifications
+        // (see https://firebase.google.com/codelabs/firebase-cloud-functions#9)
+        return messagingResponse;
       }
       console.log('no user key available');
       return;
@@ -270,6 +284,25 @@ function notifyPlayer(uid) {
       functions.logger.log('Error: ', error);
     });
 }
+
+exports.deleteFailedGame = functions.https.onCall(async (idObj, context) => {
+  const gamesHiddenRef = db
+    .collection('games')
+    .doc(idObj.gameId)
+    .collection('hidden')
+    .doc('answers');
+  const gamesRef = db.collection('games').doc(idObj.gameId);
+  const gameListRef = db.collection('gameListBuilder').doc(idObj.gameId);
+  try {
+    await db.runTransaction(async (tx) => {
+      tx.delete(gamesHiddenRef).delete(gamesRef).delete(gameListRef);
+    });
+    functions.logger.log('deleteFailedGame transaction success!');
+  } catch (error) {
+    functions.logger.error('deleteFailedGame transaction failure: ', error);
+  }
+  return null;
+});
 
 /**
  * Firebase Cloud Function fetches a new game based on the gameStartParameters
@@ -445,7 +478,7 @@ let checkAnswerResult = [];
  * @return {Object} Object with result of the checked answer
  */
 exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
-  console.log('Hello from checkAnswers. answerObj: ', answerObj);
+  // console.log('Hello from checkAnswers. answerObj: ', answerObj);
   const gameRef = db.doc(`games/${answerObj.gameId}`);
   const answersRef = db.doc(`games/${answerObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${answerObj.gameId}`);
@@ -552,7 +585,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       game.lastTurnCheckObj = lastTurnCheckObj;
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameList);
-      notifyPlayer(opponent);
+      return notifyPlayer(opponent);
     });
     functions.logger.log('checkAnswers transaction success!');
   } catch (error) {
@@ -571,7 +604,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
  * @return {number} additional score due to completion of orthogonal word
  */
 function scoreCell(game, direction, index, bgColor) {
-  console.log('Hello from scoreCell.');
+  // console.log('Hello from scoreCell.');
   // get direction for orthogonal word
   const orthoDir = direction === 'across' ? 'down' : 'across';
   const orthoWordArray = getOrthoWordArray(game, orthoDir, index);
@@ -624,7 +657,7 @@ function scoreCell(game, direction, index, bgColor) {
  * @return {array} Array of indices that make up a word block
  */
 function getOrthoWordArray(game, direction, index) {
-  console.log('Hello from getOrthoWordArray.');
+  // console.log('Hello from getOrthoWordArray.');
   const rows = game.puzzle.rows;
   const cols = game.puzzle.cols;
   const orthoWordArray = [];

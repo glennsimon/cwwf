@@ -12,6 +12,8 @@ import {
   loadGamesView,
   animateScoringView,
   showErrorDialogView,
+  stopAllSpinnersView,
+  showHeaderActivityView,
 } from './view.js';
 import {
   getDatabase,
@@ -22,7 +24,7 @@ import {
   serverTimestamp,
 } from 'firebase/database';
 import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 'firebase/auth';
-import { getToken } from 'firebase/messaging';
+import { getToken, onMessage } from 'firebase/messaging';
 import {
   collection,
   getDoc,
@@ -49,12 +51,11 @@ import { loadFriendsSettingsView } from './views/settingsView.js';
 
 const dbRT = getDatabase(app);
 const vapidKey =
-  'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4' +
-  'wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak';
+  'BJ2DYpKmkCOjApNtK7gzaj5JAAC3ec6SkndGANE5QSavKz-sIzF_Z1IxTw_g7lhrbx6RuJORRfmWzEpcjYda14E';
+// 'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak'
 
 let currentUser = null;
 let currentOpp = null;
-let userStatusFirestoreRef = null;
 let userStatusDatabaseRef = null;
 let myGames = [];
 let currentGame = null;
@@ -217,19 +218,24 @@ onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
   if (!uid) return;
-  userStatusFirestoreRef = doc(db, `/users/${uid}`);
+  showHeaderActivityView('Signing in, fetching games...');
+  let userFirestoreRef = doc(db, `/users/${uid}`);
+  const snapshot = await getDoc(userFirestoreRef);
+  if (snapshot.exists()) {
+    currentUser = snapshot.data();
+  }
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
-  const userData = (await getDoc(userStatusFirestoreRef)).data();
-  currentUser = userData;
-  authChangeView(userData);
+  myFriends = {};
   try {
     const authChange = httpsCallable(functions, 'authChange');
-    await authChange();
-    await generateMessagingToken(uid);
-    await populateMyGames(uid);
+    let authChangeData = await authChange().data;
+    console.log('authChangeData: ', authChangeData);
+    // currentUser.uid = uid;
     const pendingResult = await checkForPendingPlayer();
-    console.log(pendingResult);
-    myFriends = await populateMyFriends();
+    authChangeView(currentUser);
+    generateMessagingToken();
+    populateMyGames(uid);
+    await populateMyFriends();
   } catch (err) {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
@@ -258,8 +264,9 @@ async function checkForPendingPlayer() {
           functions,
           'updatePendingPlayer'
         );
-        const success = await updatePendingPlayer(newUserObject);
-        if (success) document.cookie = 'xwwf_invite=done; max-age=0';
+        currentUser = (await updatePendingPlayer(newUserObject)).data;
+        console.log('currentUser: ', currentUser);
+        if (currentUser) document.cookie = 'xwwf_invite=done; max-age=0';
         return 'xwwf_invite cookie used and deleted';
       }
     }
@@ -269,32 +276,48 @@ async function checkForPendingPlayer() {
 
 /**
  * Configure messaging credentials with FCM VAPID key
- * @param {string} uid User ID
  */
-async function generateMessagingToken(uid) {
+async function generateMessagingToken() {
   try {
-    const messagingToken = await getToken(messaging, {
-      vapidKey: vapidKey,
-    });
+    const messagingToken = await getToken(messaging); //, {
+    //   vapidKey: vapidKey,
+    // });
     if (messagingToken) {
-      sendTokenToServer(messagingToken, uid);
+      sendTokenToServer(messagingToken);
+      onMessage(messaging, (message) => {
+        console.log('New message from FCM: ', message.notification);
+      });
+    } else {
+      requestNotificationsPermissions();
     }
-    return;
   } catch (err) {
     console.log('An error occurred while retrieving token: ', err);
+  }
+}
+
+// Requests permissions to show notifications.
+async function requestNotificationsPermissions() {
+  console.log('Requesting notifications permission...');
+  const permission = await Notification.requestPermission();
+
+  if (permission === 'granted') {
+    console.log('Notification permission granted.');
+    // Notification permission granted.
+    await generateMessagingToken();
+  } else {
+    console.log('Unable to get permission to notify.');
   }
 }
 
 /**
  * Send cloud messaging token to server
  * @param {string} messagingToken Cloud messaging token
- * @param {string} uid User ID
  */
-async function sendTokenToServer(messagingToken, uid) {
+async function sendTokenToServer(messagingToken) {
   console.log('Messaging permission granted. Token: ', messagingToken);
-  if (uid) {
+  if (currentUser.uid) {
     await setDoc(
-      doc(db, `/users/${uid}/`),
+      doc(db, `/users/${currentUser.uid}/`),
       { msgToken: messagingToken },
       { merge: true }
     );
@@ -346,30 +369,6 @@ function populateAllUsersController() {
     .catch((error) => console.log('Error getting list of users: ', error));
 }
 
-// /**
-//  * Populate list of all users from firestore and return the list.
-//  * @returns Object containing all users by uid
-//  */
-// function populateFriendsController() {
-//   const myFriends = currentUser.friends;
-//   if (!myFriends) return;
-//   return getDocs(query(collection(db, 'users'), where('uid', 'in', myFriends)))
-//     .then((snapshot) => {
-//       if (snapshot.empty) {
-//         console.log('No friends added yet.');
-//         return;
-//       }
-//       const friendsObj = {};
-//       snapshot.docs.forEach((doc) => {
-//         // console.log(doc.data());
-//         const user = doc.data();
-//         if (user.uid !== currentUser.uid) friendsObj[user.uid] = user;
-//       });
-//       return friendsObj;
-//     })
-//     .catch((error) => console.log('Error getting list of friends: ', error));
-// }
-
 /**
  * Update the users friends and blocked values in Firestore via cloud function
  * @param {object} adjustedFriendsObject contains friends and blocked uid arrays
@@ -380,7 +379,7 @@ async function updateFriendsController(adjustedFriendsObject) {
   adjustedFriendsObject.uid = currentUser.uid;
   const updateFriends = httpsCallable(functions, 'updateFriends');
   updateFriends(adjustedFriendsObject);
-  myFriends = await populateMyFriends();
+  await populateMyFriends();
   loadFriendsSettingsView(myFriends);
 }
 
@@ -388,16 +387,15 @@ async function updateFriendsController(adjustedFriendsObject) {
  * Populate list of all users from firestore and return the list.
  * @returns Object containing friends of currentUser
  */
-async function populateMyFriends() {
+function populateMyFriends() {
   console.log('Hello from populateMyFriends');
-  if (!currentUser.uid) return;
-  if (currentUser.friends.length === 0) return {};
-  const friends = {};
+  if (!currentUser) return;
+  if (currentUser.friends.length === 0) return;
   const q = query(
     collection(db, 'users'),
     where('uid', 'in', currentUser.friends)
   );
-  return await getDocs(q).then((snapshot) => {
+  return getDocs(q).then((snapshot) => {
     if (snapshot.empty) {
       console.log('No friends added yet.');
       return {};
@@ -405,9 +403,12 @@ async function populateMyFriends() {
     snapshot.docs.forEach((doc) => {
       // console.log(doc.data());
       const user = doc.data();
-      if (doc.id !== currentUser.uid) friends[doc.id] = user;
+      if (doc.id !== currentUser.uid) myFriends[doc.id] = user;
     });
-    return friends;
+    for (const key of Object.keys(myFriends)) {
+      if (!currentUser.friends.includes(key)) delete myFriends[key];
+    }
+    return;
   });
 }
 
@@ -480,7 +481,20 @@ async function populateMyGames(uid) {
 async function fetchPuzzleController(gameObj) {
   console.log('Hello from fetchPuzzleController.');
   currentOpp = (await getDoc(doc(db, `users/${gameObj.opponentUid}`))).data();
-  subscribeToGame(gameObj.gameId);
+  if (currentOpp) {
+    subscribeToGame(gameObj.gameId);
+  } else {
+    showErrorDialogView(
+      'That game is not accessible. Try another or start a new one.'
+    );
+    stopAllSpinnersView();
+    const deleteFailedGame = httpsCallable(functions, 'deleteFailedGame');
+    await deleteFailedGame({ gameId: gameObj.gameId }).catch((err) => {
+      console.log('Error code: ', err.code);
+      console.log('Error message: ', err.message);
+      console.log('Error details: ', err.details);
+    });
+  }
 }
 
 /**
@@ -504,6 +518,7 @@ function subscribeToGame(gameId) {
     async (gameSnap) => {
       const prevGameId = currentGameId;
       currentGame = gameSnap.data();
+      if (!currentGame) return;
       currentGameId = gameId;
       idxArray = [];
       columns = currentGame.puzzle.cols;
@@ -564,11 +579,15 @@ async function playWordController() {
     );
   }
   const checkAnswers = httpsCallable(functions, 'checkAnswers');
-  await checkAnswers(answerObj).catch((err) => {
-    console.log('Error code: ', err.code);
-    console.log('Error message: ', err.message);
-    console.log('Error details: ', err.details);
-  });
+  await checkAnswers(answerObj)
+    .then(async (notificationResult) => {
+      console.log('notification Result: ', await notificationResult.data);
+    })
+    .catch((err) => {
+      console.log('Error code: ', err.code);
+      console.log('Error message: ', err.message);
+      console.log('Error details: ', err.details);
+    });
 }
 
 /**
