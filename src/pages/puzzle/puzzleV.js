@@ -21,11 +21,11 @@ import {
   // getMyOpponentUidController,
   // getGameListParametersController,
   // populateSettingsController,
-} from './controller.js';
+} from './puzzleC.js';
 import {
   showSettingsView,
   loadFriendsSettingsView,
-} from './views/settingsView.js';
+} from './pages/settings/src/settingsView.js';
 
 import './styles/main.css';
 

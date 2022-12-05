@@ -1,4 +1,4 @@
-import { auth } from './firebase-init.js';
+import { auth } from '../../firebase-init.js';
 
 /** Note: FirebaseUI is not compatible with the v9 modular SDK.
  * The v9 compatibility layer (specifically, the app-compat and

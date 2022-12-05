@@ -14,6 +14,10 @@ module.exports = {
       import: './src/router.js',
       dependOn: 'init',
     },
+    shell: {
+      import: './src/shellV.js',
+      dependOn: 'init',
+    },
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -32,8 +36,8 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.css$/i,
-        use: [MiniCssExtractPlugin.loader, 'css-loader'],
+        test: /\.s?css$/i,
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
       },
       {
         test: /\.js$/i,
@@ -59,8 +63,28 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'Crosswords WF',
       filename: 'index.html',
-      template: 'src/template.html',
+      template: 'src/shell.html',
     }),
+    // new HtmlWebpackPlugin({
+    //   title: 'Games',
+    //   filename: 'pages/games.html',
+    //   template: 'src/pages/games.html',
+    // }),
+    // new HtmlWebpackPlugin({
+    //   title: 'Puzzle',
+    //   filename: 'pages/puzzle.html',
+    //   template: 'src/pages/puzzle.html',
+    // }),
+    // new HtmlWebpackPlugin({
+    //   title: 'Settings',
+    //   filename: 'pages/settings.html',
+    //   template: 'src/pages/settings.html',
+    // }),
+    // new HtmlWebpackPlugin({
+    //   title: 'Sign in',
+    //   filename: 'pages/signin.html',
+    //   template: 'src/pages/signin.html',
+    // }),
     new MiniCssExtractPlugin({ filename: './assets/[name].[contenthash].css' }),
     new CopyPlugin({
       patterns: [

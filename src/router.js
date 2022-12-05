@@ -1,148 +1,88 @@
-import { auth } from './firebase-init.js';
-import { uiStart } from './signin';
 import {
-  getCurrentUserController,
-  setCurrentGameIdController,
-} from './controller.js';
+  gamesHandler,
+  puzzleHandler,
+  settingsHandler,
+  signinHandler,
+  tosHandler,
+  privacyHandler,
+  helpHandler,
+} from './factory.js';
+import { currentUser } from './pages/games/gamesC.js';
+import { constants } from './common/constants.js';
 
-/** Initialize after document loads */
-// function initRouter() {
-const querySelector = document.querySelector.bind(document);
-const appContainer = querySelector('#appContainer');
-const gamesPanel = querySelector('#gamesPanel');
-const gamesDialog = querySelector('#gamesDialog');
-const scores = querySelector('#scores');
-const concessionBtnContainer = querySelector('#concessionBtnContainer');
-const puzzleInfo = document.getElementById('puzzleInfo');
-const clueContainer = document.getElementById('clueContainer');
-const kbContainer = document.getElementById('kbContainer');
-const splash = document.getElementById('splash');
-// const headerSignin = document.getElementById('headerSignin');
-const signinMessage = document.getElementById('signinMessage');
-const tos = document.getElementById('tos');
-const privacy = document.getElementById('privacy');
-const returnToSignin = document.getElementById('returnToSignin');
-const firebaseuiAuthContainer = document.getElementById(
-  'firebaseuiAuthContainer'
-);
-const gamesNav = document.getElementById('gamesNav');
+let regexTester = null;
 
-window.addEventListener('load', () => {
-  uiStart();
-  if (auth.currentUser && auth.currentUser.uid) {
-    location.hash = '#games';
+/**
+ * Calls an event handler based on the url.  Event handlers
+ * are imported for each legitimate route defined in routes. `urlString` is a string
+ * supplied by the calling function. This (route) funtion is responsible
+ * for changing the url in the browser with the pushState call.
+ * The pushState data object contains the urlString,
+ * as it will be needed for the popState call on navigation.
+ * @param {string} urlString string containing the url to navigate to
+ */
+const route = (urlString) => {
+  window.history.pushState({ urlString: urlString }, '', urlString);
+  handleLocation(urlString);
+};
+
+/**
+ * Specifies html and handler to be used for any window.location.pathname change. Any
+ * base route that is not listed will display a 404 html web page.
+ */
+const routes = {
+  '/games': { html: '/pages/games.html', handler: gamesHandler },
+  '/puzzle': { html: '/pages/puzzle.html', handler: puzzleHandler },
+  '/settings': { html: '/pages/settings.html', handler: settingsHandler },
+  '/signin': { html: '/pages/signin.html', handler: signinHandler },
+  '/tos': { html: '/pages/tos.html', handler: tosHandler },
+  '/privacy': { html: '/pages/privacy.html', handler: privacyHandler },
+  '/help': { html: '/pages/help.html', handler: helpHandler },
+};
+
+/**
+ * Checks `urlString` for valid route, then if valid passes it along to the
+ * appropriate handler, which must be imported.
+ * @param {string} urlString
+ */
+const handleLocation = async (urlString) => {
+  const urlStringData = checkRoute(urlString);
+  const routePath = urlStringData ? urlStringData[1] : null;
+  if (routePath) {
+    document.cookie =
+      `xwwf-last=${
+        currentUser ? currentUser.uid : null
+      }&last_loc=${urlString}; ` + `max-age=${constants.COOKIE_MAX_AGE}`;
+    routes[routePath].handler(urlString);
   } else {
-    location.hash = '#signin';
-    firebaseuiAuthContainer.classList.remove('displayNone');
+    fetch('/pages/404.html').then((data) => (document.body.innerHTML = data));
   }
-});
-window.addEventListener('hashchange', navigate);
-
-let signin = null;
+};
 
 /**
- * Navigate based on hash change
+ * Checks `urlString` for valid route and returns array with the valid route
+ * pathname in position 0, or null if the route is not valid.
+ * @param {string} urlString url to be fetched
+ * @return {array} array containing routes object key in position [1],
+ * or null if invalid route
  */
-async function navigate() {
-  console.log('navigating...');
-  const currentUser = getCurrentUserController();
-  if (!currentUser && location.hash !== '#tos' && location.hash !== '#privacy')
-    location.hash = '#signin';
-  if (location.hash === '#puzzle') {
-    splash.classList.remove('displayFlex');
-    splash.classList.add('displayNone');
-    gamesPanel.classList.add('slideOut');
-    appContainer.classList.add('slideIn');
-    puzzleInfo.classList.remove('displayNone');
-    // headerSignin.classList.add('displayNone');
-    gamesNav.removeAttribute('disabled');
-  } else if (location.hash === '#signin') {
-    gamesPanel.classList.add('slideOut');
-    appContainer.classList.add('slideIn');
-    scores.classList.remove('displayFlex');
-    scores.classList.add('displayNone');
-    concessionBtnContainer.classList.add('displayNone');
-    puzzleInfo.classList.remove('displayFlex');
-    puzzleInfo.classList.add('displayNone');
-    clueContainer.classList.add('displayNone');
-    kbContainer.classList.add('displayNone');
-    splash.classList.remove('displayNone');
-    splash.classList.add('displayFlex');
-    // headerSignin.classList.add('displayNone');
-    signinMessage.classList.remove('displayNone');
-    tos.classList.add('displayNone');
-    privacy.classList.add('displayNone');
-    returnToSignin.classList.add('displayNone');
-    if (!signin) {
-      await loadSigninModule();
+const checkRoute = (urlString) => {
+  url = new URL(urlString);
+  if (!regexTester) {
+    const routeKeys = Object.keys(routes);
+    let regexString = '(';
+    for (let key of routeKeys) {
+      regexString += key + '|';
     }
-    firebaseuiAuthContainer.classList.remove('displayNone');
-    setCurrentGameIdController(null);
-    gamesNav.setAttribute('disabled', '');
-  } else if (location.hash === '#games') {
-    try {
-      gamesDialog.close();
-    } catch (err) {
-      // do nothing, error OK
-    }
-    gamesPanel.classList.remove('slideOut');
-    appContainer.classList.remove('slideIn');
-    concessionBtnContainer.classList.add('displayNone');
-    scores.classList.remove('displayFlex');
-    scores.classList.add('displayNone');
-    puzzleInfo.classList.add('displayNone');
-    // if (currentUser) {
-    //   headerSignin.classList.add('displayNone');
-    // } else {
-    //   headerSignin.classList.remove('displayNone');
-    // }
-    setCurrentGameIdController(null);
-    gamesNav.setAttribute('disabled', '');
-  } else if (location.hash === '#tos') {
-    gamesPanel.classList.add('slideOut');
-    appContainer.classList.add('slideIn');
-    scores.classList.remove('displayFlex');
-    scores.classList.add('displayNone');
-    concessionBtnContainer.classList.add('displayNone');
-    puzzleInfo.classList.add('displayNone');
-    clueContainer.classList.add('displayNone');
-    kbContainer.classList.add('displayNone');
-    splash.classList.remove('displayNone');
-    splash.classList.add('displayFlex');
-    tos.classList.remove('displayNone');
-    returnToSignin.classList.remove('displayNone');
-    signinMessage.classList.add('displayNone');
-    firebaseuiAuthContainer.classList.add('displayNone');
-    setCurrentGameIdController(null);
-  } else if (location.hash === '#privacy') {
-    gamesPanel.classList.add('slideOut');
-    appContainer.classList.add('slideIn');
-    scores.classList.remove('displayFlex');
-    scores.classList.add('displayNone');
-    concessionBtnContainer.classList.add('displayNone');
-    puzzleInfo.classList.add('displayNone');
-    clueContainer.classList.add('displayNone');
-    kbContainer.classList.add('displayNone');
-    splash.classList.remove('displayNone');
-    splash.classList.add('displayFlex');
-    privacy.classList.remove('displayNone');
-    returnToSignin.classList.remove('displayNone');
-    signinMessage.classList.add('displayNone');
-    firebaseuiAuthContainer.classList.add('displayNone');
-    setCurrentGameIdController(null);
+    regexString = regexString.slice(regexString.length - 1) + ')(/.*)?$';
+    regexTester = new RegExp(regexString, 'i');
   }
-}
+  return regexTester.exec(urlString);
+};
 
-/**
- * Lazy load signin module only if user needs to log in.
- */
-async function loadSigninModule() {
-  console.log('Hello from loadSigninModule.');
-  return await import(/* webpackChunkName: 'signin' */ './signin.js').then(
-    (module) => {
-      signin = module.default;
-    }
-  );
-}
+window.onpopstate = (event) => {
+  const urlString = event.state.urlString;
+  handleLocation(urlString);
+};
 
-navigate();
+export { route };

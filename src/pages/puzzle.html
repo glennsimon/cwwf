@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="">
+  <!-- This page of sample code is intended to demonstrate how to use the JSON puzzle format described at www.xwordinfo.com.
+  It can be freely used but please credit Jim Horne and xwordinfo.com and let me know if you end up using it.
+  Email info {at} xwordinfo.com  -->
+
+  <head>
+    <meta charset="utf-8" />
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge" /> -->
+    <meta name="description" content="Mockup of Crosswords With Friends" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= htmlWebpackPlugin.options.title %></title>
+    <!-- Web Application Manifest -->
+    <link rel="manifest" href="./app.webmanifest" />
+    <!-- Add to homescreen for Chrome on Android -->
+    <link rel="icon" sizes="192x192" href="images/chrome-touch-icon-192.png" />
+    <!-- Add to homescreen for Safari on iOS -->
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+    <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
+    <!--
+    <link rel='canonical' href='http://www.example.com/'>
+    -->
+    <!-- Material Design icons -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    <!-- Material Design Lite page styles:
+    You can choose other color schemes from the CDN, more info here http://www.getmdl.io/customize/index.html
+    Format: material.color1-color2.min.css, some examples:
+    material.red-teal.min.css
+    material.blue-orange.min.css
+    material.purple-indigo.min.css
+    -->
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css"
+    />
+    <!-- Roboto font -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto"
+    />
+    <!-- webpack code will be added below -->
+  </head>
+
+  <body>
+    <!-- The drawer is always open in large screens. The header is always shown,
+      even in small screens. -->
+    <div
+      class="mdl-layout mdl-js-layout mdl-layout--fixed-header"
+      style="overflow: hidden"
+    >
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <img
+            id="logo"
+            src="./images/xswordsLogo.png"
+            alt="Crossed swords logo"
+            height="40"
+            width="40"
+            class="cursorPointer"
+          />
+          <div class="spacer20px"></div>
+          <span id="title" class="mdl-layout-title displayNone"
+            >CrosSwords</span
+          >
+          <div class="mdl-layout-spacer"></div>
+          <p id="headerSpinner" class="mdl-spinner mdl-js-spinner margin0"></p>
+          <div class="margin5px"></div>
+          <span id="headerMessage"></span>
+          <div class="mdl-layout-spacer"></div>
+          <span id="wiFiBad" class="material-icons displayNone"
+            >signal_wifi_bad</span
+          >
+          <div class="margin5px"></div>
+          <div id="scores" class="displayNone">
+            <div class="flexGrow-1 margin0px5px width60px bgColorTransWhite">
+              <div id="myName" class="textAlignCenter overflowHidden">Jill</div>
+              <div id="myScore" class="textAlignCenter">25</div>
+            </div>
+            <div class="marginAuto">vs.</div>
+            <div class="flexGrow-1 margin0px5px width60px bgColorTransWhite">
+              <div id="oppName" class="textAlignCenter overflowHidden">
+                Bill
+              </div>
+              <div id="oppScore" class="textAlignCenter">30</div>
+            </div>
+          </div>
+          <button
+            class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon displayNone"
+            id="headerSignin"
+          >
+            <i class="material-icons">login</i>
+          </button>
+          <button
+            class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"
+            id="navBtn"
+          >
+            <i class="material-icons">more_vert</i>
+          </button>
+          <ul
+            id="navList"
+            class="mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right"
+            for="navBtn"
+          >
+            <li class="mdl-menu__item displayFlex">
+              <i class="material-icons alignSelfCenter">refresh</i>&nbsp;Refresh
+            </li>
+            <li id="gamesNav" disabled class="mdl-menu__item displayFlex">
+              <i class="material-icons alignSelfCenter">grid_on</i>&nbsp;Games
+            </li>
+            <li id="settings" class="mdl-menu__item displayFlex">
+              <i class="material-icons alignSelfCenter">settings</i
+              >&nbsp;Settings
+            </li>
+          </ul>
+        </div>
+      </header>
+      <div
+        id="drawer"
+        class="mdl-layout__drawer mdl-color--blue-grey-800 mdl-color-text--blue-grey-50 height100pct"
+      >
+        <header class="drawerHeader">
+          <div id="closeDrawer" class="alignSelfEnd cursorPointer">
+            <i class="material-icons height24px mdl-color-text--white padding-5"
+              >arrow_back</i
+            >
+          </div>
+          <div class="picContainer">
+            <img
+              id="avatar"
+              src="./images/avatar_circle_black.png"
+              alt="profile picture"
+            />
+          </div>
+          <span id="profileName" class="margin5pxAuto">N. E. Person</span>
+          <div id="authBtnContainer" class="margin5pxAuto">
+            <button
+              id="authButton"
+              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent alignItemsCenter"
+            >
+              sign in&nbsp;<span class="material-icons">login </span>
+            </button>
+          </div>
+        </header>
+        <div
+          id="drawerContent"
+          class="displayFlex flexDirCol flexGrow-1 spaceBetween"
+        >
+          <div id="puzzleInfo" class="flexDirCol textAlignCenter displayNone">
+            <div id="puzTitle" class="fontWeightBold colorWhite"></div>
+            <div id="puzAuthor" class="author colorWhite"></div>
+            <div id="puzCopy" class="copy"></div>
+            <div id="puzNotepad" class="displayNone"></div>
+          </div>
+          <div
+            id="concessionBtnContainer"
+            class="textAlignCenter margin5pxAuto displayNone"
+          >
+            <button
+              id="concessionBtn"
+              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            >
+              abandon game
+            </button>
+            <div class="margin10px">
+              Warning! Pressing this button will end the current game and give
+              all remaining points to your opponent.
+            </div>
+          </div>
+        </div>
+      </div>
+      <main
+        class="mdl-layout__content mdl-color--grey-100"
+        style="overflow-y: hidden"
+      >
+        <div
+          id="appContainer"
+          class="displayFlex flexWrap height100pct posAbsolute fullWidth slideIn"
+        >
+          <div id="splash" class="displayFlex">
+            <div
+              class="displayFlex flexDirCol marginAuto flexGrow-1 height100pct overflowYScroll"
+            >
+              <img
+                id="splashImage"
+                src="./images/chrome-touch-icon-192.png"
+                width="192"
+                height="192"
+                alt="logo"
+              />
+              <div
+                id="signinMessage"
+                class="textAlignCenter maxWidth400px margin5pxAuto displayNone"
+              >
+                Please sign in. Sign in needed for game play and so your friends
+                can find you! Sign in only requests the minimum information
+                required for unique player identity.
+              </div>
+              <div id="sign-in-button"></div>
+              <div id="recaptcha-container"></div>
+              <div id="firebaseuiAuthContainer" class="margin5pxAuto"></div>
+              <div
+                id="tos"
+                class="textAlignCenter maxWidth400px margin5pxAuto displayNone"
+              >
+                <h3>Terms of Service</h3>
+                <div>
+                  CrosSwords is a game for entertainment purposes only. It is
+                  intended for use by friends and family. It is not for
+                  commercial purposes, so there are no advertisements, no
+                  selling of data of any kind. The crossword puzzles come from a
+                  public resource on the internet, and attribution of the
+                  original source is displayed for each puzzle. No warranty or
+                  guarantee of any kind is hereby made, however the creator of
+                  the game makes reasonable effort to ensure that the app has no
+                  security vulnerabilities. Logging in and/or playing the game
+                  is entirely at the discretion of the player, and the creator
+                  is not liable for misuse by anyone.
+                </div>
+              </div>
+              <div
+                id="privacy"
+                class="textAlignCenter maxWidth400px margin5pxAuto displayNone"
+              >
+                <h3>Privacy Policy</h3>
+                <div>
+                  CrosSwords collects only the minimum amount of user
+                  information required for identity. This consists of the name
+                  of the user, their email address, and profile picture, if
+                  applicable. This information is used to uniquely identify the
+                  user, and will never be shared with any outside entity or
+                  person. In rare cases, the user may be blocked from CrosSwords
+                  for violation of standards of conduct, such as use of
+                  offensive language or harrassment of another user.
+                </div>
+              </div>
+              <button
+                id="returnToSignin"
+                type="button"
+                class="minHt36px mdl-button mdl-js-button mdl-button--raised mdl-button--accent displayNone width20pct alignSelfCenter"
+              >
+                return to signin
+              </button>
+            </div>
+          </div>
+          <table id="puzTable" class="puzzleWidth marginAuto"></table>
+          <div id="clueContainer" class="fullWidth displayNone">
+            <div id="clueCard" class="cardShadow displayFlex flexDirCol">
+              <div id="singleClue" class="marginAuto flexCenter">
+                Select in the puzzle to reveal clue
+              </div>
+            </div>
+            <div id="clueLists">
+              <div id="acrossContainer" class="padding-5">
+                <div class="heading">ACROSS</div>
+                <div id="acrossClues" class="overflowYScroll"></div>
+                <!-- class='flexColumnWrap'></div> -->
+              </div>
+              <div id="downContainer" class="padding-5">
+                <div class="heading">DOWN</div>
+                <div id="downClues" class="overflowYScroll"></div>
+                <!-- class='flexColumnWrap'></div> -->
+              </div>
+            </div>
+          </div>
+          <div
+            id="kbContainer"
+            class="fullWidth flexDirCol displayNone userSelectNone"
+          >
+            <div class="displayFlex flexCenter fullWidth flexGrow-1">
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  Q
+                  <div class="subscript">10</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  W
+                  <div class="subscript">4</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  E
+                  <div class="subscript">1</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  R
+                  <div class="subscript">1</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  T
+                  <div class="subscript">1</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  Y
+                  <div class="subscript">4</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  U
+                  <div class="subscript">2</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  I
+                  <div class="subscript">1</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  O
+                  <div class="subscript">1</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  P
+                  <div class="subscript">4</div>
+                </div>
+              </div>
+            </div>
+            <div class="displayFlex flexCenter fullWidth flexGrow-1">
+              <div class="width5pct"></div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  A
+                  <div class="subscript">1</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  S
+                  <div class="subscript">1</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  D
+                  <div class="subscript">2</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  F
+                  <div class="subscript">4</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  G
+                  <div class="subscript">3</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  H
+                  <div class="subscript">4</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  J
+                  <div class="subscript">10</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  K
+                  <div class="subscript">5</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  L
+                  <div class="subscript">2</div>
+                </div>
+              </div>
+              <div class="width5pct"></div>
+            </div>
+            <div class="displayFlex flexCenter fullWidth flexGrow-1">
+              <div id="backspace" class="kbButton width9pct">
+                <i class="material-icons marginAuto">backspace</i>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  Z
+                  <div class="subscript">10</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  X
+                  <div class="subscript">8</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  C
+                  <div class="subscript">4</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  V
+                  <div class="subscript">5</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  B
+                  <div class="subscript">4</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  N
+                  <div class="subscript">2</div>
+                </div>
+              </div>
+              <div class="kbButton width9pct bgColorWhite">
+                <div class="displayFlex marginAuto">
+                  M
+                  <div class="subscript">4</div>
+                </div>
+              </div>
+              <div id="enter" class="kbButton width20pct">
+                <div class="marginAuto">ENTER</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          id="gamesPanel"
+          class="posAbsolute fullWidth height100pct displayFlex flexDirCol alignItemsCenter slideOut"
+        >
+          <div
+            id="gamesPanelContainer"
+            class="displayFlex flexDirCol maxHeight85pct"
+          >
+            <div class="heading textAlignCenter">Games</div>
+            <button
+              id="startGameButton"
+              type="button"
+              class="minHt36px mdl-button mdl-js-button mdl-button--raised mdl-button--accent margin5pxAuto"
+            >
+              start a new game
+            </button>
+            <div class="overflowYScroll">
+              <div class="gamesHeading fontWeightBold textAlignCenter">
+                Active games
+              </div>
+              <ul
+                id="activeGamesContainer"
+                class="demo-list-two mdl-list webkitMargin0"
+              >
+                You must sign in to see your active games
+              </ul>
+              <div class="gamesHeading fontWeightBold textAlignCenter">
+                Past games
+              </div>
+              <ul
+                id="pastGamesContainer"
+                class="demo-list-two mdl-list webkitMargin0"
+              >
+                You must sign in to see your completed games
+              </ul>
+            </div>
+          </div>
+          <div class="displayFlex flexDirRow">
+            <p id="gameLoadSpinner" class="mdl-spinner mdl-js-spinner"></p>
+            <div class="margin5px"></div>
+            <p id="gameLoadMessage"></p>
+          </div>
+        </div>
+      </main>
+    </div>
+    <dialog
+      id="gamesDialog"
+      class="mdl-dialog maxHeight85pct displayFlex flexDirCol"
+      style="width: 300px"
+    >
+      <header>
+        <div class="mdl-dialog__content displayFlex flexDirCol">
+          <div class="closeDialogPosition close noOutline cursorPointer">
+            <i class="material-icons">close</i>
+          </div>
+          <div id="gameOverHeading" class="displayNone">
+            <div class="heading textAlignCenter">Game Over</div>
+            <div
+              id="winMessage"
+              class="heading textAlignCenter fontSizeXLarge"
+            ></div>
+          </div>
+          <div id="difficultyHeading" class="fontWeightBold textAlignCenter">
+            Difficulty level
+          </div>
+          <div class="margin10px displayFlex spaceAround">
+            <label
+              class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+              for="radioEasy"
+            >
+              <input
+                type="radio"
+                id="radioEasy"
+                class="mdl-radio__button"
+                name="difficulty"
+                value="easy"
+                checked
+              />
+              <span class="mdl-radio__label">EASY</span>
+            </label>
+            <label
+              class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+              for="radioMed"
+            >
+              <input
+                type="radio"
+                id="radioMed"
+                class="mdl-radio__button"
+                name="difficulty"
+                value="medium"
+              />
+              <span class="mdl-radio__label">MED</span>
+            </label>
+            <label
+              class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
+              for="radioHard"
+            >
+              <input
+                type="radio"
+                id="radioHard"
+                class="mdl-radio__button"
+                name="difficulty"
+                value="hard"
+              />
+              <span class="mdl-radio__label">HARD</span>
+            </label>
+          </div>
+          <button
+            id="replayButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+          >
+            Rematch!
+          </button>
+          <div id="friendsChooser" class="displayFlex flexDirCol">
+            <div class="fontWeightBold textAlignCenter">
+              Choose your opponent below:
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="overflowYScroll">
+        <ul id="dialogList" class="demo-list-action mdl-list">
+          Empty list
+        </ul>
+      </div>
+      <footer class="displayNone">
+        <div class="displayFlex flexDirCol alignItemsCenter">
+          <div class="margin5pxAuto">Don't see your friend in the list?</div>
+          <button
+            id="addFriendsButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+          >
+            Add friends!
+          </button>
+          <div
+            id="friendsProgressContainer"
+            class="margin5pxAuto alignItemsCenter displayNone"
+          >
+            <p
+              id="friendsLoadSpinner"
+              class="mdl-spinner mdl-js-spinner"
+              style="margin: 0"
+            ></p>
+            <div class="margin5px"></div>
+            <span id="friendsLoadMessage">Adding Friends to list...</span>
+          </div>
+        </div>
+      </footer>
+    </dialog>
+    <dialog
+      id="friendsDialog"
+      class="mdl-dialog maxHeight85pct displayFlex flexDirCol"
+      style="width: 300px"
+    >
+      <header>
+        <div
+          class="mdl-dialog__content displayFlex flexDirCol"
+          style="padding: 20px 15px 0"
+        >
+          <div class="closeDialogPosition close noOutline cursorPointer">
+            <i class="material-icons">close</i>
+          </div>
+          <div id="friendsHeading" class="heading textAlignCenter">
+            Add / block players
+          </div>
+        </div>
+      </header>
+      <div id="friendsList" class="overflowYScroll">
+        <ul id="friendsDialogList" class="demo-list-action mdl-list"></ul>
+      </div>
+      <footer>
+        <div class="displayFlex flexDirCol alignItemsCenter">
+          <button
+            id="doneButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent margin5pxAuto"
+          >
+            done
+          </button>
+          <div class="margin5pxAuto">Still don't see your friend?</div>
+          <button
+            id="inviteFriendButton"
+            class="mdl-button mdl-js-button mdl-js-ripple-effect"
+          >
+            Invite them to play!
+          </button>
+        </div>
+      </footer>
+    </dialog>
+    <dialog id="errorDialog" class="mdl-dialog" style="width: 300px">
+      <div class="mdl-dialog__content displayFlex flexDirCol">
+        <div class="closeDialogPosition close noOutline cursorPointer">
+          <i class="material-icons">close</i>
+        </div>
+        <div id="errorMessage" class="textAlignCenter fontSizeLarge">
+          Whoa there, Buckaroo... Your opponent hasn't played their turn yet!
+        </div>
+        <div class="spacer"></div>
+        <button
+          id="okButton"
+          class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent cursorPointer"
+        >
+          OK
+        </button>
+      </div>
+    </dialog>
+    <dialog id="abandonDialog" class="mdl-dialog" style="width: 300px">
+      <div class="mdl-dialog__content displayFlex flexDirCol">
+        <div class="closeDialogPosition close noOutline cursorPointer">
+          <i class="material-icons">close</i>
+        </div>
+        <div id="abandonMessage" class="textAlignCenter fontSizeLarge">
+          <b>Are you sure?</b> Pressing YES will end the current game, giving
+          all remaining points to your opponent. Pressing NO will return you to
+          the game.
+        </div>
+        <div class="spacer"></div>
+        <div class="displayFlex spaceAround">
+          <button
+            id="yesButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent cursorPointer colorRed"
+          >
+            YES</button
+          ><button
+            id="noButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent cursorPointer"
+          >
+            NO
+          </button>
+        </div>
+      </div>
+    </dialog>
+    <dialog id="inviteDialog" class="mdl-dialog" style="width: 300px">
+      <div class="mdl-dialog__content displayFlex flexDirCol alignItemsCenter">
+        <div class="closeDialogPosition close noOutline cursorPointer">
+          <i class="material-icons">close</i>
+        </div>
+        <div id="inviteHeading" class="heading textAlignCenter">
+          Invite a friend to play
+        </div>
+        <div>
+          Enter your friend's first name and email address, and when you tap
+          send, your default email app will open with a message you can send as
+          is or modify before sending.
+        </div>
+        <div
+          class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+        >
+          <input class="mdl-textfield__input" type="text" id="firstName" />
+          <label class="mdl-textfield__label" for="firstName"
+            >Friend's first name</label
+          >
+        </div>
+        <div
+          class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+        >
+          <input class="mdl-textfield__input" type="text" id="inviteEmail" />
+          <label class="mdl-textfield__label" for="inviteEmail"
+            >Friend's email address</label
+          >
+          <span class="mdl-textfield__error">Invalid email</span>
+        </div>
+        <div class="mdl-card__actions mdl-card--border displayFlex marginAuto">
+          <button
+            id="sendButton"
+            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect marginAuto"
+          >
+            open mail app
+          </button>
+        </div>
+      </div>
+      <div
+        id="inviteProgressContainer"
+        class="margin5pxAuto alignItemsCenter flexDirCol displayNone"
+      >
+        <div class="displayFlex flexDirRow">
+          <p
+            id="inviteLoadSpinner"
+            class="mdl-spinner mdl-js-spinner"
+            style="margin: 0"
+          ></p>
+          <div class="margin5px"></div>
+          <span>Preparing game and email...</span>
+        </div>
+      </div>
+    </dialog>
+    <div id="settingsContainer" class="displayNone" style="height: 100vh">
+      <div
+        id="settingsCard"
+        class="mdl-card-square mdl-card mdl-shadow--2dp marginAuto"
+      >
+        <div class="mdl-card__title marginAuto">
+          <h2 class="mdl-card__title-text">Settings</h2>
+        </div>
+        <div class="mdl-card__supporting-text" style="width: 100%">
+          <div class="displayFlex flexDirCol">
+            <div class="mdl-textfield textAlignCenter" style="padding-top: 0">
+              Profile picture:
+            </div>
+            <div class="picContainer">
+              <img
+                id="avatarSettings"
+                src="./images/avatar_circle_black.png"
+                alt="profile picture"
+              />
+            </div>
+            <div class="textAlignCenter">
+              <label for="avatarButton" class="mdl-textfield"
+                >Choose a different image:</label
+              >
+              <input
+                id="avatarButton"
+                class="mdl-button mdl-js-riple-effect mdl-button--raised"
+                name="avatarButton"
+                type="file"
+                accept="image/*"
+              />
+            </div>
+          </div>
+          <div
+            class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+          >
+            <input class="mdl-textfield__input" type="text" id="settingsName" />
+            <label class="mdl-textfield__label" for="settingsName"
+              >Full Name</label
+            >
+          </div>
+          <div
+            id="handleContainer"
+            class="displayFlex alignItemsCenter spaceBetween"
+          >
+            <div
+              id="handleEntry"
+              class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
+              style="width: auto"
+            >
+              <input
+                class="mdl-textfield__input"
+                type="text"
+                id="settingsHandle"
+              />
+              <label class="mdl-textfield__label" for="settingsHandle"
+                >Game Persona</label
+              >
+              <span class="mdl-textfield__error"
+                >Sorry, that's taken. Try again</span
+              >
+            </div>
+            <button
+              id="checkAvailability"
+              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+            >
+              check
+            </button>
+            <div id="okLabel"></div>
+          </div>
+          <div
+            class="mdl-card__actions mdl-card--border displayFlex spaceBetween"
+          >
+            <button
+              id="cancelButton"
+              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+            >
+              cancel
+            </button>
+            <button
+              id="saveSettings"
+              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+            >
+              save settings
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Placeholder div for animated cell -->
+    <div id="cellAnimator"></div>
+  </body>
+</html>

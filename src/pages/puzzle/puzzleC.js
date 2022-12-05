@@ -14,7 +14,7 @@ import {
   showErrorDialogView,
   stopAllSpinnersView,
   showHeaderActivityView,
-} from './view.js';
+} from './puzzleV.js';
 import {
   getDatabase,
   ref,
@@ -45,7 +45,7 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { settings } from 'firebase/analytics';
-import { loadFriendsSettingsView } from './views/settingsView.js';
+import { loadFriendsSettingsView } from './pages/settings/src/settingsView.js';
 // import { runtime } from 'webpack';
 // import { settings } from 'firebase/analytics';
 
