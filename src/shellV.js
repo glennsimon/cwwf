@@ -10,6 +10,7 @@ const navList = document.getElementById('navList');
 
 logo.addEventListener('click', (event) => {
   console.log('Navigating to list of games page');
+  event.preventDefault();
   route('/games');
 });
 

@@ -21,10 +21,14 @@ let regexTester = null;
  * as it will be needed for the popState call on navigation.
  * @param {string} urlString string containing the url to navigate to
  */
-const route = (urlString) => {
-  window.history.pushState({ urlString: urlString }, '', urlString);
+function route(urlString) {
   handleLocation(urlString);
-};
+  window.history.pushState(
+    { urlString: urlString },
+    '{Chrome: 😍, Safari: 💩}',
+    urlString
+  );
+}
 
 /**
  * Specifies html and handler to be used for any window.location.pathname change. Any
@@ -45,7 +49,7 @@ const routes = {
  * appropriate handler, which must be imported.
  * @param {string} urlString
  */
-const handleLocation = async (urlString) => {
+function handleLocation(urlString) {
   const urlStringData = checkRoute(urlString);
   const routePath = urlStringData ? urlStringData[1] : null;
   if (routePath) {
@@ -57,7 +61,7 @@ const handleLocation = async (urlString) => {
   } else {
     fetch('/pages/404.html').then((data) => (document.body.innerHTML = data));
   }
-};
+}
 
 /**
  * Checks `urlString` for valid route and returns array with the valid route
@@ -66,22 +70,27 @@ const handleLocation = async (urlString) => {
  * @return {array} array containing routes object key in position [1],
  * or null if invalid route
  */
-const checkRoute = (urlString) => {
-  url = new URL(urlString);
+function checkRoute(urlString) {
+  const url = new URL(urlString, window.location.origin);
+  console.log(url);
   if (!regexTester) {
     const routeKeys = Object.keys(routes);
     let regexString = '(';
     for (let key of routeKeys) {
       regexString += key + '|';
     }
-    regexString = regexString.slice(regexString.length - 1) + ')(/.*)?$';
+    regexString = regexString.slice(0, regexString.length - 1) + ')(/.*)?$';
+    console.log('regexString: ', regexString);
     regexTester = new RegExp(regexString, 'i');
   }
   return regexTester.exec(urlString);
-};
+}
 
 window.onpopstate = (event) => {
-  const urlString = event.state.urlString;
+  let urlString = '/games';
+  if (event.state && event.state.urlString) {
+    urlString = event.state.urlString;
+  }
   handleLocation(urlString);
 };
 
