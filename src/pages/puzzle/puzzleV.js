@@ -28,6 +28,7 @@ import {
 } from './pages/settings/src/settingsView.js';
 
 import './styles/main.css';
+import { route } from '../../router.js';
 
 //#region HTML element constants
 const authButton = document.getElementById('authButton');
@@ -91,11 +92,7 @@ let currentCell = null;
 // let currentOpponent = null;
 // let allUsers = null;
 
-logo.addEventListener('click', () => {
-  location.hash = '#games';
-});
-
-returnToSignin.addEventListener('click', () => (location.hash = '#signin'));
+returnToSignin.addEventListener('click', () => route('/signin'));
 
 /**
  * Clicking the authButton on the drawer calls `authButtonClickedController`
@@ -107,56 +104,6 @@ authButton.addEventListener('click', (event) => {
   clearPuzzle();
   authButtonClickedController();
 });
-
-/**
- * Called by the controller, updates the view
- * when there is an auth change.
- * @param {User} user Current logged in user or null
- */
-function authChangeView(user) {
-  if (user) {
-    gameLoadSpinner.classList.add('is-active');
-    gameLoadMessage.innerText = 'Loading your games...';
-    // authButton.textContent = 'sign out';
-    authButton.innerHTML = `sign out&nbsp;<span class='material-icons'>logout </span>`;
-    profileName.textContent = user.prefName || user.displayName;
-    avatar.src =
-      user.prefAvatarUrl || user.photoURL || 'images/avatar_circle_black.png';
-    location.hash = '#games';
-    headerSignin.classList.add('displayNone');
-  } else {
-    // authButton.textContent = 'sign in';
-    authButton.innerHTML = `sign in&nbsp;<span class='material-symbols-outlined signInOut'>login </span>`;
-    profileName.textContent = 'N. E. Person';
-    avatar.src = 'images/avatar_circle_black.png';
-    location.hash = '#signin';
-    // headerSignin.classList.remove('displayNone');
-    puzTitle.innerText = 'No puzzle loaded';
-    activeGamesContainer.innerHTML = `You must sign in to see your active games`;
-    pastGamesContainer.innerHTML = `You must sign in to see your completed games`;
-    clearPuzzle();
-  }
-  if (drawer.classList.contains('is-visible')) toggleDrawer();
-  // TODO: get rid of local variables - currentUser should be available only
-  // in the controller
-  // currentUser = user;
-}
-
-/**
- * Called by the controller, updates the view
- * when user has signed out.
- */
-function signedOutView() {
-  activeGamesContainer.innerHTML = 'You must sign in to see your active games';
-  pastGamesContainer.innerHTML = 'You must sign in to see your completed games';
-  if (drawer.classList.contains('is-visible')) toggleDrawer();
-  clearPuzzle();
-}
-
-/** Helper function for toggling drawer */
-function toggleDrawer() {
-  document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
-}
 
 /** Removes puzzle from DOM */
 function clearPuzzle() {
@@ -178,9 +125,7 @@ function clearPuzzle() {
 }
 
 // Go to signin page when user clicks headerSignin icon
-headerSignin.addEventListener('click', () => {
-  location.hash = '#signin';
-});
+headerSignin.addEventListener('click', () => route('/signin'));
 
 /**
  * Start a new game with selected opponent
@@ -229,195 +174,6 @@ function closeGamesDialog() {
   radioHard.removeAttribute('checked');
   radioEasy.setAttribute('checked', true);
   gamesDialog.close();
-}
-
-/**
- * Fires an event with user data to populate, update and open the new game
- * dialog in the view, or send user to the login page if no one is logged in.
- */
-startGameButton.addEventListener('click', () => {
-  console.log('startGameButton clicked.');
-  friendsLoadSpinner.classList.add('is-active');
-  friendsLoadMessage.innerText = 'Loading list...';
-  const currentUser = getCurrentUserController();
-  if (currentUser) {
-    // user is logged in
-    // const friendsObj = await populateFriendsController();
-    const myFriends = getMyFriendsController();
-    if (!myFriends) return;
-    loadFriendsSettingsView(myFriends);
-    gameOverHeading.classList.add('displayNone');
-    friendsChooser.classList.add('displayFlex');
-    friendsChooser.classList.remove('displayNone');
-    dialogList.classList.remove('displayNone');
-    gamesDialog.querySelector('footer').classList.remove('displayNone');
-    replayButton.classList.add('displayNone');
-    gamesDialog.classList.add('maxHeight85pct');
-    gamesDialog.showModal();
-  } else {
-    // user is not logged in
-    location.hash = '#signin';
-  }
-});
-
-/**
- * Load game list with active and past games that the current user has
- * participated in.
- * @param {Array} myGames Object all games viewable by the current user
- * @param {object} userData Object with all public user data for users in myGames
- */
-async function loadGamesView(myGames, userData) {
-  console.log('Hello from loadGamesView.');
-  gameLoadSpinner.classList.remove('is-active');
-  gameLoadMessage.innerText = '';
-  activeGamesContainer.innerHTML = 'No active games. Start one!';
-  pastGamesContainer.innerHTML = 'No completed games yet';
-  if (myGames.length === 0) {
-    // myGames doesn't exist or is empty
-    console.warn('No games exist yet.');
-    return;
-  }
-  const currentUser = getCurrentUserController();
-  if (!currentUser) return;
-  const myUid = currentUser.uid;
-  let activeGamesHtml = '';
-  let pastGamesHtml = '';
-  let pastGamesNumber = 0;
-  for (const gameListItem of myGames) {
-    if (
-      !(
-        gameListItem &&
-        gameListItem.gameId &&
-        gameListItem.start &&
-        typeof gameListItem.start === 'number' &&
-        isFinite(gameListItem.start) &&
-        gameListItem.viewableBy &&
-        gameListItem.viewableBy[0] &&
-        gameListItem.viewableBy[1] &&
-        gameListItem.status
-      )
-    )
-      continue;
-    const gameId = gameListItem.gameId;
-    // const players = gameListItem.players;
-    const startDate = new Date(gameListItem.start).toLocaleDateString('en-us', {
-      day: 'numeric',
-      month: 'short',
-    });
-    let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
-    const oppUid =
-      gameListItem.viewableBy[0] === myUid
-        ? gameListItem.viewableBy[1]
-        : gameListItem.viewableBy[0];
-    if (gameListItem.status === 'started') {
-      // displays up to 20 active and 10 past games.
-      // Change query limit(30) in populateMyGames if different
-      // number is desired.  See else below.
-      const opponentPhotoUrl = userData[oppUid]
-        ? userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL
-        : null;
-      if (opponentPhotoUrl) {
-        avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <img src='${opponentPhotoUrl}' alt='profile picture'>
-</span>`;
-      }
-      activeGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-  <span id='${oppUid}' class='mdl-list__item-primary-content'>
-    ${avatar}
-    <span>${
-      userData[oppUid]
-        ? userData[oppUid].prefName || userData[oppUid].displayName
-        : 'NoName'
-    }</span>
-    <span class='mdl-list__item-sub-title'>
-      ${myUid === gameListItem.nextTurn ? 'Your' : 'Their'} turn
-    </span>
-  </span>
-  <span class='mdl-list__item-secondary-content'>
-  <span class='mdl-list__item-secondary-info'>Started</span>
-  <span>${startDate}</span>
-  </span>
-</li>`;
-    } else if (pastGamesNumber < 10) {
-      const finishDate = new Date(gameListItem.finish).toLocaleDateString(
-        'en-us',
-        {
-          day: 'numeric',
-          month: 'short',
-        }
-      );
-      // displays a max of 10 past games
-      pastGamesNumber++;
-      let result = 'Tie game!';
-      if (gameListItem.status === 'finished' && gameListItem.winner !== 'tie') {
-        result = myUid === gameListItem.winner ? 'You won!!' : 'They won';
-      } else if (gameListItem.status === 'abandoned') {
-        result = 'Game abandoned';
-      }
-      // pastGames[doc.id] = {};
-      // pastGames[doc.id].difficulty = game.difficulty;
-      const opponentPhotoUrl = userData[oppUid]
-        ? userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL
-        : null;
-      if (opponentPhotoUrl) {
-        avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-  <img src='${opponentPhotoUrl}' alt='profile picture'>
-</span>`;
-      }
-      pastGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-  <span id='${oppUid}' class='mdl-list__item-primary-content'>
-    ${avatar}
-    <span>${
-      userData[oppUid]
-        ? userData[oppUid].prefName || userData[oppUid].displayName
-        : 'NoName'
-    }</span>
-    <span class='mdl-list__item-sub-title'>${result}</span>
-  </span>
-    <span class='mdl-list__item-secondary-content'>
-    <span class='mdl-list__item-secondary-info'>Finished</span>
-    <span>${finishDate}</span>
-  </span>
-</li>`;
-    }
-  }
-  activeGamesContainer.innerHTML = activeGamesHtml;
-  pastGamesContainer.innerHTML = pastGamesHtml;
-  stopAllSpinnersView();
-  // console.log(dialogList);
-}
-
-activeGamesContainer.addEventListener('click', loadGame);
-
-pastGamesContainer.addEventListener('click', loadGame);
-
-/**
- * Fetch an existing game from firestore via the controller.
- * @param {MouseEvent} event
- * @returns void
- */
-function loadGame(event) {
-  console.log('User selected a game to view.');
-  let eventTarget = event.target;
-  while (!eventTarget.id) {
-    eventTarget = eventTarget.parentElement;
-  }
-  if (eventTarget.nodeName.toLowerCase() === 'ul') return;
-  if (eventTarget.nodeName.toLowerCase() === 'li') {
-    eventTarget = eventTarget.children[0];
-  }
-  const gameObj = {};
-  if (eventTarget.nodeName.toLowerCase() === 'span') {
-    gameObj.opponentUid = eventTarget.id;
-    eventTarget = eventTarget.parentElement;
-  } else {
-    return;
-  }
-  gameObj.gameId = eventTarget.id;
-  gameLoadSpinner.classList.add('is-active');
-  gameLoadMessage.innerText = 'Fetching your game...';
-  puzTitle.innerText = 'Fetching data...';
-  fetchPuzzleController(gameObj);
 }
 
 /**
@@ -641,7 +397,7 @@ function showPuzzleView(game, opponent) {
   headerMessage.innerText = '';
 
   // TODO: should this go here?
-  location.hash = '#puzzle';
+  route('/puzzle');
 }
 
 /**
@@ -1402,45 +1158,6 @@ document.getElementById('enter').addEventListener('click', () => {
   playWordController();
 });
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
-
-navList.addEventListener('click', (event) => {
-  if (event.target.querySelector('i').innerText === 'refresh') {
-    location.reload();
-  }
-  if (event.target.querySelector('i').innerText === 'grid_on') {
-    location.hash = '#games';
-  }
-  if (event.target.querySelector('i').innerText === 'settings') {
-    showSettingsView();
-  }
-});
-
-function showHeaderActivityView(message) {
-  showActivity(headerSpinner, headerMessage, message);
-}
-
-/**
- * Display activity spinner and message
- * @param {HTMLElement} spinnerElem activity spinner element
- * @param {HTMLElement} messageElem activity message element
- * @param {string} message message to display
- */
-function showActivity(spinnerElem, messageElem, message) {
-  spinnerElem.classList.add('is-active');
-  messageElem.innerText = message;
-}
-
-/**
- * Stop and hide all activity messages
- */
-function stopAllSpinnersView() {
-  gameLoadSpinner.classList.remove('is-active');
-  headerSpinner.classList.remove('is-active');
-  friendsLoadSpinner.classList.remove('is-active');
-  gameLoadMessage.innerText = '';
-  headerMessage.innerText = '';
-  friendsLoadMessage.innerText = '';
-}
 
 export {
   authChangeView,

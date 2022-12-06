@@ -7,6 +7,17 @@ let privacyHandlerObj = null;
 let helpHandlerObj = null;
 
 /**
+ * Called by the router, fetches resources necessary for the shell
+ * and initiates the display of the shell
+ * @param {string} urlString
+ */
+function shellHandler(urlString) {
+  fetch(urlString).then(
+    (html) => (document.querySelector('html').innerHTML = html)
+  );
+}
+
+/**
  * Called by the router, fetches resources necessary for the games page
  * and initiates the display of the games page
  * @param {string} urlString
@@ -56,6 +67,7 @@ function tosHandler(urlString) {}
 function helpHandler(urlString) {}
 
 export {
+  shellHandler,
   gamesHandler,
   puzzleHandler,
   settingsHandler,

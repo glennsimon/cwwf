@@ -74,9 +74,9 @@ const uiConfig = {
     // firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID,
   ],
   // Terms of service url.
-  tosUrl: () => (location.hash = '#tos'),
+  tosUrl: () => route('/tos'),
   // Privacy policy url.
-  privacyPolicyUrl: () => (location.hash = '#privacy'),
+  privacyPolicyUrl: () => route('/privacy'),
 };
 
 /**

@@ -326,7 +326,7 @@ async function sendTokenToServer(messagingToken) {
 }
 
 /**
- * Called by the view, signs the user out or takes them to the #signin page.
+ * Called by the view, signs the user out or takes them to the /signin page.
  */
 function authButtonClickedController() {
   if (currentUser) {
@@ -556,7 +556,7 @@ async function playWordController() {
     showErrorDialogView(errorMessage);
     return;
   }
-  if (location.hash === '#puzzle' && !myTurn) {
+  if (location.pathname.startsWith('/puzzle') && !myTurn) {
     const errorMessage =
       `Whoa there, Buckaroo... ` +
       `Your opponent hasn't played their turn yet!`;

@@ -91,11 +91,7 @@
 // // let currentOpponent = null;
 // // let allUsers = null;
 
-// logo.addEventListener('click', () => {
-//   location.hash = '#games';
-// });
-
-// returnToSignin.addEventListener('click', () => (location.hash = '#signin'));
+// returnToSignin.addEventListener('click', () => route('/signin'));
 
 // /**
 //  * Clicking the authButton on the drawer calls `authButtonClickedController`
@@ -122,14 +118,14 @@
 //     profileName.textContent = user.prefName || user.displayName;
 //     avatar.src =
 //       user.prefAvatarUrl || user.photoURL || 'images/avatar_circle_black.png';
-//     location.hash = '#games';
+//     route('/games');
 //     headerSignin.classList.add('displayNone');
 //   } else {
 //     // authButton.textContent = 'sign in';
 //     authButton.innerHTML = `sign in&nbsp;<span class='material-symbols-outlined signInOut'>login </span>`;
 //     profileName.textContent = 'N. E. Person';
 //     avatar.src = 'images/avatar_circle_black.png';
-//     location.hash = '#signin';
+//     route('/signin');
 //     // headerSignin.classList.remove('displayNone');
 //     puzTitle.innerText = 'No puzzle loaded';
 //     activeGamesContainer.innerHTML = `You must sign in to see your active games`;
@@ -179,7 +175,7 @@
 
 // // Go to signin page when user clicks headerSignin icon
 // headerSignin.addEventListener('click', () => {
-//   location.hash = '#signin';
+//   route('/signin');
 // });
 
 // /**
@@ -256,7 +252,7 @@
 //     gamesDialog.showModal();
 //   } else {
 //     // user is not logged in
-//     location.hash = '#signin';
+//     route('/signin');
 //   }
 // });
 
@@ -641,7 +637,7 @@
 //   headerMessage.innerText = '';
 
 //   // TODO: should this go here?
-//   location.hash = '#puzzle';
+//   route('/puzzle');
 // }
 
 // /**
@@ -1408,7 +1404,7 @@
 //     location.reload();
 //   }
 //   if (event.target.querySelector('i').innerText === 'grid_on') {
-//     location.hash = '#games';
+//     route('/games');
 //   }
 //   if (event.target.querySelector('i').innerText === 'settings') {
 //     showSettingsView();

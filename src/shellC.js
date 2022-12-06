@@ -44,6 +44,7 @@ import {
   ref as refStorage,
   uploadBytes,
 } from 'firebase/storage';
+import { route } from './router.js';
 // import { runtime } from 'webpack';
 // import { settings } from 'firebase/analytics';
 
@@ -324,7 +325,7 @@ async function sendTokenToServer(messagingToken) {
 }
 
 /**
- * Called by the view, signs the user out or takes them to the #signin page.
+ * Called by the view, signs the user out or takes them to the /signin page.
  */
 function authButtonClickedController() {
   if (currentUser) {
@@ -338,6 +339,7 @@ function authButtonClickedController() {
         userOffline2(statusUpdate);
         currentUser = null;
         authChangeView(null);
+        route('/signin');
       })
       .catch((error) => {
         console.log(error);
@@ -538,62 +540,6 @@ function subscribeToGame(gameId) {
       console.error('Error subscribing to puzzle: ', error);
     }
   );
-}
-
-/**
- * Play currentUser's turn. Executed when the player clicks the enter
- * button
- */
-async function playWordController() {
-  console.log('Hello from playWordController.');
-  if (currentGame.status === 'finished') return;
-  if (incomplete()) {
-    const errorMessage =
-      `Entry is incomplete. No blank letters ` +
-      `allowed in highlighted range. Try again!`;
-    showErrorDialogView(errorMessage);
-    return;
-  }
-  if (location.hash === '#puzzle' && !myTurn) {
-    const errorMessage =
-      `Whoa there, Buckaroo... ` +
-      `Your opponent hasn't played their turn yet!`;
-    showErrorDialogView(errorMessage);
-    return;
-  }
-  if (!online) {
-    const errorMessage =
-      `You are currently disconnected from the ` +
-      `internet. When connection is restored you may have to ` +
-      `play your turn again`;
-    showErrorDialogView(errorMessage);
-  }
-  // TODO: something like this?:
-  // document.getElementById('puzTitle').innerText = 'Fetching data...';
-  const answerObj = {};
-  answerObj.idxArray = idxArray;
-  answerObj.gameId = currentGameId;
-  answerObj.acrossWord = acrossWord;
-  answerObj.guess = [];
-  // answerObj.playerUid = currentUser.uid;
-  // answerObj.opponentUid = currentOpp.uid;
-  for (const index of idxArray) {
-    answerObj.guess.push(
-      currentGame.puzzle.grid[index].guessArray[
-        currentGame.puzzle.grid[index].guessArray.length - 1
-      ]
-    );
-  }
-  const checkAnswers = httpsCallable(functions, 'checkAnswers');
-  await checkAnswers(answerObj)
-    .then(async (notificationResult) => {
-      console.log('notification Result: ', await notificationResult.data);
-    })
-    .catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
 }
 
 /**

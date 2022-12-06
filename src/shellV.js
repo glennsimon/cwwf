@@ -21,7 +21,7 @@ function toggleDrawer() {
 
 // Go to signin page when user clicks headerSignin icon
 headerSignin.addEventListener('click', () => {
-  location.hash = '#signin';
+  route('/signin');
 });
 
 document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
@@ -31,7 +31,7 @@ navList.addEventListener('click', (event) => {
     location.reload();
   }
   if (event.target.querySelector('i').innerText === 'grid_on') {
-    location.hash = '#games';
+    route('/games');
   }
   if (event.target.querySelector('i').innerText === 'settings') {
     showSettingsView();

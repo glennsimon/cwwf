@@ -1,4 +1,5 @@
 import {
+  shellHandler,
   gamesHandler,
   puzzleHandler,
   settingsHandler,
@@ -35,6 +36,7 @@ function route(urlString) {
  * base route that is not listed will display a 404 html web page.
  */
 const routes = {
+  '/': { html: '/shell.html', handler: shellHandler },
   '/games': { html: '/pages/games.html', handler: gamesHandler },
   '/puzzle': { html: '/pages/puzzle.html', handler: puzzleHandler },
   '/settings': { html: '/pages/settings.html', handler: settingsHandler },
@@ -87,10 +89,7 @@ function checkRoute(urlString) {
 }
 
 window.onpopstate = (event) => {
-  let urlString = '/games';
-  if (event.state && event.state.urlString) {
-    urlString = event.state.urlString;
-  }
+  const urlString = event.target.href;
   handleLocation(urlString);
 };
 
