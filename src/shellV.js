@@ -34,6 +34,6 @@ navList.addEventListener('click', (event) => {
     route('/games');
   }
   if (event.target.querySelector('i').innerText === 'settings') {
-    showSettingsView();
+    route('/settings');
   }
 });

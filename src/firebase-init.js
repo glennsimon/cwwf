@@ -2,11 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getMessaging } from 'firebase/messaging';
-import {
-  getFunctions,
-  connectFunctionsEmulator,
-  httpsCallable,
-} from 'firebase/functions';
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { getAnalytics } from 'firebase/analytics';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 

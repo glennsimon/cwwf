@@ -8,7 +8,7 @@ import {
   privacyHandler,
   helpHandler,
 } from './factory.js';
-import { currentUser } from './pages/games/gamesC.js';
+import { currentUser } from './pages/signin/signinC.js';
 import { constants } from './common/constants.js';
 
 let regexTester = null;
@@ -24,11 +24,7 @@ let regexTester = null;
  */
 function route(urlString) {
   handleLocation(urlString);
-  window.history.pushState(
-    { urlString: urlString },
-    '{Chrome: 😍, Safari: 💩}',
-    urlString
-  );
+  window.history.pushState({}, '{Chrome: 😍, Safari: 💩}', urlString);
 }
 
 /**
@@ -92,5 +88,11 @@ window.onpopstate = (event) => {
   const urlString = event.target.href;
   handleLocation(urlString);
 };
+
+if (currentUser) {
+  route('/games');
+} else {
+  route('/signin');
+}
 
 export { route };

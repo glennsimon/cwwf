@@ -1,3 +1,7 @@
+import { auth } from 'firebaseui';
+import { route } from './router';
+
+let shellHandlerObj = null;
 let gamesHandlerObj = null;
 let puzzleHandlerObj = null;
 let settingsHandlerObj = null;
@@ -12,9 +16,11 @@ let helpHandlerObj = null;
  * @param {string} urlString
  */
 function shellHandler(urlString) {
-  fetch(urlString).then(
-    (html) => (document.querySelector('html').innerHTML = html)
-  );
+  if (auth.currentUser) {
+    route('/games');
+  } else {
+    route('/signin');
+  }
 }
 
 /**
