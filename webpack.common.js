@@ -53,10 +53,10 @@ module.exports = {
         test: /\.(svg|png|jpg|jpeg|gif)$/,
         type: 'asset/resource',
       },
-      // {
-      //   test: /\.html$/,
-      //   use: ['html-loader'],
-      // },
+      {
+        test: /\.html$/,
+        use: ['html-loader'],
+      },
     ],
   },
   plugins: [

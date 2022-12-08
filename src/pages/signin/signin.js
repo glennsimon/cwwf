@@ -127,13 +127,13 @@ function parseQueryString(queryString) {
   return config;
 }
 
-let uiStarted = false;
+// let uiStarted = false;
 
 const uiStart = () => {
-  if (uiStarted) return;
+  // if (uiStarted) return;
   // The start method will wait until the DOM is loaded.
   ui.start('#firebaseuiAuthContainer', uiConfig);
-  uiStarted = true;
+  // uiStarted = true;
 };
 
 export { uiStart };

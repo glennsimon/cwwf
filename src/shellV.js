@@ -1,3 +1,4 @@
+import { toggleDrawer } from './common/shared.js';
 import { route } from './router.js';
 import './styles/shell.css';
 
@@ -13,11 +14,6 @@ logo.addEventListener('click', (event) => {
   event.preventDefault();
   route('/games');
 });
-
-/** Helper function for toggling drawer */
-function toggleDrawer() {
-  document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
-}
 
 // Go to signin page when user clicks headerSignin icon
 headerSignin.addEventListener('click', () => {

@@ -1,3 +1,10 @@
+const gameLoadSpinner = document.getElementById('gameLoadSpinner');
+const headerSpinner = document.getElementById('headerSpinner');
+const friendsLoadSpinner = document.getElementById('friendsLoadSpinner');
+const gameLoadMessage = document.getElementById('gameLoadMessage');
+const headerMessage = document.getElementById('headerMessage');
+const friendsLoadMessage = document.getElementById('friendsLoadMessage');
+
 /**
  * Stop and hide all activity messages
  */
@@ -21,4 +28,9 @@ function showActivity(spinnerElem, messageElem, message) {
   messageElem.innerText = message;
 }
 
-export { stopAllSpinners, showActivity };
+/** Helper function for toggling drawer in layout*/
+function toggleDrawer() {
+  document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
+}
+
+export { stopAllSpinners, showActivity, toggleDrawer };

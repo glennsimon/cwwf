@@ -55,7 +55,7 @@ function handleLocation(urlString) {
       `xwwf-last=${
         currentUser ? currentUser.uid : null
       }&last_loc=${urlString}; ` + `max-age=${constants.COOKIE_MAX_AGE}`;
-    routes[routePath].handler(urlString);
+    routes[routePath].handler(urlString, routes[routePath].html);
   } else {
     fetch('/pages/404.html').then((data) => (document.body.innerHTML = data));
   }

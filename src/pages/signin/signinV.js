@@ -1,5 +1,6 @@
 import { authButtonClickedController } from './signinC.js';
 import '../../styles/signin.css';
+import { toggleDrawer } from '../../common/shared.js';
 
 //#region HTML element constants
 const authButton = document.getElementById('authButton');

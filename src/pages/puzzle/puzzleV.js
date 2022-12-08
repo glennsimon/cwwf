@@ -29,6 +29,7 @@ import {
 
 import './styles/main.css';
 import { route } from '../../router.js';
+import { toggleDrawer } from '../../common/shared.js';
 
 //#region HTML element constants
 const authButton = document.getElementById('authButton');

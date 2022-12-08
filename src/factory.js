@@ -1,5 +1,7 @@
 import { auth } from 'firebaseui';
 import { route } from './router';
+import signinHtml from './pages/signin.html';
+import { uiStart } from './pages/signin/signin';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;
@@ -13,9 +15,10 @@ let helpHandlerObj = null;
 /**
  * Called by the router, fetches resources necessary for the shell
  * and initiates the display of the shell
- * @param {string} urlString
+ * @param {string} urlString route passed to `route` function
+ * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function shellHandler(urlString) {
+function shellHandler(urlString, htmlPath) {
   if (auth.currentUser) {
     route('/games');
   } else {
@@ -26,51 +29,61 @@ function shellHandler(urlString) {
 /**
  * Called by the router, fetches resources necessary for the games page
  * and initiates the display of the games page
- * @param {string} urlString
+ * @param {string} urlString route passed to `route` function
+ * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function gamesHandler(urlString) {}
+function gamesHandler(urlString, htmlPath) {}
 
 /**
  * Called by the router, fetches resources necessary for the puzzle page
  * and initiates the display of the puzzle page
- * @param {string} urlString
+ * @param {string} urlString route passed to `route` function
+ * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function puzzleHandler(urlString) {}
+function puzzleHandler(urlString, htmlPath) {}
 
 /**
  * Called by the router, fetches resources necessary for the settings page
  * and initiates the display of the settings page
- * @param {string} urlString
+ * @param {string} urlString route passed to `route` function
+ * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function settingsHandler(urlString) {}
+function settingsHandler(urlString, htmlPath) {}
 
 /**
  * Called by the router, fetches resources necessary for the signin page
  * and initiates the display of the signin page
- * @param {string} urlString
+ * @param {string} urlString route passed to `route` function
+ * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function signinHandler(urlString) {}
+function signinHandler(urlString, htmlPath) {
+  document.querySelector('.splash__content').innerHTML = signinHtml;
+  uiStart();
+}
 
 /**
  * Called by the router, fetches resources necessary for the privacy page
  * and initiates the display of the privacy page
- * @param {string} urlString
+ * @param {string} urlString route passed to `route` function
+ * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function privacyHandler(urlString) {}
+function privacyHandler(urlString, htmlPath) {}
 
 /**
  * Called by the router, fetches resources necessary for the tos page
  * and initiates the display of the tos page
- * @param {string} urlString
+ * @param {string} urlString route passed to `route` function
+ * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function tosHandler(urlString) {}
+function tosHandler(urlString, htmlPath) {}
 
 /**
  * Called by the router, fetches resources necessary for the help page
  * and initiates the display of the help page
- * @param {string} urlString
+ * @param {string} urlString * @param {string} urlString route passed to `route` function
+ * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function helpHandler(urlString) {}
+function helpHandler(urlString, htmlPath) {}
 
 export {
   shellHandler,
