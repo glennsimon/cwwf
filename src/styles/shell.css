@@ -18,6 +18,11 @@ body {
   margin: 0;
 }
 
+.activity__header {
+  display: flex;
+  align-items: center;
+}
+
 select {
   font-size: 20px;
   margin: 0 10px;
@@ -570,14 +575,14 @@ select {
   padding: 10px 20px 0;
 }
 
-#appContainer {
+/* #appContainer {
   transform: translate(100%, 0);
   transition: transform 0.3s ease;
 }
 
 #appContainer.slideIn {
   transform: translate(0, 0);
-}
+} */
 
 .posAbsolute {
   position: absolute;

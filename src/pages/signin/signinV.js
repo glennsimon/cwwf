@@ -1,12 +1,18 @@
 import { authButtonClickedController } from './signinC.js';
+import { showActivity, toggleDrawer } from '../../common/shared.js';
 import '../../styles/signin.css';
-import { toggleDrawer } from '../../common/shared.js';
+import { route } from '../../router.js';
+import { clearPuzzle } from '../puzzle/puzzleV.js';
 
 //#region HTML element constants
 const authButton = document.getElementById('authButton');
 const profileName = document.getElementById('profileName');
 const avatar = document.getElementById('avatar');
 const headerSignin = document.getElementById('headerSignin');
+const headerSpinner = document.getElementById('headerSpinner');
+const headerMessage = document.getElementById('headerMessage');
+const gameLoadSpinner = document.getElementById('gameLoadSpinner');
+const gameLoadMessage = document.getElementById('gameLoadMessage');
 //#endregion
 
 /**
@@ -27,8 +33,9 @@ authButton.addEventListener('click', (event) => {
  */
 function authChangeView(user) {
   if (user) {
-    gameLoadSpinner.classList.add('is-active');
-    gameLoadMessage.innerText = 'Loading your games...';
+    showActivity('.activity__header', 'Signing in, fetching games...');
+    // gameLoadSpinner.classList.add('is-active');
+    // gameLoadMessage.innerText = 'Loading your games...';
     // authButton.textContent = 'sign out';
     authButton.innerHTML = `sign out&nbsp;<span class='material-icons'>logout </span>`;
     profileName.textContent = user.prefName || user.displayName;

@@ -506,43 +506,6 @@ async function fetchPuzzleController(gameObj) {
 }
 
 /**
- * Unsubscribe from listening for changes on previous game, and start listening
- * for changes on gameObj game.
- * @param {string} gameId game id string
- */
-function subscribeToGame(gameId) {
-  console.log('Hello from subscribeToGame.');
-  // Stop listening for previous puzzle changes
-  try {
-    gameUnsubscribe();
-  } catch (error) {
-    console.log('INFO: Error thrown trying to unsubscribe from current game.');
-    // do nothing, already unsubscribed
-  }
-
-  // Start listening to current puzzle changes
-  gameUnsubscribe = onSnapshot(
-    doc(db, 'games', gameId),
-    async (gameSnap) => {
-      const prevGameId = currentGameId;
-      currentGame = gameSnap.data();
-      if (!currentGame) return;
-      currentGameId = gameId;
-      idxArray = [];
-      columns = currentGame.puzzle.cols;
-      myTurn = currentUser.uid === currentGame.nextTurn;
-      if (prevGameId === gameId) {
-        await animateScoringView(currentGame.lastTurnCheckObj);
-      }
-      showPuzzleView(currentGame, currentOpp);
-    },
-    (error) => {
-      console.error('Error subscribing to puzzle: ', error);
-    }
-  );
-}
-
-/**
  * Appends the append Object to the base Object.
  * @param {object} base Base object to append to
  * @param {object} append Object to append to base
@@ -634,31 +597,34 @@ async function pendingPlayerController(nameObject) {
 }
 
 export {
-  authButtonClickedController,
   startNewGameController,
-  getCurrentUserController,
-  getCurrentOppController,
-  populateAllUsersController,
-  getAllGamesController,
-  fetchPuzzleController,
-  savePuzzleController,
+  // savePuzzleController,
   playWordController,
-  getColumnsController,
-  getIdxArrayController,
-  setIdxArrayController,
-  getCurrentGameController,
-  setCurrentGameController,
-  setCurrentGameIdController,
   enterLetterController,
-  abandonCurrentGameController,
-  getAcrossWordController,
-  setAcrossWordController,
-  getGameListParametersController,
-  // populateSettingsController,
-  storeSettingsController,
-  handleCheckController,
-  // populateFriendsController,
-  updateFriendsController,
-  getMyFriendsController,
-  pendingPlayerController,
 };
+
+// authButtonClickedController,
+// ,
+// getCurrentUserController,
+// getCurrentOppController,
+// populateAllUsersController,
+// getAllGamesController,
+// fetchPuzzleController,
+// getColumnsController,
+// getIdxArrayController,
+// setIdxArrayController,
+// getCurrentGameController,
+// setCurrentGameController,
+// setCurrentGameIdController,
+// abandonCurrentGameController,
+// getAcrossWordController,
+// setAcrossWordController,
+// getGameListParametersController,
+// // populateSettingsController,
+// storeSettingsController,
+// handleCheckController,
+// // populateFriendsController,
+// updateFriendsController,
+// getMyFriendsController,
+// pendingPlayerController,
+// };

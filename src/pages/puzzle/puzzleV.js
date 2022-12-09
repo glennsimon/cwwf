@@ -1,52 +1,26 @@
 import {
-  authButtonClickedController,
   startNewGameController,
   populateAllUsersController,
-  getCurrentUserController,
-  getCurrentOppController,
   fetchPuzzleController,
   playWordController,
-  getColumnsController,
-  getIdxArrayController,
-  setIdxArrayController,
-  getCurrentGameController,
   enterLetterController,
   abandonCurrentGameController,
-  setCurrentGameController,
-  savePuzzleController,
-  setAcrossWordController,
-  getAcrossWordController,
-  getMyFriendsController,
   populateFriendsController,
-  // getMyOpponentUidController,
-  // getGameListParametersController,
-  // populateSettingsController,
 } from './puzzleC.js';
-import {
-  showSettingsView,
-  loadFriendsSettingsView,
-} from './pages/settings/src/settingsView.js';
-
-import './styles/main.css';
 import { route } from '../../router.js';
 import { toggleDrawer } from '../../common/shared.js';
+import { currentUser } from '../signin/signinC.js';
+import { currentOpp } from '../games/gamesC.js';
 
 //#region HTML element constants
 const authButton = document.getElementById('authButton');
 const drawer = document.getElementById('drawer');
-const profileName = document.getElementById('profileName');
-const avatar = document.getElementById('avatar');
 const gamesDialog = document.getElementById('gamesDialog');
 const headerSignin = document.getElementById('headerSignin');
-const gameOverHeading = document.getElementById('gameOverHeading');
-const winMessage = document.getElementById('winMessage');
-const friendsChooser = document.getElementById('friendsChooser');
 const radioEasy = document.getElementById('radioEasy');
 const radioMed = document.getElementById('radioMed');
 const radioHard = document.getElementById('radioHard');
 const dialogList = document.getElementById('dialogList');
-const activeGamesContainer = document.getElementById('activeGamesContainer');
-const pastGamesContainer = document.getElementById('pastGamesContainer');
 const puzTable = document.getElementById('puzTable');
 const puzAuthor = document.getElementById('puzAuthor');
 const puzCopy = document.getElementById('puzCopy');
@@ -67,33 +41,20 @@ const concessionBtnContainer = document.getElementById(
   'concessionBtnContainer'
 );
 const puzTitle = document.getElementById('puzTitle');
-const logo = document.getElementById('logo');
-const replayButton = document.getElementById('replayButton');
-const returnToSignin = document.getElementById('returnToSignin');
 const gameLoadSpinner = document.getElementById('gameLoadSpinner');
 const gameLoadMessage = document.getElementById('gameLoadMessage');
 const headerSpinner = document.getElementById('headerSpinner');
 const headerMessage = document.getElementById('headerMessage');
-const errorDialog = document.getElementById('errorDialog');
-const okButton = document.getElementById('okButton');
 const abandonDialog = document.getElementById('abandonDialog');
 const yesButton = document.getElementById('yesButton');
 const noButton = document.getElementById('noButton');
-const navList = document.getElementById('navList');
-const errorMessage = document.getElementById('errorMessage');
-const startGameButton = document.getElementById('startGameButton');
-const friendsLoadSpinner = document.getElementById('friendsLoadSpinner');
-const friendsLoadMessage = document.getElementById('friendsLoadMessage');
-const firebaseuiAuthContainer = document.getElementById(
-  'firebaseuiAuthContainer'
-);
 //#endregion
 
 let currentCell = null;
 // let currentOpponent = null;
 // let allUsers = null;
 
-returnToSignin.addEventListener('click', () => route('/signin'));
+// returnToSignin.addEventListener('click', () => route('/signin'));
 
 /**
  * Clicking the authButton on the drawer calls `authButtonClickedController`
@@ -103,7 +64,7 @@ returnToSignin.addEventListener('click', () => route('/signin'));
 authButton.addEventListener('click', (event) => {
   if (drawer.classList.contains('is-visible')) toggleDrawer();
   clearPuzzle();
-  authButtonClickedController();
+  // authButtonClickedController();
 });
 
 /** Removes puzzle from DOM */
@@ -127,55 +88,6 @@ function clearPuzzle() {
 
 // Go to signin page when user clicks headerSignin icon
 headerSignin.addEventListener('click', () => route('/signin'));
-
-/**
- * Start a new game with selected opponent
- * @param {MouseEvent} event Click event from dialogList
- */
-dialogList.addEventListener('click', async (event) => {
-  console.log('User selected opponent to start a new game.');
-  const currentUser = getCurrentUserController();
-  const userList = await populateAllUsersController();
-  const gameStartParameters = {};
-  const myUid = currentUser.uid;
-  gameStartParameters.players = {};
-  gameStartParameters.players[myUid] = {};
-  gameStartParameters.players[myUid].bgColor = 'bgTransRed';
-  gameStartParameters.viewableBy = [];
-  gameStartParameters.viewableBy.push(myUid);
-
-  let target = event.target;
-  while (target.id === '') {
-    target = target.parentElement;
-  }
-  const oppUid = target.id;
-  gameStartParameters.players[oppUid] = {};
-  gameStartParameters.players[oppUid].bgColor = 'bgTransBlue';
-  gameStartParameters.viewableBy.push(oppUid);
-  let difficulty = radioMed.parentElement.classList.contains('is-checked')
-    ? 'medium'
-    : 'easy';
-  difficulty = radioHard.parentElement.classList.contains('is-checked')
-    ? 'hard'
-    : difficulty;
-  gameStartParameters.difficulty = difficulty;
-  closeGamesDialog();
-  gameLoadSpinner.classList.add('is-active');
-  gameLoadMessage.innerText = 'Starting a new game...';
-  document.getElementById('puzTitle').innerText = 'Fetching new puzzle...';
-  startNewGameController(gameStartParameters);
-});
-
-gamesDialog.querySelector('.close').addEventListener('click', closeGamesDialog);
-
-/** Reset radio buttons and close dialog */
-function closeGamesDialog() {
-  console.log('Hello from closeGamesDialog.');
-  radioMed.removeAttribute('checked');
-  radioHard.removeAttribute('checked');
-  radioEasy.setAttribute('checked', true);
-  gamesDialog.close();
-}
 
 /**
  * This function takes the puzzle object returned from the fetch and displays
@@ -360,8 +272,6 @@ function showPuzzleView(game, opponent) {
 
   scores.classList.remove('displayNone');
   scores.classList.add('displayFlex');
-  const currentUser = getCurrentUserController();
-  const currentOpp = getCurrentOppController();
   const oppUid = currentOpp.uid;
   const myUid = currentUser.uid;
   let myNickname =
@@ -441,7 +351,7 @@ function animateScoringView(scoreObj) {
   headerSpinner.classList.remove('is-active');
   headerMessage.innerText = '';
   if (scoreObj.newGame || scoreObj.abandoned) return;
-  const myUid = getCurrentUserController().uid;
+  const myUid = currentUser.uid;
   const scoreElem =
     myUid === scoreObj.playerUid ? scores.children[0] : scores.children[2];
   const playerScore = scoreElem.children[1];
@@ -715,8 +625,8 @@ function clueClicked(event, direction) {
  */
 function updateScoreboard(game) {
   console.log('Hello from updateScoreboard.');
-  const myUid = getCurrentUserController().uid;
-  const oppUid = getCurrentOppController().uid;
+  const myUid = currentUser.uid;
+  const oppUid = currentOpp.uid;
   myScore.innerText = game.players[myUid].score;
   oppScore.innerText = game.players[oppUid].score;
   myName.classList.remove('fontRed', 'fontBlue');
@@ -936,74 +846,74 @@ function clearHighlights() {
   }
 }
 
-/**
- * Show dialog for user to decide if they want to replay the opponent
- * @param {Object} game Previous game versus the opponent
- * @param {string} result Message about who won
- */
-function showReplayDialog(game, result) {
-  console.log('Hello from showReplayDialog.');
-  winMessage.innerText = result;
-  gameOverHeading.classList.remove('displayNone');
-  friendsChooser.classList.add('displayNone');
-  friendsChooser.classList.remove('displayFlex');
-  dialogList.classList.add('displayNone');
-  gamesDialog.querySelector('footer').classList.add('displayNone');
-  gamesDialog.classList.remove('maxHeight85pct');
-  gamesDialog.children[0].classList.remove('padding0', 'height100pct');
-  replayButton.classList.remove('displayNone');
-  replayButton.addEventListener('click', replayOpponent);
-  if (game.difficulty === 'medium') {
-    radioEasy.removeAttribute('checked');
-    radioHard.removeAttribute('checked');
-    radioMed.setAttribute('checked', true);
-  } else if (game.difficulty === 'hard') {
-    radioEasy.removeAttribute('checked');
-    radioMed.removeAttribute('checked');
-    radioHard.setAttribute('checked', true);
-  } else {
-    radioMed.removeAttribute('checked');
-    radioHard.removeAttribute('checked');
-    radioEasy.setAttribute('checked', true);
-  }
-  if (!gamesDialog.open) gamesDialog.showModal();
-}
+// /**
+//  * Show dialog for user to decide if they want to replay the opponent
+//  * @param {Object} game Previous game versus the opponent
+//  * @param {string} result Message about who won
+//  */
+// function showReplayDialog(game, result) {
+//   console.log('Hello from showReplayDialog.');
+//   winMessage.innerText = result;
+//   gameOverHeading.classList.remove('displayNone');
+//   friendsChooser.classList.add('displayNone');
+//   friendsChooser.classList.remove('displayFlex');
+//   dialogList.classList.add('displayNone');
+//   gamesDialog.querySelector('footer').classList.add('displayNone');
+//   gamesDialog.classList.remove('maxHeight85pct');
+//   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
+//   replayButton.classList.remove('displayNone');
+//   replayButton.addEventListener('click', replayOpponent);
+//   if (game.difficulty === 'medium') {
+//     radioEasy.removeAttribute('checked');
+//     radioHard.removeAttribute('checked');
+//     radioMed.setAttribute('checked', true);
+//   } else if (game.difficulty === 'hard') {
+//     radioEasy.removeAttribute('checked');
+//     radioMed.removeAttribute('checked');
+//     radioHard.setAttribute('checked', true);
+//   } else {
+//     radioMed.removeAttribute('checked');
+//     radioHard.removeAttribute('checked');
+//     radioEasy.setAttribute('checked', true);
+//   }
+//   if (!gamesDialog.open) gamesDialog.showModal();
+// }
 
-/** Load game based on user selection */
-function replayOpponent() {
-  const game = getCurrentGameController();
-  let difficulty = radioMed.parentElement.classList.contains('is-checked')
-    ? 'medium'
-    : 'easy';
-  difficulty = radioHard.parentElement.classList.contains('is-checked')
-    ? 'hard'
-    : difficulty;
-  closeGamesDialog();
-  headerSpinner.classList.add('is-active');
-  headerMessage.innerText = 'Getting new game...';
-  // load puzzle based on uids of players
-  const startGameParameters = {};
-  startGameParameters.difficulty = difficulty;
-  startGameParameters.players = game.players;
-  startNewGameController(startGameParameters);
-}
+// /** Load game based on user selection */
+// function replayOpponent() {
+//   const game = getCurrentGameController();
+//   let difficulty = radioMed.parentElement.classList.contains('is-checked')
+//     ? 'medium'
+//     : 'easy';
+//   difficulty = radioHard.parentElement.classList.contains('is-checked')
+//     ? 'hard'
+//     : difficulty;
+//   closeGamesDialog();
+//   headerSpinner.classList.add('is-active');
+//   headerMessage.innerText = 'Getting new game...';
+//   // load puzzle based on uids of players
+//   const startGameParameters = {};
+//   startGameParameters.difficulty = difficulty;
+//   startGameParameters.players = game.players;
+//   startNewGameController(startGameParameters);
+// }
 
-/**
- * Shows an error dialog with appropriate messaging
- * @param {string} message Type of error
- */
-function showErrorDialogView(message) {
-  headerMessage.innerText = '';
-  headerSpinner.classList.remove('is-active');
-  errorMessage.innerText = message;
-  okButton.addEventListener('click', () => {
-    errorDialog.close();
-  });
-  errorDialog.querySelector('.close').addEventListener('click', () => {
-    errorDialog.close();
-  });
-  errorDialog.showModal();
-}
+// /**
+//  * Shows an error dialog with appropriate messaging
+//  * @param {string} message Type of error
+//  */
+// function showErrorDialogView(message) {
+//   headerMessage.innerText = '';
+//   headerSpinner.classList.remove('is-active');
+//   errorMessage.innerText = message;
+//   okButton.addEventListener('click', () => {
+//     errorDialog.close();
+//   });
+//   errorDialog.querySelector('.close').addEventListener('click', () => {
+//     errorDialog.close();
+//   });
+//   errorDialog.showModal();
+// }
 
 /**
  * Open the abandonDialog, giving the user one more chance
@@ -1147,26 +1057,17 @@ function resizePuzzle() {
   }
 }
 
-document.addEventListener('keyup', enterLetter);
-window.addEventListener('resize', resizePuzzle);
-const keyList = kbContainer.getElementsByClassName('kbButton');
-for (const node of keyList) {
-  node.addEventListener('click', enterLetter);
-}
-document.getElementById('enter').addEventListener('click', () => {
-  headerSpinner.classList.add('is-active');
-  headerMessage.innerText = 'Working...';
-  playWordController();
-});
-document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
+// document.addEventListener('keyup', enterLetter);
+// window.addEventListener('resize', resizePuzzle);
+// const keyList = kbContainer.getElementsByClassName('kbButton');
+// for (const node of keyList) {
+//   node.addEventListener('click', enterLetter);
+// }
+// document.getElementById('enter').addEventListener('click', () => {
+//   headerSpinner.classList.add('is-active');
+//   headerMessage.innerText = 'Working...';
+//   playWordController();
+// });
+// document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
 
-export {
-  authChangeView,
-  signedOutView,
-  showPuzzleView,
-  loadGamesView,
-  animateScoringView,
-  showErrorDialogView,
-  stopAllSpinnersView,
-  showHeaderActivityView,
-};
+export { showPuzzleView, animateScoringView, clearPuzzle };

@@ -1,20 +1,20 @@
-// import {
-//   db,
-//   app,
-//   auth,
-//   functions,
-//   messaging,
-//   storage,
-// } from '../../firebase-init.js';
-// import {
-//   authChangeView,
-//   showPuzzleView,
-//   loadGamesView,
-//   animateScoringView,
-//   showErrorDialogView,
-//   stopAllSpinnersView,
-//   showHeaderActivityView,
-// } from './gamesV.js';
+import {
+  db,
+  app,
+  auth,
+  functions,
+  messaging,
+  storage,
+} from '../../firebase-init.js';
+import {
+  // authChangeView,
+  // showPuzzleView,
+  loadGamesView,
+  // animateScoringView,
+  // showErrorDialogView,
+  // stopAllSpinnersView,
+  // showHeaderActivityView,
+} from './gamesV.js';
 // import {
 //   getDatabase,
 //   ref,
@@ -25,19 +25,20 @@
 // } from 'firebase/database';
 // import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 'firebase/auth';
 // import { getToken, onMessage } from 'firebase/messaging';
-// import {
-//   collection,
-//   getDoc,
-//   getDocs,
-//   setDoc,
-//   doc,
-//   onSnapshot,
-//   query,
-//   orderBy,
-//   limit,
-//   where,
-//   runTransaction,
-// } from 'firebase/firestore';
+import {
+  collection,
+  getDoc,
+  getDocs,
+  setDoc,
+  doc,
+  onSnapshot,
+  query,
+  orderBy,
+  limit,
+  where,
+  runTransaction,
+} from 'firebase/firestore';
+import { currentUser } from '../signin/signinC.js';
 // import { httpsCallable } from 'firebase/functions';
 // import {
 //   getDownloadURL,
@@ -55,11 +56,11 @@
 // // 'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak'
 
 // let currentUser = null;
-// let currentOpp = null;
+let currentOpp = null;
 // let userStatusDatabaseRef = null;
-// let myGames = [];
-// let currentGame = null;
-// let currentGameId = null;
+let myGames = [];
+let currentGame = null;
+let currentGameId = null;
 // let acrossWord = true;
 // let columns = null;
 // let idxArray = [];
@@ -67,7 +68,7 @@
 // let gameListParameters = {};
 // // TODO: should this be tracked, and what can be done while offline?
 // let online = false;
-// let myFriends = {};
+let myFriends = {};
 
 // // webpack dynamic imports:
 // // let mySignOut = () => {};
@@ -77,7 +78,7 @@
 //  * if not subscribed to any game.
 //  */
 // let gameUnsubscribe = () => {};
-// let myGamesUnsubscribe = () => {};
+let myGamesUnsubscribe = () => {};
 
 // /**
 //  * Get myFriends. Should be used by all external modules.
@@ -383,164 +384,165 @@
 //   loadFriendsSettingsView(myFriends);
 // }
 
-// /**
-//  * Populate list of all users from firestore and return the list.
-//  * @returns Object containing friends of currentUser
-//  */
-// function populateMyFriends() {
-//   console.log('Hello from populateMyFriends');
-//   if (!currentUser) return;
-//   if (currentUser.friends.length === 0) return;
-//   const q = query(
-//     collection(db, 'users'),
-//     where('uid', 'in', currentUser.friends)
-//   );
-//   return getDocs(q).then((snapshot) => {
-//     if (snapshot.empty) {
-//       console.log('No friends added yet.');
-//       return {};
-//     }
-//     snapshot.docs.forEach((doc) => {
-//       // console.log(doc.data());
-//       const user = doc.data();
-//       if (doc.id !== currentUser.uid) myFriends[doc.id] = user;
-//     });
-//     for (const key of Object.keys(myFriends)) {
-//       if (!currentUser.friends.includes(key)) delete myFriends[key];
-//     }
-//     return;
-//   });
-// }
+/**
+ * Populate list of all users from firestore and return the list.
+ * @returns Object containing friends of currentUser
+ */
+function populateMyFriends() {
+  console.log('Hello from populateMyFriends');
+  if (!currentUser) return;
+  myFriends = {};
+  if (currentUser.friends.length === 0) return;
+  const q = query(
+    collection(db, 'users'),
+    where('uid', 'in', currentUser.friends)
+  );
+  return getDocs(q).then((snapshot) => {
+    if (snapshot.empty) {
+      console.log('No friends added yet.');
+      return {};
+    }
+    snapshot.docs.forEach((doc) => {
+      // console.log(doc.data());
+      const user = doc.data();
+      if (doc.id !== currentUser.uid) myFriends[doc.id] = user;
+    });
+    for (const key of Object.keys(myFriends)) {
+      if (!currentUser.friends.includes(key)) delete myFriends[key];
+    }
+    return;
+  });
+}
 
-// /**
-//  * Populate list of all games that is viewable to the current user
-//  * from firestore when auth changes or when something changes in that list.
-//  * @param {string} uid User ID
-//  */
-// async function populateMyGames(uid) {
-//   console.log('Hello from populateMyGames.');
-//   if (!uid) return;
-//   myGamesUnsubscribe();
-//   // try {
-//   const q = query(
-//     collection(db, 'gameListBuilder'),
-//     where('viewableBy', 'array-contains', `${uid}`)
-//     // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
-//     // limit(30)
-//   );
-//   myGamesUnsubscribe = onSnapshot(q, async (snapshot) => {
-//     const myPastGames = [];
-//     const myActiveGames = [];
-//     const userIds = [];
-//     let currentOpponentUid = null;
-//     snapshot.forEach((doc) => {
-//       // console.log('query snapshot doc.data(): ', doc.data());
-//       const gameListItem = doc.data();
-//       gameListItem.gameId = doc.id;
-//       if (gameListItem.finish) {
-//         myPastGames.push(gameListItem);
-//       } else {
-//         myActiveGames.push(gameListItem);
-//       }
-//       for (const uid of gameListItem.viewableBy) {
-//         if (!userIds.includes(uid)) userIds.push(uid);
-//       }
-//       if (doc.id === currentGameId) {
-//         currentOpponentUid =
-//           gameListItem.viewableBy[0] === currentUser.uid
-//             ? gameListItem.viewableBy[1]
-//             : gameListItem.viewableBy[0];
-//       }
-//     });
-//     myPastGames.sort((a, b) => {
-//       return b.finish - a.finish;
-//     });
-//     myActiveGames.sort((a, b) => {
-//       return b.start - a.start;
-//     });
-//     // const userIds = [];
-//     myGames = myActiveGames.concat(myPastGames);
-//     // for (const gameListItem of myGames) {
-//     //   for (const uid of gameListItem.viewableBy) {
-//     //     if (!userIds.includes(uid)) userIds.push(uid);
-//     //   }
-//     // }
-//     if (userIds.length !== 0) {
-//       const q2 = query(collection(db, 'users'), where('uid', 'in', userIds));
-//       const userDocs = await getDocs(q2);
-//       const count = userDocs.size;
-//       console.log('count: ', count);
-//       let userData = {};
-//       userDocs.forEach((doc) => {
-//         userData[doc.id] = doc.data();
-//         if (doc.id === currentOpponentUid) currentOpp = doc.data();
-//       });
-//       loadGamesView(myGames, userData);
-//     }
-//     return;
-//   });
-// }
+/**
+ * Populate list of all games that is viewable to the current user
+ * from firestore when auth changes or when something changes in that list.
+ * @param {string} uid User ID
+ */
+async function populateMyGames(uid) {
+  console.log('Hello from populateMyGames.');
+  if (!uid) return;
+  myGamesUnsubscribe();
+  // try {
+  const q = query(
+    collection(db, 'gameListBuilder'),
+    where('viewableBy', 'array-contains', `${uid}`)
+    // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
+    // limit(30)
+  );
+  myGamesUnsubscribe = onSnapshot(q, async (snapshot) => {
+    const myPastGames = [];
+    const myActiveGames = [];
+    const userIds = [];
+    let currentOpponentUid = null;
+    snapshot.forEach((doc) => {
+      // console.log('query snapshot doc.data(): ', doc.data());
+      const gameListItem = doc.data();
+      gameListItem.gameId = doc.id;
+      if (gameListItem.finish) {
+        myPastGames.push(gameListItem);
+      } else {
+        myActiveGames.push(gameListItem);
+      }
+      for (const uid of gameListItem.viewableBy) {
+        if (!userIds.includes(uid)) userIds.push(uid);
+      }
+      if (doc.id === currentGameId) {
+        currentOpponentUid =
+          gameListItem.viewableBy[0] === currentUser.uid
+            ? gameListItem.viewableBy[1]
+            : gameListItem.viewableBy[0];
+      }
+    });
+    myPastGames.sort((a, b) => {
+      return b.finish - a.finish;
+    });
+    myActiveGames.sort((a, b) => {
+      return b.start - a.start;
+    });
+    // const userIds = [];
+    myGames = myActiveGames.concat(myPastGames);
+    // for (const gameListItem of myGames) {
+    //   for (const uid of gameListItem.viewableBy) {
+    //     if (!userIds.includes(uid)) userIds.push(uid);
+    //   }
+    // }
+    if (userIds.length !== 0) {
+      const q2 = query(collection(db, 'users'), where('uid', 'in', userIds));
+      const userDocs = await getDocs(q2);
+      const count = userDocs.size;
+      console.log('count: ', count);
+      let userData = {};
+      userDocs.forEach((doc) => {
+        userData[doc.id] = doc.data();
+        if (doc.id === currentOpponentUid) currentOpp = doc.data();
+      });
+      loadGamesView(myGames, userData);
+    }
+    return;
+  });
+}
 
-// /**
-//  * This function fetches an active puzzle based on the user's selection
-//  * and then calls functions to format and display the puzzle
-//  * @param {object} gameObj Object with gameId and opponentUid
-//  */
-// async function fetchPuzzleController(gameObj) {
-//   console.log('Hello from fetchPuzzleController.');
-//   currentOpp = (await getDoc(doc(db, `users/${gameObj.opponentUid}`))).data();
-//   if (currentOpp) {
-//     subscribeToGame(gameObj.gameId);
-//   } else {
-//     showErrorDialogView(
-//       'That game is not accessible. Try another or start a new one.'
-//     );
-//     stopAllSpinnersView();
-//     const deleteFailedGame = httpsCallable(functions, 'deleteFailedGame');
-//     await deleteFailedGame({ gameId: gameObj.gameId }).catch((err) => {
-//       console.log('Error code: ', err.code);
-//       console.log('Error message: ', err.message);
-//       console.log('Error details: ', err.details);
-//     });
-//   }
-// }
+/**
+ * This function fetches an active puzzle based on the user's selection
+ * and then calls functions to format and display the puzzle
+ * @param {object} gameObj Object with gameId and opponentUid
+ */
+async function fetchPuzzleController(gameObj) {
+  console.log('Hello from fetchPuzzleController.');
+  currentOpp = (await getDoc(doc(db, `users/${gameObj.opponentUid}`))).data();
+  if (currentOpp) {
+    subscribeToGame(gameObj.gameId);
+  } else {
+    showErrorDialogView(
+      'That game is not accessible. Try another or start a new one.'
+    );
+    stopAllSpinnersView();
+    const deleteFailedGame = httpsCallable(functions, 'deleteFailedGame');
+    await deleteFailedGame({ gameId: gameObj.gameId }).catch((err) => {
+      console.log('Error code: ', err.code);
+      console.log('Error message: ', err.message);
+      console.log('Error details: ', err.details);
+    });
+  }
+}
 
-// /**
-//  * Unsubscribe from listening for changes on previous game, and start listening
-//  * for changes on gameObj game.
-//  * @param {string} gameId game id string
-//  */
-// function subscribeToGame(gameId) {
-//   console.log('Hello from subscribeToGame.');
-//   // Stop listening for previous puzzle changes
-//   try {
-//     gameUnsubscribe();
-//   } catch (error) {
-//     console.log('INFO: Error thrown trying to unsubscribe from current game.');
-//     // do nothing, already unsubscribed
-//   }
+/**
+ * Unsubscribe from listening for changes on previous game, and start listening
+ * for changes on gameObj game.
+ * @param {string} gameId game id string
+ */
+function subscribeToGame(gameId) {
+  console.log('Hello from subscribeToGame.');
+  // Stop listening for previous puzzle changes
+  try {
+    gameUnsubscribe();
+  } catch (error) {
+    console.log('INFO: Error thrown trying to unsubscribe from current game.');
+    // do nothing, already unsubscribed
+  }
 
-//   // Start listening to current puzzle changes
-//   gameUnsubscribe = onSnapshot(
-//     doc(db, 'games', gameId),
-//     async (gameSnap) => {
-//       const prevGameId = currentGameId;
-//       currentGame = gameSnap.data();
-//       if (!currentGame) return;
-//       currentGameId = gameId;
-//       idxArray = [];
-//       columns = currentGame.puzzle.cols;
-//       myTurn = currentUser.uid === currentGame.nextTurn;
-//       if (prevGameId === gameId) {
-//         await animateScoringView(currentGame.lastTurnCheckObj);
-//       }
-//       showPuzzleView(currentGame, currentOpp);
-//     },
-//     (error) => {
-//       console.error('Error subscribing to puzzle: ', error);
-//     }
-//   );
-// }
+  // Start listening to current puzzle changes
+  gameUnsubscribe = onSnapshot(
+    doc(db, 'games', gameId),
+    async (gameSnap) => {
+      const prevGameId = currentGameId;
+      currentGame = gameSnap.data();
+      if (!currentGame) return;
+      currentGameId = gameId;
+      idxArray = [];
+      columns = currentGame.puzzle.cols;
+      myTurn = currentUser.uid === currentGame.nextTurn;
+      if (prevGameId === gameId) {
+        await animateScoringView(currentGame.lastTurnCheckObj);
+      }
+      showPuzzleView(currentGame, currentOpp);
+    },
+    (error) => {
+      console.error('Error subscribing to puzzle: ', error);
+    }
+  );
+}
 
 // /**
 //  * Checks if array of cells has a letter in each square
@@ -560,27 +562,27 @@
 //   return false;
 // }
 
-// /**
-//  * Exported function that presenter uses to start a new game
-//  * @param {Object} gameStartParameters Parameters needed to start game
-//  */
-// function startNewGameController(gameStartParameters) {
-//   console.log('Attempting to start a new game.');
-//   const startGame = httpsCallable(functions, 'startGame');
-//   return startGame(gameStartParameters)
-//     .then((gameObjData) => {
-//       const gameObj = gameObjData.data;
-//       currentOpp = gameObj.opponent;
-//       currentGameId = gameObj.gameId;
-//       subscribeToGame(currentGameId);
-//       return currentGameId; // gameObjData.data.game;
-//     })
-//     .catch((err) => {
-//       console.log('Error code: ', err.code);
-//       console.log('Error message: ', err.message);
-//       console.log('Error details: ', err.details);
-//     });
-// }
+/**
+ * Exported function that presenter uses to start a new game
+ * @param {Object} gameStartParameters Parameters needed to start game
+ */
+function startNewGameController(gameStartParameters) {
+  console.log('Attempting to start a new game.');
+  const startGame = httpsCallable(functions, 'startGame');
+  return startGame(gameStartParameters)
+    .then((gameObjData) => {
+      const gameObj = gameObjData.data;
+      currentOpp = gameObj.opponent;
+      currentGameId = gameObj.gameId;
+      subscribeToGame(currentGameId);
+      return currentGameId; // gameObjData.data.game;
+    })
+    .catch((err) => {
+      console.log('Error code: ', err.code);
+      console.log('Error message: ', err.message);
+      console.log('Error details: ', err.details);
+    });
+}
 
 // /**
 //  * Enter a letter into the currentGame as a guess.
@@ -704,7 +706,16 @@
 //   });
 // }
 
-// export {
+export {
+  populateMyGames,
+  populateMyFriends,
+  subscribeToGame,
+  currentGame,
+  currentGameId,
+  currentOpp,
+  myFriends,
+  myGames,
+};
 //   authButtonClickedController,
 //   startNewGameController,
 //   getCurrentUserController,

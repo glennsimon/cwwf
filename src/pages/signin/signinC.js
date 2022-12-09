@@ -12,6 +12,10 @@ import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 
 import { getToken, onMessage } from 'firebase/messaging';
 import { getDoc, setDoc, doc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import { showActivity } from '../../common/shared.js';
+import { populateMyFriends, populateMyGames } from '../games/gamesC.js';
+
+// let myFriends = {};
 
 const dbRT = getDatabase(app);
 let currentUser = null;
@@ -52,14 +56,13 @@ onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
   if (!uid) return;
-  showHeaderActivityView('Signing in, fetching games...');
   let userFirestoreRef = doc(db, `/users/${uid}`);
   const snapshot = await getDoc(userFirestoreRef);
   if (snapshot.exists()) {
     currentUser = snapshot.data();
   }
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
-  myFriends = {};
+  // myFriends = {};
   try {
     const authChange = httpsCallable(functions, 'authChange');
     let authChangeData = await authChange().data;

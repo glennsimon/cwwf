@@ -1,6 +1,5 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-// const WebpackPwaManifest = require('webpack-pwa-manifest');
 const CopyPlugin = require('copy-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -54,8 +53,8 @@ module.exports = {
         type: 'asset/resource',
       },
       {
-        test: /\.html$/,
-        use: ['html-loader'],
+        test: /\.html$/i,
+        loader: 'html-loader',
       },
     ],
   },
@@ -65,26 +64,6 @@ module.exports = {
       filename: 'index.html',
       template: 'src/shell.html',
     }),
-    // new HtmlWebpackPlugin({
-    //   title: 'Games',
-    //   filename: 'pages/games.html',
-    //   template: 'src/pages/games.html',
-    // }),
-    // new HtmlWebpackPlugin({
-    //   title: 'Puzzle',
-    //   filename: 'pages/puzzle.html',
-    //   template: 'src/pages/puzzle.html',
-    // }),
-    // new HtmlWebpackPlugin({
-    //   title: 'Settings',
-    //   filename: 'pages/settings.html',
-    //   template: 'src/pages/settings.html',
-    // }),
-    // new HtmlWebpackPlugin({
-    //   title: 'Sign in',
-    //   filename: 'pages/signin.html',
-    //   template: 'src/pages/signin.html',
-    // }),
     new MiniCssExtractPlugin({ filename: './assets/[name].[contenthash].css' }),
     new CopyPlugin({
       patterns: [

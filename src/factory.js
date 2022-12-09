@@ -1,7 +1,7 @@
 import { auth } from 'firebaseui';
 import { route } from './router';
 import signinHtml from './pages/signin.html';
-import { uiStart } from './pages/signin/signin';
+import { uiStart } from './pages/signin/signin.js';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;

@@ -9,8 +9,9 @@
     <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge" /> -->
     <meta name="description" content="Mockup of Crosswords With Friends" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= htmlWebpackPlugin.options.title %></title>
+    <title>Crosswords WF</title>
     <!-- Web Application Manifest -->
+    <!-- webpackIgnore: true -->
     <link rel="manifest" href="./app.webmanifest" />
     <!-- Add to homescreen for Chrome on Android -->
     <link rel="icon" sizes="192x192" href="images/chrome-touch-icon-192.png" />
@@ -67,9 +68,7 @@
             >CrosSwords</span
           >
           <div class="mdl-layout-spacer"></div>
-          <p id="headerSpinner" class="mdl-spinner mdl-js-spinner margin0"></p>
-          <div class="margin5px"></div>
-          <span id="headerMessage"></span>
+          <div class="activity__header"></div>
           <div class="mdl-layout-spacer"></div>
           <span id="wiFiBad" class="material-icons displayNone"
             >signal_wifi_bad</span
@@ -178,7 +177,7 @@
       >
         <div
           id="appContainer"
-          class="displayFlex flexWrap height100pct posAbsolute fullWidth slideIn"
+          class="displayFlex flexWrap height100pct posAbsolute fullWidth"
         >
           <div id="splash" class="displayFlex">
             <div

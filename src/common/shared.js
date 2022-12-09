@@ -1,3 +1,5 @@
+import activityHtml from './activity.html';
+
 const gameLoadSpinner = document.getElementById('gameLoadSpinner');
 const headerSpinner = document.getElementById('headerSpinner');
 const friendsLoadSpinner = document.getElementById('friendsLoadSpinner');
@@ -9,23 +11,28 @@ const friendsLoadMessage = document.getElementById('friendsLoadMessage');
  * Stop and hide all activity messages
  */
 function stopAllSpinners() {
-  gameLoadSpinner.classList.remove('is-active');
-  headerSpinner.classList.remove('is-active');
-  friendsLoadSpinner.classList.remove('is-active');
-  gameLoadMessage.innerText = '';
-  headerMessage.innerText = '';
-  friendsLoadMessage.innerText = '';
+  if (gameLoadSpinner) {
+    gameLoadSpinner.classList.remove('is-active');
+    gameLoadMessage.innerText = '';
+  }
+  if (headerSpinner) {
+    headerSpinner.classList.remove('is-active');
+    headerMessage.innerText = '';
+  }
+  if (friendsLoadSpinner) {
+    friendsLoadSpinner.classList.remove('is-active');
+    friendsLoadMessage.innerText = '';
+  }
 }
 
 /**
  * Display activity spinner and message
- * @param {HTMLElement} spinnerElem activity spinner element
- * @param {HTMLElement} messageElem activity message element
+ * @param {string} classSelector html selector for class (begins with '.')
  * @param {string} message message to display
  */
-function showActivity(spinnerElem, messageElem, message) {
-  spinnerElem.classList.add('is-active');
-  messageElem.innerText = message;
+function showActivity(classSelector, message) {
+  document.querySelector(classSelector).innerHTML = activityHtml;
+  document.querySelector('.activity__message').innerText = message;
 }
 
 /** Helper function for toggling drawer in layout*/
