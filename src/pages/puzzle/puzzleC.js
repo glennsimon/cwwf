@@ -487,7 +487,6 @@ async function fetchPuzzleController(gameObj) {
     // showErrorDialogView(
     //   'That game is not accessible. Try another or start a new one.'
     // );
-    stopAllSpinnersView();
     const deleteFailedGame = httpsCallable(functions, 'deleteFailedGame');
     await deleteFailedGame({ gameId: gameObj.gameId }).catch((err) => {
       console.log('Error code: ', err.code);

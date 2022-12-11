@@ -1,15 +1,26 @@
-import { toggleDrawer } from './common/shared.js';
+import { toggleDrawer } from './pages/common/shared.js';
+import { clearPuzzle } from './pages/puzzle/puzzleV.js';
 import { route } from './router.js';
 import './styles/shell.css';
 
 //#region HTML element constants
 const drawer = document.getElementById('drawer');
 const headerSignin = document.getElementById('headerSignin');
-const logo = document.getElementById('logo');
 const navList = document.getElementById('navList');
 //#endregion
 
-logo.addEventListener('click', (event) => {
+/**
+ * Clicking the authButton on the drawer calls `authButtonClickedController`
+ * from the controller, which signs the user in or out depending on
+ * their current sign in status.
+ */
+authButton.addEventListener('click', (event) => {
+  if (drawer.classList.contains('is-visible')) toggleDrawer();
+  clearPuzzle();
+  // authButtonClickedController();
+});
+
+document.querySelector('.logo').addEventListener('click', (event) => {
   console.log('Navigating to list of games page');
   event.preventDefault();
   route('/games');

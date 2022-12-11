@@ -23,6 +23,17 @@ body {
   align-items: center;
 }
 
+.container__app {
+  display: flex;
+  align-content: flex-start;
+  flex-wrap: wrap;
+  height: 100%;
+  position: absolute;
+  width: 100vw;
+}
+
+/*** insert above here
+
 select {
   font-size: 20px;
   margin: 0 10px;
@@ -81,12 +92,12 @@ select {
 }
 
 /* Increased specificity required for precedence */
-#returnToSignin.displayNone {
+/*#returnToSignin.displayNone {
   display: none;
 }
 
 /* Increased specificity required for precedence */
-#replayButton.displayNone {
+/*#replayButton.displayNone {
   display: none;
 }
 
@@ -107,10 +118,13 @@ select {
   background-color: #b8b8b8;
 }
 
+*/
+
 /* END COMMON */
 
 /* CLUES */
 
+/*
 .heading {
   font-weight: bold;
   padding: 0 0 10px;
@@ -196,19 +210,24 @@ select {
   -webkit-margin-before: 0;
   -webkit-margin-after: 0;
 }
+*/
 
 /* END CLUES */
 
+/*
 .links {
   margin-bottom: 20px;
   font-size: 12px;
 }
+*/
 
 /* #gridContainer {
   background-color: transparent;
   border: 0.5px black;
   padding: 0.25px;
 } */
+
+/*
 
 #puzNotepad {
   background-color: #ffffe0;
@@ -242,22 +261,6 @@ select {
   height: 15vh;
 }
 
-#splash {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  align-content: center;
-  background-color: lightgray;
-  z-index: 1;
-}
-
-#splashImage {
-  width: 20%;
-  height: auto;
-  margin: 5px auto;
-  aspect-ratio: 1;
-}
-
 #friendsLabel:after {
   background-color: lightgray;
 }
@@ -272,12 +275,16 @@ select {
   text-align: center;
 }
 
+*/
+
 /* .circle {
   border: 1px solid black;
   border-radius: 50%;
   width: 100%;
   height: 100%;
 } */
+
+/*
 
 .upperLeft {
   top: 0;
@@ -431,10 +438,11 @@ select {
   font-size: 3.5vw;
   transition-duration: 0.2s;
   transition-property: box-shadow;
-  /*transition-timing-function: cubic-bezier(0.4, 0, 1, 1);*/
   will-change: box-shadow;
   cursor: pointer;
-}
+} */
+
+/*
 
 .kbButton:active {
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2),
@@ -541,20 +549,12 @@ select {
   min-height: 36px;
 }
 
-.spacer20px {
-  width: 20px;
-}
-
 .spacer {
   margin: 10px;
 }
 
 .overflowHidden {
   overflow: hidden;
-}
-
-.overflowYScroll {
-  overflow-y: auto;
 }
 
 .noOutline {
@@ -574,15 +574,6 @@ select {
 .gamesHeading {
   padding: 10px 20px 0;
 }
-
-/* #appContainer {
-  transform: translate(100%, 0);
-  transition: transform 0.3s ease;
-}
-
-#appContainer.slideIn {
-  transform: translate(0, 0);
-} */
 
 .posAbsolute {
   position: absolute;
@@ -688,6 +679,8 @@ select {
   pointer-events: inherit;
 }
 
+/* insert below here  */
+
 @media screen and (min-width: 420px) {
   #gamesPanelContainer,
   #gamesDialog,
@@ -747,69 +740,14 @@ select {
 }
 
 @media screen and (min-aspect-ratio: 5/4) {
-  .square {
-    font-size: 1.4vw;
-    line-height: 1.4vh;
-    font-weight: bold;
-  }
-
-  .clueNumber {
-    font-size: 0.8vw;
-    line-height: 0.8vw;
-  }
-
-  #puzTable {
-    width: 45vw;
-  }
-
-  #clueContainer {
-    display: flex;
-    height: 45vw;
-    width: 50vw;
-  }
-
-  #acrossContainer,
-  #downContainer {
-    width: 50%;
-    font-size: 1.5vw;
-    line-height: 2vw;
-  }
-
-  #acrossClues,
-  #downClues {
-    height: calc(100% - 30px);
-  }
-
-  #clueCard {
-    display: none;
-  }
-
-  #clueLists {
-    display: flex;
-    flex-grow: 1;
-  }
-
-  #kbContainer {
-    height: 20vh;
-  }
-
-  #title {
+  .header__title {
     display: block;
+    content: 'CrosSwords';
   }
 }
 
 @media screen and (min-aspect-ratio: 3/2) {
-  #clueContainer {
-    height: 70%;
-    width: 50vw;
-  }
-
-  #kbContainer {
-    height: 25%;
-    width: 50vw;
-  }
-
-  #appContainer {
+  .container__app {
     flex-direction: column;
   }
 }

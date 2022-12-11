@@ -1,6 +1,7 @@
 import { auth } from 'firebaseui';
-import { route } from './router';
-import signinHtml from './pages/signin.html';
+import { route } from './router.js';
+import signinHtml from './pages/signin/signin.html';
+import splashHtml from './pages/common/splash.html';
 import { uiStart } from './pages/signin/signin.js';
 
 let shellHandlerObj = null;
@@ -11,6 +12,18 @@ let signinHandlerObj = null;
 let tosHandlerObj = null;
 let privacyHandlerObj = null;
 let helpHandlerObj = null;
+
+/**
+ * Creates a new HTML element from the string `html`
+ * @param {string} html String of innerHTML
+ * @returns HTML element
+ */
+function createElementFromHtml(html) {
+  let temp = document.createElement('template');
+  html = html.trim();
+  temp.innerHTML = html;
+  return temp.content.firstChild;
+}
 
 /**
  * Called by the router, fetches resources necessary for the shell
@@ -57,7 +70,8 @@ function settingsHandler(urlString, htmlPath) {}
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function signinHandler(urlString, htmlPath) {
-  document.querySelector('.splash__content').innerHTML = signinHtml;
+  document.querySelector('.container__app').innerHTML = splashHtml;
+  document.querySelector('.container__app').innerHTML += signinHtml;
   uiStart();
 }
 

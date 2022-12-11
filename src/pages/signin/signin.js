@@ -132,7 +132,7 @@ function parseQueryString(queryString) {
 const uiStart = () => {
   // if (uiStarted) return;
   // The start method will wait until the DOM is loaded.
-  ui.start('#firebaseuiAuthContainer', uiConfig);
+  ui.start('.container__firebase-auth', uiConfig);
   // uiStarted = true;
 };
 

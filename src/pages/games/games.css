@@ -237,22 +237,6 @@ select {
   height: 15vh;
 }
 
-#splash {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  align-content: center;
-  background-color: lightgray;
-  z-index: 1;
-}
-
-#splashImage {
-  width: 20%;
-  height: auto;
-  margin: 5px auto;
-  aspect-ratio: 1;
-}
-
 #friendsLabel:after {
   background-color: lightgray;
 }
@@ -536,20 +520,12 @@ select {
   min-height: 36px;
 }
 
-.spacer20px {
-  width: 20px;
-}
-
 .spacer {
   margin: 10px;
 }
 
 .overflowHidden {
   overflow: hidden;
-}
-
-.overflowYScroll {
-  overflow-y: auto;
 }
 
 .noOutline {
@@ -569,15 +545,6 @@ select {
 .gamesHeading {
   padding: 10px 20px 0;
 }
-
-/* #appContainer {
-  transform: translate(100%, 0);
-  transition: transform 0.3s ease;
-}
-
-#appContainer.slideIn {
-  transform: translate(0, 0);
-} */
 
 .posAbsolute {
   position: absolute;
@@ -786,26 +753,6 @@ select {
 
   #kbContainer {
     height: 20vh;
-  }
-
-  #title {
-    display: block;
-  }
-}
-
-@media screen and (min-aspect-ratio: 3/2) {
-  #clueContainer {
-    height: 70%;
-    width: 50vw;
-  }
-
-  #kbContainer {
-    height: 25%;
-    width: 50vw;
-  }
-
-  #appContainer {
-    flex-direction: column;
   }
 }
 

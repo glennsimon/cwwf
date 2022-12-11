@@ -2,7 +2,6 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const BundleAnalyzerPlugin =
   require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
@@ -22,8 +21,8 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     // publicPath: '',
     filename: '[name].[contenthash].js',
-    assetModuleFilename: './assets/[name].[hash].[ext]',
-    clean: true,
+    assetModuleFilename: 'assets/[name].[hash].[ext]',
+    clean: process.env.NODE_ENV === 'production',
   },
   optimization: {
     runtimeChunk: 'single',
@@ -36,7 +35,7 @@ module.exports = {
     rules: [
       {
         test: /\.s?css$/i,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+        use: ['style-loader', 'css-loader', 'sass-loader'],
       },
       {
         test: /\.js$/i,
@@ -60,11 +59,9 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      title: 'Crosswords WF',
       filename: 'index.html',
       template: 'src/shell.html',
     }),
-    new MiniCssExtractPlugin({ filename: './assets/[name].[contenthash].css' }),
     new CopyPlugin({
       patterns: [
         {

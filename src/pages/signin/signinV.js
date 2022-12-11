@@ -1,6 +1,6 @@
 import { authButtonClickedController } from './signinC.js';
-import { showActivity, toggleDrawer } from '../../common/shared.js';
-import '../../styles/signin.css';
+import { showActivity, toggleDrawer } from '../common/shared.js';
+import './signin.css';
 import { route } from '../../router.js';
 import { clearPuzzle } from '../puzzle/puzzleV.js';
 
@@ -9,10 +9,6 @@ const authButton = document.getElementById('authButton');
 const profileName = document.getElementById('profileName');
 const avatar = document.getElementById('avatar');
 const headerSignin = document.getElementById('headerSignin');
-const headerSpinner = document.getElementById('headerSpinner');
-const headerMessage = document.getElementById('headerMessage');
-const gameLoadSpinner = document.getElementById('gameLoadSpinner');
-const gameLoadMessage = document.getElementById('gameLoadMessage');
 //#endregion
 
 /**

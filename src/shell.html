@@ -49,44 +49,26 @@
   <body>
     <!-- The drawer is always open in large screens. The header is always shown,
       even in small screens. -->
-    <div
-      class="mdl-layout mdl-js-layout mdl-layout--fixed-header"
-      style="overflow: hidden"
-    >
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
       <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
           <img
-            id="logo"
             src="./images/xswordsLogo.png"
             alt="Crossed swords logo"
             height="40"
             width="40"
-            class="cursorPointer"
+            class="logo cursorPointer"
           />
-          <div class="spacer20px"></div>
-          <span id="title" class="mdl-layout-title displayNone"
-            >CrosSwords</span
-          >
+          <div class="spacer--20px"></div>
+          <span class="mdl-layout-title header__title"></span>
           <div class="mdl-layout-spacer"></div>
           <div class="activity__header"></div>
           <div class="mdl-layout-spacer"></div>
-          <span id="wiFiBad" class="material-icons displayNone"
+          <span class="material-icons notification__wifi--bad"
             >signal_wifi_bad</span
           >
-          <div class="margin5px"></div>
-          <div id="scores" class="displayNone">
-            <div class="flexGrow-1 margin0px5px width60px bgColorTransWhite">
-              <div id="myName" class="textAlignCenter overflowHidden">Jill</div>
-              <div id="myScore" class="textAlignCenter">25</div>
-            </div>
-            <div class="marginAuto">vs.</div>
-            <div class="flexGrow-1 margin0px5px width60px bgColorTransWhite">
-              <div id="oppName" class="textAlignCenter overflowHidden">
-                Bill
-              </div>
-              <div id="oppScore" class="textAlignCenter">30</div>
-            </div>
-          </div>
+          <div class="spacer--10px"></div>
+          <div class="scores"></div>
           <button
             class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon displayNone"
             id="headerSignin"
@@ -171,29 +153,8 @@
           </div>
         </div>
       </div>
-      <main
-        class="mdl-layout__content mdl-color--grey-100"
-        style="overflow-y: hidden"
-      >
-        <div
-          id="appContainer"
-          class="displayFlex flexWrap height100pct posAbsolute fullWidth"
-        >
-          <div id="splash" class="displayFlex">
-            <div
-              class="displayFlex flexDirCol marginAuto flexGrow-1 height100pct overflowYScroll"
-            >
-              <img
-                id="splashImage"
-                src="./images/chrome-touch-icon-192.png"
-                width="192"
-                height="192"
-                alt="logo"
-              />
-              <div class="splash__content"></div>
-            </div>
-          </div>
-        </div>
+      <main class="mdl-layout__content mdl-color--grey-100">
+        <div class="container__app"></div>
       </main>
     </div>
   </body>

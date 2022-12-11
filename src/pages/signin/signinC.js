@@ -12,7 +12,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 
 import { getToken, onMessage } from 'firebase/messaging';
 import { getDoc, setDoc, doc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { showActivity } from '../../common/shared.js';
+import { showActivity } from '../common/shared.js';
 import { populateMyFriends, populateMyGames } from '../games/gamesC.js';
 
 // let myFriends = {};

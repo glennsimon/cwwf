@@ -8,19 +8,13 @@ import {
   populateFriendsController,
 } from './puzzleC.js';
 import { route } from '../../router.js';
-import { toggleDrawer } from '../../common/shared.js';
+import { toggleDrawer } from '../common/shared.js';
 import { currentUser } from '../signin/signinC.js';
 import { currentOpp } from '../games/gamesC.js';
+import scoresHtml from './scores.html';
+import activityHtml from '../common/activity.html';
 
 //#region HTML element constants
-const authButton = document.getElementById('authButton');
-const drawer = document.getElementById('drawer');
-const gamesDialog = document.getElementById('gamesDialog');
-const headerSignin = document.getElementById('headerSignin');
-const radioEasy = document.getElementById('radioEasy');
-const radioMed = document.getElementById('radioMed');
-const radioHard = document.getElementById('radioHard');
-const dialogList = document.getElementById('dialogList');
 const puzTable = document.getElementById('puzTable');
 const puzAuthor = document.getElementById('puzAuthor');
 const puzCopy = document.getElementById('puzCopy');
@@ -30,21 +24,7 @@ const acrossClues = document.getElementById('acrossClues');
 const downClues = document.getElementById('downClues');
 const singleClue = document.getElementById('singleClue');
 const kbContainer = document.getElementById('kbContainer');
-const splash = document.getElementById('splash');
-const scores = document.getElementById('scores');
-const myName = document.getElementById('myName');
-const oppName = document.getElementById('oppName');
-const myScore = document.getElementById('myScore');
-const oppScore = document.getElementById('oppScore');
-const concessionBtn = document.getElementById('concessionBtn');
-const concessionBtnContainer = document.getElementById(
-  'concessionBtnContainer'
-);
 const puzTitle = document.getElementById('puzTitle');
-const gameLoadSpinner = document.getElementById('gameLoadSpinner');
-const gameLoadMessage = document.getElementById('gameLoadMessage');
-const headerSpinner = document.getElementById('headerSpinner');
-const headerMessage = document.getElementById('headerMessage');
 const abandonDialog = document.getElementById('abandonDialog');
 const yesButton = document.getElementById('yesButton');
 const noButton = document.getElementById('noButton');
@@ -55,17 +35,6 @@ let currentCell = null;
 // let allUsers = null;
 
 // returnToSignin.addEventListener('click', () => route('/signin'));
-
-/**
- * Clicking the authButton on the drawer calls `authButtonClickedController`
- * from the controller, which signs the user in or out depending on
- * their current sign in status.
- */
-authButton.addEventListener('click', (event) => {
-  if (drawer.classList.contains('is-visible')) toggleDrawer();
-  clearPuzzle();
-  // authButtonClickedController();
-});
 
 /** Removes puzzle from DOM */
 function clearPuzzle() {
@@ -79,7 +48,6 @@ function clearPuzzle() {
   puzNotepad.classList.add('displayNone');
   puzCopy.innerHTML = '';
   clueContainer.classList.add('displayNone');
-  splash.classList.remove('displayNone');
   acrossClues.innerHTML = '';
   downClues.innerHTML = '';
   singleClue.innerText = 'Select in the puzzle to reveal clue';
@@ -189,7 +157,6 @@ function showPuzzleView(game, opponent) {
   kbContainer.classList.remove('displayNone');
   kbContainer.classList.add('displayFlex');
   clueContainer.classList.remove('displayNone');
-  splash.classList.add('displayNone');
   concessionBtnContainer.classList.remove('displayNone');
 
   // create contents for across clues div
@@ -270,8 +237,7 @@ function showPuzzleView(game, opponent) {
     }
   });
 
-  scores.classList.remove('displayNone');
-  scores.classList.add('displayFlex');
+  document.querySelector('.scores').innerHTML = scoresHtml;
   const oppUid = currentOpp.uid;
   const myUid = currentUser.uid;
   let myNickname =
@@ -302,11 +268,7 @@ function showPuzzleView(game, opponent) {
   }
   updateScoreboard(game);
   console.log(game);
-  gameLoadSpinner.classList.remove('is-active');
-  gameLoadMessage.innerText = '';
-  headerSpinner.classList.remove('is-active');
-  headerMessage.innerText = '';
-
+  document.querySelector('.activity__header').innerHTML = '';
   // TODO: should this go here?
   route('/puzzle');
 }
@@ -348,8 +310,7 @@ function generateGridElement(puzWidth, puzHeight) {
  */
 function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
-  headerSpinner.classList.remove('is-active');
-  headerMessage.innerText = '';
+  document.querySelector('.activity__header').innerHTML = '';
   if (scoreObj.newGame || scoreObj.abandoned) return;
   const myUid = currentUser.uid;
   const scoreElem =
@@ -926,8 +887,8 @@ concessionBtn.addEventListener('click', () => {
     abandonDialog.close();
   });
   yesButton.addEventListener('click', () => {
-    headerMessage.innerText = 'Working on it...';
-    headerSpinner.classList.add('is-active');
+    document.querySelector('.activity__header').innerHTML = activityHtml;
+    document.querySelector('activity__message').innerText = 'Working on it...';
     concessionBtnContainer.classList.add('displayNone');
     abandonCurrentGameController();
     abandonDialog.close();
@@ -950,8 +911,8 @@ function enterLetter(event) {
   const columns = getColumnsController();
   if (!kbContainer.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
-      headerSpinner.classList.add('is-active');
-      headerMessage.innerText = 'Working...';
+      document.querySelector('.activity__header').innerHTML = activityHtml;
+      document.querySelector('activity__message').innerText = 'Working...';
       playWordController();
       return;
     }

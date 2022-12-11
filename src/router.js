@@ -9,7 +9,7 @@ import {
   helpHandler,
 } from './factory.js';
 import { currentUser } from './pages/signin/signinC.js';
-import { constants } from './common/constants.js';
+import { constants } from './constants.js';
 
 let regexTester = null;
 
@@ -54,7 +54,8 @@ function handleLocation(urlString) {
     document.cookie =
       `xwwf-last=${
         currentUser ? currentUser.uid : null
-      }&last_loc=${urlString}; ` + `max-age=${constants.COOKIE_MAX_AGE}`;
+      }&last_loc=${urlString}; ` +
+      `max-age=${constants.COOKIE_MAX_AGE_BOOKMARK}`;
     routes[routePath].handler(urlString, routes[routePath].html);
   } else {
     fetch('/pages/404.html').then((data) => (document.body.innerHTML = data));
