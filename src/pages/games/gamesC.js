@@ -1,41 +1,13 @@
-import {
-  db,
-  app,
-  auth,
-  functions,
-  messaging,
-  storage,
-} from '../../firebase-init.js';
-import {
-  // authChangeView,
-  // showPuzzleView,
-  loadGamesView,
-  // animateScoringView,
-  // showErrorDialogView,
-  // showHeaderActivityView,
-} from './gamesV.js';
-// import {
-//   getDatabase,
-//   ref,
-//   onValue,
-//   onDisconnect,
-//   set,
-//   serverTimestamp,
-// } from 'firebase/database';
-// import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 'firebase/auth';
-// import { getToken, onMessage } from 'firebase/messaging';
+import { db, functions } from '../../firebase-init.js';
+import { loadGamesView } from './gamesV.js';
 import {
   collection,
   getDoc,
   getDocs,
-  setDoc,
   doc,
   onSnapshot,
   query,
-  orderBy,
-  limit,
   where,
-  runTransaction,
 } from 'firebase/firestore';
 import { currentUser } from '../signin/signinC.js';
 // import { httpsCallable } from 'firebase/functions';
@@ -322,28 +294,6 @@ let myGamesUnsubscribe = () => {};
 //       { merge: true }
 //     );
 //     return;
-//   }
-// }
-
-// /**
-//  * Called by the view, signs the user out or takes them to the #signin page.
-//  */
-// function authButtonClickedController() {
-//   if (currentUser) {
-//     const uid = currentUser.uid;
-//     signOut(auth)
-//       .then(() => {
-//         const statusUpdate = {};
-//         statusUpdate.uid = uid;
-//         statusUpdate.authState = authState('offline');
-//         const userOffline2 = httpsCallable(functions, 'userOffline2');
-//         userOffline2(statusUpdate);
-//         currentUser = null;
-//         authChangeView(null);
-//       })
-//       .catch((error) => {
-//         console.log(error);
-//       });
 //   }
 // }
 
@@ -714,7 +664,6 @@ export {
   myFriends,
   myGames,
 };
-//   authButtonClickedController,
 //   startNewGameController,
 //   getCurrentUserController,
 //   getCurrentOppController,

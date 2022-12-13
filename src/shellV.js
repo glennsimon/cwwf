@@ -1,23 +1,21 @@
-import { toggleDrawer } from './pages/common/shared.js';
 import { clearPuzzle } from './pages/puzzle/puzzleV.js';
+import { currentUser } from './pages/signin/signinC.js';
 import { route } from './router.js';
 import './styles/shell.css';
 
 //#region HTML element constants
-const drawer = document.getElementById('drawer');
-const headerSignin = document.getElementById('headerSignin');
-const navList = document.getElementById('navList');
+const headerSignin = document.querySelector('.header__signin');
 //#endregion
 
 /**
- * Clicking the authButton on the drawer calls `authButtonClickedController`
- * from the controller, which signs the user in or out depending on
- * their current sign in status.
+ * Clicking the sign in / sign out button on the drawer calls
+ * routes to `/signin` which, if the user is signed in will sign out,
+ * otherwise will just open the signin page
  */
-authButton.addEventListener('click', (event) => {
-  if (drawer.classList.contains('is-visible')) toggleDrawer();
+document.querySelector('.button__auth').addEventListener('click', (event) => {
+  closeDrawer();
   clearPuzzle();
-  // authButtonClickedController();
+  if (currentUser) route('/signin');
 });
 
 document.querySelector('.logo').addEventListener('click', (event) => {
@@ -28,12 +26,13 @@ document.querySelector('.logo').addEventListener('click', (event) => {
 
 // Go to signin page when user clicks headerSignin icon
 headerSignin.addEventListener('click', () => {
+  headerSignin.querySelector('i').innerText = '';
   route('/signin');
 });
 
-document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
+document.querySelector('.drawer__close').addEventListener('click', closeDrawer);
 
-navList.addEventListener('click', (event) => {
+document.querySelector('.overflow__list').addEventListener('click', (event) => {
   if (event.target.querySelector('i').innerText === 'refresh') {
     location.reload();
   }
@@ -44,3 +43,10 @@ navList.addEventListener('click', (event) => {
     route('/settings');
   }
 });
+
+function closeDrawer() {
+  if (document.querySelector('.drawer.is-visible'))
+    document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
+}
+
+export { closeDrawer };

@@ -54,23 +54,6 @@ select {
   padding: 8px;
 }
 
-.picContainer {
-  display: flex;
-  justify-content: center;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  overflow: hidden;
-  align-self: center;
-}
-
-.photoCrop {
-  height: 100%;
-  margin: auto;
-  border-radius: 50%;
-  overflow: hidden;
-}
-
 .displayNone {
   display: none;
 }
@@ -134,17 +117,6 @@ select {
 
 .margin5px {
   margin: 5px;
-}
-
-.copy {
-  font-size: small;
-  color: lightgray;
-  font-style: italic;
-  padding: 2px 10px;
-}
-
-.author {
-  padding: 2px 10px;
 }
 
 .colorWhite {

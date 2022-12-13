@@ -8,23 +8,22 @@ import {
   populateFriendsController,
 } from './puzzleC.js';
 import { route } from '../../router.js';
-import { toggleDrawer } from '../common/shared.js';
 import { currentUser } from '../signin/signinC.js';
 import { currentOpp } from '../games/gamesC.js';
 import scoresHtml from './scores.html';
 import activityHtml from '../common/activity.html';
+import { closeDrawer } from '../../shellV.js';
+import puzzleInfoHtml from '../common/puzzleInfo.html';
+import concedeHtml from '../common/concede.html';
+import { showActivity } from '../common/shared.js';
 
 //#region HTML element constants
 const puzTable = document.getElementById('puzTable');
-const puzAuthor = document.getElementById('puzAuthor');
-const puzCopy = document.getElementById('puzCopy');
-const puzNotepad = document.getElementById('puzNotepad');
 const clueContainer = document.getElementById('clueContainer');
 const acrossClues = document.getElementById('acrossClues');
 const downClues = document.getElementById('downClues');
 const singleClue = document.getElementById('singleClue');
 const kbContainer = document.getElementById('kbContainer');
-const puzTitle = document.getElementById('puzTitle');
 const abandonDialog = document.getElementById('abandonDialog');
 const yesButton = document.getElementById('yesButton');
 const noButton = document.getElementById('noButton');
@@ -39,23 +38,34 @@ let currentCell = null;
 /** Removes puzzle from DOM */
 function clearPuzzle() {
   console.log('Hello from clearPuzzle.');
-  puzTitle.innerText = 'Puzzle info will appear here';
   // clear out old puzzle and clues
   const svgGrid = document.getElementById('svgGrid');
   if (svgGrid) svgGrid.remove();
-  puzTable.innerHTML = '';
-  puzAuthor.innerText = '';
-  puzNotepad.classList.add('displayNone');
-  puzCopy.innerHTML = '';
-  clueContainer.classList.add('displayNone');
-  acrossClues.innerHTML = '';
-  downClues.innerHTML = '';
-  singleClue.innerText = 'Select in the puzzle to reveal clue';
+  document.querySelector('.drawer__content').innerHTML = '';
+  // clueContainer.classList.add('displayNone');
+  // acrossClues.innerHTML = '';
+  // downClues.innerHTML = '';
+  // singleClue.innerText = 'Select in the puzzle to reveal clue';
   currentCell = null;
 }
 
-// Go to signin page when user clicks headerSignin icon
-headerSignin.addEventListener('click', () => route('/signin'));
+function loadPuzzleInfo(game) {
+  document.querySelector('.drawer__content').innerHTML = puzzleInfoHtml;
+  document.querySelector('.puzzle__title').innerText = game.puzzle.title
+    ? game.puzzle.title
+    : 'Untitled';
+  document.querySelector('.puzzle__author').innerText = `by ${
+    game.puzzle.author ? game.puzzle.author : 'Anonymous'
+  }`;
+  document.querySelector('.puzzle__copyright').innerHTML = game.puzzle.copyright
+    ? `&copy; ${game.puzzle.copyright}`
+    : '';
+  if (game.puzzle.notepad) {
+    document.querySelector(
+      '.puzzle__notepad'
+    ).innerHTML = `<b>Notepad:</b>${game.puzzle.notepad}`;
+  }
+}
 
 /**
  * This function takes the puzzle object returned from the fetch and displays
@@ -71,17 +81,7 @@ function showPuzzleView(game, opponent) {
   if (puzTable.children) {
     clearPuzzle();
   }
-  if (game.puzzle.notepad) {
-    puzNotepad.innerHTML = `<b>Notepad:</b>${game.puzzle.notepad}`;
-    puzNotepad.classList.remove('displayNone');
-  }
-  puzTitle.innerText = game.puzzle.title ? game.puzzle.title : 'Untitled';
-  puzAuthor.innerText = `by ${
-    game.puzzle.author ? game.puzzle.author : 'Anonymous'
-  }`;
-  puzCopy.innerHTML = game.puzzle.copyright
-    ? `&copy; ${game.puzzle.copyright}`
-    : '';
+  loadPuzzleInfo(game);
 
   const cellDim = getCellDim();
   let gridIndex = 0;
@@ -157,8 +157,7 @@ function showPuzzleView(game, opponent) {
   kbContainer.classList.remove('displayNone');
   kbContainer.classList.add('displayFlex');
   clueContainer.classList.remove('displayNone');
-  concessionBtnContainer.classList.remove('displayNone');
-
+  addConcedeHtml();
   // create contents for across clues div
   for (const clue of game.puzzle.clues.across) {
     const parsedClue = clue.split('.');
@@ -262,15 +261,39 @@ function showPuzzleView(game, opponent) {
       showReplayDialog(game, result);
       savePuzzleController({ hideReplay: true });
     }
-    concessionBtnContainer.classList.add('displayNone');
+    document.querySelector('.drawer__concede').innerHTML = '';
   } else {
-    concessionBtnContainer.classList.remove('displayNone');
+    addConcedeHtml();
   }
   updateScoreboard(game);
   console.log(game);
-  document.querySelector('.activity__header').innerHTML = '';
+  document.querySelector('.header__activity').innerHTML = '';
   // TODO: should this go here?
   route('/puzzle');
+}
+
+function addConcedeHtml() {
+  document.querySelector('.drawer__concede').innerHtml = concedeHtml;
+  /**
+   * Open the abandonDialog, giving the user one more chance
+   * to decide if they want to abandon the game.
+   */
+  document.querySelector('.button__concede').addEventListener('click', () => {
+    closeDrawer();
+    abandonDialog.showModal();
+    abandonDialog.querySelector('.close').addEventListener('click', () => {
+      abandonDialog.close();
+    });
+    yesButton.addEventListener('click', () => {
+      showActivity('.header__activity', 'Working on it...');
+      document.querySelector('.drawer__concede').innerHTML = '';
+      abandonCurrentGameController();
+      abandonDialog.close();
+    });
+    noButton.addEventListener('click', () => {
+      abandonDialog.close();
+    });
+  });
 }
 
 /**
@@ -310,7 +333,7 @@ function generateGridElement(puzWidth, puzHeight) {
  */
 function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
-  document.querySelector('.activity__header').innerHTML = '';
+  document.querySelector('.header__activity').innerHTML = '';
   if (scoreObj.newGame || scoreObj.abandoned) return;
   const myUid = currentUser.uid;
   const scoreElem =
@@ -877,28 +900,6 @@ function clearHighlights() {
 // }
 
 /**
- * Open the abandonDialog, giving the user one more chance
- * to decide if they want to abandon the game.
- */
-concessionBtn.addEventListener('click', () => {
-  toggleDrawer();
-  abandonDialog.showModal();
-  abandonDialog.querySelector('.close').addEventListener('click', () => {
-    abandonDialog.close();
-  });
-  yesButton.addEventListener('click', () => {
-    document.querySelector('.activity__header').innerHTML = activityHtml;
-    document.querySelector('activity__message').innerText = 'Working on it...';
-    concessionBtnContainer.classList.add('displayNone');
-    abandonCurrentGameController();
-    abandonDialog.close();
-  });
-  noButton.addEventListener('click', () => {
-    abandonDialog.close();
-  });
-});
-
-/**
  * Adds a letter to the puzzle from physical or virtual keyboard event and
  * moves forward one space
  * @param {Event} event Keyboard or touch event from physical or virtual
@@ -911,8 +912,7 @@ function enterLetter(event) {
   const columns = getColumnsController();
   if (!kbContainer.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
-      document.querySelector('.activity__header').innerHTML = activityHtml;
-      document.querySelector('activity__message').innerText = 'Working...';
+      showActivity('.header__activity', 'Working...');
       playWordController();
       return;
     }
@@ -1029,6 +1029,5 @@ function resizePuzzle() {
 //   headerMessage.innerText = 'Working...';
 //   playWordController();
 // });
-// document.getElementById('closeDrawer').addEventListener('click', toggleDrawer);
 
 export { showPuzzleView, animateScoringView, clearPuzzle };

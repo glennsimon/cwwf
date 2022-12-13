@@ -23,7 +23,7 @@ import {
   set,
   serverTimestamp,
 } from 'firebase/database';
-import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 'firebase/auth';
+import { onAuthStateChanged } from 'firebase/auth'; //, signOut } from 'firebase/auth';
 import { getToken, onMessage } from 'firebase/messaging';
 import {
   collection,
@@ -325,28 +325,6 @@ async function sendTokenToServer(messagingToken) {
 }
 
 /**
- * Called by the view, signs the user out or takes them to the #signin page.
- */
-function authButtonClickedController() {
-  if (currentUser) {
-    const uid = currentUser.uid;
-    signOut(auth)
-      .then(() => {
-        const statusUpdate = {};
-        statusUpdate.uid = uid;
-        statusUpdate.authState = authState('offline');
-        const userOffline2 = httpsCallable(functions, 'userOffline2');
-        userOffline2(statusUpdate);
-        currentUser = null;
-        authChangeView(null);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
-}
-
-/**
  * Populate list of all users from firestore and return the list.
  * @returns Object containing all users by uid
  */
@@ -601,7 +579,6 @@ export {
   enterLetterController,
 };
 
-// authButtonClickedController,
 // ,
 // getCurrentUserController,
 // getCurrentOppController,

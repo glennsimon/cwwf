@@ -47,7 +47,7 @@
   </head>
 
   <body>
-    <!-- The drawer is always open in large screens. The header is always shown,
+    <!-- The drawer is always open in large screens(?). The header is always shown,
       even in small screens. -->
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
       <header class="mdl-layout__header">
@@ -62,96 +62,77 @@
           <div class="spacer--20px"></div>
           <span class="mdl-layout-title header__title"></span>
           <div class="mdl-layout-spacer"></div>
-          <div class="activity__header"></div>
+          <div class="header__activity"></div>
           <div class="mdl-layout-spacer"></div>
-          <span class="material-icons notification__wifi--bad"
-            >signal_wifi_bad</span
-          >
+          <span class="material-icons notification__wifi--bad">
+            <!-- signal_wifi_bad -->
+          </span>
           <div class="spacer--10px"></div>
           <div class="scores"></div>
           <button
-            class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon displayNone"
-            id="headerSignin"
+            class="header__signin mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"
           >
-            <i class="material-icons">login</i>
+            <i class="material-icons">
+              <!-- login  -->
+            </i>
           </button>
           <button
             class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"
-            id="navBtn"
+            id="button__overflow"
           >
             <i class="material-icons">more_vert</i>
           </button>
           <ul
-            id="navList"
-            class="mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right"
-            for="navBtn"
+            class="overflow__list mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right"
+            for="button__overflow"
           >
-            <li class="mdl-menu__item displayFlex">
-              <i class="material-icons alignSelfCenter">refresh</i>&nbsp;Refresh
+            <li class="overflow overflow__refresh mdl-menu__item">
+              <i class="material-icons">refresh</i>
+              <div class="spacer--10px"></div>
+              Refresh
             </li>
-            <li id="gamesNav" disabled class="mdl-menu__item displayFlex">
-              <i class="material-icons alignSelfCenter">grid_on</i>&nbsp;Games
+            <li disabled class="overflow overflow__games mdl-menu__item">
+              <i class="material-icons">grid_on</i>
+              <div class="spacer--10px"></div>
+              Games
             </li>
-            <li id="settings" class="mdl-menu__item displayFlex">
-              <i class="material-icons alignSelfCenter">settings</i
-              >&nbsp;Settings
+            <li class="overflow overflow__settings mdl-menu__item">
+              <i class="material-icons">settings</i>
+              <div class="spacer--10px"></div>
+              Settings
             </li>
           </ul>
         </div>
       </header>
       <div
-        id="drawer"
-        class="mdl-layout__drawer mdl-color--blue-grey-800 mdl-color-text--blue-grey-50 height100pct"
+        class="drawer mdl-layout__drawer mdl-color--blue-grey-800 mdl-color-text--blue-grey-50"
       >
-        <header class="drawerHeader">
-          <div id="closeDrawer" class="alignSelfEnd cursorPointer">
-            <i class="material-icons height24px mdl-color-text--white padding-5"
-              >arrow_back</i
-            >
-          </div>
-          <div class="picContainer">
-            <img
-              id="avatar"
-              src="./images/avatar_circle_black.png"
-              alt="profile picture"
-            />
-          </div>
-          <span id="profileName" class="margin5pxAuto">N. E. Person</span>
-          <div id="authBtnContainer" class="margin5pxAuto">
-            <button
-              id="authButton"
-              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent alignItemsCenter"
-            >
-              sign in&nbsp;<span class="material-icons">login </span>
-            </button>
-          </div>
-        </header>
-        <div
-          id="drawerContent"
-          class="displayFlex flexDirCol flexGrow-1 spaceBetween"
-        >
-          <div id="puzzleInfo" class="flexDirCol textAlignCenter displayNone">
-            <div id="puzTitle" class="fontWeightBold colorWhite"></div>
-            <div id="puzAuthor" class="author colorWhite"></div>
-            <div id="puzCopy" class="copy"></div>
-            <div id="puzNotepad" class="displayNone"></div>
-          </div>
-          <div
-            id="concessionBtnContainer"
-            class="textAlignCenter margin5pxAuto displayNone"
-          >
-            <button
-              id="concessionBtn"
-              class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
-            >
-              abandon game
-            </button>
-            <div class="margin10px">
-              Warning! Pressing this button will end the current game and give
-              all remaining points to your opponent.
+        <div>
+          <header class="drawer__player">
+            <div class="drawer__close">
+              <i class="material-icons height24px mdl-color-text--white"
+                >arrow_back</i
+              >
             </div>
-          </div>
+            <div class="user-photo__crop">
+              <img
+                class="user-photo"
+                src="./images/avatar_circle_black.png"
+                alt="profile picture"
+              />
+            </div>
+            <span class="user-name">N. E. Person</span>
+            <button
+              class="button__auth mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+            >
+              sign in
+              <div class="spacer--10px"></div>
+              <span class="material-icons">login </span>
+            </button>
+          </header>
+          <div class="drawer__content"></div>
         </div>
+        <div class="drawer__concede"></div>
       </div>
       <main class="mdl-layout__content mdl-color--grey-100">
         <div class="container__app"></div>

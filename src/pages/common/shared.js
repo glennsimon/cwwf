@@ -1,4 +1,3 @@
-import activityHtml from './activity.html';
 import './shared.css';
 
 /**
@@ -7,13 +6,23 @@ import './shared.css';
  * @param {string} message message to display
  */
 function showActivity(classSelector, message) {
-  document.querySelector(classSelector).innerHTML = activityHtml;
-  document.querySelector('.activity__message').innerText = message;
+  const activityParent = document.querySelector(classSelector);
+  const pElement = document.createElement('p');
+  pElement.classList.add(
+    'mdl-spinner',
+    'mdl-js-spinner',
+    'activity__spinner',
+    'is-active'
+  );
+  componentHandler.upgradeElement(pElement);
+  activityParent.appendChild(pElement);
+  const spacerElement = document.createElement('div');
+  spacerElement.classList.add('spacer--10px');
+  activityParent.appendChild(spacerElement);
+  const spanElement = document.createElement('span');
+  spanElement.classList.add('activity__message');
+  spanElement.innerText = message;
+  activityParent.appendChild(spanElement);
 }
 
-/** Helper function for toggling drawer in layout*/
-function toggleDrawer() {
-  document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
-}
-
-export { showActivity, toggleDrawer };
+export { showActivity };

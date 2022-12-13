@@ -41,11 +41,6 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 
-const dbRT = getDatabase(app);
-const vapidKey =
-  'BJ2DYpKmkCOjApNtK7gzaj5JAAC3ec6SkndGANE5QSavKz-sIzF_Z1IxTw_g7lhrbx6RuJORRfmWzEpcjYda14E';
-// 'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak'
-
 let currentUser = null;
 let currentOpp = null;
 let userStatusDatabaseRef = null;
@@ -318,28 +313,6 @@ let myGamesUnsubscribe = () => {};
 // }
 
 // /**
-//  * Called by the view, signs the user out or takes them to the /signin page.
-//  */
-// function authButtonClickedController() {
-//   if (currentUser) {
-//     const uid = currentUser.uid;
-//     signOut(auth)
-//       .then(() => {
-//         const statusUpdate = {};
-//         statusUpdate.uid = uid;
-//         statusUpdate.authState = authState('offline');
-//         const userOffline2 = httpsCallable(functions, 'userOffline2');
-//         userOffline2(statusUpdate);
-//         currentUser = null;
-//         authChangeView(null);
-//       })
-//       .catch((error) => {
-//         console.log(error);
-//       });
-//   }
-// }
-
-// /**
 //  * Populate list of all users from firestore and return the list.
 //  * @returns Object containing all users by uid
 //  */
@@ -561,8 +534,6 @@ async function playWordController() {
       `play your turn again`;
     // showErrorDialogView(errorMessage);
   }
-  // TODO: something like this?:
-  // document.getElementById('puzTitle').innerText = 'Fetching data...';
   const answerObj = {};
   answerObj.idxArray = idxArray;
   answerObj.gameId = currentGameId;

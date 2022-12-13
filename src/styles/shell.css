@@ -18,7 +18,7 @@ body {
   margin: 0;
 }
 
-.activity__header {
+.header__activity {
   display: flex;
   align-items: center;
 }
@@ -30,6 +30,67 @@ body {
   height: 100%;
   position: absolute;
   width: 100vw;
+}
+
+.overflow {
+  display: flex;
+  align-items: center;
+}
+
+.drawer {
+  height: 100%;
+  justify-content: space-between;
+}
+
+.drawer__player {
+  display: flex;
+  /* box-sizing: border-box; */
+  flex-direction: column;
+  /* padding: 8px; */
+}
+
+.drawer__close {
+  align-self: flex-end;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.drawer__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer__concede {
+  text-align: center;
+  margin: 5px auto;
+}
+
+.user-photo__crop {
+  display: flex;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  align-self: center;
+}
+
+.user-name {
+  margin: 5px auto;
+}
+
+.button__auth {
+  display: flex;
+  align-items: center;
+  margin: auto;
+}
+
+.container__activity {
+  translate: 100vw;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 /*** insert above here
@@ -68,16 +129,6 @@ select {
   box-sizing: border-box;
   flex-direction: column;
   padding: 8px;
-}
-
-.picContainer {
-  display: flex;
-  justify-content: center;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  overflow: hidden;
-  align-self: center;
 }
 
 .photoCrop {
@@ -162,10 +213,6 @@ select {
   padding: 2px 10px;
 }
 
-.author {
-  padding: 2px 10px;
-}
-
 .colorWhite {
   color: white;
 }
@@ -228,38 +275,6 @@ select {
 } */
 
 /*
-
-#puzNotepad {
-  background-color: #ffffe0;
-  padding: 4px;
-  border: 1px solid #808080;
-  margin: 10px;
-}
-
-#puzTable {
-  border-collapse: collapse;
-  border-spacing: 0px;
-  background-color: white;
-}
-
-#puzTable td {
-  position: relative;
-}
-
-#puzTable .black {
-  background-color: black;
-}
-
-#svgGrid {
-  z-index: 2;
-  position: absolute;
-  background-color: transparent;
-  pointer-events: none;
-}
-
-#kbContainer {
-  height: 15vh;
-}
 
 #friendsLabel:after {
   background-color: lightgray;

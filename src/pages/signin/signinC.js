@@ -1,5 +1,5 @@
 import { db, app, auth, functions, messaging } from '../../firebase-init.js';
-import { authChangeView, showHeaderActivityView } from './signinV.js';
+import { authChangeView } from './signinV.js';
 import {
   getDatabase,
   ref,
@@ -12,7 +12,6 @@ import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 
 import { getToken, onMessage } from 'firebase/messaging';
 import { getDoc, setDoc, doc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { showActivity } from '../common/shared.js';
 import { populateMyFriends, populateMyGames } from '../games/gamesC.js';
 
 // let myFriends = {};
@@ -161,28 +160,6 @@ async function sendTokenToServer(messagingToken) {
 }
 
 /**
- * Called by the view, signs the user out or takes them to the #signin page.
- */
-function authButtonClickedController() {
-  if (currentUser) {
-    const uid = currentUser.uid;
-    signOut(auth)
-      .then(() => {
-        const statusUpdate = {};
-        statusUpdate.uid = uid;
-        statusUpdate.authState = authState('offline');
-        const userOffline2 = httpsCallable(functions, 'userOffline2');
-        userOffline2(statusUpdate);
-        currentUser = null;
-        authChangeView(null);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }
-}
-
-/**
  * Creates a minimal pendingPlayer and adds to Firestore, then returns the
  * document id for the pendingPlayer.
  * @param {object} nameObject object with `firstName` for pending player
@@ -195,4 +172,4 @@ async function pendingPlayerController(nameObject) {
   });
 }
 
-export { authButtonClickedController, pendingPlayerController, currentUser };
+export { pendingPlayerController, authState, currentUser };

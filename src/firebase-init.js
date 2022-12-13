@@ -49,10 +49,9 @@ if (
   document.location.search.includes('game')
 ) {
   // cookie will only last one week max
-  const timeInSeconds = constants.COOKIE_MAX_AGE_INVITE;
   document.cookie =
     `xwwf_invite=${document.location.search}; ` +
-    `max-age=${timeInSeconds}; path=/`;
+    `max-age=${constants.COOKIE_MAX_AGE_INVITE}; path=/`;
 }
 
 // Check to make sure service workers are supported in the current browser,

@@ -8,6 +8,7 @@ const BundleAnalyzerPlugin =
 module.exports = {
   entry: {
     init: './src/firebase-init.js',
+    // factory: { import: './src/factory.js', dependOn: 'init' },
     router: {
       import: './src/router.js',
       dependOn: 'init',

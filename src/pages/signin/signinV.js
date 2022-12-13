@@ -1,26 +1,13 @@
-import { authButtonClickedController } from './signinC.js';
-import { showActivity, toggleDrawer } from '../common/shared.js';
+import { showActivity } from '../common/shared.js';
 import './signin.css';
 import { route } from '../../router.js';
 import { clearPuzzle } from '../puzzle/puzzleV.js';
+import { closeDrawer } from '../../shellV.js';
 
 //#region HTML element constants
-const authButton = document.getElementById('authButton');
-const profileName = document.getElementById('profileName');
-const avatar = document.getElementById('avatar');
-const headerSignin = document.getElementById('headerSignin');
+const name = document.querySelector('.user-name');
+const avatar = document.querySelector('.user-photo');
 //#endregion
-
-/**
- * Clicking the authButton on the drawer calls `authButtonClickedController`
- * from the controller, which signs the user in or out depending on
- * their current sign in status.
- */
-authButton.addEventListener('click', (event) => {
-  if (drawer.classList.contains('is-visible')) toggleDrawer();
-  clearPuzzle();
-  authButtonClickedController();
-});
 
 /**
  * Called by the controller, updates the view
@@ -29,29 +16,26 @@ authButton.addEventListener('click', (event) => {
  */
 function authChangeView(user) {
   if (user) {
-    showActivity('.activity__header', 'Signing in, fetching games...');
-    // gameLoadSpinner.classList.add('is-active');
-    // gameLoadMessage.innerText = 'Loading your games...';
-    // authButton.textContent = 'sign out';
-    authButton.innerHTML = `sign out&nbsp;<span class='material-icons'>logout </span>`;
-    profileName.textContent = user.prefName || user.displayName;
+    showActivity('.header__activity', 'Signing in, fetching games...');
+    document.querySelector('.button__auth').innerHTML =
+      `sign out<div class=spacer--10px></div>` +
+      `<span class='material-icons'>logout </span>`;
+    name.textContent = user.prefName || user.displayName;
     avatar.src =
       user.prefAvatarUrl || user.photoURL || 'images/avatar_circle_black.png';
     route('/games');
-    headerSignin.classList.add('displayNone');
   } else {
-    // authButton.textContent = 'sign in';
-    authButton.innerHTML = `sign in&nbsp;<span class='material-symbols-outlined signInOut'>login </span>`;
-    profileName.textContent = 'N. E. Person';
+    document.querySelector('.button__auth').innerHTML =
+      `sign in<div class=spacer--10px></div>` +
+      `<span class='material-icons'>login </span>`;
+    name.textContent = 'N. E. Person';
     avatar.src = 'images/avatar_circle_black.png';
     route('/signin');
-    // headerSignin.classList.remove('displayNone');
-    puzTitle.innerText = 'No puzzle loaded';
     activeGamesContainer.innerHTML = `You must sign in to see your active games`;
     pastGamesContainer.innerHTML = `You must sign in to see your completed games`;
     clearPuzzle();
   }
-  if (drawer.classList.contains('is-visible')) toggleDrawer();
+  closeDrawer();
   // TODO: get rid of local variables - currentUser should be available only
   // in the controller
   // currentUser = user;
@@ -64,13 +48,8 @@ function authChangeView(user) {
 function signedOutView() {
   activeGamesContainer.innerHTML = 'You must sign in to see your active games';
   pastGamesContainer.innerHTML = 'You must sign in to see your completed games';
-  if (drawer.classList.contains('is-visible')) toggleDrawer();
+  closeDrawer();
   clearPuzzle();
 }
-
-// Go to signin page when user clicks headerSignin icon
-headerSignin.addEventListener('click', () => {
-  route('/signin');
-});
 
 export { authChangeView, signedOutView };

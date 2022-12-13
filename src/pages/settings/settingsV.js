@@ -12,8 +12,6 @@
 // const settingsContainer = document.getElementById('settingsContainer');
 // const avatarButton = document.getElementById('avatarButton');
 // const avatar = document.getElementById('avatar');
-// const profileName = document.getElementById('profileName');
-// const myName = document.getElementById('myName');
 // const checkAvailability = document.getElementById('checkAvailability');
 // const saveSettings = document.getElementById('saveSettings');
 // const cancelButton = document.getElementById('cancelButton');
@@ -139,7 +137,6 @@
 //   myName.innerText = nickname;
 //   settingsPrefs.prefHandle = settingsHandle.value;
 //   if (prefAvatarUrl) avatar.src = prefAvatarUrl;
-//   profileName.innerText = settingsName.value;
 //   myName.innerText = settingsHandle.value.slice(0, 8);
 //   storeSettingsController(settingsPrefs);
 //   prefAvatarUrl = null;

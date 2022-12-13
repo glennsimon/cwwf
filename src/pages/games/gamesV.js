@@ -62,7 +62,7 @@ async function loadGamesView(myGames, userData) {
         ? userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL
         : null;
       if (opponentPhotoUrl) {
-        avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
+        avatar = `<span class='user-photo__crop material-icons mdl-list__item-avatar'>
   <img src='${opponentPhotoUrl}' alt='profile picture'>
 </span>`;
       }
@@ -105,7 +105,7 @@ async function loadGamesView(myGames, userData) {
         ? userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL
         : null;
       if (opponentPhotoUrl) {
-        avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
+        avatar = `<span class='user-photo__crop material-icons mdl-list__item-avatar'>
   <img src='${opponentPhotoUrl}' alt='profile picture'>
 </span>`;
       }
@@ -128,7 +128,7 @@ async function loadGamesView(myGames, userData) {
   }
   activeGamesContainer.innerHTML = activeGamesHtml;
   pastGamesContainer.innerHTML = pastGamesHtml;
-  document.querySelector('.activity__header').remove();
+  document.querySelector('.header__activity').remove();
   // console.log(dialogList);
 }
 
