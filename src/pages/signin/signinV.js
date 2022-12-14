@@ -18,7 +18,7 @@ function authChangeView(user) {
   if (user) {
     showActivity('.header__activity', 'Signing in, fetching games...');
     document.querySelector('.button__auth').innerHTML =
-      `sign out<div class=spacer--10px></div>` +
+      `sign out<span class='spacer--10px'></span>` +
       `<span class='material-icons'>logout </span>`;
     name.textContent = user.prefName || user.displayName;
     avatar.src =
@@ -26,7 +26,7 @@ function authChangeView(user) {
     route('/games');
   } else {
     document.querySelector('.button__auth').innerHTML =
-      `sign in<div class=spacer--10px></div>` +
+      `sign in<span class='spacer--10px'></span>` +
       `<span class='material-icons'>login </span>`;
     name.textContent = 'N. E. Person';
     avatar.src = 'images/avatar_circle_black.png';
