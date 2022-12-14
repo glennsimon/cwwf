@@ -81,6 +81,7 @@ body {
 
 .button__auth {
   display: flex;
+  flex-direction: row;
   align-items: center;
   margin: auto;
 }

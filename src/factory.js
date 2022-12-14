@@ -1,13 +1,13 @@
-import { auth } from 'firebaseui';
 import { route } from './router.js';
 import signinHtml from './pages/signin/signin.html';
 import splashHtml from './pages/common/splash.html';
-import { uiStart } from './pages/signin/signin.js';
-import { functions } from './firebase-init.js';
+// import { uiStart } from './pages/signin/signin.js';
+import { auth, functions } from './firebase-init.js';
 import { authState } from './pages/signin/signinC.js';
 import { signOut } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { authChangeView } from './pages/signin/signinV.js';
+import { uiStart } from './pages/signin/signin.js';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;
@@ -17,7 +17,7 @@ let signinHandlerObj = null;
 let tosHandlerObj = null;
 let privacyHandlerObj = null;
 let helpHandlerObj = null;
-let user = null;
+// let user = null;
 
 /**
  * Creates a new HTML element from the string `html`
@@ -39,7 +39,6 @@ function createElementFromHtml(html) {
  */
 function shellHandler(urlString, htmlPath) {
   if (auth.currentUser) {
-    user = auth.currentUser;
     route('/games');
   } else {
     route('/signin');
@@ -77,8 +76,8 @@ function settingsHandler(urlString, htmlPath) {}
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function signinHandler(urlString, htmlPath) {
-  if (user) {
-    const uid = user.uid;
+  if (auth.currentUser) {
+    const uid = auth.currentUser.uid;
     signOut(auth)
       .then(() => {
         const statusUpdate = {};
@@ -86,7 +85,6 @@ function signinHandler(urlString, htmlPath) {
         statusUpdate.authState = authState('offline');
         const userOffline2 = httpsCallable(functions, 'userOffline2');
         userOffline2(statusUpdate);
-        user = null;
         authChangeView(null);
       })
       .catch((error) => {
