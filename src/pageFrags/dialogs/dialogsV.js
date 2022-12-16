@@ -1,4 +1,8 @@
-import './dialog.css';
+import dialogShellHtml from './dialogShell.html';
+import dialogDifficultyHtml from './dialogDifficulty.html';
+import dialogStartGameFooterHtml from './dialogStartGameFooter.html';
+import './dialogs.css';
+import { myFriends } from '../../pages/games/gamesC';
 
 // document.querySelector('.button__send').addEventListener('click', async () => {
 async function sendInvitation() {
@@ -67,4 +71,66 @@ function showErrorDialogView(message) {
   document.querySelector('.dialog__shell').showModal();
 }
 
-export { showErrorDialogView };
+function showGameStartDialog() {
+  if (!myFriends) return;
+  // TODO: Use <template> to create HTML here?
+  let dialogElement = document.querySelector('.dialog__shell');
+  if (!dialogElement) {
+    dialogElement = document.createElement('div');
+    dialogElement.innerHTML = dialogShellHtml;
+  }
+  const header = dialogElement.querySelector('.dialog__content--header');
+  header.innerHTML = dialogDifficultyHtml;
+  header.innerHTML += `<div class="heading">Choose your opponent below:<div>`;
+  const footer = dialogElement.querySelector('.dialog__content--footer');
+  footer.innerHTML = dialogStartGameFooterHtml;
+  document.querySelector('body').appendChild(dialogElement);
+  const list = dialogElement.querySelector('.dialog__list ul');
+  list.innerHTML = loadFriendsList();
+  dialogElement.firstChild.showModal();
+}
+
+/**
+ * Load list of players friends into dialogList element.
+ * @return {string} html string of list of friends for display
+ */
+function loadFriendsList() {
+  console.log('Hello from loadFriendsList.');
+  let userList = '';
+  let uids = Object.keys(myFriends);
+  if (uids.length === 0) {
+    console.warn('No users in list.');
+    return;
+  }
+  for (const uid of uids) {
+    if (!(uid && myFriends[uid])) continue;
+    const user = myFriends[uid];
+    // doc.data() is never undefined for query doc snapshots
+    // console.log(doc.id, ' => ', doc.data());
+    let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
+    if (user.prefAvatarUrl || user.photoURL) {
+      avatar = `<span class='container--picture material-icons mdl-list__item-avatar'>
+  <img src='${user.prefAvatarUrl || user.photoURL}' alt='profile picture'>
+</span>`;
+    }
+    userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursor--pointer'>
+  <span class='mdl-list__item-primary-content white-space--nowrap'>
+    ${avatar}
+    <div class='container__name--list'>${
+      user.prefName || user.displayName
+    }</div>
+    <span class='mdl-list__item-sub-title'>
+      ${user.signInProvider ? user.signInProvider.split('.')[0] : 'none'}
+    </span>
+  </span>
+  <span class='mdl-list__item-secondary-content'>
+    <span class='mdl-list__item-secondary-info'>Play</span>
+    <i class='material-icons'>grid_on</i>
+  </span>
+</li>`;
+  }
+  document.querySelector('.dialog__activity').innerHTML = '';
+  return userList;
+}
+
+export { showErrorDialogView, showGameStartDialog };

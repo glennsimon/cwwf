@@ -63,3 +63,34 @@
 .justify--space-around {
   justify-content: space-around;
 }
+
+.container--picture {
+  display: flex;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  align-self: center;
+}
+
+/* .photoCrop */
+.photo__crop {
+  height: 100%;
+  margin: auto;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.cursor--pointer {
+  cursor: pointer;
+}
+
+.white-space--nowrap {
+  white-space: nowrap;
+}
+
+.container__name--list {
+  overflow: hidden;
+  width: 115px;
+}
