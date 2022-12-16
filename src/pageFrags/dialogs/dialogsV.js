@@ -1,6 +1,6 @@
-import dialogShellHtml from './dialogShell.html';
 import dialogDifficultyHtml from './dialogDifficulty.html';
 import dialogStartGameFooterHtml from './dialogStartGameFooter.html';
+import dialogFriendsListItemSecondaryHtml from './dialogFriendsListItemSecondary.html';
 import './dialogs.css';
 import { myFriends } from '../../pages/games/gamesC';
 
@@ -71,23 +71,26 @@ function showErrorDialogView(message) {
   document.querySelector('.dialog__shell').showModal();
 }
 
+function clearDialogContent() {
+  document.querySelector('.dialog__content--header').innerHTML = '';
+  document.querySelector('.dialog__list ul').innerHTML = '';
+  document.querySelector('.dialog__content--footer').innerHTML = '';
+  document.querySelector('.dialog__activity').innerHTML = '';
+}
+
 function showGameStartDialog() {
   if (!myFriends) return;
-  // TODO: Use <template> to create HTML here?
-  let dialogElement = document.querySelector('.dialog__shell');
-  if (!dialogElement) {
-    dialogElement = document.createElement('div');
-    dialogElement.innerHTML = dialogShellHtml;
-  }
+  const dialogElement = document.querySelector('.dialog__shell');
   const header = dialogElement.querySelector('.dialog__content--header');
   header.innerHTML = dialogDifficultyHtml;
-  header.innerHTML += `<div class="heading">Choose your opponent below:<div>`;
+  const headingDiv = document.createElement('div');
+  headingDiv.className = 'heading';
+  headingDiv.append('Choose your opponent below:');
   const footer = dialogElement.querySelector('.dialog__content--footer');
   footer.innerHTML = dialogStartGameFooterHtml;
-  document.querySelector('body').appendChild(dialogElement);
   const list = dialogElement.querySelector('.dialog__list ul');
-  list.innerHTML = loadFriendsList();
-  dialogElement.firstChild.showModal();
+  list.append(loadFriendsList());
+  dialogElement.showModal();
 }
 
 /**
@@ -96,7 +99,7 @@ function showGameStartDialog() {
  */
 function loadFriendsList() {
   console.log('Hello from loadFriendsList.');
-  let userList = '';
+  let userList = new DocumentFragment();
   let uids = Object.keys(myFriends);
   if (uids.length === 0) {
     console.warn('No users in list.');
@@ -105,29 +108,35 @@ function loadFriendsList() {
   for (const uid of uids) {
     if (!(uid && myFriends[uid])) continue;
     const user = myFriends[uid];
-    // doc.data() is never undefined for query doc snapshots
-    // console.log(doc.id, ' => ', doc.data());
-    let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
+    let avatar = document.createElement('i');
+    avatar.className = 'material-icons mdl-list__item-avatar';
+    avatar.append('person');
     if (user.prefAvatarUrl || user.photoURL) {
-      avatar = `<span class='container--picture material-icons mdl-list__item-avatar'>
-  <img src='${user.prefAvatarUrl || user.photoURL}' alt='profile picture'>
-</span>`;
+      avatar = document.createElement('span');
+      avatar.className =
+        'container--picture material-icons mdl-list__item-avatar';
+      const userPhoto = document.createElement('img');
+      userPhoto.src = `${user.prefAvatarUrl || user.photoURL}`;
+      userPhoto.alt = 'profile picture';
+      avatar.append(userPhoto);
     }
-    userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursor--pointer'>
-  <span class='mdl-list__item-primary-content white-space--nowrap'>
-    ${avatar}
-    <div class='container__name--list'>${
-      user.prefName || user.displayName
-    }</div>
-    <span class='mdl-list__item-sub-title'>
-      ${user.signInProvider ? user.signInProvider.split('.')[0] : 'none'}
-    </span>
-  </span>
-  <span class='mdl-list__item-secondary-content'>
-    <span class='mdl-list__item-secondary-info'>Play</span>
-    <i class='material-icons'>grid_on</i>
-  </span>
-</li>`;
+    const userListItem = document.createElement('li');
+    userListItem.id = uid;
+    userListItem.className =
+      'mdl-list__item mdl-list__item--two-line cursor--pointer';
+    const primaryContentSpan = document.createElement('span');
+    primaryContentSpan.className =
+      'mdl-list__item-primary-content white-space--nowrap';
+    const nameElement = document.createElement('div');
+    nameElement.className = 'container__name--list';
+    nameElement.append(`${user.prefName || user.displayName}`);
+    const providerElement = document.createElement('span');
+    providerElement.className = 'mdl-list__item-sub-title';
+    providerElement.append(`${user.prefName || user.displayName}`);
+    primaryContentSpan.append(avatar, nameElement, providerElement);
+    primaryContentSpan.innerHTML += dialogFriendsListItemSecondaryHtml;
+    userListItem.append(primaryContentSpan);
+    userList.append(userListItem);
   }
   document.querySelector('.dialog__activity').innerHTML = '';
   return userList;

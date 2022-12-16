@@ -4,6 +4,7 @@ import { route } from './router.js';
 import './styles/shell.css';
 import './styles/shared.css';
 import './pageFrags/splash/splash.css';
+import './pageFrags/dialogs/dialogs.css';
 
 //#region HTML element constants
 const headerSignin = document.querySelector('.header__signin');
