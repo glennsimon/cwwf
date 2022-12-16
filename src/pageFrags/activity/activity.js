@@ -1,3 +1,4 @@
+import activityHtml from './activity.html';
 import './activity.css';
 
 /**
@@ -7,22 +8,10 @@ import './activity.css';
  */
 function showActivity(classSelector, message) {
   const activityParent = document.querySelector(classSelector);
-  const pElement = document.createElement('p');
-  pElement.classList.add(
-    'mdl-spinner',
-    'mdl-js-spinner',
-    'activity__spinner',
-    'is-active'
-  );
+  activityParent.innerHTML = activityHtml;
+  const pElement = activityParent.querySelector('p');
   componentHandler.upgradeElement(pElement);
-  activityParent.appendChild(pElement);
-  const spacerElement = document.createElement('div');
-  spacerElement.classList.add('spacer--10px');
-  activityParent.appendChild(spacerElement);
-  const spanElement = document.createElement('span');
-  spanElement.classList.add('activity__message');
-  spanElement.innerText = message;
-  activityParent.appendChild(spanElement);
+  activityParent.querySelector('.activity__message').innerText = message;
 }
 
 export { showActivity };

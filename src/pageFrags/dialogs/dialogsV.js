@@ -1,4 +1,7 @@
-document.querySelector('.button__send').addEventListener('click', async () => {
+import './dialog.css';
+
+// document.querySelector('.button__send').addEventListener('click', async () => {
+async function sendInvitation() {
   console.log('Player hit the email send button.');
   inviteProgressContainer.classList.add('displayFlex');
   inviteProgressContainer.classList.remove('displayNone');
@@ -41,7 +44,7 @@ document.querySelector('.button__send').addEventListener('click', async () => {
   window.location.href =
     `mailto:${inviteEmail.value}?subject=${encodedSubj}` +
     `&body=${encodedBody}`;
-});
+}
 
 /**
  * Shows an error dialog with appropriate messaging
@@ -53,7 +56,7 @@ function showErrorDialogView(message) {
   document
     .querySelector('.dialog__button--ok')
     .addEventListener('click', () => {
-      document.querySelector('.mdl-dialog__content').innerHTML = '';
+      // document.querySelector('.mdl-dialog__content').innerHTML = '';
       document.querySelector('.dialog__shell').close();
     });
   document

@@ -44,14 +44,24 @@
 }
 
 .dialog__activity {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  margin: 5px;
+  display: block;
+  margin: 10px auto;
+  overflow: hidden;
 }
 
-.dialog__heading--footer-1 {
+.dialog__heading--footer {
   margin: 5px auto;
+}
+
+.dialog__footer {
+  display: flex;
+  flex-direction: column;
+}
+
+.dialog__content--footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .dialog__error--message {
@@ -62,6 +72,5 @@
 @media screen and (min-width: 420px) {
   .dialog__shell {
     width: 400px;
-    padding: 20px 10px 0;
   }
 }

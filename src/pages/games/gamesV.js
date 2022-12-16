@@ -1,6 +1,7 @@
 import gamesHtml from './games.html';
 import { currentUser } from '../signin/signinC';
 import './games.css';
+import '../../pageFrags/dialogs/dialogs.css';
 import { showActivity } from '../../pageFrags/activity/activity';
 import { route } from '../../router';
 import { myFriends } from './gamesC';
@@ -164,10 +165,9 @@ function startGameListener() {
     const footer = dialogElement.querySelector('.dialog__content--footer');
     footer.innerHTML = dialogStartGameFooterHtml;
     document.querySelector('body').appendChild(dialogElement);
-    const list = dialogElement.querySelector('.dialog__list');
+    const list = dialogElement.querySelector('.dialog__list ul');
     list.innerHTML = loadFriendsList(myFriends);
     dialogElement.firstChild.showModal();
-    showActivity('.dialog__activity', 'Loading list...');
   } else {
     // user is not logged in
     route('/signin');
