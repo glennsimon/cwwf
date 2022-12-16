@@ -1,5 +1,12 @@
 import gamesHtml from './games.html';
 import { currentUser } from '../signin/signinC';
+import './games.css';
+import { showActivity } from '../../pageFrags/activity/activity';
+import { route } from '../../router';
+import { myFriends } from './gamesC';
+import dialogShellHtml from '../../pageFrags/dialogs/dialogShell.html';
+import dialogDifficultyHtml from '../../pageFrags/dialogs/dialogDifficulty.html';
+import dialogStartGameFooterHtml from '../../pageFrags/dialogs/dialogStartGameFooter.html';
 
 const container__app = document.querySelector('.container__app');
 
@@ -12,10 +19,15 @@ const container__app = document.querySelector('.container__app');
 async function loadGamesView(myGames, userData) {
   console.log('Hello from loadGamesView.');
   container__app.innerHTML = gamesHtml;
+  document
+    .querySelector('.button__games--start')
+    .addEventListener('click', startGameListener);
   const activityGames = document.querySelector('.activity__games');
   if (activityGames) activityGames.remove();
-  const activeGamesContainer = document.getElementById('activeGamesContainer');
-  const pastGamesContainer = document.getElementById('pastGamesContainer');
+  const activeGamesContainer = document.querySelector(
+    '.container__games--active'
+  );
+  const pastGamesContainer = document.querySelector('.container__games--past');
   activeGamesContainer.innerHTML = 'No active games. Start one!';
   pastGamesContainer.innerHTML = 'No completed games yet';
   if (myGames.length === 0) {
@@ -130,6 +142,80 @@ async function loadGamesView(myGames, userData) {
   pastGamesContainer.innerHTML = pastGamesHtml;
   document.querySelector('.header__activity').remove();
   // console.log(dialogList);
+}
+
+/**
+ * Called when user clicks the startGameButton. Fires an event with user data
+ * to populate, update and open the new game dialog in the view, or send user
+ * to the login page if no one is logged in.
+ */
+function startGameListener() {
+  console.log('startGameButton clicked.');
+  if (currentUser) {
+    // user is logged in
+    // const friendsObj = await populateFriendsController();
+    if (!myFriends) return;
+    // TODO: Use <template> to create HTML here?
+    const dialogElement = document.createElement('div');
+    dialogElement.innerHTML = dialogShellHtml;
+    const header = dialogElement.querySelector('.dialog__content--header');
+    header.innerHTML = dialogDifficultyHtml;
+    header.innerHTML += `<div class="heading">Choose your opponent below:<div>`;
+    const footer = dialogElement.querySelector('.dialog__content--footer');
+    footer.innerHTML = dialogStartGameFooterHtml;
+    document.querySelector('body').appendChild(dialogElement);
+    const list = dialogElement.querySelector('.dialog__list');
+    list.innerHTML = loadFriendsList(myFriends);
+    dialogElement.firstChild.showModal();
+    showActivity('.dialog__activity', 'Loading list...');
+  } else {
+    // user is not logged in
+    route('/signin');
+  }
+}
+
+/**
+ * Load list of players friends into dialogList element.
+ * @param {Object} friends Object containing friends by uid
+ * @return {string} html string of list of friends for display
+ */
+function loadFriendsList(friends) {
+  console.log('Hello from loadFriendsList.');
+  let userList = '';
+  let uids = Object.keys(friends);
+  if (uids.length === 0) {
+    console.warn('No users in list.');
+    return;
+  }
+  for (const uid of uids) {
+    if (!(uid && friends[uid])) continue;
+    const user = friends[uid];
+    // doc.data() is never undefined for query doc snapshots
+    // console.log(doc.id, ' => ', doc.data());
+    let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
+    if (user.prefAvatarUrl || user.photoURL) {
+      avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
+  <img src='${user.prefAvatarUrl || user.photoURL}' alt='profile picture'>
+</span>`;
+    }
+    userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
+  <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
+    ${avatar}
+    <div class='overflowHidden' style='width: 115px;'>${
+      user.prefName || user.displayName
+    }</div>
+    <span class='mdl-list__item-sub-title'>
+      ${user.signInProvider ? user.signInProvider.split('.')[0] : 'none'}
+    </span>
+  </span>
+  <span class='mdl-list__item-secondary-content'>
+    <span class='mdl-list__item-secondary-info'>Play</span>
+    <i class='material-icons'>grid_on</i>
+  </span>
+</li>`;
+  }
+  document.querySelector('.dialog__activity').innerHTML = '';
+  return userList;
 }
 
 export { loadGamesView };

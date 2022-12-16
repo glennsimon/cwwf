@@ -271,54 +271,6 @@
 // }
 
 // /**
-//  * Load list of players friends into dialogList element.
-//  * @param {Object} friends Object containing friends by uid
-//  */
-// function loadFriendsSettingsView(friends) {
-//   console.log('Hello from loadFriendsList.');
-//   let userList = '';
-//   let uids = Object.keys(friends);
-//   if (uids.length === 0) {
-//     console.warn('No users in list.');
-//     return;
-//   }
-//   for (const uid of uids) {
-//     if (!(uid && friends[uid])) continue;
-//     const user = friends[uid];
-//     // doc.data() is never undefined for query doc snapshots
-//     // console.log(doc.id, ' => ', doc.data());
-//     let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
-//     if (user.prefAvatarUrl || user.photoURL) {
-//       avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-//   <img src='${user.prefAvatarUrl || user.photoURL}' alt='profile picture'>
-// </span>`;
-//     }
-//     userList += `<li id='${uid}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
-//   <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
-//     ${avatar}
-//     <div class='overflowHidden' style='width: 115px;'>${
-//       user.prefName || user.displayName
-//     }</div>
-//     <span class='mdl-list__item-sub-title'>
-//       ${user.signInProvider ? user.signInProvider.split('.')[0] : 'none'}
-//     </span>
-//   </span>
-//   <span class='mdl-list__item-secondary-content'>
-//     <span class='mdl-list__item-secondary-info'>Play</span>
-//     <i class='material-icons'>grid_on</i>
-//   </span>
-// </li>`;
-//   }
-//   // allUsers = usersObj;
-//   // console.log(userList);
-//   dialogList.innerHTML = userList;
-//   friendsProgressContainer.classList.add('displayNone');
-//   friendsProgressContainer.classList.remove('displayFlex');
-//   friendsLoadSpinner.classList.remove('is-active');
-//   friendsLoadMessage.innerText = '';
-// }
-
-// /**
 //  * Adds or removes ids from
 //  * @param {Event} changeEvent event on one of the checkboxes
 //  */
@@ -368,51 +320,6 @@
 // inviteFriendButton.addEventListener('click', (event) => {
 //   friendsDialog.close();
 //   inviteDialog.showModal();
-// });
-
-// sendButton.addEventListener('click', async () => {
-//   console.log('Player hit the email send button.');
-//   inviteProgressContainer.classList.add('displayFlex');
-//   inviteProgressContainer.classList.remove('displayNone');
-//   inviteLoadSpinner.classList.add('is-active');
-//   const currentUser = getCurrentUserController();
-//   const gameStartParameters = {};
-//   const myUid = currentUser.uid;
-//   gameStartParameters.players = {};
-//   gameStartParameters.players[myUid] = {};
-//   gameStartParameters.players[myUid].bgColor = 'bgTransRed';
-//   gameStartParameters.viewableBy = [];
-//   gameStartParameters.viewableBy.push(myUid);
-//   // opponent - assume never signed in
-//   const oppName = firstName.value || 'Friend';
-//   const pendUid = await pendingPlayerController({ firstName: oppName });
-//   console.log('pendUid: ', pendUid);
-//   gameStartParameters.players[pendUid] = {};
-//   gameStartParameters.players[pendUid].bgColor = 'bgTransBlue';
-//   gameStartParameters.viewableBy.push(pendUid);
-//   // for first game, default to 'easy' game
-//   gameStartParameters.difficulty = 'easy';
-//   const gameId = await startNewGameController(gameStartParameters);
-//   inviteProgressContainer.classList.add('displayNone');
-//   inviteProgressContainer.classList.remove('displayFlex');
-//   inviteLoadSpinner.classList.remove('is-active');
-//   inviteDialog.close();
-
-//   const encodedSubj = encodeURIComponent(
-//     `I've invited you to play a Crossword game!`
-//   );
-//   const encodedBody = encodeURIComponent(
-//     `${oppName},\n\nI found a crossword game that two people can play ` +
-//       `against each other, and I'd like to try playing it with you.\n\n` +
-//       `Here is the link to the game I started:\n` +
-//       `${document.location.origin}?pending=${pendUid}&game=${gameId}#signin` +
-//       `\n\nIf you click on the link and sign in, the game will show up in ` +
-//       `your Active Games list so we can play.\n\nLet's try it!`
-//   );
-
-//   window.location.href =
-//     `mailto:${inviteEmail.value}?subject=${encodedSubj}` +
-//     `&body=${encodedBody}`;
 // });
 
 // inviteEmail.addEventListener('focusout', (event) => {

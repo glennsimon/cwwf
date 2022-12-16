@@ -1,0 +1,8 @@
+.activity__spinner {
+  margin: 0;
+}
+
+.activity__games {
+  display: flex;
+  flex-direction: row;
+}

@@ -1,0 +1,29 @@
+.puzzle__info {
+  text-align: center;
+  flex-direction: column;
+}
+
+.puzzle__title {
+  font-weight: bold;
+  color: white;
+}
+
+.puzzle__author {
+  padding: 2px 10px;
+  color: white;
+}
+
+.puzzle__copyright {
+  font-size: small;
+  color: lightgray;
+  font-style: italic;
+  padding: 2px 10px;
+}
+
+.puzzle__notepad {
+  background-color: #ffffe0;
+  padding: 4px;
+  border: 1px solid #808080;
+  margin: 10px;
+  color: black;
+}

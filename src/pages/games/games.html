@@ -1,28 +1,21 @@
-<div
-  id="gamesPanel"
-  class="posAbsolute fullWidth height100pct displayFlex flexDirCol alignItemsCenter"
->
-  <div id="gamesPanelContainer" class="displayFlex flexDirCol maxHeight85pct">
-    <div class="heading textAlignCenter">Games</div>
-    <button
-      id="startGameButton"
-      type="button"
-      class="minHt36px mdl-button mdl-js-button mdl-button--raised mdl-button--accent margin5pxAuto"
-    >
-      start a new game
-    </button>
-    <div class="overflow__scroll--y">
-      <div class="gamesHeading fontWeightBold textAlignCenter">
-        Active games
-      </div>
-      <ul
-        id="activeGamesContainer"
-        class="demo-list-two mdl-list webkitMargin0"
+<div class="panel__games">
+  <div class="panel__games--list displayFlex flexDirCol maxHeight85pct">
+    <div class="heading text-align--center">Games</div>
+    <div class="margin--10px-auto">
+      <button
+        type="button"
+        class="button__games--start mdl-button mdl-js-button mdl-button--raised mdl-button--accent"
       >
+        start a new game
+      </button>
+    </div>
+    <div class="overflow__scroll--y">
+      <div class="heading text-align--center">Active games</div>
+      <ul class="container__games--active demo-list-two mdl-list">
         You must sign in to see your active games
       </ul>
-      <div class="gamesHeading fontWeightBold textAlignCenter">Past games</div>
-      <ul id="pastGamesContainer" class="demo-list-two mdl-list webkitMargin0">
+      <div class="heading text-align--center">Past games</div>
+      <ul class="container__games--past demo-list-two mdl-list">
         You must sign in to see your completed games
       </ul>
     </div>

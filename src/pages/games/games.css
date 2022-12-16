@@ -1,29 +1,31 @@
-/* COMMON */
-
-html {
-  box-sizing: border-box;
+.panel__games {
+  position: absolute;
+  height: 100%;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(0, 0);
+  transition: transform 0.3s ease;
 }
 
-*,
-*:before,
-*:after {
-  box-sizing: inherit;
+.gamesHeading {
+  padding: 10px 20px 0;
 }
 
-body {
-  font-family: 'Roboto', 'Helvetica', 'Arial', Sans-Serif;
-  background-color: #f6f6f6;
-  font-size: 16px;
-  box-sizing: border-box;
-  margin: 0;
+.panel__games--list {
+  display: flex;
+  flex-direction: column;
+  max-height: 85%;
+  width: 90%;
 }
 
-select {
-  font-size: 20px;
-  margin: 0 10px;
+.button__games--start {
+  margin: 10px auto;
+  /* min-height: 36px; */
 }
 
-.displayBlock {
+/*.displayBlock {
   display: block;
 }
 
@@ -56,15 +58,15 @@ select {
 
 .displayNone {
   display: none;
-}
+} */
 
 /* Increased specificity required for precedence */
-#returnToSignin.displayNone {
+/* #returnToSignin.displayNone {
   display: none;
-}
+} */
 
 /* Increased specificity required for precedence */
-#replayButton.displayNone {
+/* #replayButton.displayNone {
   display: none;
 }
 
@@ -83,13 +85,13 @@ select {
 
 .mdl-list__item:hover {
   background-color: #b8b8b8;
-}
+} */
 
 /* END COMMON */
 
 /* CLUES */
 
-.heading {
+/* .heading {
   font-weight: bold;
   padding: 0 0 10px;
 }
@@ -162,14 +164,14 @@ select {
 .webkitMargin0 {
   -webkit-margin-before: 0;
   -webkit-margin-after: 0;
-}
+} */
 
 /* END CLUES */
 
-.links {
+/* .links {
   margin-bottom: 20px;
   font-size: 12px;
-}
+} */
 
 /* #gridContainer {
   background-color: transparent;
@@ -177,7 +179,7 @@ select {
   padding: 0.25px;
 } */
 
-#puzNotepad {
+/* #puzNotepad {
   background-color: #ffffe0;
   padding: 4px;
   border: 1px solid #808080;
@@ -221,7 +223,7 @@ select {
   border: 1px solid black;
   background-color: white;
   text-align: center;
-}
+} */
 
 /* .circle {
   border: 1px solid black;
@@ -230,7 +232,7 @@ select {
   height: 100%;
 } */
 
-.upperLeft {
+/* .upperLeft {
   top: 0;
   left: 0;
 }
@@ -370,9 +372,9 @@ select {
 
 .bgColorTransGold {
   background-color: #ffd700dd;
-}
+} */
 
-.kbButton {
+/* .kbButton {
   margin: 0.5%;
   display: flex;
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.14), 0 6px 2px -4px rgba(0, 0, 0, 0.2),
@@ -382,7 +384,6 @@ select {
   font-size: 3.5vw;
   transition-duration: 0.2s;
   transition-property: box-shadow;
-  /*transition-timing-function: cubic-bezier(0.4, 0, 1, 1);*/
   will-change: box-shadow;
   cursor: pointer;
 }
@@ -492,30 +493,8 @@ select {
   min-height: 36px;
 }
 
-.spacer {
-  margin: 10px;
-}
-
 .overflowHidden {
   overflow: hidden;
-}
-
-.noOutline {
-  outline: none;
-}
-
-#gamesPanel {
-  padding: 10px;
-  transform: translate(0, 0);
-  transition: transform 0.3s ease;
-}
-
-#gamesPanel.slideOut {
-  transform: translate(-100%, 0);
-}
-
-.gamesHeading {
-  padding: 10px 20px 0;
 }
 
 .posAbsolute {
@@ -606,40 +585,23 @@ select {
   text-align: right;
 }
 
-.closeDialogPosition {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
 .buttonIsolation {
   margin: 10px auto 10px auto;
   width: 80%;
   text-align: center;
 }
 
-.clickInheritParent {
+/* .clickInheritParent {
   pointer-events: inherit;
-}
+} */
 
 @media screen and (min-width: 420px) {
-  #gamesPanelContainer,
-  #gamesDialog,
-  #friendsDialog,
-  #inviteDialog {
-    min-width: 400px;
-  }
-
-  #friendsDialog .mdl-dialog__content {
-    padding: 20px 15px 0;
-  }
-
-  #inviteDialog .mdl-dialog__content {
-    padding: 20px 0 0;
+  .panel__games--list {
+    width: 400px;
   }
 }
 
-@media screen and (min-aspect-ratio: 7/10) {
+/* @media screen and (min-aspect-ratio: 7/10) {
   .square {
     font-size: 2.5vh;
     line-height: 2.5vh;
@@ -756,4 +718,4 @@ select {
     font-size: 1.15vw;
     line-height: 1.55vw;
   }
-}
+} */

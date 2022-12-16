@@ -1,0 +1,19 @@
+.color__background--white-trans {
+  background-color: rgba(255, 255, 255, 0.33);
+}
+
+.scorebox {
+  flex-grow: 1;
+  margin: 0 5px;
+  width: 60px;
+  background-color: rgba(255, 255, 255, 0.33);
+}
+
+.name {
+  text-align: center;
+  overflow: hidden;
+}
+
+.score {
+  text-align: center;
+}

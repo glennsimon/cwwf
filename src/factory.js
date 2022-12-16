@@ -1,6 +1,6 @@
 import { route } from './router.js';
 import signinHtml from './pages/signin/signin.html';
-import splashHtml from './pages/common/splash.html';
+import splashHtml from './pageFrags/splash/splash.html';
 // import { uiStart } from './pages/signin/signin.js';
 import { auth, functions } from './firebase-init.js';
 import { authState } from './pages/signin/signinC.js';

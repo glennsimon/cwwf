@@ -10,12 +10,11 @@ import {
 import { route } from '../../router.js';
 import { currentUser } from '../signin/signinC.js';
 import { currentOpp } from '../games/gamesC.js';
-import scoresHtml from './scores.html';
-import activityHtml from '../common/activity.html';
+import scoresHtml from '../../pageFrags/scores/scores.html';
 import { closeDrawer } from '../../shellV.js';
-import puzzleInfoHtml from '../common/puzzleInfo.html';
-import concedeHtml from '../common/concede.html';
-import { showActivity } from '../common/shared.js';
+import puzzleInfoHtml from '../../pageFrags/puzzleInfo/puzzleInfo.html';
+import concedeHtml from '../../pageFrags/concede/concede.html';
+import { showActivity } from '../../pageFrags/activity/activity.js';
 
 //#region HTML element constants
 const puzTable = document.getElementById('puzTable');
@@ -25,8 +24,6 @@ const downClues = document.getElementById('downClues');
 const singleClue = document.getElementById('singleClue');
 const kbContainer = document.getElementById('kbContainer');
 const abandonDialog = document.getElementById('abandonDialog');
-const yesButton = document.getElementById('yesButton');
-const noButton = document.getElementById('noButton');
 //#endregion
 
 let currentCell = null;
@@ -284,15 +281,19 @@ function addConcedeHtml() {
     abandonDialog.querySelector('.close').addEventListener('click', () => {
       abandonDialog.close();
     });
-    yesButton.addEventListener('click', () => {
-      showActivity('.header__activity', 'Working on it...');
-      document.querySelector('.drawer__concede').innerHTML = '';
-      abandonCurrentGameController();
-      abandonDialog.close();
-    });
-    noButton.addEventListener('click', () => {
-      abandonDialog.close();
-    });
+    document
+      .querySelector('.dialog__button--yes')
+      .addEventListener('click', () => {
+        showActivity('.header__activity', 'Working on it...');
+        document.querySelector('.drawer__concede').innerHTML = '';
+        abandonCurrentGameController();
+        abandonDialog.close();
+      });
+    document
+      .querySelector('.dialog__button--no')
+      .addEventListener('click', () => {
+        abandonDialog.close();
+      });
   });
 }
 
@@ -838,9 +839,6 @@ function clearHighlights() {
 // function showReplayDialog(game, result) {
 //   console.log('Hello from showReplayDialog.');
 //   winMessage.innerText = result;
-//   gameOverHeading.classList.remove('displayNone');
-//   friendsChooser.classList.add('displayNone');
-//   friendsChooser.classList.remove('displayFlex');
 //   dialogList.classList.add('displayNone');
 //   gamesDialog.querySelector('footer').classList.add('displayNone');
 //   gamesDialog.classList.remove('maxHeight85pct');
@@ -880,23 +878,6 @@ function clearHighlights() {
 //   startGameParameters.difficulty = difficulty;
 //   startGameParameters.players = game.players;
 //   startNewGameController(startGameParameters);
-// }
-
-// /**
-//  * Shows an error dialog with appropriate messaging
-//  * @param {string} message Type of error
-//  */
-// function showErrorDialogView(message) {
-//   headerMessage.innerText = '';
-//   headerSpinner.classList.remove('is-active');
-//   errorMessage.innerText = message;
-//   okButton.addEventListener('click', () => {
-//     errorDialog.close();
-//   });
-//   errorDialog.querySelector('.close').addEventListener('click', () => {
-//     errorDialog.close();
-//   });
-//   errorDialog.showModal();
 // }
 
 /**

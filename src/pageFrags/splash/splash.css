@@ -1,0 +1,13 @@
+.splash {
+  width: 100vw;
+  align-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.splash__image {
+  width: 20vw;
+  height: auto;
+  margin: 5px auto;
+  aspect-ratio: 1;
+}

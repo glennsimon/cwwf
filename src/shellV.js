@@ -2,6 +2,8 @@ import { clearPuzzle } from './pages/puzzle/puzzleV.js';
 import { currentUser } from './pages/signin/signinC.js';
 import { route } from './router.js';
 import './styles/shell.css';
+import './styles/shared.css';
+import './pageFrags/splash/splash.css';
 
 //#region HTML element constants
 const headerSignin = document.querySelector('.header__signin');

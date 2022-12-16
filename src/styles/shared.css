@@ -1,0 +1,65 @@
+.heading {
+  font-weight: bold;
+  padding: 10px 0 0;
+  text-align: center;
+}
+
+.spacer--10px {
+  margin: 5px;
+}
+
+.spacer--20px {
+  margin: 10px;
+}
+
+.overflow__scroll--y {
+  overflow-y: auto;
+}
+
+.width--100vw {
+  width: 100vw;
+}
+
+.display__flex {
+  display: flex;
+}
+
+.flex__grow--1 {
+  flex-grow: 1;
+}
+
+.margin--auto {
+  margin: auto;
+}
+
+.margin--0-5px {
+  margin: 0 5px;
+}
+
+.margin--5px-auto {
+  margin: 5px auto;
+}
+
+.margin--10px {
+  margin: 10px;
+}
+
+.margin--10px-auto {
+  margin: 10px auto;
+}
+
+.translate--left {
+  transform: translate(-100%, 0);
+}
+
+.text-align--center {
+  text-align: center;
+}
+
+.font--large {
+  font-size: large;
+}
+
+.justify--space-around {
+  justify-content: space-around;
+}

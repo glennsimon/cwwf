@@ -8,9 +8,6 @@ import {
 } from '../../firebase-init.js';
 import {
   authChangeView,
-  showPuzzleView,
-  loadGamesView,
-  animateScoringView,
   showErrorDialogView,
   showHeaderActivityView,
   loadFriendsSettingsView,
@@ -384,75 +381,6 @@ function populateMyFriends() {
     });
     for (const key of Object.keys(myFriends)) {
       if (!currentUser.friends.includes(key)) delete myFriends[key];
-    }
-    return;
-  });
-}
-
-/**
- * Populate list of all games that is viewable to the current user
- * from firestore when auth changes or when something changes in that list.
- * @param {string} uid User ID
- */
-async function populateMyGames(uid) {
-  console.log('Hello from populateMyGames.');
-  if (!uid) return;
-  myGamesUnsubscribe();
-  // try {
-  const q = query(
-    collection(db, 'gameListBuilder'),
-    where('viewableBy', 'array-contains', `${uid}`)
-    // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
-    // limit(30)
-  );
-  myGamesUnsubscribe = onSnapshot(q, async (snapshot) => {
-    const myPastGames = [];
-    const myActiveGames = [];
-    const userIds = [];
-    let currentOpponentUid = null;
-    snapshot.forEach((doc) => {
-      // console.log('query snapshot doc.data(): ', doc.data());
-      const gameListItem = doc.data();
-      gameListItem.gameId = doc.id;
-      if (gameListItem.finish) {
-        myPastGames.push(gameListItem);
-      } else {
-        myActiveGames.push(gameListItem);
-      }
-      for (const uid of gameListItem.viewableBy) {
-        if (!userIds.includes(uid)) userIds.push(uid);
-      }
-      if (doc.id === currentGameId) {
-        currentOpponentUid =
-          gameListItem.viewableBy[0] === currentUser.uid
-            ? gameListItem.viewableBy[1]
-            : gameListItem.viewableBy[0];
-      }
-    });
-    myPastGames.sort((a, b) => {
-      return b.finish - a.finish;
-    });
-    myActiveGames.sort((a, b) => {
-      return b.start - a.start;
-    });
-    // const userIds = [];
-    myGames = myActiveGames.concat(myPastGames);
-    // for (const gameListItem of myGames) {
-    //   for (const uid of gameListItem.viewableBy) {
-    //     if (!userIds.includes(uid)) userIds.push(uid);
-    //   }
-    // }
-    if (userIds.length !== 0) {
-      const q2 = query(collection(db, 'users'), where('uid', 'in', userIds));
-      const userDocs = await getDocs(q2);
-      const count = userDocs.size;
-      console.log('count: ', count);
-      let userData = {};
-      userDocs.forEach((doc) => {
-        userData[doc.id] = doc.data();
-        if (doc.id === currentOpponentUid) currentOpp = doc.data();
-      });
-      loadGamesView(myGames, userData);
     }
     return;
   });

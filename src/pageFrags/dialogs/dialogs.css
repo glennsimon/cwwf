@@ -1,0 +1,67 @@
+.dialog__difficulty {
+  margin: 10px;
+  display: flex;
+  justify-content: space-around;
+}
+
+.dialog__shell {
+  max-height: 85%;
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+}
+
+.dialog--close {
+  position: absolute;
+  outline: none;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.dialog__heading--big {
+  font-size: x-large;
+}
+
+.dialog__button--header,
+.dialog__button--footer {
+  margin: 5px auto;
+}
+
+.dialog__button--yes {
+  color: red;
+}
+
+.dialog__radios {
+  margin: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.dialog__list {
+  overflow-y: auto;
+}
+
+.dialog__activity {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 5px;
+}
+
+.dialog__heading--footer-1 {
+  margin: 5px auto;
+}
+
+.dialog__error--message {
+  text-align: center;
+  font-size: large;
+}
+
+@media screen and (min-width: 420px) {
+  .dialog__shell {
+    width: 400px;
+    padding: 20px 10px 0;
+  }
+}

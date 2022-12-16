@@ -1,4 +1,4 @@
-import './shared.css';
+import './activity.css';
 
 /**
  * Display activity spinner and message

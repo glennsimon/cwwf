@@ -1,4 +1,4 @@
-import { showActivity } from '../common/shared.js';
+import { showActivity } from '../../pageFrags/activity/activity.js';
 import './signin.css';
 import { route } from '../../router.js';
 import { clearPuzzle } from '../puzzle/puzzleV.js';
@@ -7,6 +7,10 @@ import { closeDrawer } from '../../shellV.js';
 //#region HTML element constants
 const name = document.querySelector('.user-name');
 const avatar = document.querySelector('.user-photo');
+const activeGamesContainer = document.querySelector(
+  '.container__games--active'
+);
+const pastGamesContainer = document.querySelector('.container__games--past');
 //#endregion
 
 /**

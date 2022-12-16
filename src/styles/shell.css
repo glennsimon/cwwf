@@ -24,7 +24,6 @@ body {
 }
 
 .container__app {
-  display: flex;
   align-content: flex-start;
   flex-wrap: wrap;
   height: 100%;
@@ -177,11 +176,6 @@ select {
 /* CLUES */
 
 /*
-.heading {
-  font-weight: bold;
-  padding: 0 0 10px;
-}
-
 .textAlignCenter {
   text-align: center;
 }
@@ -565,10 +559,6 @@ select {
   min-height: 36px;
 }
 
-.spacer {
-  margin: 10px;
-}
-
 .overflowHidden {
   overflow: hidden;
 }
@@ -697,23 +687,6 @@ select {
 
 /* insert below here  */
 
-@media screen and (min-width: 420px) {
-  #gamesPanelContainer,
-  #gamesDialog,
-  #friendsDialog,
-  #inviteDialog {
-    min-width: 400px;
-  }
-
-  #friendsDialog .mdl-dialog__content {
-    padding: 20px 15px 0;
-  }
-
-  #inviteDialog .mdl-dialog__content {
-    padding: 20px 0 0;
-  }
-}
-
 @media screen and (min-aspect-ratio: 7/10) {
   .square {
     font-size: 2.5vh;
@@ -764,6 +737,7 @@ select {
 
 @media screen and (min-aspect-ratio: 3/2) {
   .container__app {
+    display: flex;
     flex-direction: column;
   }
 }
