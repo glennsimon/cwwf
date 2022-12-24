@@ -1,25 +1,22 @@
 <div class="panel__settings">
-  <div
-    class="card__settings mdl-card-square mdl-card"
-  >
+  <div class="card__settings mdl-card-square mdl-card">
     <div class="mdl-card__title">
       <h2 class="mdl-card__title-text">Settings</h2>
     </div>
-      <div class="section__avatar">
-        <div class="mdl-textfield textAlignCenter" style="padding-top: 0">
-          Profile picture:
-        </div>
-        <div class="user-photo__crop">
-          <img
-            class="avatar__settings"
-            src="../../images/avatar_circle_black.png"
-            alt="profile picture"
-          />
-        </div>
-        <div class="text-align--center">
-          <label for="button--avatar" class="mdl-textfield"
-            >Choose a different image:</label
-          >
+    <div class="section__avatar">
+      <div class="textfield">Profile picture:</div>
+      <div class="user-photo__crop margin--10px-auto">
+        <img
+          class="avatar__settings"
+          src="../../images/avatar_circle_black.png"
+          alt="profile picture"
+        />
+      </div>
+      <div class="text-align--center">
+        <label for="button--avatar" class="textfield"
+          >Choose a different image:</label
+        >
+        <div class="margin--5px-auto">
           <input
             id="button--avatar"
             class="mdl-button mdl-js-riple-effect mdl-button--raised"
@@ -29,44 +26,41 @@
           />
         </div>
       </div>
-      <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-        <input class="mdl-textfield__input" type="text" id="name__settings" />
-        <label class="mdl-textfield__label" for="name__settings">Full Name</label>
-      </div>
+    </div>
+    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+      <input class="mdl-textfield__input" type="text" id="name__input" />
+      <label class="mdl-textfield__label" for="name__input">Full Name</label>
+    </div>
+    <div class="container__handle">
       <div
-        class="container__handle"
+        class="handle__entry mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
       >
-        <div
-          class="handle__entry mdl-textfield mdl-js-textfield mdl-textfield--floating-label"
-          style="width: auto"
+        <input class="mdl-textfield__input" type="text" id="handle__input" />
+        <label class="mdl-textfield__label" for="handle__input"
+          >Game Persona</label
         >
-          <input class="mdl-textfield__input" type="text" id="handle__settings" />
-          <label class="mdl-textfield__label" for="handle__settings"
-            >Game Persona</label
-          >
-          <span class="mdl-textfield__error"
-            >Sorry, that's taken. Try again</span
-          >
-        </div>
-        <button
-          class="button--availability mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-        >
-          check
-        </button>
-        <div class="label--ok"></div>
+        <span class="mdl-textfield__error">Sorry, that's taken. Try again</span>
       </div>
-      <div class="container__buttons--settings mdl-card__actions mdl-card--border">
-        <button
-          class="button--cancel mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-        >
-          cancel
-        </button>
-        <button
-          class="button--save mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-        >
-          save settings
-        </button>
-      </div>
+      <button
+        class="button--availability mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+      >
+        check
+      </button>
+      <div class="label--ok"></div>
+    </div>
+    <div
+      class="container__buttons--settings mdl-card__actions mdl-card--border"
+    >
+      <button
+        class="button--cancel mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+      >
+        cancel
+      </button>
+      <button
+        class="button--save mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+      >
+        save settings
+      </button>
     </div>
   </div>
 </div>

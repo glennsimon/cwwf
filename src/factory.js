@@ -71,7 +71,7 @@ function puzzleHandler(urlString, htmlPath) {}
  */
 function settingsHandler(urlString, htmlPath) {
   if (auth.currentUser) {
-    const uid = auth.currentUser.uid;
+    // const uid = auth.currentUser.uid;
     document.querySelector('.container__app').innerHTML = settingsHtml;
     showSettings();
   }

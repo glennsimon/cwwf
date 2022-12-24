@@ -35,16 +35,18 @@ function showSettings() {
     currentUser.prefAvatarUrl ||
     currentUser.photoURL ||
     './images/avatar_circle_black.png';
-  const nameSettings = document.getElementById('name__settings');
-  nameSettings.value = currentUser.prefName || currentUser.displayName;
-  nameSettings.parentElement.classList.add('is-dirty');
+  const nameInput = document.getElementById('name__input');
+  nameInput.value = currentUser.prefName || currentUser.displayName;
+  nameInput.parentElement.classList.add('is-dirty');
+  componentHandler.upgradeElement(nameInput.parentElement);
   let nickname = currentUser.prefName || currentUser.displayName || 'NoName';
   nickname = nickname.split(' ')[0];
-  const handleEntry = document.querySelector('.handle__entry');
-  handleEntry.value = currentUser.prefHandle || nickname;
-  initialHandle = handleEntry.value.toLowerCase();
-  handleEntry.parentElement.classList.add('is-dirty');
-  handleEntry.addEventListener('input', checkHandle);
+  const handleInput = document.getElementById('handle__input');
+  handleInput.value = currentUser.prefHandle || nickname;
+  initialHandle = handleInput.value.toLowerCase();
+  handleInput.parentElement.classList.add('is-dirty');
+  handleInput.addEventListener('input', checkHandle);
+  componentHandler.upgradeElement(handleInput.parentElement);
   const buttonAvailability = document.querySelector('.button--availability');
   buttonAvailability.addEventListener('click', checkAvailability);
   const buttonSave = document.querySelector('.button--save');
@@ -61,8 +63,8 @@ function checkHandle() {
   handleEntry.classList.remove('is-invalid');
   const okLabel = document.querySelector('.label--ok');
   okLabel.innerText = '';
-  const settingsHandle = document.getElementById('handle__settings');
-  if (settingsHandle.value.length > 20) {
+  const handleInput = document.getElementById('handle__input');
+  if (handleInput.value.length > 20) {
     showErrorDialog(
       'Maximum length for Game Persona is 20 characters, and only' +
         ' the first 6-8 characters will be displayed on the scoreboard.' +
@@ -73,10 +75,10 @@ function checkHandle() {
 
 async function checkAvailability() {
   const okLabel = document.querySelector('.label--ok');
-  const settingsHandle = document.getElementById('handle__settings');
+  const handleInput = document.getElementById('handle__input');
   okLabel.innerText = '';
   const available = await Promise.resolve(
-    handleAvailable(settingsHandle.value.trim())
+    handleAvailable(handleInput.value.trim())
   );
   const handleEntry = document.querySelector('.handle__entry');
   if (!available) {
@@ -90,10 +92,10 @@ async function checkAvailability() {
 }
 
 function saveSettings() {
-  const settingsHandle = document.getElementById('handle__settings');
+  const handleInput = document.getElementById('handle__input');
   if (
     !handleCheck &&
-    settingsHandle.value.trim().toLowerCase() !== initialHandle
+    handleInput.value.trim().toLowerCase() !== initialHandle
   ) {
     showErrorDialog(
       'Please check availability of your Game Persona ' +
@@ -101,8 +103,8 @@ function saveSettings() {
     );
     return;
   }
-  settingsHandle.value = settingsHandle.value.trim();
-  const settingsName = document.getElementById('name__settings');
+  handleInput.value = handleInput.value.trim();
+  const settingsName = document.getElementById('name__input');
   settingsName.value = settingsName.value.trim();
   updateSettings();
   document.querySelector('.label--ok').innerText = '';
@@ -116,19 +118,19 @@ function cancel() {
  * Capture settings values and initiate save.
  */
 function updateSettings() {
-  const settingsName = document.getElementById('name__settings');
-  const settingsHandle = document.getElementById('handle__settings');
+  const settingsName = document.getElementById('name__input');
+  const handleInput = document.getElementById('handle__input');
   console.log('settingsName: ', settingsName.value);
-  console.log('settingsHandle: ', settingsHandle.value);
+  console.log('handleInput: ', handleInput.value);
   const settingsPrefs = {};
   settingsPrefs.prefAvatar = prefAvatar;
   settingsPrefs.prefName = settingsName.value;
-  // let nickname = settingsHandle.value || 'NoName';
+  // let nickname = handleInput.value || 'NoName';
   // nickname = nickname.length > 8 ? nickname.slice(0, 8) : nickname;
   // myName.innerText = nickname;
-  settingsPrefs.prefHandle = settingsHandle.value;
+  settingsPrefs.prefHandle = handleInput.value;
   if (prefAvatarUrl) avatar.src = prefAvatarUrl;
-  // myName.innerText = settingsHandle.value.slice(0, 8);
+  // myName.innerText = handleInput.value.slice(0, 8);
   storeSettings(settingsPrefs);
   prefAvatarUrl = null;
   prefAvatar = null;

@@ -14,20 +14,26 @@
   width: 90%;
 }
 
-.mdl-textfield {
+.textfield {
+  width: 100%;
   text-align: center;
-  padding-top: 0;
 }
 
 .container__handle {
   display: flex;
   align-items: center;
+  width: 300px;
   justify-content: space-between;
 }
 
+.handle__entry {
+  width: auto;
+}
+
 .container__buttons--settings {
+  width: 300px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
 }
 
 @media screen and (min-width: 420px) {
