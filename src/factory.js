@@ -1,6 +1,7 @@
 import { route } from './router.js';
 import signinHtml from './pages/signin/signin.html';
 import splashHtml from './pageFrags/splash/splash.html';
+import settingsHtml from './pages/settings/settings.html';
 // import { uiStart } from './pages/signin/signin.js';
 import { auth, functions } from './firebase-init.js';
 import { authState } from './pages/signin/signinC.js';
@@ -8,6 +9,7 @@ import { signOut } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { authChangeView } from './pages/signin/signinV.js';
 import { uiStart } from './pages/signin/signin.js';
+import { showSettings } from './pages/settings/settingsV.js';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;
@@ -67,7 +69,13 @@ function puzzleHandler(urlString, htmlPath) {}
  * @param {string} urlString route passed to `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function settingsHandler(urlString, htmlPath) {}
+function settingsHandler(urlString, htmlPath) {
+  if (auth.currentUser) {
+    const uid = auth.currentUser.uid;
+    document.querySelector('.container__app').innerHTML = settingsHtml;
+    showSettings();
+  }
+}
 
 /**
  * Called by the router, fetches resources necessary for the signin page

@@ -215,10 +215,6 @@
   background-color: lightgray;
 }
 
-#settingsCard {
-  z-index: 10;
-}
-
 .animatedCell {
   border: 1px solid black;
   background-color: white;

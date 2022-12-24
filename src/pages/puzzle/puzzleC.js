@@ -387,9 +387,9 @@ async function fetchPuzzleController(gameObj) {
   if (currentOpp) {
     subscribeToGame(gameObj.gameId);
   } else {
-    // showErrorDialogView(
-    //   'That game is not accessible. Try another or start a new one.'
-    // );
+    showErrorDialog(
+      'That game is not accessible. Try another or start a new one.'
+    );
     const deleteFailedGame = httpsCallable(functions, 'deleteFailedGame');
     await deleteFailedGame({ gameId: gameObj.gameId }).catch((err) => {
       console.log('Error code: ', err.code);
@@ -447,14 +447,14 @@ async function playWordController() {
     const errorMessage =
       `Entry is incomplete. No blank letters ` +
       `allowed in highlighted range. Try again!`;
-    // showErrorDialogView(errorMessage);
+    showErrorDialog(errorMessage);
     return;
   }
   if (location.pathname.startsWith('/puzzle') && !myTurn) {
     const errorMessage =
       `Whoa there, Buckaroo... ` +
       `Your opponent hasn't played their turn yet!`;
-    // showErrorDialogView(errorMessage);
+    showErrorDialog(errorMessage);
     return;
   }
   if (!online) {
@@ -462,7 +462,7 @@ async function playWordController() {
       `You are currently disconnected from the ` +
       `internet. When connection is restored you may have to ` +
       `play your turn again`;
-    // showErrorDialogView(errorMessage);
+    showErrorDialog(errorMessage);
   }
   const answerObj = {};
   answerObj.idxArray = idxArray;
@@ -586,59 +586,6 @@ function abandonCurrentGameController() {
   });
 }
 
-async function storeSettingsController(settingsPrefs) {
-  let prefAvatarUrl = null;
-  if (settingsPrefs.prefAvatar) {
-    const settingsRef = refStorage(
-      storage,
-      `users/${currentUser.uid}/avatar.png`
-    );
-    const metaData = { contentType: 'image/png' };
-    await uploadBytes(settingsRef, settingsPrefs.prefAvatar, metaData).catch(
-      (error) => {
-        console.log('Error uploading photo to storage: ', error);
-      }
-    );
-    prefAvatarUrl = await getDownloadURL(settingsRef);
-  }
-  const refUserData = doc(db, 'users', currentUser.uid);
-  try {
-    await runTransaction(db, async (transaction) => {
-      const userDoc = await transaction.get(refUserData);
-      if (!userDoc.exists()) throw 'User document does not exist!';
-
-      currentUser.prefName = settingsPrefs.prefName || null;
-      currentUser.prefHandle = settingsPrefs.prefHandle || null;
-      const updateData = {
-        prefName: currentUser.prefName,
-        prefHandle: currentUser.prefHandle,
-      };
-      if (prefAvatarUrl) {
-        currentUser.prefAvatarUrl = prefAvatarUrl;
-        updateData.prefAvatarUrl = prefAvatarUrl;
-      }
-      transaction.update(refUserData, updateData);
-    });
-  } catch (error) {
-    console.log('UserData update transaction failed: ', error);
-  }
-}
-
-/**
- * Check availability of unique handle for for users preferred handle.
- * @param {string} handle
- * @returns {boolean} true if handle is available, false otherwise
- */
-async function handleCheckController(handle) {
-  const q = query(collection(db, 'users'), where('prefHandle', '==', handle));
-  const docs = await getDocs(q);
-  let available = true;
-  docs.forEach((doc) => {
-    if (doc.id !== currentUser.uid) available = false;
-  });
-  return available;
-}
-
 /**
  * Creates a minimal pendingPlayer and adds to Firestore, then returns the
  * document id for the pendingPlayer.
@@ -659,7 +606,5 @@ export {
   playWordController,
   enterLetterController,
   abandonCurrentGameController,
-  storeSettingsController,
-  handleCheckController,
   pendingPlayerController,
 };

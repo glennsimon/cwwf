@@ -443,7 +443,7 @@ async function fetchPuzzleController(gameObj) {
   if (currentOpp) {
     subscribeToGame(gameObj.gameId);
   } else {
-    showErrorDialogView(
+    showErrorDialog(
       'That game is not accessible. Try another or start a new one.'
     );
     const deleteFailedGame = httpsCallable(functions, 'deleteFailedGame');

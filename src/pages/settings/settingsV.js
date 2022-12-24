@@ -1,13 +1,7 @@
-// import {
-//   storeSettingsController,
-//   handleCheckController,
-//   getCurrentUserController,
-//   populateAllUsersController,
-//   updateFriendsController,
-//   startNewGameController,
-//   pendingPlayerController,
-// } from './settingsC.js';
-// import { showErrorDialogView } from '../views/view.js';
+import { currentUser } from '../signin/signinC';
+import { showErrorDialog } from '../../pageFrags/dialogs/dialogsV';
+import './settings.css';
+import { handleAvailable, storeSettings } from './settingsC';
 
 // const settingsContainer = document.getElementById('settingsContainer');
 // const avatarButton = document.getElementById('avatarButton');
@@ -24,167 +18,165 @@
 // const friendsProgressContainer = document.getElementById(
 //   'friendsProgressContainer'
 // );
-// const friendsLoadMessage = document.getElementById('friendsLoadMessage');
-// const friendsLoadSpinner = document.getElementById('friendsLoadSpinner');
-// const gamesDialog = document.getElementById('gamesDialog');
-// const friendsDialog = document.getElementById('friendsDialog');
-// const friendsDialogList = document.getElementById('friendsDialogList');
-// const dialogList = document.getElementById('dialogList');
-// const doneButton = document.getElementById('doneButton');
-// const inviteFriendButton = document.getElementById('inviteFriendButton');
-// const inviteDialog = document.getElementById('inviteDialog');
-// const gameLoadSpinner = document.getElementById('gameLoadSpinner');
-// const gameLoadMessage = document.getElementById('inviteDialog');
-// const inviteEmail = document.getElementById('inviteEmail');
-// const inviteProgressContainer = document.getElementById(
-//   'inviteProgressContainer'
-// );
-// const inviteLoadSpinner = document.getElementById('inviteLoadSpinner');
-// const sendButton = document.getElementById('sendButton');
 // const firstName = document.getElementById('firstName');
 
-// let prefAvatar = null;
-// let prefAvatarUrl = null;
-// let handleCheck = false;
-// let initialHandle = '';
+let prefAvatar = null;
+let prefAvatarUrl = null;
+let handleCheck = false;
+let initialHandle = '';
 // let adjustedFriendsObject = {};
 
-// /**
-//  * Displays settings card for user to personalize settings
-//  */
-// function showSettingsView() {
-//   handleCheck = false;
-//   const currentUser = getCurrentUserController();
-//   avatarSettings.src =
-//     currentUser.prefAvatarUrl ||
-//     currentUser.photoURL ||
-//     './images/avatar_circle_black.png';
-//   settingsName.value = currentUser.prefName || currentUser.displayName;
-//   settingsName.parentElement.classList.add('is-dirty');
-//   let nickname = currentUser.prefName || currentUser.displayName || 'NoName';
-//   nickname = nickname.split(' ')[0];
-//   settingsHandle.value = currentUser.prefHandle || nickname;
-//   initialHandle = settingsHandle.value.toLowerCase();
-//   settingsHandle.parentElement.classList.add('is-dirty');
-//   settingsContainer.classList.remove('displayNone');
-//   settingsContainer.classList.add('displayFlex');
-// }
+/**
+ * Displays settings card for user to personalize settings
+ */
+function showSettings() {
+  handleCheck = false;
+  document.querySelector('.avatar__settings').src =
+    currentUser.prefAvatarUrl ||
+    currentUser.photoURL ||
+    './images/avatar_circle_black.png';
+  const nameSettings = document.getElementById('name__settings');
+  nameSettings.value = currentUser.prefName || currentUser.displayName;
+  nameSettings.parentElement.classList.add('is-dirty');
+  let nickname = currentUser.prefName || currentUser.displayName || 'NoName';
+  nickname = nickname.split(' ')[0];
+  const handleEntry = document.querySelector('.handle__entry');
+  handleEntry.value = currentUser.prefHandle || nickname;
+  initialHandle = handleEntry.value.toLowerCase();
+  handleEntry.parentElement.classList.add('is-dirty');
+  handleEntry.addEventListener('input', checkHandle);
+  const buttonAvailability = document.querySelector('.button--availability');
+  buttonAvailability.addEventListener('click', checkAvailability);
+  const buttonSave = document.querySelector('.button--save');
+  buttonSave.addEventListener('click', saveSettings);
+  const buttonCancel = document.querySelector('.button--cancel');
+  buttonCancel.addEventListener('click', cancel);
+  const buttonAvatar = document.getElementById('button--avatar');
+  buttonAvatar.addEventListener('click', changeAvatar);
+}
 
-// settingsHandle.addEventListener('input', (event) => {
-//   handleCheck = false;
-//   handleEntry.classList.remove('is-invalid');
-//   okLabel.innerText = '';
-//   if (settingsHandle.value.length > 20) {
-//     showErrorDialogView(
-//       'Maximum length for Game Persona is 20 characters, and only' +
-//         ' the first 6-8 characters will be displayed on the scoreboard.' +
-//         ' Please shorten your Game Persona to 20 characters or less.'
-//     );
-//   }
-// });
+function checkHandle() {
+  handleCheck = false;
+  const handleEntry = document.querySelector('.handle__entry');
+  handleEntry.classList.remove('is-invalid');
+  const okLabel = document.querySelector('.label--ok');
+  okLabel.innerText = '';
+  const settingsHandle = document.getElementById('handle__settings');
+  if (settingsHandle.value.length > 20) {
+    showErrorDialog(
+      'Maximum length for Game Persona is 20 characters, and only' +
+        ' the first 6-8 characters will be displayed on the scoreboard.' +
+        ' Please shorten your Game Persona to 20 characters or less.'
+    );
+  }
+}
 
-// checkAvailability.addEventListener('click', async (event) => {
-//   okLabel.innerText = '';
-//   const available = await Promise.resolve(
-//     handleCheckController(settingsHandle.value.trim())
-//   );
-//   if (!available) {
-//     handleEntry.classList.add('is-invalid');
-//     handleCheck = false;
-//   } else {
-//     handleEntry.classList.remove('is-invalid');
-//     okLabel.innerText = 'OK!';
-//     handleCheck = true;
-//   }
-// });
+async function checkAvailability() {
+  const okLabel = document.querySelector('.label--ok');
+  const settingsHandle = document.getElementById('handle__settings');
+  okLabel.innerText = '';
+  const available = await Promise.resolve(
+    handleAvailable(settingsHandle.value.trim())
+  );
+  const handleEntry = document.querySelector('.handle__entry');
+  if (!available) {
+    handleEntry.classList.add('is-invalid');
+    handleCheck = false;
+  } else {
+    handleEntry.classList.remove('is-invalid');
+    okLabel.innerText = 'OK!';
+    handleCheck = true;
+  }
+}
 
-// saveSettings.addEventListener('click', (event) => {
-//   if (
-//     !handleCheck &&
-//     settingsHandle.value.trim().toLowerCase() !== initialHandle
-//   ) {
-//     showErrorDialogView(
-//       'Please check availability of your Game Persona ' +
-//         'by tapping the "CHECK" button'
-//     );
-//     return;
-//   }
-//   settingsHandle.value = settingsHandle.value.trim();
-//   settingsName.value = settingsName.value.trim();
-//   updateSettings();
-//   settingsContainer.classList.remove('displayFlex');
-//   settingsContainer.classList.add('displayNone');
-//   okLabel.innerText = '';
-// });
+function saveSettings() {
+  const settingsHandle = document.getElementById('handle__settings');
+  if (
+    !handleCheck &&
+    settingsHandle.value.trim().toLowerCase() !== initialHandle
+  ) {
+    showErrorDialog(
+      'Please check availability of your Game Persona ' +
+        'by tapping the "CHECK" button'
+    );
+    return;
+  }
+  settingsHandle.value = settingsHandle.value.trim();
+  const settingsName = document.getElementById('name__settings');
+  settingsName.value = settingsName.value.trim();
+  updateSettings();
+  document.querySelector('.label--ok').innerText = '';
+}
 
-// cancelButton.addEventListener('click', (event) => {
-//   settingsContainer.classList.remove('displayFlex');
-//   settingsContainer.classList.add('displayNone');
-//   okLabel.innerText = '';
-// });
+function cancel() {
+  document.querySelector('.label--ok').innerText = '';
+}
 
-// /**
-//  * Capture settings values and initiate save.
-//  */
-// function updateSettings() {
-//   console.log('settingsName: ', settingsName.value);
-//   console.log('settingsHandle: ', settingsHandle.value);
-//   const settingsPrefs = {};
-//   settingsPrefs.prefAvatar = prefAvatar;
-//   settingsPrefs.prefName = settingsName.value;
-//   let nickname = settingsHandle.value || 'NoName';
-//   nickname = nickname.length > 8 ? nickname.slice(0, 8) : nickname;
-//   myName.innerText = nickname;
-//   settingsPrefs.prefHandle = settingsHandle.value;
-//   if (prefAvatarUrl) avatar.src = prefAvatarUrl;
-//   myName.innerText = settingsHandle.value.slice(0, 8);
-//   storeSettingsController(settingsPrefs);
-//   prefAvatarUrl = null;
-//   prefAvatar = null;
-// }
+/**
+ * Capture settings values and initiate save.
+ */
+function updateSettings() {
+  const settingsName = document.getElementById('name__settings');
+  const settingsHandle = document.getElementById('handle__settings');
+  console.log('settingsName: ', settingsName.value);
+  console.log('settingsHandle: ', settingsHandle.value);
+  const settingsPrefs = {};
+  settingsPrefs.prefAvatar = prefAvatar;
+  settingsPrefs.prefName = settingsName.value;
+  // let nickname = settingsHandle.value || 'NoName';
+  // nickname = nickname.length > 8 ? nickname.slice(0, 8) : nickname;
+  // myName.innerText = nickname;
+  settingsPrefs.prefHandle = settingsHandle.value;
+  if (prefAvatarUrl) avatar.src = prefAvatarUrl;
+  // myName.innerText = settingsHandle.value.slice(0, 8);
+  storeSettings(settingsPrefs);
+  prefAvatarUrl = null;
+  prefAvatar = null;
+}
 
-// /**
-//  * When user changes their preferred avatar image, display new image in
-//  * settings card, and upload new preferred avatar image to storage.
-//  */
-// avatarButton.addEventListener('change', async (event) => {
-//   const photo = event.target.files[0];
-//   const bitmap = await createImageBitmap(photo);
-//   if (!photo) {
-//     avatarSettings.src = './images/avatar_circle_black.png';
-//     return;
-//   }
-//   // Get size information about raw image file
-//   const width = bitmap.width;
-//   const height = bitmap.height;
-//   const ratio = height / width;
-//   let xOffset = 0;
-//   let yOffset = 0;
-//   let size = 0;
-//   if (ratio < 1) {
-//     xOffset = (width - height) / 2;
-//     size = height;
-//   } else {
-//     yOffset = (height - width) / 2;
-//     size = width;
-//   }
-//   // Create a correctly sized canvas to hold avatar image
-//   const bgCanvas = document.createElement('canvas');
-//   bgCanvas.width = 100;
-//   bgCanvas.height = 100;
-//   const context = bgCanvas.getContext('2d');
-//   // Resize and crop image
-//   context.drawImage(bitmap, xOffset, yOffset, size, size, 0, 0, 100, 100);
-//   // Get data url for updating settings image
-//   const url = bgCanvas.toDataURL();
-//   // Send image to storage and delete canvas
-//   bgCanvas.toBlob((blob) => {
-//     prefAvatar = blob;
-//     bgCanvas.remove();
-//   });
-//   avatarSettings.src = url;
-//   prefAvatarUrl = url;
-// });
+/**
+ * When user changes their preferred avatar image, display new image in
+ * settings card, and upload new preferred avatar image to storage.
+ */
+async function changeAvatar(event) {
+  const photo = event.target.files[0];
+  const bitmap = await createImageBitmap(photo);
+  const avatarSettings = document.querySelector('.avatar__settings');
+  if (!photo) {
+    avatarSettings.src = './images/avatar_circle_black.png';
+    return;
+  }
+  // Get size information about raw image file
+  const width = bitmap.width;
+  const height = bitmap.height;
+  const ratio = height / width;
+  let xOffset = 0;
+  let yOffset = 0;
+  let size = 0;
+  if (ratio < 1) {
+    xOffset = (width - height) / 2;
+    size = height;
+  } else {
+    yOffset = (height - width) / 2;
+    size = width;
+  }
+  // Create a correctly sized canvas to hold avatar image
+  const bgCanvas = document.createElement('canvas');
+  bgCanvas.width = 100;
+  bgCanvas.height = 100;
+  const context = bgCanvas.getContext('2d');
+  // Resize and crop image
+  context.drawImage(bitmap, xOffset, yOffset, size, size, 0, 0, 100, 100);
+  // Get data url for updating settings image
+  const url = bgCanvas.toDataURL();
+  // Send image to storage and delete canvas
+  bgCanvas.toBlob((blob) => {
+    prefAvatar = blob;
+    bgCanvas.remove();
+  });
+  avatarSettings.src = url;
+  prefAvatarUrl = url;
+}
 
 // addFriendsButton.addEventListener('click', async (event) => {
 //   gamesDialog.close();
@@ -326,4 +318,4 @@
 //   // TODO: optionally validate email address format
 // });
 
-// export { showSettingsView, loadFriendsSettingsView };
+export { showSettings };

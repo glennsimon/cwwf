@@ -54,7 +54,7 @@ async function sendInvitation() {
  * Shows an error dialog with appropriate messaging
  * @param {string} message Type of error
  */
-function showErrorDialogView(message) {
+function showErrorDialog(message) {
   document.querySelector('.header__activity').innerHTML = '';
   document.querySelector('.dialog__error--message').innerText = message;
   document
@@ -63,11 +63,9 @@ function showErrorDialogView(message) {
       // document.querySelector('.mdl-dialog__content').innerHTML = '';
       document.querySelector('.dialog__shell').close();
     });
-  document
-    .querySelector('.dialog__shell.close')
-    .addEventListener('click', () => {
-      document.querySelector('.dialog__shell').close();
-    });
+  document.querySelector('.dialog--close').addEventListener('click', () => {
+    document.querySelector('.dialog__shell').close();
+  });
   document.querySelector('.dialog__shell').showModal();
 }
 
@@ -91,6 +89,9 @@ function showGameStartDialog() {
   const list = dialogElement.querySelector('.dialog__list ul');
   list.append(loadFriendsList());
   dialogElement.showModal();
+  document.querySelector('.dialog--close').addEventListener('click', () => {
+    document.querySelector('.dialog__shell').close();
+  });
 }
 
 /**
@@ -134,12 +135,12 @@ function loadFriendsList() {
     providerElement.className = 'mdl-list__item-sub-title';
     providerElement.append(`${user.prefName || user.displayName}`);
     primaryContentSpan.append(avatar, nameElement, providerElement);
-    primaryContentSpan.innerHTML += dialogFriendsListItemSecondaryHtml;
     userListItem.append(primaryContentSpan);
+    userListItem.innerHTML += dialogFriendsListItemSecondaryHtml;
     userList.append(userListItem);
   }
   document.querySelector('.dialog__activity').innerHTML = '';
   return userList;
 }
 
-export { showErrorDialogView, showGameStartDialog };
+export { showErrorDialog, showGameStartDialog };

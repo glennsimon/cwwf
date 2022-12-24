@@ -33,7 +33,7 @@ function authChangeView(user) {
       `sign in<span class='spacer--10px'></span>` +
       `<span class='material-icons'>login </span>`;
     name.textContent = 'N. E. Person';
-    avatar.src = 'images/avatar_circle_black.png';
+    avatar.src = '../../images/avatar_circle_black.png';
     route('/signin');
     activeGamesContainer.innerHTML = `You must sign in to see your active games`;
     pastGamesContainer.innerHTML = `You must sign in to see your completed games`;
