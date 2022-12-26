@@ -45,10 +45,6 @@
   align-self: center;
 }
 
-.cursorPointer {
-  cursor: pointer;
-}
-
 .drawerHeader {
   display: flex;
   box-sizing: border-box;

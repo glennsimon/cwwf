@@ -4,12 +4,13 @@ import splashHtml from './pageFrags/splash/splash.html';
 import settingsHtml from './pages/settings/settings.html';
 // import { uiStart } from './pages/signin/signin.js';
 import { auth, functions } from './firebase-init.js';
-import { authState } from './pages/signin/signinC.js';
+import { authState, currentUser } from './pages/signin/signinC.js';
 import { signOut } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { authChangeView } from './pages/signin/signinV.js';
 import { uiStart } from './pages/signin/signin.js';
 import { showSettings } from './pages/settings/settingsV.js';
+import { populateMyGames } from './pages/games/gamesC.js';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;
@@ -53,7 +54,9 @@ function shellHandler(urlString, htmlPath) {
  * @param {string} urlString route passed to `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function gamesHandler(urlString, htmlPath) {}
+function gamesHandler(urlString, htmlPath) {
+  populateMyGames(currentUser.uid);
+}
 
 /**
  * Called by the router, fetches resources necessary for the puzzle page

@@ -90,10 +90,10 @@ window.onpopstate = (event) => {
   handleLocation(urlString);
 };
 
-if (currentUser) {
-  route('/games');
-} else {
-  route('/signin');
-}
+// if (currentUser) {
+//   route('/games');
+// } else {
+//   route('/signin');
+// }
 
 export { route };

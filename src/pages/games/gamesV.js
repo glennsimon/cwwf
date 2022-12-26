@@ -14,8 +14,8 @@ const container__app = document.querySelector('.container__app');
  * @param {Array} myGames Object all games viewable by the current user
  * @param {object} userData Object with all public user data for users in myGames
  */
-async function loadGamesView(myGames, userData) {
-  console.log('Hello from loadGamesView.');
+async function loadGames(myGames, userData) {
+  console.log('Hello from loadGames.');
   container__app.innerHTML = gamesHtml;
   document
     .querySelector('.button__games--start')
@@ -76,7 +76,7 @@ async function loadGamesView(myGames, userData) {
   <img src='${opponentPhotoUrl}' alt='profile picture'>
 </span>`;
       }
-      activeGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
+      activeGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursor--pointer'>
   <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
     <span>${
@@ -119,7 +119,7 @@ async function loadGamesView(myGames, userData) {
   <img src='${opponentPhotoUrl}' alt='profile picture'>
 </span>`;
       }
-      pastGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursorPointer'>
+      pastGamesHtml += `<li id='${gameId}' class='mdl-list__item mdl-list__item--two-line cursor--pointer'>
   <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
     <span>${
@@ -138,7 +138,7 @@ async function loadGamesView(myGames, userData) {
   }
   activeGamesContainer.innerHTML = activeGamesHtml;
   pastGamesContainer.innerHTML = pastGamesHtml;
-  document.querySelector('.header__activity').remove();
+  document.querySelector('.header__activity').innerHTML = '';
   // console.log(dialogList);
 }
 
@@ -158,4 +158,4 @@ function startGameListener() {
   }
 }
 
-export { loadGamesView };
+export { loadGames };

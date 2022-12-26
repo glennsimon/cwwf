@@ -33,7 +33,7 @@
 .container__buttons--settings {
   width: 300px;
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
 }
 
 @media screen and (min-width: 420px) {

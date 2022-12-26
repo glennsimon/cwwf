@@ -1,5 +1,5 @@
 import { db, functions } from '../../firebase-init.js';
-import { loadGamesView } from './gamesV.js';
+import { loadGames } from './gamesV.js';
 import {
   collection,
   getDoc,
@@ -10,6 +10,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { currentUser } from '../signin/signinC.js';
+import { showActivity } from '../../pageFrags/activity/activity.js';
 // import { httpsCallable } from 'firebase/functions';
 // import {
 //   getDownloadURL,
@@ -371,6 +372,7 @@ function populateMyFriends() {
 async function populateMyGames(uid) {
   console.log('Hello from populateMyGames.');
   if (!uid) return;
+  showActivity('.header__activity', 'Fetching games...');
   myGamesUnsubscribe();
   // try {
   const q = query(
@@ -426,7 +428,7 @@ async function populateMyGames(uid) {
         userData[doc.id] = doc.data();
         if (doc.id === currentOpponentUid) currentOpp = doc.data();
       });
-      loadGamesView(myGames, userData);
+      loadGames(myGames, userData);
     }
     return;
   });

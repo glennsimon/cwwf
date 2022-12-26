@@ -46,13 +46,7 @@ const uiConfig = {
     // firebase.auth.FacebookAuthProvider.PROVIDER_ID,
     // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
     // firebase.auth.GithubAuthProvider.PROVIDER_ID,
-    {
-      provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-      signInMethod: getEmailSignInMethod(),
-      // disableSignUp: {
-      //   status: getDisableSignUpStatus(),
-      // },
-    },
+    firebase.auth.EmailAuthProvider.PROVIDER_ID,
     // // To add phone signin, uncomment the object below and
     // // prompt the user for a unique name in the onAuthStateChanged
     // // function in controller.js.  Phone signin returns nothing but the
@@ -78,15 +72,6 @@ const uiConfig = {
   // Privacy policy url.
   privacyPolicyUrl: () => route('/privacy'),
 };
-
-/**
- * @return {string} The email signInMethod from the configuration.
- */
-function getEmailSignInMethod() {
-  console.log('getEmailSignInMethod');
-  var config = parseQueryString(location.hash);
-  return config['emailSignInMethod'] === 'password' ? 'password' : 'emailLink';
-}
 
 /**
  * @return {string} The reCAPTCHA rendering mode from the configuration.

@@ -99,7 +99,7 @@ function showPuzzleView(game, opponent) {
       if (blackCell) {
         cell.className = 'black';
       } else {
-        cell.classList.add('cursorPointer', 'transparent');
+        cell.classList.add('cursor--pointer', 'transparent');
         const squareDiv = document.createElement('div');
         const letterDiv = document.createElement('div');
         squareDiv.classList.add('square');
@@ -162,7 +162,7 @@ function showPuzzleView(game, opponent) {
     const clueRef = parsedClue[0] + '.';
     const clueText = parsedClue.slice(1).join('.');
     const clueDiv = document.createElement('div');
-    clueDiv.classList.add('displayFlex', 'cursorPointer');
+    clueDiv.classList.add('displayFlex', 'cursor--pointer');
     clueDiv.id = 'across' + clueNumber;
     if (game.puzzle.completedClues.across.includes(clueNumber)) {
       clueDiv.classList.add('colorDarkGray');
@@ -170,7 +170,7 @@ function showPuzzleView(game, opponent) {
 
     const numDiv = document.createElement('div');
     numDiv.appendChild(document.createTextNode(clueRef));
-    numDiv.classList.add('padRight', 'cursorPointer');
+    numDiv.classList.add('padRight', 'cursor--pointer');
 
     const textDiv = document.createElement('div');
     // unsafe:
@@ -182,7 +182,7 @@ function showPuzzleView(game, opponent) {
       console.log('setHTML is not available in this browser');
       textDiv.textContent = clueText;
     }
-    textDiv.classList.add('cursorPointer');
+    textDiv.classList.add('cursor--pointer');
     clueDiv.appendChild(numDiv);
     clueDiv.appendChild(textDiv);
     acrossClues.appendChild(clueDiv);
@@ -195,7 +195,7 @@ function showPuzzleView(game, opponent) {
     const clueRef = parsedClue[0] + '.';
     const clueText = parsedClue.slice(1).join('.');
     const clueDiv = document.createElement('div');
-    clueDiv.classList.add('displayFlex', 'cursorPointer');
+    clueDiv.classList.add('displayFlex', 'cursor--pointer');
     clueDiv.id = 'down' + clueNumber;
     if (game.puzzle.completedClues.down.includes(clueNumber)) {
       clueDiv.classList.add('colorDarkGray');
@@ -203,7 +203,7 @@ function showPuzzleView(game, opponent) {
 
     const numDiv = document.createElement('div');
     numDiv.appendChild(document.createTextNode(clueRef));
-    numDiv.classList.add('padRight', 'cursorPointer');
+    numDiv.classList.add('padRight', 'cursor--pointer');
 
     const textDiv = document.createElement('div');
     // unsafe:
@@ -215,7 +215,7 @@ function showPuzzleView(game, opponent) {
       console.log('setHTML is not available in this browser');
       textDiv.textContent = clueText;
     }
-    textDiv.classList.add('cursorPointer');
+    textDiv.classList.add('cursor--pointer');
     clueDiv.appendChild(numDiv);
     clueDiv.appendChild(textDiv);
     downClues.appendChild(clueDiv);
@@ -554,7 +554,7 @@ function wait(time) {
 function cellClicked(event) {
   console.log('Hello from cellClicked.');
   let cell = event.target;
-  while (!cell.classList.contains('cursorPointer')) {
+  while (!cell.classList.contains('cursor--pointer')) {
     cell = cell.parentElement;
   }
   const row = cell.parentElement.rowIndex;
