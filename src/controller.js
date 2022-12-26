@@ -14,6 +14,7 @@ import {
   showErrorDialogView,
   stopAllSpinnersView,
   showHeaderActivityView,
+  disableEnter,
 } from './view.js';
 import {
   getDatabase,
@@ -570,6 +571,7 @@ async function playWordController() {
       `play your turn again`;
     showErrorDialogView(errorMessage);
   }
+  disableEnter();
   // TODO: something like this?:
   // document.getElementById('puzTitle').innerText = 'Fetching data...';
   const answerObj = {};

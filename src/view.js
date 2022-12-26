@@ -85,6 +85,7 @@ const friendsLoadMessage = document.getElementById('friendsLoadMessage');
 const firebaseuiAuthContainer = document.getElementById(
   'firebaseuiAuthContainer'
 );
+const enter = document.getElementById('enter');
 //#endregion
 
 let currentCell = null;
@@ -640,6 +641,7 @@ function showPuzzleView(game, opponent) {
   headerSpinner.classList.remove('is-active');
   headerMessage.innerText = '';
 
+  enter.classList.remove('disabled');
   // TODO: should this go here?
   location.hash = '#puzzle';
 }
@@ -1283,6 +1285,7 @@ function enterLetter(event) {
   const columns = getColumnsController();
   if (!kbContainer.classList.contains('displayNone')) {
     if (event.keyCode === 13) {
+      if (enter.classList.contains('disabled')) return;
       headerSpinner.classList.add('is-active');
       headerMessage.innerText = 'Working...';
       playWordController();
@@ -1442,6 +1445,10 @@ function stopAllSpinnersView() {
   friendsLoadMessage.innerText = '';
 }
 
+function disableEnter() {
+  enter.classList.add('disabled');
+}
+
 export {
   authChangeView,
   signedOutView,
@@ -1451,4 +1458,5 @@ export {
   showErrorDialogView,
   stopAllSpinnersView,
   showHeaderActivityView,
+  disableEnter,
 };
