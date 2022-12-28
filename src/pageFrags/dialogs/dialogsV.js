@@ -1,8 +1,52 @@
 import dialogDifficultyHtml from './dialogDifficulty.html';
 import dialogStartGameFooterHtml from './dialogStartGameFooter.html';
 import dialogFriendsListItemSecondaryHtml from './dialogFriendsListItemSecondary.html';
+import dialogAddBlockHeaderHtml from './dialogAddBlockHeader.html';
+import dialogAddBlockFooterHtml from './dialogAddBlockFooter.html';
+import dialogAddBlockListItemHtml from './dialogAddBlockListItem.html';
+import dialogInviteHtml from './dialogInvite.html';
 import './dialogs.css';
-import { myFriends } from '../../pages/games/gamesC';
+// import { myFriends, populateAllUsers } from '../../pages/games/gamesC';
+import {
+  currentUser,
+  myFriends,
+  populateAllUsers,
+  updateMyFriends,
+} from '../../pages/signin/signinC';
+import { showActivity } from '../activity/activity';
+
+let adjustedFriendsObject = {};
+
+function resetDialog() {
+  document.querySelector('.dialog__content--header').innerHTML = '';
+  document.querySelector('.dialog__list').innerHTML = '';
+  document.querySelector('.dialog__content--footer').innerHTML = '';
+  document.querySelector('.dialog__activity').innerHTML = '';
+  document.querySelector('.dialog__shell').close();
+}
+
+/**
+ * Opens invitation dialog
+ */
+function showInviteDialog() {
+  resetDialog();
+  const dialogElement = document.querySelector('.dialog__shell');
+  const header = dialogElement.querySelector('.dialog__content--header');
+  header.innerHTML = dialogInviteHtml;
+  const textFieldElements = dialogElement.querySelectorAll('.mdl-textfield');
+  for (const elem of textFieldElements) componentHandler.upgradeElement(elem);
+  // showActivity('.dialog__activity', 'Doing stuff...');
+  dialogElement.showModal();
+  document.querySelector('.dialog--close').addEventListener('click', () => {
+    dialogElement.close();
+  });
+  document
+    .querySelector('.dialog__button--mail')
+    .addEventListener('click', () => {
+      dialogElement.close();
+      sendInvitation();
+    });
+}
 
 // document.querySelector('.button__send').addEventListener('click', async () => {
 async function sendInvitation() {
@@ -10,7 +54,7 @@ async function sendInvitation() {
   inviteProgressContainer.classList.add('displayFlex');
   inviteProgressContainer.classList.remove('displayNone');
   inviteLoadSpinner.classList.add('is-active');
-  const currentUser = getCurrentUserController();
+  // const currentUser = getCurrentUserController();
   const gameStartParameters = {};
   const myUid = currentUser.uid;
   gameStartParameters.players = {};
@@ -55,6 +99,7 @@ async function sendInvitation() {
  * @param {string} message Type of error
  */
 function showErrorDialog(message) {
+  resetDialog();
   document.querySelector('.header__activity').innerHTML = '';
   document.querySelector('.dialog__error--message').innerText = message;
   document
@@ -69,15 +114,12 @@ function showErrorDialog(message) {
   document.querySelector('.dialog__shell').showModal();
 }
 
-function clearDialogContent() {
-  document.querySelector('.dialog__content--header').innerHTML = '';
-  document.querySelector('.dialog__list ul').innerHTML = '';
-  document.querySelector('.dialog__content--footer').innerHTML = '';
-  document.querySelector('.dialog__activity').innerHTML = '';
-}
-
+/**
+ * Populates Game Start dialog and displays it
+ */
 function showGameStartDialog() {
-  if (!myFriends) return;
+  resetDialog();
+  // if (!myFriends) return;
   const dialogElement = document.querySelector('.dialog__shell');
   const header = dialogElement.querySelector('.dialog__content--header');
   header.innerHTML = dialogDifficultyHtml;
@@ -86,17 +128,28 @@ function showGameStartDialog() {
   headingDiv.append('Choose your opponent below:');
   const footer = dialogElement.querySelector('.dialog__content--footer');
   footer.innerHTML = dialogStartGameFooterHtml;
-  const list = dialogElement.querySelector('.dialog__list ul');
+  const listContainer = dialogElement.querySelector('.dialog__list');
+  const list = document.createElement('ul');
+  list.className = 'mdl-list';
+  listContainer.append(list);
+  list.innerHTML = '';
   list.append(loadFriendsList());
   dialogElement.showModal();
   document.querySelector('.dialog--close').addEventListener('click', () => {
-    document.querySelector('.dialog__shell').close();
+    dialogElement.close();
   });
+  document
+    .querySelector('.dialog__button--footer-1')
+    .addEventListener('click', () => {
+      dialogElement.close();
+      showAddBlockDialog();
+    });
 }
 
 /**
- * Load list of players friends into dialogList element.
- * @return {string} html string of list of friends for display
+ * Instantiate and return HTML list of players friends to be appended
+ * in the Start Game dialogList element.
+ * @return {DocumentFragment} html list of friends for display
  */
 function loadFriendsList() {
   console.log('Hello from loadFriendsList.');
@@ -133,7 +186,9 @@ function loadFriendsList() {
     nameElement.append(`${user.prefName || user.displayName}`);
     const providerElement = document.createElement('span');
     providerElement.className = 'mdl-list__item-sub-title';
-    providerElement.append(`${user.prefName || user.displayName}`);
+    providerElement.innerText = user.signInProvider
+      ? user.signInProvider.split('.')[0]
+      : 'none';
     primaryContentSpan.append(avatar, nameElement, providerElement);
     userListItem.append(primaryContentSpan);
     userListItem.innerHTML += dialogFriendsListItemSecondaryHtml;
@@ -141,6 +196,143 @@ function loadFriendsList() {
   }
   document.querySelector('.dialog__activity').innerHTML = '';
   return userList;
+}
+
+/**
+ * Instantiate and return avatar element
+ * @returns {Element} avatar element to insert into document
+ */
+function instantiateAvatar(user) {
+  let avatar = null;
+  if (user.prefAvatarUrl || user.photoURL) {
+    avatar = document.createElement('span');
+    avatar.className =
+      'container--picture material-icons mdl-list__item-avatar';
+    const userPhoto = document.createElement('img');
+    userPhoto.src = `${user.prefAvatarUrl || user.photoURL}`;
+    userPhoto.alt = 'profile picture';
+    avatar.append(userPhoto);
+  } else {
+    avatar = document.createElement('i');
+    avatar.className = 'material-icons mdl-list__item-avatar';
+    avatar.append('person');
+  }
+  return avatar;
+}
+
+/**
+ * Instantiate and return HTML list of all users to be appended in the
+ * Add/Block dialog.
+ * @return {DocumentFragment} html list of users with Add/Block radio buttons
+ */
+async function loadAddBlockList() {
+  console.log('Hello from loadAddBlockList.');
+  adjustedFriendsObject = {};
+  adjustedFriendsObject.friends = currentUser.friends || [];
+  adjustedFriendsObject.blocked = currentUser.blocked || [];
+  return populateAllUsers().then((allUsers) => {
+    let uids = Object.keys(allUsers);
+    let userList = new DocumentFragment();
+    if (uids.length === 0) {
+      console.warn('No users exist.');
+      return;
+    }
+    let itemNumber = 0;
+    for (const uid of uids) {
+      if (!(uid && allUsers[uid])) continue;
+      const user = allUsers[uid];
+      const friend = currentUser.friends && currentUser.friends.includes(uid);
+      const block = currentUser.blocked && currentUser.blocked.includes(uid);
+      const userListItem = document.createElement('li');
+      userListItem.setAttribute('id', uid);
+      userListItem.className = 'mdl-list__item mdl-list__item--two-line';
+      userListItem.style = 'background-color: inherit';
+      userListItem.innerHTML = dialogAddBlockListItemHtml;
+      userListItem
+        .querySelector('.mdl-list__item-primary-content')
+        .insertBefore(
+          instantiateAvatar(user),
+          userListItem.querySelector('.container__name--list')
+        );
+      userListItem.querySelector('.container__name--list').innerText =
+        user.displayName;
+      userListItem.querySelector('.mdl-list__item-sub-title').innerText =
+        user.signInProvider ? user.signInProvider.split('.')[0] : 'none';
+      const dialogRadioElements = userListItem.querySelector(
+        '.dialog__radios--add-block'
+      );
+      // set friend radio button attributes
+      const firstRadioLabel = dialogRadioElements.children[0];
+      firstRadioLabel.setAttribute('for', `addFriend${itemNumber}`);
+      const firstRadioButton = firstRadioLabel.querySelector('input');
+      firstRadioButton.id = `addFriend${itemNumber}`;
+      firstRadioButton.setAttribute('name', `friends${itemNumber}`);
+      if (friend) firstRadioButton.setAttribute('checked', '');
+      firstRadioButton.addEventListener('click', () => {
+        firstRadioButton.setAttribute('checked', '');
+        if (!adjustedFriendsObject.friends.includes(uid))
+          adjustedFriendsObject.friends.push(uid);
+        if (adjustedFriendsObject.blocked.includes(uid))
+          adjustedFriendsObject.blocked.splice(
+            adjustedFriendsObject.blocked.indexOf(uid),
+            1
+          );
+      });
+      // set blocked radio button attributes
+      const secondRadioLabel = dialogRadioElements.children[1];
+      secondRadioLabel.setAttribute('for', `blockPest${itemNumber}`);
+      const secondRadioButton = secondRadioLabel.querySelector('input');
+      secondRadioButton.id = `blockPest${itemNumber}`;
+      secondRadioButton.setAttribute('name', `friends${itemNumber}`);
+      if (block) secondRadioButton.setAttribute('checked', '');
+      secondRadioButton.addEventListener('click', () => {
+        secondRadioButton.setAttribute('checked', '');
+        if (!adjustedFriendsObject.blocked.includes(uid))
+          adjustedFriendsObject.blocked.push(uid);
+        if (adjustedFriendsObject.friends.includes(uid))
+          adjustedFriendsObject.friends.splice(
+            adjustedFriendsObject.friends.indexOf(uid),
+            1
+          );
+      });
+      userList.append(userListItem);
+      itemNumber++;
+    }
+    document.querySelector('.dialog__activity').innerHTML = '';
+    return userList;
+  });
+}
+
+/**
+ * Populates Add/Block dialog and displays it
+ */
+function showAddBlockDialog() {
+  resetDialog();
+  // if (!myFriends) return;
+  const dialogElement = document.querySelector('.dialog__shell');
+  const header = dialogElement.querySelector('.dialog__content--header');
+  header.innerHTML = dialogAddBlockHeaderHtml;
+  const footer = dialogElement.querySelector('.dialog__content--footer');
+  footer.innerHTML = dialogAddBlockFooterHtml;
+  const listContainer = dialogElement.querySelector('.dialog__list');
+  const list = document.createElement('ul');
+  list.className = 'mdl-list';
+  listContainer.append(list);
+  list.innerHTML = '';
+  loadAddBlockList().then((contents) => list.append(contents));
+  // list.append(loadAddBlockList());
+  dialogElement.showModal();
+  document
+    .querySelector('.dialog--close')
+    .addEventListener('click', resetDialog);
+  document
+    .querySelector('.dialog__button--footer-1')
+    .addEventListener('click', () => {
+      updateMyFriends(adjustedFriendsObject).then(() => showGameStartDialog());
+    });
+  document
+    .querySelector('.dialog__button--footer-2')
+    .addEventListener('click', showInviteDialog);
 }
 
 export { showErrorDialog, showGameStartDialog };

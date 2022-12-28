@@ -32,11 +32,16 @@
   color: red;
 }
 
-.dialog__radios {
+.dialog__radios--difficulty {
   margin: 10px;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
+}
+
+.dialog__radios--add-block {
+  display: flex;
+  flex-direction: column;
 }
 
 .dialog__list {
@@ -45,8 +50,21 @@
 
 .dialog__activity {
   display: block;
-  margin: 10px auto;
+  margin: auto;
   overflow: hidden;
+}
+
+.dialog__content--header {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  align-items: center;
+}
+
+.dialog__content--footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .dialog__heading--footer {
@@ -58,15 +76,13 @@
   flex-direction: column;
 }
 
-.dialog__content--footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 .dialog__error--message {
   text-align: center;
   font-size: large;
+}
+
+.dialog__button--mail {
+  margin: auto;
 }
 
 @media screen and (min-width: 420px) {

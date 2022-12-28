@@ -10,11 +10,20 @@ import {
 } from 'firebase/database';
 import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 'firebase/auth';
 import { getToken, onMessage } from 'firebase/messaging';
-import { getDoc, setDoc, doc } from 'firebase/firestore';
+import {
+  getDoc,
+  setDoc,
+  doc,
+  getDocs,
+  query,
+  collection,
+  where,
+} from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { populateMyFriends, populateMyGames } from '../games/gamesC.js';
+import { populateMyGames } from '../games/gamesC.js';
+import { disableSettings, enableSettings } from '../../shellV.js';
 
-// let myFriends = {};
+let myFriends = {};
 
 const dbRT = getDatabase(app);
 let currentUser = null;
@@ -54,14 +63,17 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
 onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
-  if (!uid) return;
+  if (!uid) {
+    disableSettings();
+    return;
+  }
   let userFirestoreRef = doc(db, `/users/${uid}`);
   const snapshot = await getDoc(userFirestoreRef);
   if (snapshot.exists()) {
     currentUser = snapshot.data();
   }
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
-  // myFriends = {};
+  myFriends = {};
   try {
     const authChange = httpsCallable(functions, 'authChange');
     let authChangeData = await authChange().data;
@@ -72,6 +84,7 @@ onAuthStateChanged(auth, async (user) => {
     generateMessagingToken();
     populateMyGames(uid);
     await populateMyFriends();
+    enableSettings();
   } catch (err) {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
@@ -172,4 +185,79 @@ async function pendingPlayerController(nameObject) {
   });
 }
 
-export { pendingPlayerController, authState, currentUser };
+/**
+ * Update the users friends and blocked values in Firestore via cloud function
+ * @param {object} adjustedFriendsObject contains friends and blocked uid arrays
+ * @returns {Promise<myFriends>} promise resolving to new myFriends object
+ */
+function updateMyFriends(adjustedFriendsObject) {
+  currentUser.friends = adjustedFriendsObject.friends;
+  currentUser.blocked = adjustedFriendsObject.blocked;
+  adjustedFriendsObject.uid = currentUser.uid;
+  const updateFriends = httpsCallable(functions, 'updateFriends');
+  return updateFriends(adjustedFriendsObject).then(() => {
+    return populateMyFriends();
+  });
+}
+
+/**
+ * Populate list of all users from firestore and return the list.
+ * @returns Object containing all users by uid
+ */
+function populateAllUsers() {
+  return getDocs(query(collection(db, 'users')))
+    .then((snapshot) => {
+      if (snapshot.empty) {
+        console.warn('No users exist yet.');
+        return;
+      }
+      const usersObj = {};
+      snapshot.docs.forEach((doc) => {
+        // console.log(doc.data());
+        const user = doc.data();
+        if (user.uid !== currentUser.uid) usersObj[user.uid] = user;
+      });
+      return usersObj;
+    })
+    .catch((error) => console.log('Error getting list of users: ', error));
+}
+
+/**
+ * Populate list of all users from firestore and return the list.
+ * @returns Object containing friends of currentUser
+ */
+function populateMyFriends() {
+  console.log('Hello from populateMyFriends');
+  if (!currentUser) return;
+  myFriends = {};
+  if (currentUser.friends.length === 0) return;
+  const q = query(
+    collection(db, 'users'),
+    where('uid', 'in', currentUser.friends)
+  );
+  return getDocs(q).then((snapshot) => {
+    if (snapshot.empty) {
+      console.log('No friends added yet.');
+      return {};
+    }
+    snapshot.docs.forEach((doc) => {
+      // console.log(doc.data());
+      const user = doc.data();
+      if (doc.id !== currentUser.uid) myFriends[doc.id] = user;
+    });
+    for (const key of Object.keys(myFriends)) {
+      if (!currentUser.friends.includes(key)) delete myFriends[key];
+    }
+    return myFriends;
+  });
+}
+
+export {
+  pendingPlayerController,
+  authState,
+  updateMyFriends,
+  populateAllUsers,
+  populateMyFriends,
+  currentUser,
+  myFriends,
+};

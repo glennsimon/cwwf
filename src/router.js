@@ -87,13 +87,15 @@ function checkRoute(urlString) {
 
 window.onpopstate = (event) => {
   const urlString = event.target.href;
-  handleLocation(urlString);
+  if (urlString) route(urlString);
 };
 
-// if (currentUser) {
-//   route('/games');
-// } else {
-//   route('/signin');
-// }
+window.onload = () => {
+  if (currentUser) {
+    route('/games');
+  } else {
+    route('/signin');
+  }
+};
 
 export { route };

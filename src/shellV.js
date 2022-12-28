@@ -35,21 +35,55 @@ headerSignin.addEventListener('click', () => {
 
 document.querySelector('.drawer__close').addEventListener('click', closeDrawer);
 
-document.querySelector('.overflow__list').addEventListener('click', (event) => {
-  if (event.target.querySelector('i').innerText === 'refresh') {
-    location.reload();
-  }
-  if (event.target.querySelector('i').innerText === 'grid_on') {
-    route('/games');
-  }
-  if (event.target.querySelector('i').innerText === 'settings') {
-    route('/settings');
-  }
-});
+// document.querySelector('.overflow__list').addEventListener('click', (event) => {
+//   if (event.target.querySelector('i').innerText === 'refresh') {
+//     location.reload();
+//   }
+//   if (event.target.querySelector('i').innerText === 'grid_on') {
+//     route('/games');
+//   }
+//   if (event.target.querySelector('i').innerText === 'settings') {
+//     route('/settings');
+//   }
+// });
+
+document
+  .querySelector('.overflow__refresh')
+  .addEventListener('click', () => location.reload());
+
+document
+  .querySelector('.overflow__games')
+  .addEventListener('click', () => route('/games'));
+
+document
+  .querySelector('.overflow__settings')
+  .addEventListener('click', () => route('/settings'));
 
 function closeDrawer() {
   if (document.querySelector('.drawer.is-visible'))
     document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
 }
 
-export { closeDrawer };
+function enableGames() {
+  document.querySelector('.overflow__games').removeAttribute('disabled');
+}
+
+function enableSettings() {
+  document.querySelector('.overflow__settings').removeAttribute('disabled');
+}
+
+function disableGames() {
+  document.querySelector('.overflow__games').setAttribute('disabled', '');
+}
+
+function disableSettings() {
+  document.querySelector('.overflow__settings').setAttribute('disabled', '');
+}
+
+export {
+  closeDrawer,
+  enableGames,
+  enableSettings,
+  disableSettings,
+  disableGames,
+};

@@ -40,7 +40,7 @@ let currentGameId = null;
 // let gameListParameters = {};
 // // TODO: should this be tracked, and what can be done while offline?
 // let online = false;
-let myFriends = {};
+// let myFriends = {};
 
 // // webpack dynamic imports:
 // // let mySignOut = () => {};
@@ -297,72 +297,6 @@ let myGamesUnsubscribe = () => {};
 //     return;
 //   }
 // }
-
-// /**
-//  * Populate list of all users from firestore and return the list.
-//  * @returns Object containing all users by uid
-//  */
-// function populateAllUsersController() {
-//   return getDocs(query(collection(db, 'users')))
-//     .then((snapshot) => {
-//       if (snapshot.empty) {
-//         console.warn('No users exist yet.');
-//         return;
-//       }
-//       const usersObj = {};
-//       snapshot.docs.forEach((doc) => {
-//         // console.log(doc.data());
-//         const user = doc.data();
-//         if (user.uid !== currentUser.uid) usersObj[user.uid] = user;
-//       });
-//       return usersObj;
-//     })
-//     .catch((error) => console.log('Error getting list of users: ', error));
-// }
-
-// /**
-//  * Update the users friends and blocked values in Firestore via cloud function
-//  * @param {object} adjustedFriendsObject contains friends and blocked uid arrays
-//  */
-// async function updateFriendsController(adjustedFriendsObject) {
-//   currentUser.friends = adjustedFriendsObject.friends;
-//   currentUser.blocked = adjustedFriendsObject.blocked;
-//   adjustedFriendsObject.uid = currentUser.uid;
-//   const updateFriends = httpsCallable(functions, 'updateFriends');
-//   updateFriends(adjustedFriendsObject);
-//   await populateMyFriends();
-//   loadFriendsSettingsView(myFriends);
-// }
-
-/**
- * Populate list of all users from firestore and return the list.
- * @returns Object containing friends of currentUser
- */
-function populateMyFriends() {
-  console.log('Hello from populateMyFriends');
-  if (!currentUser) return;
-  myFriends = {};
-  if (currentUser.friends.length === 0) return;
-  const q = query(
-    collection(db, 'users'),
-    where('uid', 'in', currentUser.friends)
-  );
-  return getDocs(q).then((snapshot) => {
-    if (snapshot.empty) {
-      console.log('No friends added yet.');
-      return {};
-    }
-    snapshot.docs.forEach((doc) => {
-      // console.log(doc.data());
-      const user = doc.data();
-      if (doc.id !== currentUser.uid) myFriends[doc.id] = user;
-    });
-    for (const key of Object.keys(myFriends)) {
-      if (!currentUser.friends.includes(key)) delete myFriends[key];
-    }
-    return;
-  });
-}
 
 /**
  * Populate list of all games that is viewable to the current user
@@ -658,12 +592,13 @@ function startNewGameController(gameStartParameters) {
 
 export {
   populateMyGames,
-  populateMyFriends,
+  // populateMyFriends,
   subscribeToGame,
+  // populateAllUsers,
   currentGame,
   currentGameId,
   currentOpp,
-  myFriends,
+  // myFriends,
   myGames,
 };
 //   startNewGameController,
@@ -689,7 +624,6 @@ export {
 //   storeSettingsController,
 //   handleCheckController,
 //   // populateFriendsController,
-//   updateFriendsController,
 //   getMyFriendsController,
 //   pendingPlayerController,
 //   currentUser,
