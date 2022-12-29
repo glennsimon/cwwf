@@ -8,7 +8,7 @@ import {
 } from '../../firebase-init.js';
 import {
   authChangeView,
-  showPuzzleView,
+  showPuzzle,
   animateScoringView,
   showHeaderActivityView,
 } from './puzzleV.js';
@@ -39,8 +39,9 @@ import {
   ref as refStorage,
   uploadBytes,
 } from 'firebase/storage';
+import { showErrorDialog } from '../../pageFrags/dialogs/dialogsV.js';
+import { currentUser } from '../signin/signinC.js';
 
-let currentUser = null;
 let currentOpp = null;
 let userStatusDatabaseRef = null;
 let myGames = [];
@@ -65,120 +66,64 @@ let myFriends = {};
 let gameUnsubscribe = () => {};
 let myGamesUnsubscribe = () => {};
 
-// /**
-//  * Get myFriends. Should be used by all external modules.
-//  * @returns {object} Returns my friends users objects
-//  */
-// function getMyFriendsController() {
-//   return myFriends;
-// }
+/**
+ * Exported function that presenter uses to start a new game
+ * @param {Object} gameStartParameters Parameters needed to start game
+ */
+function startNewGame(gameStartParameters) {
+  console.log('Attempting to start a new game.');
+  const startGame = httpsCallable(functions, 'startGame');
+  return startGame(gameStartParameters)
+    .then((gameObjData) => {
+      const gameObj = gameObjData.data;
+      currentOpp = gameObj.opponent;
+      currentGameId = gameObj.gameId;
+      subscribeToGame(currentGameId);
+      return currentGameId; // gameObjData.data.game;
+    })
+    .catch((err) => {
+      console.log('Error code: ', err.code);
+      console.log('Error message: ', err.message);
+      console.log('Error details: ', err.details);
+    });
+}
 
-// /**
-//  * Get the currentGame. Should be used by all external modules.
-//  * @returns {object} Returns currentGame or null
-//  */
-// function getCurrentGameController() {
-//   return currentGame;
-// }
+/**
+ * Unsubscribe from listening for changes on previous game, and start listening
+ * for changes on gameObj game.
+ * @param {string} gameId game id string
+ */
+function subscribeToGame(gameId) {
+  console.log('Hello from subscribeToGame.');
+  // Stop listening for previous puzzle changes
+  try {
+    gameUnsubscribe();
+  } catch (error) {
+    console.log('INFO: Error thrown trying to unsubscribe from current game.');
+    // do nothing, already unsubscribed
+  }
 
-// /**
-//  * Get gameListParameters. Should be used by all external modules.
-//  * @returns {object} Returns gameListParameters or null
-//  */
-// function getGameListParametersController() {
-//   return gameListParameters;
-// }
-
-// /**
-//  * Set the currentGame. Should be used by all external modules.
-//  * @param {object} game Game with some parameters changed or added
-//  */
-// function setCurrentGameController(game) {
-//   currentGame = game;
-// }
-
-// /**
-//  * Set the currentGameId. Should be used by all external modules.
-//  * @param {object} gameId gameId | null
-//  */
-// function setCurrentGameIdController(gameId) {
-//   currentGameId = gameId;
-// }
-
-// /**
-//  * Get the value of acrossWord. Should be used by all external modules.
-//  * @returns {boolean} true if across, false if down
-//  */
-// function getAcrossWordController() {
-//   return acrossWord;
-// }
-
-// /**
-//  * Set acrossWord. Should be used by all external modules.
-//  * @param {boolean} across true if across, false if down
-//  */
-// function setAcrossWordController(across) {
-//   acrossWord = across;
-// }
-
-// /**
-//  * Get the currentUser. Should be used by all external modules.
-//  * @returns {Object} Returns currentUser or null
-//  */
-// function getCurrentUserController() {
-//   return currentUser;
-// }
-
-// /**
-//  * Get currentOpp. Should be used by all external modules.
-//  * @returns {object} Returns currentOpp user object
-//  */
-// function getCurrentOppController() {
-//   return currentOpp;
-// }
-
-// /**
-//  * Get the myGames Object. Should be used by all external modules.
-//  * @returns {Array} Returns myGames Array
-//  */
-// function getAllGamesController() {
-//   return myGames;
-// }
-
-// /**
-//  * Get the columns Object. Should be used by all external modules.
-//  * @returns {number} Returns number of columns
-//  */
-// function getColumnsController() {
-//   return columns;
-// }
-
-// /**
-//  * Get the idxArray containing the indices of the currently selected word in the
-//  * puzzle. Should be used by all external modules.
-//  * @returns {array} Returns idxArray
-//  */
-// function getIdxArrayController() {
-//   return idxArray;
-// }
-
-// /**
-//  * Set the idxArray containing the indices of the currently selected word in the
-//  * puzzle. Should be used by all external modules.
-//  * @param {array} wordArray Array containing the indexes of the currently selected word.
-//  */
-// function setIdxArrayController(wordArray) {
-//   idxArray = wordArray;
-// }
-
-// /**
-//  * Helper function for creating state object.
-//  * @param {string} state
-//  * @returns State object to store for user on database
-//  */
-// function authState(state) {
-//   return { state: state, lastChanged: serverTimestamp() };
-// }
+  // Start listening to current puzzle changes
+  gameUnsubscribe = onSnapshot(
+    doc(db, 'games', gameId),
+    async (gameSnap) => {
+      const prevGameId = currentGameId;
+      currentGame = gameSnap.data();
+      if (!currentGame) return;
+      currentGameId = gameId;
+      idxArray = [];
+      columns = currentGame.puzzle.cols;
+      myTurn = currentUser.uid === currentGame.nextTurn;
+      if (prevGameId === gameId) {
+        await animateScoringView(currentGame.lastTurnCheckObj);
+      }
+      showPuzzle(currentGame, currentOpp);
+    },
+    (error) => {
+      console.error('Error subscribing to puzzle: ', error);
+    }
+  );
+}
 
 // // Updates user online status only if user is logged in
 // // when connection/disconnection with app is made.
@@ -381,8 +326,8 @@ let myGamesUnsubscribe = () => {};
  * and then calls functions to format and display the puzzle
  * @param {object} gameObj Object with gameId and opponentUid
  */
-async function fetchPuzzleController(gameObj) {
-  console.log('Hello from fetchPuzzleController.');
+async function fetchPuzzle(gameObj) {
+  console.log('Hello from fetchPuzzle.');
   currentOpp = (await getDoc(doc(db, `users/${gameObj.opponentUid}`))).data();
   if (currentOpp) {
     subscribeToGame(gameObj.gameId);
@@ -397,43 +342,6 @@ async function fetchPuzzleController(gameObj) {
       console.log('Error details: ', err.details);
     });
   }
-}
-
-/**
- * Unsubscribe from listening for changes on previous game, and start listening
- * for changes on gameObj game.
- * @param {string} gameId game id string
- */
-function subscribeToGame(gameId) {
-  console.log('Hello from subscribeToGame.');
-  // Stop listening for previous puzzle changes
-  try {
-    gameUnsubscribe();
-  } catch (error) {
-    console.log('INFO: Error thrown trying to unsubscribe from current game.');
-    // do nothing, already unsubscribed
-  }
-
-  // Start listening to current puzzle changes
-  gameUnsubscribe = onSnapshot(
-    doc(db, 'games', gameId),
-    async (gameSnap) => {
-      const prevGameId = currentGameId;
-      currentGame = gameSnap.data();
-      if (!currentGame) return;
-      currentGameId = gameId;
-      idxArray = [];
-      columns = currentGame.puzzle.cols;
-      myTurn = currentUser.uid === currentGame.nextTurn;
-      if (prevGameId === gameId) {
-        await animateScoringView(currentGame.lastTurnCheckObj);
-      }
-      showPuzzleView(currentGame, currentOpp);
-    },
-    (error) => {
-      console.error('Error subscribing to puzzle: ', error);
-    }
-  );
 }
 
 /**
@@ -509,28 +417,6 @@ function incomplete() {
 }
 
 /**
- * Exported function that presenter uses to start a new game
- * @param {Object} gameStartParameters Parameters needed to start game
- */
-function startNewGameController(gameStartParameters) {
-  console.log('Attempting to start a new game.');
-  const startGame = httpsCallable(functions, 'startGame');
-  return startGame(gameStartParameters)
-    .then((gameObjData) => {
-      const gameObj = gameObjData.data;
-      currentOpp = gameObj.opponent;
-      currentGameId = gameObj.gameId;
-      subscribeToGame(currentGameId);
-      return currentGameId; // gameObjData.data.game;
-    })
-    .catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
-}
-
-/**
  * Enter a letter into the currentGame as a guess.
  * @param {string} letter Letter to be entered into the square
  * @param {number} index Index of square
@@ -586,25 +472,15 @@ function abandonCurrentGameController() {
   });
 }
 
-/**
- * Creates a minimal pendingPlayer and adds to Firestore, then returns the
- * document id for the pendingPlayer.
- * @param {object} nameObject object with `firstName` for pending player
- * @returns document id for pendingPlayer
- */
-async function pendingPlayerController(nameObject) {
-  const pendingPlayer = httpsCallable(functions, 'pendingPlayer');
-  return pendingPlayer(nameObject).then((docId) => {
-    return docId.data;
-  });
-}
-
 export {
-  startNewGameController,
-  fetchPuzzleController,
+  columns,
+  currentGame,
+  currentOpp,
+  startNewGame,
+  subscribeToGame,
+  fetchPuzzle,
   savePuzzleController,
   playWordController,
   enterLetterController,
   abandonCurrentGameController,
-  pendingPlayerController,
 };

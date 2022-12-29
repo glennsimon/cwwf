@@ -178,7 +178,7 @@ async function sendTokenToServer(messagingToken) {
  * @param {object} nameObject object with `firstName` for pending player
  * @returns document id for pendingPlayer
  */
-async function pendingPlayerController(nameObject) {
+function initPendingPlayer(nameObject) {
   const pendingPlayer = httpsCallable(functions, 'pendingPlayer');
   return pendingPlayer(nameObject).then((docId) => {
     return docId.data;
@@ -253,7 +253,7 @@ function populateMyFriends() {
 }
 
 export {
-  pendingPlayerController,
+  initPendingPlayer,
   authState,
   updateMyFriends,
   populateAllUsers,

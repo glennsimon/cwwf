@@ -98,3 +98,7 @@
   overflow: hidden;
   width: 115px;
 }
+
+.transparent {
+  background-color: transparent;
+}

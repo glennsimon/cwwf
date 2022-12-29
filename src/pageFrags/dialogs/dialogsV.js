@@ -9,11 +9,13 @@ import './dialogs.css';
 // import { myFriends, populateAllUsers } from '../../pages/games/gamesC';
 import {
   currentUser,
+  initPendingPlayer,
   myFriends,
   populateAllUsers,
   updateMyFriends,
 } from '../../pages/signin/signinC';
 import { showActivity } from '../activity/activity';
+import { startNewGame } from '../../pages/puzzle/puzzleC';
 
 let adjustedFriendsObject = {};
 
@@ -51,10 +53,7 @@ function showInviteDialog() {
 // document.querySelector('.button__send').addEventListener('click', async () => {
 async function sendInvitation() {
   console.log('Player hit the email send button.');
-  inviteProgressContainer.classList.add('displayFlex');
-  inviteProgressContainer.classList.remove('displayNone');
-  inviteLoadSpinner.classList.add('is-active');
-  // const currentUser = getCurrentUserController();
+  showActivity('.dialog__activity', 'Preparing email and game...');
   const gameStartParameters = {};
   const myUid = currentUser.uid;
   gameStartParameters.players = {};
@@ -64,14 +63,14 @@ async function sendInvitation() {
   gameStartParameters.viewableBy.push(myUid);
   // opponent - assume never signed in
   const oppName = firstName.value || 'Friend';
-  const pendUid = await pendingPlayerController({ firstName: oppName });
+  const pendUid = await initPendingPlayer({ firstName: oppName });
   console.log('pendUid: ', pendUid);
   gameStartParameters.players[pendUid] = {};
   gameStartParameters.players[pendUid].bgColor = 'bgTransBlue';
   gameStartParameters.viewableBy.push(pendUid);
   // for first game, default to 'easy' game
   gameStartParameters.difficulty = 'easy';
-  const gameId = await startNewGameController(gameStartParameters);
+  const gameId = await startNewGame(gameStartParameters);
   inviteProgressContainer.classList.add('displayNone');
   inviteProgressContainer.classList.remove('displayFlex');
   inviteLoadSpinner.classList.remove('is-active');

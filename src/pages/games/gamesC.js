@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { currentUser } from '../signin/signinC.js';
 import { showActivity } from '../../pageFrags/activity/activity.js';
+import { currentOpp, subscribeToGame } from '../puzzle/puzzleC.js';
 // import { httpsCallable } from 'firebase/functions';
 // import {
 //   getDownloadURL,
@@ -28,11 +29,11 @@ import { showActivity } from '../../pageFrags/activity/activity.js';
 // // 'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak'
 
 // let currentUser = null;
-let currentOpp = null;
+// let currentOpp = null;
 // let userStatusDatabaseRef = null;
 let myGames = [];
-let currentGame = null;
-let currentGameId = null;
+// let currentGame = null;
+// let currentGameId = null;
 // let acrossWord = true;
 // let columns = null;
 // let idxArray = [];
@@ -58,14 +59,6 @@ let myGamesUnsubscribe = () => {};
 //  */
 // function getMyFriendsController() {
 //   return myFriends;
-// }
-
-// /**
-//  * Get the currentGame. Should be used by all external modules.
-//  * @returns {object} Returns currentGame or null
-//  */
-// function getCurrentGameController() {
-//   return currentGame;
 // }
 
 // /**
@@ -319,7 +312,7 @@ async function populateMyGames(uid) {
     const myPastGames = [];
     const myActiveGames = [];
     const userIds = [];
-    let currentOpponentUid = null;
+    // let currentOpponentUid = null;
     snapshot.forEach((doc) => {
       // console.log('query snapshot doc.data(): ', doc.data());
       const gameListItem = doc.data();
@@ -332,12 +325,12 @@ async function populateMyGames(uid) {
       for (const uid of gameListItem.viewableBy) {
         if (!userIds.includes(uid)) userIds.push(uid);
       }
-      if (doc.id === currentGameId) {
-        currentOpponentUid =
-          gameListItem.viewableBy[0] === currentUser.uid
-            ? gameListItem.viewableBy[1]
-            : gameListItem.viewableBy[0];
-      }
+      // if (doc.id === currentGameId) {
+      //   currentOpponentUid =
+      //     gameListItem.viewableBy[0] === currentUser.uid
+      //       ? gameListItem.viewableBy[1]
+      //       : gameListItem.viewableBy[0];
+      // }
     });
     myPastGames.sort((a, b) => {
       return b.finish - a.finish;
@@ -360,72 +353,11 @@ async function populateMyGames(uid) {
       let userData = {};
       userDocs.forEach((doc) => {
         userData[doc.id] = doc.data();
-        if (doc.id === currentOpponentUid) currentOpp = doc.data();
       });
       loadGames(myGames, userData);
     }
     return;
   });
-}
-
-/**
- * This function fetches an active puzzle based on the user's selection
- * and then calls functions to format and display the puzzle
- * @param {object} gameObj Object with gameId and opponentUid
- */
-async function fetchPuzzleController(gameObj) {
-  console.log('Hello from fetchPuzzleController.');
-  currentOpp = (await getDoc(doc(db, `users/${gameObj.opponentUid}`))).data();
-  if (currentOpp) {
-    subscribeToGame(gameObj.gameId);
-  } else {
-    showErrorDialog(
-      'That game is not accessible. Try another or start a new one.'
-    );
-    const deleteFailedGame = httpsCallable(functions, 'deleteFailedGame');
-    await deleteFailedGame({ gameId: gameObj.gameId }).catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
-  }
-}
-
-/**
- * Unsubscribe from listening for changes on previous game, and start listening
- * for changes on gameObj game.
- * @param {string} gameId game id string
- */
-function subscribeToGame(gameId) {
-  console.log('Hello from subscribeToGame.');
-  // Stop listening for previous puzzle changes
-  try {
-    gameUnsubscribe();
-  } catch (error) {
-    console.log('INFO: Error thrown trying to unsubscribe from current game.');
-    // do nothing, already unsubscribed
-  }
-
-  // Start listening to current puzzle changes
-  gameUnsubscribe = onSnapshot(
-    doc(db, 'games', gameId),
-    async (gameSnap) => {
-      const prevGameId = currentGameId;
-      currentGame = gameSnap.data();
-      if (!currentGame) return;
-      currentGameId = gameId;
-      idxArray = [];
-      columns = currentGame.puzzle.cols;
-      myTurn = currentUser.uid === currentGame.nextTurn;
-      if (prevGameId === gameId) {
-        await animateScoringView(currentGame.lastTurnCheckObj);
-      }
-      showPuzzleView(currentGame, currentOpp);
-    },
-    (error) => {
-      console.error('Error subscribing to puzzle: ', error);
-    }
-  );
 }
 
 // /**
@@ -445,28 +377,6 @@ function subscribeToGame(gameId) {
 //   }
 //   return false;
 // }
-
-/**
- * Exported function that presenter uses to start a new game
- * @param {Object} gameStartParameters Parameters needed to start game
- */
-function startNewGameController(gameStartParameters) {
-  console.log('Attempting to start a new game.');
-  const startGame = httpsCallable(functions, 'startGame');
-  return startGame(gameStartParameters)
-    .then((gameObjData) => {
-      const gameObj = gameObjData.data;
-      currentOpp = gameObj.opponent;
-      currentGameId = gameObj.gameId;
-      subscribeToGame(currentGameId);
-      return currentGameId; // gameObjData.data.game;
-    })
-    .catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
-}
 
 // /**
 //  * Enter a letter into the currentGame as a guess.
@@ -593,11 +503,10 @@ function startNewGameController(gameStartParameters) {
 export {
   populateMyGames,
   // populateMyFriends,
-  subscribeToGame,
   // populateAllUsers,
-  currentGame,
-  currentGameId,
-  currentOpp,
+  // currentGame,
+  // currentGameId,
+  // currentOpp,
   // myFriends,
   myGames,
 };
@@ -606,13 +515,11 @@ export {
 //   getCurrentOppController,
 //   populateAllUsersController,
 //   getAllGamesController,
-//   fetchPuzzleController,
 //   savePuzzleController,
 //   playWordController,
 //   getColumnsController,
 //   getIdxArrayController,
 //   setIdxArrayController,
-//   getCurrentGameController,
 //   setCurrentGameController,
 //   setCurrentGameIdController,
 //   enterLetterController,

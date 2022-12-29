@@ -5,8 +5,36 @@ import '../../pageFrags/dialogs/dialogs.css';
 import { showActivity } from '../../pageFrags/activity/activity';
 import { route } from '../../router';
 import { showGameStartDialog } from '../../pageFrags/dialogs/dialogsV';
+import { fetchPuzzle } from '../puzzle/puzzleC';
 
 const container__app = document.querySelector('.container__app');
+
+/**
+ * Fetch an existing game from firestore via the controller.
+ * @param {MouseEvent} event
+ * @returns void
+ */
+function loadGame(event) {
+  console.log('User selected a game to view.');
+  let eventTarget = event.target;
+  while (!eventTarget.id) {
+    eventTarget = eventTarget.parentElement;
+  }
+  if (eventTarget.nodeName.toLowerCase() === 'ul') return;
+  if (eventTarget.nodeName.toLowerCase() === 'li') {
+    eventTarget = eventTarget.children[0];
+  }
+  const gameObj = {};
+  if (eventTarget.nodeName.toLowerCase() === 'span') {
+    gameObj.opponentUid = eventTarget.id;
+    eventTarget = eventTarget.parentElement;
+  } else {
+    return;
+  }
+  gameObj.gameId = eventTarget.id;
+  showActivity('.header__activity', 'Fetching your game...');
+  fetchPuzzle(gameObj);
+}
 
 /**
  * Load game list with active and past games that the current user has
@@ -140,6 +168,8 @@ async function loadGames(myGames, userData) {
   pastGamesContainer.innerHTML = pastGamesHtml;
   document.querySelector('.header__activity').innerHTML = '';
   // console.log(dialogList);
+  activeGamesContainer.addEventListener('click', loadGame);
+  pastGamesContainer.addEventListener('click', loadGame);
 }
 
 /**

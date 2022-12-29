@@ -228,10 +228,6 @@ select {
   column-fill: auto;
 }
 
-.padding-5 {
-  padding: 5px;
-}
-
 .padding10px {
   padding: 10px;
 }
@@ -293,10 +289,6 @@ select {
   left: 0;
 }
 
-#puzTable .shade {
-  background-color: lightgray;
-}
-
 .transparent {
   background-color: transparent;
 }
@@ -313,16 +305,6 @@ select {
 
 .fontWeightBold {
   font-weight: bold;
-}
-
-.square {
-  display: flex;
-  vertical-align: baseline;
-  font-size: 3.5vw;
-  line-height: 3.5vw;
-  font-weight: bold;
-  pointer-events: none;
-  box-sizing: border-box;
 }
 
 .border2pxTop {
@@ -430,37 +412,8 @@ select {
   background-color: #ffd700dd;
 }
 
-.kbButton {
-  margin: 0.5%;
-  display: flex;
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.14), 0 6px 2px -4px rgba(0, 0, 0, 0.2),
-    0 2px 10px 0 rgba(0, 0, 0, 0.12);
-  border-radius: 5px;
-  box-sizing: border-box;
-  font-size: 3.5vw;
-  transition-duration: 0.2s;
-  transition-property: box-shadow;
-  will-change: box-shadow;
-  cursor: pointer;
-} */
-
-/*
-
-.kbButton:active {
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2),
-    0 1px 5px 0 rgba(0, 0, 0, 0.12);
-}
-
 .userSelectNone {
   user-select: none;
-}
-
-.subscript {
-  vertical-align: baseline;
-  position: relative;
-  top: 0.6em;
-  left: 1px;
-  font-size: 2.5vw;
 }
 
 #headerSpinner {
@@ -485,10 +438,6 @@ select {
 
 .width5pct {
   width: 5%;
-}
-
-.width9pct {
-  width: 9%;
 }
 
 .width20pct {
@@ -581,11 +530,7 @@ select {
   position: fixed;
 }
 
-.puzzleWidth {
-  width: calc(100% - 10px);
-}
-
-.colorSalmon {
+colorSalmon {
   background-color: Salmon;
 }
 
@@ -613,24 +558,6 @@ select {
   width: 5px;
 }
 
-.cluePop {
-  font-size: larger;
-  padding: 5px 0;
-}
-
-#clueCard {
-  background-color: white;
-  font-size: 3.5vw;
-  min-height: 10vw;
-  max-height: 15vw;
-  padding: 5px;
-  margin: 0 5px 2px;
-}
-
-#clueLists {
-  display: none;
-}
-
 #settingsDialog {
   width: 500px;
   padding: 0;
@@ -638,11 +565,6 @@ select {
 
 #settingsDialog header {
   height: 40px;
-}
-
-.cardShadow {
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2),
-    0 1px 5px 0 rgba(0, 0, 0, 0.12);
 }
 
 .padding2px5px {
@@ -679,47 +601,6 @@ select {
 
 /* insert below here  */
 
-@media screen and (min-aspect-ratio: 7/10) {
-  .square {
-    font-size: 2.5vh;
-    line-height: 2.5vh;
-    font-weight: normal;
-  }
-
-  #puzTable {
-    width: 68vh;
-  }
-
-  #clueContainer {
-    width: 68vh;
-    margin: auto;
-  }
-
-  .clueNumber {
-    font-size: 1.4vh;
-    line-height: 1.4vh;
-  }
-
-  #kbContainer {
-    width: 68vh;
-    margin: auto;
-  }
-
-  .kbButton {
-    font-size: 2.5vh;
-  }
-
-  .subscript {
-    font-size: 1.5vh;
-  }
-
-  #clueCard {
-    font-size: 2.5vh;
-    min-height: 6.5vh;
-    max-height: 10vh;
-  }
-}
-
 @media screen and (min-aspect-ratio: 5/4) {
   .header__title {
     display: block;
@@ -731,35 +612,5 @@ select {
   .container__app {
     display: flex;
     flex-direction: column;
-  }
-}
-
-@media screen and (min-aspect-ratio: 2/1) {
-  .square {
-    font-size: 1.1vw;
-    line-height: 1.1vh;
-  }
-
-  .clueNumber {
-    font-size: 0.62vw;
-    line-height: 0.62vw;
-  }
-
-  #puzTable {
-    width: 35vw;
-  }
-
-  #clueContainer {
-    width: 60vw;
-  }
-
-  #kbContainer {
-    width: 60vw;
-  }
-
-  #acrossContainer,
-  #downContainer {
-    font-size: 1.15vw;
-    line-height: 1.55vw;
   }
 }

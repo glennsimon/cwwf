@@ -1,28 +1,24 @@
 import {
-  startNewGameController,
   populateAllUsersController,
-  fetchPuzzleController,
   playWordController,
   enterLetterController,
   abandonCurrentGameController,
   populateFriendsController,
+  columns,
+  currentGame,
 } from './puzzleC.js';
 import { route } from '../../router.js';
 import { currentUser } from '../signin/signinC.js';
-import { currentOpp } from '../games/gamesC.js';
+import { currentOpp } from '../puzzle/puzzleC.js';
 import scoresHtml from '../../pageFrags/scores/scores.html';
 import { closeDrawer } from '../../shellV.js';
 import puzzleInfoHtml from '../../pageFrags/puzzleInfo/puzzleInfo.html';
 import concedeHtml from '../../pageFrags/concede/concede.html';
 import { showActivity } from '../../pageFrags/activity/activity.js';
+import puzzleHtml from './puzzle.html';
+import './puzzle.css';
 
 //#region HTML element constants
-const puzTable = document.getElementById('puzTable');
-const clueContainer = document.getElementById('clueContainer');
-const acrossClues = document.getElementById('acrossClues');
-const downClues = document.getElementById('downClues');
-const singleClue = document.getElementById('singleClue');
-const kbContainer = document.getElementById('kbContainer');
 const abandonDialog = document.getElementById('abandonDialog');
 //#endregion
 
@@ -36,59 +32,55 @@ let currentCell = null;
 function clearPuzzle() {
   console.log('Hello from clearPuzzle.');
   // clear out old puzzle and clues
-  const svgGrid = document.getElementById('svgGrid');
+  const svgGrid = document.querySelector('.grid__svg');
   if (svgGrid) svgGrid.remove();
   document.querySelector('.drawer__content').innerHTML = '';
-  // clueContainer.classList.add('displayNone');
-  // acrossClues.innerHTML = '';
-  // downClues.innerHTML = '';
-  // singleClue.innerText = 'Select in the puzzle to reveal clue';
   currentCell = null;
 }
 
-function loadPuzzleInfo(game) {
+function loadPuzzleInfo() {
   document.querySelector('.drawer__content').innerHTML = puzzleInfoHtml;
-  document.querySelector('.puzzle__title').innerText = game.puzzle.title
-    ? game.puzzle.title
+  document.querySelector('.puzzle__title').innerText = currentGame.puzzle.title
+    ? currentGame.puzzle.title
     : 'Untitled';
   document.querySelector('.puzzle__author').innerText = `by ${
-    game.puzzle.author ? game.puzzle.author : 'Anonymous'
+    currentGame.puzzle.author ? currentGame.puzzle.author : 'Anonymous'
   }`;
-  document.querySelector('.puzzle__copyright').innerHTML = game.puzzle.copyright
-    ? `&copy; ${game.puzzle.copyright}`
+  document.querySelector('.puzzle__copyright').innerHTML = currentGame.puzzle
+    .copyright
+    ? `&copy; ${currentGame.puzzle.copyright}`
     : '';
-  if (game.puzzle.notepad) {
+  if (currentGame.puzzle.notepad) {
     document.querySelector(
       '.puzzle__notepad'
-    ).innerHTML = `<b>Notepad:</b>${game.puzzle.notepad}`;
+    ).innerHTML = `<b>Notepad:</b>${currentGame.puzzle.notepad}`;
   }
 }
 
 /**
- * This function takes the puzzle object returned from the fetch and displays
- * a grid and clues. The HTML table element is a placeholder and the rows and
- * cells are created on the fly. The fetched puzzle is stored as an object in
- * the variable "game".
- * @param {object} game current game object
- * @param {object} opponent current opponent user object
+ * This function displays the grid and clues for the current game.
  */
-function showPuzzleView(game, opponent) {
+function showPuzzle() {
   console.log('Hello from showPuzzleView.');
+  document.querySelector('.container__app').innerHTML = puzzleHtml;
+  document.querySelector('.drawer__concede').innerHTML = concedeHtml;
+  document.querySelector('.scores').innerHTML = scoresHtml;
+  document.querySelector('.drawer__content').innerHTML = puzzleInfoHtml;
+  const puzTable = document.querySelector('.table__puzzle');
   // clear previous puzzle if it exists
-  if (puzTable.children) {
+  if (puzTable) {
     clearPuzzle();
   }
-  loadPuzzleInfo(game);
+  loadPuzzleInfo(currentGame);
 
   const cellDim = getCellDim();
   let gridIndex = 0;
-  // below won't work - puzTable is empty.
   const puzWidth = puzTable.offsetWidth;
-  for (let rowIndex = 0; rowIndex < game.puzzle.rows; rowIndex += 1) {
+  for (let rowIndex = 0; rowIndex < currentGame.puzzle.rows; rowIndex += 1) {
     const row = puzTable.insertRow(rowIndex);
     row.style.width = `${puzWidth}px`;
-    for (let colIndex = 0; colIndex < game.puzzle.cols; colIndex += 1) {
-      const squareData = game.puzzle.grid[gridIndex];
+    for (let colIndex = 0; colIndex < currentGame.puzzle.cols; colIndex += 1) {
+      const squareData = currentGame.puzzle.grid[gridIndex];
       const clueNumber = squareData.clueNum;
       const cell = row.insertCell(colIndex);
       const blackCell = squareData.black;
@@ -99,11 +91,11 @@ function showPuzzleView(game, opponent) {
       if (blackCell) {
         cell.className = 'black';
       } else {
-        cell.classList.add('cursor--pointer', 'transparent');
+        cell.classList.add('cell__puzzle', 'transparent');
         const squareDiv = document.createElement('div');
         const letterDiv = document.createElement('div');
         squareDiv.classList.add('square');
-        letterDiv.classList.add('marginAuto');
+        letterDiv.classList.add('margin--auto');
         if (squareData.status === 'locked') {
           cell.classList.remove('transparent');
           cell.classList.add(squareData.bgColor);
@@ -116,7 +108,7 @@ function showPuzzleView(game, opponent) {
         cell.appendChild(squareDiv);
         if (clueNumber !== '') {
           const clueNumDiv = document.createElement('div');
-          clueNumDiv.classList.add('clueNumber');
+          clueNumDiv.classList.add('clue-number');
           clueNumDiv.appendChild(document.createTextNode(clueNumber));
           cell.appendChild(clueNumDiv);
         }
@@ -149,14 +141,15 @@ function showPuzzleView(game, opponent) {
   }
   const puzHeight = puzTable.offsetHeight;
   puzTable.appendChild(generateGridElement(puzWidth, puzHeight));
-  setCurrentGameController(game);
 
-  kbContainer.classList.remove('displayNone');
-  kbContainer.classList.add('displayFlex');
-  clueContainer.classList.remove('displayNone');
+  // kbContainer.classList.remove('displayNone');
+  // kbContainer.classList.add('displayFlex');
+  document.querySelector('.container__clues').classList.remove('displayNone');
   addConcedeHtml();
   // create contents for across clues div
-  for (const clue of game.puzzle.clues.across) {
+  const acrossClues = document.querySelector('.clues--across');
+  const downClues = document.querySelector('.clues--down');
+  for (const clue of currentGame.puzzle.clues.across) {
     const parsedClue = clue.split('.');
     const clueNumber = parseInt(parsedClue[0]);
     const clueRef = parsedClue[0] + '.';
@@ -164,7 +157,7 @@ function showPuzzleView(game, opponent) {
     const clueDiv = document.createElement('div');
     clueDiv.classList.add('displayFlex', 'cursor--pointer');
     clueDiv.id = 'across' + clueNumber;
-    if (game.puzzle.completedClues.across.includes(clueNumber)) {
+    if (currentGame.puzzle.completedClues.across.includes(clueNumber)) {
       clueDiv.classList.add('colorDarkGray');
     }
 
@@ -189,7 +182,7 @@ function showPuzzleView(game, opponent) {
   }
 
   // create contents for down clues div
-  for (const clue of game.puzzle.clues.down) {
+  for (const clue of currentGame.puzzle.clues.down) {
     const parsedClue = clue.split('.');
     const clueNumber = parseInt(parsedClue[0]);
     const clueRef = parsedClue[0] + '.';
@@ -197,7 +190,7 @@ function showPuzzleView(game, opponent) {
     const clueDiv = document.createElement('div');
     clueDiv.classList.add('displayFlex', 'cursor--pointer');
     clueDiv.id = 'down' + clueNumber;
-    if (game.puzzle.completedClues.down.includes(clueNumber)) {
+    if (currentGame.puzzle.completedClues.down.includes(clueNumber)) {
       clueDiv.classList.add('colorDarkGray');
     }
 
@@ -239,38 +232,40 @@ function showPuzzleView(game, opponent) {
   let myNickname =
     currentUser.prefHandle || currentUser.prefName || currentUser.displayName;
   let oppNickname =
-    opponent.prefHandle || opponent.prefName || opponent.displayName;
+    currentOpp.prefHandle || currentOpp.prefName || currentOpp.displayName;
 
   myNickname = myNickname ? myNickname.split(' ')[0] : 'NoName';
   myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
-  myName.innerText = myNickname;
+  document.querySelector('.name--me').innerText = myNickname;
   oppNickname = oppNickname ? oppNickname.split(' ')[0] : 'NoName';
   oppNickname = oppNickname.length > 8 ? oppNickname.slice(0, 8) : oppNickname;
-  oppName.innerText = oppNickname;
-  if (game.emptySquares === 0) {
+  document.querySelector('.name--opponent').innerText = oppNickname;
+  if (currentGame.emptySquares === 0) {
     let result = 'YOU WON!!';
-    if (game.players[myUid].score < game.players[oppUid].score) {
+    if (currentGame.players[myUid].score < currentGame.players[oppUid].score) {
       result = 'You lost';
-    } else if (game.players[myUid].score === game.players[oppUid].score) {
+    } else if (
+      currentGame.players[myUid].score === currentGame.players[oppUid].score
+    ) {
       result = 'Tie game!';
     }
-    if (!game.hideReplay) {
-      showReplayDialog(game, result);
+    if (!currentGame.hideReplay) {
+      showReplayDialog(currentGame, result);
       savePuzzleController({ hideReplay: true });
     }
     document.querySelector('.drawer__concede').innerHTML = '';
   } else {
     addConcedeHtml();
   }
-  updateScoreboard(game);
-  console.log(game);
+  updateScoreboard(currentGame);
+  console.log(currentGame);
   document.querySelector('.header__activity').innerHTML = '';
   // TODO: should this go here?
   route('/puzzle');
 }
 
 function addConcedeHtml() {
-  document.querySelector('.drawer__concede').innerHtml = concedeHtml;
+  document.querySelector('.drawer__concede').innerHTML = concedeHtml;
   /**
    * Open the abandonDialog, giving the user one more chance
    * to decide if they want to abandon the game.
@@ -306,12 +301,11 @@ function addConcedeHtml() {
  */
 function generateGridElement(puzWidth, puzHeight) {
   const svgGrid = document.createElement('div');
-  svgGrid.id = 'svgGrid';
+  svgGrid.className = 'grid__svg';
   svgGrid.style = `translate: 0px -${puzHeight}px;`;
   let innerHTML = `<svg height='${puzHeight}' width='${puzWidth}'>
   <path d='`;
 
-  const columns = getColumnsController();
   const cellWidth = puzWidth / columns;
   const cellHeight = puzHeight / columns;
   for (let i = 0; i <= columns; i++) {
@@ -335,6 +329,7 @@ function generateGridElement(puzWidth, puzHeight) {
 function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
   document.querySelector('.header__activity').innerHTML = '';
+  const puzTable = document.querySelector('.table__puzzle');
   if (scoreObj.newGame || scoreObj.abandoned) return;
   const myUid = currentUser.uid;
   const scoreElem =
@@ -345,7 +340,6 @@ function animateScoringView(scoreObj) {
   let zIndex = 99;
   for (const letter of scoreObj.checkAnswerResult) {
     const index = letter.index;
-    const columns = puzTable.firstChild.children.length;
     const row = Math.floor(index / columns);
     const col = index - row * columns;
     const cell = puzTable.firstChild.children[row].children[col];
@@ -377,11 +371,10 @@ function animateScoringView(scoreObj) {
     square.appendChild(letterBox);
     animatedCell.appendChild(square);
     const clueNum = document.createElement('div');
-    clueNum.classList = 'clueNumber';
+    clueNum.classList = 'clue-number';
     clueNum.innerText = cell.children[1] ? cell.children[1].textContent : '';
     animatedCell.appendChild(clueNum);
-    const cellAnimator = document.getElementById('cellAnimator');
-    cellAnimator.appendChild(animatedCell);
+    document.querySelector('cell__animator').appendChild(animatedCell);
 
     if (letter.score === 0) {
       const windowHeight = window.innerHeight;
@@ -554,13 +547,12 @@ function wait(time) {
 function cellClicked(event) {
   console.log('Hello from cellClicked.');
   let cell = event.target;
-  while (!cell.classList.contains('cursor--pointer')) {
+  while (!cell.classList.contains('cell__puzzle')) {
     cell = cell.parentElement;
   }
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
   let acrossWord = getAcrossWordController();
-  // const index = row * getColumnsController() + col;
   // console.log(cell.cellIndex);
   // console.log(cell.parentElement.rowIndex);
   // console.log(event);
@@ -591,12 +583,12 @@ function clueClicked(event, direction) {
   console.log('Hello from clueClicked.');
   let clueNumberText = event.target.parentElement.firstChild.innerText;
   clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
-  const game = getCurrentGameController();
-  const columns = getColumnsController();
-  const cellIndex = game.clueNumIndices[clueNumberText];
+  const cellIndex = currentGame.clueNumIndices[clueNumberText];
   const row = Math.floor(cellIndex / columns);
   const col = cellIndex - row * columns;
-  const cell = puzTable.firstChild.children[row].children[col];
+  document.querySelector('.table__puzzle').firstChild.children[row].children[
+    col
+  ];
   currentCell = cell;
   let elem = event.target;
   while (elem.id === '') elem = elem.parentElement;
@@ -606,21 +598,31 @@ function clueClicked(event, direction) {
 
 /**
  * Update scores in the scoreboard.
- * @param {object} game Current game object
  */
-function updateScoreboard(game) {
+function updateScoreboard() {
   console.log('Hello from updateScoreboard.');
   const myUid = currentUser.uid;
   const oppUid = currentOpp.uid;
-  myScore.innerText = game.players[myUid].score;
-  oppScore.innerText = game.players[oppUid].score;
-  myName.classList.remove('fontRed', 'fontBlue');
-  myName.classList.add(game.players[myUid].bgColor.replace(/bgTrans/, 'font'));
-  oppName.classList.remove('fontRed', 'fontBlue');
-  oppName.classList.add(
-    game.players[oppUid].bgColor.replace(/bgTrans/, 'font')
-  );
-  if (game.nextTurn === myUid) {
+  document.querySelector('.score--me').innerText =
+    currentGame.players[myUid].score;
+  document.querySelector('.score--opponent').innerText =
+    currentGame.players[oppUid].score;
+  document.querySelector('.name--me').classList.remove('fontRed', 'fontBlue');
+  document
+    .querySelector('.name--me')
+    .classList.add(
+      currentGame.players[myUid].bgColor.replace(/bgTrans/, 'font')
+    );
+  document
+    .querySelector('.name--opponent')
+    .classList.remove('fontRed', 'fontBlue');
+  document
+    .querySelector('.name--opponent')
+    .classList.add(
+      currentGame.players[oppUid].bgColor.replace(/bgTrans/, 'font')
+    );
+  const scores = document.querySelector('.scores');
+  if (currentGame.nextTurn === myUid) {
     scores.children[0].classList.remove('bgColorTransWhite');
     scores.children[0].classList.add('bgColorTransGold');
     scores.children[2].classList.remove('bgColorTransGold');
@@ -639,8 +641,6 @@ function updateScoreboard(game) {
  */
 function undoEntry() {
   console.log('Hello from undoEntry.');
-  const game = getCurrentGameController();
-  const columns = game.puzzle.cols;
   if (currentCell) {
     let row = currentCell.parentElement.rowIndex;
     let col = currentCell.cellIndex;
@@ -668,10 +668,12 @@ function undoEntry() {
     currentCell.classList.remove('currCellHighlight');
     currentCell.classList.add('rangeHighlight');
     for (const idx of idxArrayRev) {
-      if (game.puzzle.grid[idx].status !== 'locked') {
+      if (currentGame.puzzle.grid[idx].status !== 'locked') {
         row = Math.floor(idx / columns);
         col = idx - row * columns;
-        currentCell = puzTable.children[0].children[row].children[col];
+        currentCell =
+          document.querySelector('.table__puzzle').children[0].children[row]
+            .children[col];
         currentCell.classList.remove('rangeHighlight');
         currentCell.classList.add('currCellHighlight');
         break;
@@ -686,22 +688,20 @@ function undoEntry() {
  */
 function getCellDim() {
   console.log('Hello from getCellDim.');
-  const puzTableWidth = puzTable.offsetWidth;
-  return puzTableWidth / getColumnsController();
+  const puzTableWidth = document.querySelector('.table__puzzle').offsetWidth;
+  return puzTableWidth / columns;
 }
 
 /** Clears letters when user changes to a different clue */
 function clearLetters() {
   console.log('Hello from clearLetters.');
   const idxArray = getIdxArrayController();
-  const game = getCurrentGameController();
-  const columns = getColumnsController();
   for (const index of idxArray) {
-    if (game.puzzle.grid[index].status === 'locked') continue;
-    game.puzzle.grid[index].guess = '';
+    if (currentGame.puzzle.grid[index].status === 'locked') continue;
+    currentGame.puzzle.grid[index].guess = '';
     const row = Math.floor(index / columns);
     const col = index - row * columns;
-    puzTable.firstChild.children[row].children[
+    document.querySelector('.table__puzzle').firstChild.children[row].children[
       col
     ].firstChild.firstChild.innerText = '';
   }
@@ -714,29 +714,32 @@ function clearLetters() {
  * @param {Object} cell Cell the user clicked
  */
 function selectBlock(direction, cell) {
-  const game = getCurrentGameController();
-  const columns = getColumnsController();
-  const row = cell.parentElement.rowIndex;
-  const col = cell.cellIndex;
-  const rowOffset = row * columns;
-  const index = row * columns + col;
+  // const row = cell.parentElement.rowIndex;
+  // const col = cell.cellIndex;
+  // const rowOffset = row * columns;
+  // const index = row * columns + col;
+  const puzTable = document.querySelector('.table__puzzle');
 
   clearHighlights();
   const idxArray = getWordBlock(cell, direction);
   setIdxArrayController(idxArray);
   const clue = document.getElementById(
-    direction + game.puzzle.grid[idxArray[0]].clueNum
+    direction + currentGame.puzzle.grid[idxArray[0]].clueNum
   );
   // for when clue lists are showing (landscape orientation)
   clue.classList.add('rangeHighlight', 'cluePop');
-  const clueList = direction === 'across' ? acrossClues : downClues;
+  const clueList =
+    direction === 'across'
+      ? document.querySelector('.clues--across')
+      : document.querySelector('.clues--down');
   clueList.scrollBy({
     top: clue.offsetTop - 100 - clueList.scrollTop,
     left: 0,
     behavior: 'smooth',
   });
   // for when only a single clue is showing (portrait orientation)
-  singleClue.innerText = clue.children[1].textContent;
+  document.querySelector('.clue--single').innerText =
+    clue.children[1].textContent;
 
   const highlighter = document.createElement('div');
   highlighter.id = 'highlighter';
@@ -780,25 +783,29 @@ function getWordBlock(cell, direction) {
   console.log('Hello from getWordBlock.');
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
-  const game = getCurrentGameController();
-  const columns = getColumnsController();
   let index = row * columns + col;
   const indexArray = [];
   if (direction === 'across') {
-    while (index > row * columns && !game.puzzle.grid[index - 1].black) {
+    while (index > row * columns && !currentGame.puzzle.grid[index - 1].black) {
       index--;
     }
-    while (index < (row + 1) * columns && !game.puzzle.grid[index].black) {
+    while (
+      index < (row + 1) * columns &&
+      !currentGame.puzzle.grid[index].black
+    ) {
       indexArray.push(index);
       index++;
     }
   } else {
-    while (index >= columns && !game.puzzle.grid[index - columns].black) {
+    while (
+      index >= columns &&
+      !currentGame.puzzle.grid[index - columns].black
+    ) {
       index -= columns;
     }
     while (
-      index < game.puzzle.rows * columns &&
-      !game.puzzle.grid[index].black
+      index < currentGame.puzzle.rows * columns &&
+      !currentGame.puzzle.grid[index].black
     ) {
       indexArray.push(index);
       index += columns;
@@ -812,8 +819,8 @@ function clearHighlights() {
   console.log('Hello from clearHighlights.');
   const highlighter = document.getElementById('highlighter');
   if (highlighter) highlighter.remove();
-  // console.log(puzTable.children[0]);
-  const rowArray = puzTable.children[0].children;
+  const rowArray =
+    document.querySelector('.table__puzzle').children[0].children;
 
   for (const row of rowArray) {
     for (const cell of row.children) {
@@ -823,10 +830,10 @@ function clearHighlights() {
       }
     }
   }
-  for (const clue of acrossClues.children) {
+  for (const clue of document.querySelector('.clues--across').children) {
     clue.classList.remove('rangeHighlight', 'cluePop');
   }
-  for (const clue of downClues.children) {
+  for (const clue of document.querySelector('.clues--down').children) {
     clue.classList.remove('rangeHighlight', 'cluePop');
   }
 }
@@ -836,7 +843,7 @@ function clearHighlights() {
 //  * @param {Object} game Previous game versus the opponent
 //  * @param {string} result Message about who won
 //  */
-// function showReplayDialog(game, result) {
+// function showReplayDialog(result) {
 //   console.log('Hello from showReplayDialog.');
 //   winMessage.innerText = result;
 //   dialogList.classList.add('displayNone');
@@ -845,11 +852,11 @@ function clearHighlights() {
 //   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
 //   replayButton.classList.remove('displayNone');
 //   replayButton.addEventListener('click', replayOpponent);
-//   if (game.difficulty === 'medium') {
+//   if (currentGame.difficulty === 'medium') {
 //     radioEasy.removeAttribute('checked');
 //     radioHard.removeAttribute('checked');
 //     radioMed.setAttribute('checked', true);
-//   } else if (game.difficulty === 'hard') {
+//   } else if (currentGame.difficulty === 'hard') {
 //     radioEasy.removeAttribute('checked');
 //     radioMed.removeAttribute('checked');
 //     radioHard.setAttribute('checked', true);
@@ -863,7 +870,6 @@ function clearHighlights() {
 
 // /** Load game based on user selection */
 // function replayOpponent() {
-//   const game = getCurrentGameController();
 //   let difficulty = radioMed.parentElement.classList.contains('is-checked')
 //     ? 'medium'
 //     : 'easy';
@@ -876,7 +882,7 @@ function clearHighlights() {
 //   // load puzzle based on uids of players
 //   const startGameParameters = {};
 //   startGameParameters.difficulty = difficulty;
-//   startGameParameters.players = game.players;
+//   startGameParameters.players = currentGame.players;
 //   startNewGameController(startGameParameters);
 // }
 
@@ -889,9 +895,7 @@ function clearHighlights() {
 function enterLetter(event) {
   console.log('Hello from enterLetter.');
   const idxArray = getIdxArrayController();
-  const game = getCurrentGameController();
-  const columns = getColumnsController();
-  if (!kbContainer.classList.contains('displayNone')) {
+  if (document.querySelector('.container__keyboard')) {
     if (event.keyCode === 13) {
       showActivity('.header__activity', 'Working...');
       playWordController();
@@ -902,7 +906,7 @@ function enterLetter(event) {
       letter = event.key;
     } else {
       let node = event.target;
-      while (!node.classList.contains('kbButton')) {
+      while (!node.classList.contains('button__keyboard')) {
         node = node.parentNode;
       }
       letter = node.children[0].firstChild.data.trim();
@@ -924,7 +928,7 @@ function enterLetter(event) {
       // console.log(idxArray);
       // console.log(localIdxArray);
 
-      if (game.puzzle.grid[index].status === 'locked') {
+      if (currentGame.puzzle.grid[index].status === 'locked') {
         // alert('Sorry, that square is locked by a previous answer');
         return;
       }
@@ -938,10 +942,12 @@ function enterLetter(event) {
       currentCell.classList.remove('currCellHighlight');
       currentCell.classList.add('rangeHighlight');
       for (const idx of localIdxArray) {
-        if (game.puzzle.grid[idx].status !== 'locked') {
+        if (currentGame.puzzle.grid[idx].status !== 'locked') {
           row = Math.floor(idx / columns);
           col = idx - row * columns;
-          currentCell = puzTable.children[0].children[row].children[col];
+          currentCell =
+            document.querySelector('.table__puzzle').children[0].children[row]
+              .children[col];
           currentCell.classList.remove('rangeHighlight');
           currentCell.classList.add('currCellHighlight');
           break;
@@ -954,6 +960,7 @@ function enterLetter(event) {
 /** Resizes puzzle based on available space */
 function resizePuzzle() {
   console.log('Hello from resizePuzzle.');
+  const puzTable = document.querySelector('.table__puzzle');
   if (puzTable.children.length === 0) return;
   // console.log(puzTable.children[0]);
   const cellDim = getCellDim();
@@ -974,7 +981,7 @@ function resizePuzzle() {
         <path d='M ${halfCell} ${halfCell}'/>
         <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black' fill='transparent'/>
         </svg>`;
-      const clueNumbers = cell.getElementsByClassName('clueNumber');
+      const clueNumbers = cell.querySelector('.clue-number');
       if (clueNumbers.length === 1) {
         // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 24)) + 1.5; // 30 deg each direction
         // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 24)) + 1.5; // from 135deg
@@ -991,7 +998,7 @@ function resizePuzzle() {
     }
   }
   const puzHeight = puzTable.offsetHeight;
-  document.getElementById('svgGrid').remove();
+  document.querySelector('.grid__svg').remove();
   puzTable.appendChild(generateGridElement(puzWidth, puzHeight));
   if (currentCell) {
     const direction = getAcrossWordController() ? 'across' : 'down';
@@ -999,16 +1006,16 @@ function resizePuzzle() {
   }
 }
 
-// document.addEventListener('keyup', enterLetter);
-// window.addEventListener('resize', resizePuzzle);
-// const keyList = kbContainer.getElementsByClassName('kbButton');
-// for (const node of keyList) {
-//   node.addEventListener('click', enterLetter);
-// }
+document.addEventListener('keyup', enterLetter);
+window.addEventListener('resize', resizePuzzle);
+const keyList = document.getElementsByClassName('button__keyboard');
+for (const node of keyList) {
+  node.addEventListener('click', enterLetter);
+}
 // document.getElementById('enter').addEventListener('click', () => {
 //   headerSpinner.classList.add('is-active');
 //   headerMessage.innerText = 'Working...';
 //   playWordController();
 // });
 
-export { showPuzzleView, animateScoringView, clearPuzzle };
+export { showPuzzle, animateScoringView, clearPuzzle };
