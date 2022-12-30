@@ -178,13 +178,6 @@
   margin: 10px;
 }
 
-#svgGrid {
-  z-index: 2;
-  position: absolute;
-  background-color: transparent;
-  pointer-events: none;
-}
-
 #friendsLabel:after {
   background-color: lightgray;
 }
@@ -250,14 +243,6 @@
   z-index: 3;
   position: absolute;
   box-sizing: content-box;
-}
-
-.bgTransRed {
-  background-color: rgba(255, 0, 0, 0.5);
-}
-
-.bgTransBlue {
-  background-color: rgba(0, 0, 255, 0.5);
 }
 
 .fontRed {

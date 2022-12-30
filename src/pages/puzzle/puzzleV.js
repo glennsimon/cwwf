@@ -17,6 +17,7 @@ import concedeHtml from '../../pageFrags/concede/concede.html';
 import { showActivity } from '../../pageFrags/activity/activity.js';
 import puzzleHtml from './puzzle.html';
 import './puzzle.css';
+import '../../pageFrags/scores/scores.css';
 
 //#region HTML element constants
 const abandonDialog = document.getElementById('abandonDialog');
@@ -98,7 +99,11 @@ function showPuzzle() {
         letterDiv.classList.add('margin--auto');
         if (squareData.status === 'locked') {
           cell.classList.remove('transparent');
-          cell.classList.add(squareData.bgColor);
+          let bgColor = squareData.bgColor;
+          if (bgColor === 'bgTransRed') bgColor = 'bg-color__red--translucent';
+          if (bgColor === 'bgTransBlue')
+            bgColor = 'bg-color__blue--translucent';
+          cell.classList.add(bgColor);
         }
         const guess = squareData.guessArray
           ? squareData.guessArray[squareData.guessArray.length - 1]
@@ -116,7 +121,7 @@ function showPuzzle() {
           const halfCell = cellDim / 2;
           const radius = halfCell - 1.5;
           let svgHtml = `\
-<svg class='posAbsolute upperLeft'>
+<svg class='circle'>
   <path d='M ${halfCell} ${halfCell}'/>
   <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black'
     fill='transparent' stroke-width='0.5'/>
@@ -128,7 +133,7 @@ function showPuzzle() {
             let dimA = radius * 0.03407 + 1.5;
             let dimB = radius * 0.74118 + 1.5;
             svgHtml = `\
-<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
+<svg height='${cellDim}' width='${cellDim}' class='circle'>
   <path d='M ${dimA} ${dimB} A ${radius} ${radius} 0 1 0 ${halfCell} 1.5'
     stroke='black' fill='transparent' stroke-width='0.5'/>
 </svg>`;
@@ -155,10 +160,10 @@ function showPuzzle() {
     const clueRef = parsedClue[0] + '.';
     const clueText = parsedClue.slice(1).join('.');
     const clueDiv = document.createElement('div');
-    clueDiv.classList.add('displayFlex', 'cursor--pointer');
+    clueDiv.classList.add('clue');
     clueDiv.id = 'across' + clueNumber;
     if (currentGame.puzzle.completedClues.across.includes(clueNumber)) {
-      clueDiv.classList.add('colorDarkGray');
+      clueDiv.classList.add('color__dark-gray');
     }
 
     const numDiv = document.createElement('div');
@@ -188,10 +193,10 @@ function showPuzzle() {
     const clueRef = parsedClue[0] + '.';
     const clueText = parsedClue.slice(1).join('.');
     const clueDiv = document.createElement('div');
-    clueDiv.classList.add('displayFlex', 'cursor--pointer');
+    clueDiv.classList.add('clue');
     clueDiv.id = 'down' + clueNumber;
     if (currentGame.puzzle.completedClues.down.includes(clueNumber)) {
-      clueDiv.classList.add('colorDarkGray');
+      clueDiv.classList.add('color__dark-gray');
     }
 
     const numDiv = document.createElement('div');
@@ -331,6 +336,7 @@ function animateScoringView(scoreObj) {
   document.querySelector('.header__activity').innerHTML = '';
   const puzTable = document.querySelector('.table__puzzle');
   if (scoreObj.newGame || scoreObj.abandoned) return;
+  const scores = document.querySelector('.scores');
   const myUid = currentUser.uid;
   const scoreElem =
     myUid === scoreObj.playerUid ? scores.children[0] : scores.children[2];
@@ -607,31 +613,30 @@ function updateScoreboard() {
     currentGame.players[myUid].score;
   document.querySelector('.score--opponent').innerText =
     currentGame.players[oppUid].score;
-  document.querySelector('.name--me').classList.remove('fontRed', 'fontBlue');
+  // TODO: Below is way more complex than it needs to be. Fix later.
   document
     .querySelector('.name--me')
-    .classList.add(
-      currentGame.players[myUid].bgColor.replace(/bgTrans/, 'font')
-    );
+    .classList.remove('color__red', 'color__blue');
+  let fontColor = currentGame.players[myUid].bgColor;
+  fontColor = fontColor.match(/blue/i) ? 'color__blue' : 'color__red';
+  document.querySelector('.name--me').classList.add(fontColor);
   document
     .querySelector('.name--opponent')
-    .classList.remove('fontRed', 'fontBlue');
-  document
-    .querySelector('.name--opponent')
-    .classList.add(
-      currentGame.players[oppUid].bgColor.replace(/bgTrans/, 'font')
-    );
+    .classList.remove('color__red', 'color__blue');
+  fontColor = currentGame.players[oppUid].bgColor;
+  fontColor = fontColor.match(/blue/i) ? 'color__blue' : 'color__red';
+  document.querySelector('.name--opponent').classList.add(fontColor);
   const scores = document.querySelector('.scores');
   if (currentGame.nextTurn === myUid) {
-    scores.children[0].classList.remove('bgColorTransWhite');
-    scores.children[0].classList.add('bgColorTransGold');
-    scores.children[2].classList.remove('bgColorTransGold');
-    scores.children[2].classList.add('bgColorTransWhite');
+    scores.children[0].classList.remove('bg-color__white--translucent');
+    scores.children[0].classList.add('bg-color__gold--translucent');
+    scores.children[2].classList.remove('bg-color__gold--translucent');
+    scores.children[2].classList.add('bg-color__white--translucent');
   } else {
-    scores.children[0].classList.remove('bgColorTransGold');
-    scores.children[0].classList.add('bgColorTransWhite');
-    scores.children[2].classList.remove('bgColorTransWhite');
-    scores.children[2].classList.add('bgColorTransGold');
+    scores.children[0].classList.remove('bg-color__gold--translucent');
+    scores.children[0].classList.add('bg-color__white--translucent');
+    scores.children[2].classList.remove('bg-color__white--translucent');
+    scores.children[2].classList.add('bg-color__gold--translucent');
   }
 }
 

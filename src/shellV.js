@@ -80,10 +80,18 @@ function disableSettings() {
   document.querySelector('.overflow__settings').setAttribute('disabled', '');
 }
 
+function cleanShell() {
+  document.querySelector('.header__activity').innerHTML = '';
+  document.querySelector('.scores').innerHTML = '';
+  document.querySelector('.drawer__content').innerHTML = '';
+  document.querySelector('.drawer__concede').innerHTML = '';
+}
+
 export {
   closeDrawer,
   enableGames,
   enableSettings,
   disableSettings,
   disableGames,
+  cleanShell,
 };

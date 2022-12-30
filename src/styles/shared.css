@@ -102,3 +102,31 @@
 .transparent {
   background-color: transparent;
 }
+
+.color__blue {
+  color: blue;
+}
+
+.color__red {
+  color: red;
+}
+
+.color__dark-gray {
+  color: darkgray;
+}
+
+.bg-color__red--translucent {
+  background-color: rgba(255, 0, 0, 0.5);
+}
+
+.bg-color__blue--translucent {
+  background-color: rgba(0, 0, 255, 0.5);
+}
+
+.bg-color__white--translucent {
+  background-color: rgba(255, 255, 255, 0.33);
+}
+
+.bg-color__gold--translucent {
+  background-color: rgba(255, 215, 0, 0.87);
+}

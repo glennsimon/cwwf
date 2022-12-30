@@ -46,6 +46,12 @@
   background-color: transparent;
 }
 
+.circle {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 .container__clues {
   width: 100%;
 }
@@ -73,6 +79,11 @@
   justify-content: center;
 }
 
+.clue {
+  display: flex;
+  cursor: pointer;
+}
+
 .container--clue-lists {
   display: none;
 }
@@ -88,9 +99,10 @@
 }
 
 .container__keyboard {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   height: 15vh;
-  flex-direction: column;
   user-select: none;
 }
 
@@ -120,9 +132,19 @@
     0 1px 5px 0 rgba(0, 0, 0, 0.12);
 }
 
-.button_keyboard--letter {
+.button__keyboard--letter {
   width: 9%;
   background-color: white;
+}
+
+.button__keyboard--backspace {
+  width: 9%;
+  background-color: rgba(255, 64, 129, 0.6);
+}
+
+.button__keyboard--enter {
+  width: 20%;
+  background-color: rgba(63, 81, 181, 0.6);
 }
 
 .keyboard__key {
@@ -154,7 +176,7 @@
     margin: auto;
   }
 
-  .clueNumber {
+  .clue-number {
     font-size: 1.4vh;
     line-height: 1.4vh;
   }
@@ -186,7 +208,7 @@
     font-weight: bold;
   }
 
-  .clueNumber {
+  .clue-number {
     font-size: 0.8vw;
     line-height: 0.8vw;
   }
@@ -227,13 +249,29 @@
   }
 }
 
+@media screen and (min-aspect-ratio: 3/2) {
+  .container__clues {
+    height: 70%;
+    width: 50vw;
+  }
+
+  .container__keyboard {
+    height: 25%;
+    width: 50vw;
+  }
+
+  .container__app {
+    flex-direction: column;
+  }
+}
+
 @media screen and (min-aspect-ratio: 2/1) {
   .square {
     font-size: 1.1vw;
     line-height: 1.1vh;
   }
 
-  .clueNumber {
+  .clue-number {
     font-size: 0.62vw;
     line-height: 0.62vw;
   }

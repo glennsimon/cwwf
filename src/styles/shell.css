@@ -24,7 +24,6 @@ body {
 }
 
 .container__app {
-  align-content: flex-start;
   flex-wrap: wrap;
   height: 100%;
   position: absolute;
@@ -272,17 +271,6 @@ select {
   background-color: white;
   text-align: center;
 }
-
-*/
-
-/* .circle {
-  border: 1px solid black;
-  border-radius: 50%;
-  width: 100%;
-  height: 100%;
-} */
-
-/*
 
 .upperLeft {
   top: 0;

@@ -58,7 +58,7 @@ async function sendInvitation() {
   const myUid = currentUser.uid;
   gameStartParameters.players = {};
   gameStartParameters.players[myUid] = {};
-  gameStartParameters.players[myUid].bgColor = 'bgTransRed';
+  gameStartParameters.players[myUid].bgColor = 'bg-color__red--translucent';
   gameStartParameters.viewableBy = [];
   gameStartParameters.viewableBy.push(myUid);
   // opponent - assume never signed in
@@ -66,7 +66,7 @@ async function sendInvitation() {
   const pendUid = await initPendingPlayer({ firstName: oppName });
   console.log('pendUid: ', pendUid);
   gameStartParameters.players[pendUid] = {};
-  gameStartParameters.players[pendUid].bgColor = 'bgTransBlue';
+  gameStartParameters.players[pendUid].bgColor = 'bg-color__blue--translucent';
   gameStartParameters.viewableBy.push(pendUid);
   // for first game, default to 'easy' game
   gameStartParameters.difficulty = 'easy';

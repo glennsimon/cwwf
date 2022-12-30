@@ -6,6 +6,7 @@ import { showActivity } from '../../pageFrags/activity/activity';
 import { route } from '../../router';
 import { showGameStartDialog } from '../../pageFrags/dialogs/dialogsV';
 import { fetchPuzzle } from '../puzzle/puzzleC';
+import { cleanShell } from '../../shellV';
 
 const container__app = document.querySelector('.container__app');
 
@@ -44,6 +45,7 @@ function loadGame(event) {
  */
 async function loadGames(myGames, userData) {
   console.log('Hello from loadGames.');
+  cleanShell();
   container__app.innerHTML = gamesHtml;
   document
     .querySelector('.button__games--start')

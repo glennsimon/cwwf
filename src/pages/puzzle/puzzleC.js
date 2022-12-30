@@ -109,6 +109,7 @@ function subscribeToGame(gameId) {
     async (gameSnap) => {
       const prevGameId = currentGameId;
       currentGame = gameSnap.data();
+      // if (currentGame.)
       if (!currentGame) return;
       currentGameId = gameId;
       idxArray = [];

@@ -496,7 +496,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
       const player = uid;
-      const bgColor = game.players[player].bgColor.match(/blue/i)
+      let bgColor = game.players[player].bgColor.match(/blue/i)
         ? 'rgba(0, 0, 255, 0.5)'
         : 'rgba(255, 0, 0, 0.5)';
       // console.log('answerObj: ', answerObj);
@@ -557,7 +557,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
             //   scoreCell(game, direction, idxArray[index])
             // );
             game.emptySquares--;
-            gridElement.bgColor = game.players[player].bgColor;
+            gridElement.bgColor = bgColor;
             gridElement.status = 'locked';
           }
         } else {
@@ -712,7 +712,10 @@ exports.abandonGame2 = functions.https.onCall(async (abandonObj, context) => {
           game.puzzle.grid[index].guessArray = [answers[index]];
         }
         game.puzzle.grid[index].status = 'locked';
-        game.puzzle.grid[index].bgColor = game.players[oppUid].bgColor;
+        let bgColor = game.players[oppUid].bgColor;
+        if (bgColor === 'bgTransRed') bgColor = 'bg-color__red--translucent';
+        if (bgColor === 'bgTransBlue') bgColor = 'bg-color__blue--translucent';
+        game.puzzle.grid[index].bgColor = bgColor;
         game.players[oppUid].score += scoreValues[letter];
       }
       game.status = 'finished';
