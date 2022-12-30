@@ -11,7 +11,11 @@ import {
 } from 'firebase/firestore';
 import { currentUser } from '../signin/signinC.js';
 import { showActivity } from '../../pageFrags/activity/activity.js';
-import { currentOpp, subscribeToGame } from '../puzzle/puzzleC.js';
+import {
+  currentOpp,
+  startNewGame,
+  subscribeToGame,
+} from '../puzzle/puzzleC.js';
 // import { httpsCallable } from 'firebase/functions';
 // import {
 //   getDownloadURL,
@@ -360,6 +364,17 @@ async function populateMyGames(uid) {
   });
 }
 
+/** Load game based on user selection */
+function replayOpponent(game, difficulty) {
+  showActivity('.header__activity', 'Getting new game...');
+  // load puzzle based on uids of players
+  const gameStartParameters = {};
+  gameStartParameters.difficulty = difficulty;
+  gameStartParameters.players = game.players;
+  gameStartParameters.viewableBy = Object.keys(game.players);
+  startNewGame(gameStartParameters);
+}
+
 // /**
 //  * Checks if array of cells has a letter in each square
 //  * @return {boolean} true if word is incomplete, false otherwise
@@ -389,24 +404,6 @@ async function populateMyGames(uid) {
 //   } else {
 //     currentGame.puzzle.grid[index].guessArray = [letter];
 //   }
-// }
-
-// /**
-//  * Update the controller currentGame variable and save the game.
-//  * @param {object} append Optional Object to append to game as game.append
-//  */
-// function savePuzzleController(append) {
-//   console.log('Hello from savePuzzleController.');
-//   if (append) {
-//     appendObject(currentGame, append);
-//   }
-//   setDoc(doc(db, `games/${currentGameId}`), currentGame, { merge: true }).catch(
-//     (err) => {
-//       console.log('Error code: ', err.code);
-//       console.log('Error message: ', err.message);
-//       console.log('Error details: ', err.details);
-//     }
-//   );
 // }
 
 // /**
@@ -502,6 +499,7 @@ async function populateMyGames(uid) {
 
 export {
   populateMyGames,
+  replayOpponent,
   // populateMyFriends,
   // populateAllUsers,
   // currentGame,
@@ -515,7 +513,6 @@ export {
 //   getCurrentOppController,
 //   populateAllUsersController,
 //   getAllGamesController,
-//   savePuzzleController,
 //   playWordController,
 //   getColumnsController,
 //   getIdxArrayController,

@@ -1,8 +1,7 @@
 .splash {
   width: 100vw;
-  align-content: center;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
 }
 
 .splash__image {

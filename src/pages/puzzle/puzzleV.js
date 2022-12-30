@@ -2,10 +2,10 @@ import {
   populateAllUsersController,
   playWordController,
   enterLetterController,
-  abandonCurrentGameController,
   populateFriendsController,
   columns,
   currentGame,
+  savePuzzle,
 } from './puzzleC.js';
 import { route } from '../../router.js';
 import { currentUser } from '../signin/signinC.js';
@@ -18,9 +18,13 @@ import { showActivity } from '../../pageFrags/activity/activity.js';
 import puzzleHtml from './puzzle.html';
 import './puzzle.css';
 import '../../pageFrags/scores/scores.css';
+import {
+  showConcedeDialog,
+  showReplayDialog,
+} from '../../pageFrags/dialogs/dialogsV.js';
 
 //#region HTML element constants
-const abandonDialog = document.getElementById('abandonDialog');
+// let abandonDialog = document.getElementById('abandonDialog');
 //#endregion
 
 let currentCell = null;
@@ -256,7 +260,7 @@ function showPuzzle() {
     }
     if (!currentGame.hideReplay) {
       showReplayDialog(currentGame, result);
-      savePuzzleController({ hideReplay: true });
+      savePuzzle({ hideReplay: true });
     }
     document.querySelector('.drawer__concede').innerHTML = '';
   } else {
@@ -271,29 +275,10 @@ function showPuzzle() {
 
 function addConcedeHtml() {
   document.querySelector('.drawer__concede').innerHTML = concedeHtml;
-  /**
-   * Open the abandonDialog, giving the user one more chance
-   * to decide if they want to abandon the game.
-   */
+  // Give the user one more chance to decide if they want to abandon the game.
   document.querySelector('.button__concede').addEventListener('click', () => {
+    showConcedeDialog();
     closeDrawer();
-    abandonDialog.showModal();
-    abandonDialog.querySelector('.close').addEventListener('click', () => {
-      abandonDialog.close();
-    });
-    document
-      .querySelector('.dialog__button--yes')
-      .addEventListener('click', () => {
-        showActivity('.header__activity', 'Working on it...');
-        document.querySelector('.drawer__concede').innerHTML = '';
-        abandonCurrentGameController();
-        abandonDialog.close();
-      });
-    document
-      .querySelector('.dialog__button--no')
-      .addEventListener('click', () => {
-        abandonDialog.close();
-      });
   });
 }
 
@@ -842,54 +827,6 @@ function clearHighlights() {
     clue.classList.remove('rangeHighlight', 'cluePop');
   }
 }
-
-// /**
-//  * Show dialog for user to decide if they want to replay the opponent
-//  * @param {Object} game Previous game versus the opponent
-//  * @param {string} result Message about who won
-//  */
-// function showReplayDialog(result) {
-//   console.log('Hello from showReplayDialog.');
-//   winMessage.innerText = result;
-//   dialogList.classList.add('displayNone');
-//   gamesDialog.querySelector('footer').classList.add('displayNone');
-//   gamesDialog.classList.remove('maxHeight85pct');
-//   gamesDialog.children[0].classList.remove('padding0', 'height100pct');
-//   replayButton.classList.remove('displayNone');
-//   replayButton.addEventListener('click', replayOpponent);
-//   if (currentGame.difficulty === 'medium') {
-//     radioEasy.removeAttribute('checked');
-//     radioHard.removeAttribute('checked');
-//     radioMed.setAttribute('checked', true);
-//   } else if (currentGame.difficulty === 'hard') {
-//     radioEasy.removeAttribute('checked');
-//     radioMed.removeAttribute('checked');
-//     radioHard.setAttribute('checked', true);
-//   } else {
-//     radioMed.removeAttribute('checked');
-//     radioHard.removeAttribute('checked');
-//     radioEasy.setAttribute('checked', true);
-//   }
-//   if (!gamesDialog.open) gamesDialog.showModal();
-// }
-
-// /** Load game based on user selection */
-// function replayOpponent() {
-//   let difficulty = radioMed.parentElement.classList.contains('is-checked')
-//     ? 'medium'
-//     : 'easy';
-//   difficulty = radioHard.parentElement.classList.contains('is-checked')
-//     ? 'hard'
-//     : difficulty;
-//   closeGamesDialog();
-//   headerSpinner.classList.add('is-active');
-//   headerMessage.innerText = 'Getting new game...';
-//   // load puzzle based on uids of players
-//   const startGameParameters = {};
-//   startGameParameters.difficulty = difficulty;
-//   startGameParameters.players = currentGame.players;
-//   startNewGameController(startGameParameters);
-// }
 
 /**
  * Adds a letter to the puzzle from physical or virtual keyboard event and

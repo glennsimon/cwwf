@@ -24,6 +24,7 @@ body {
 }
 
 .container__app {
+  display: flex;
   flex-wrap: wrap;
   height: 100%;
   position: absolute;

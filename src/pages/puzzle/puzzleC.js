@@ -434,8 +434,8 @@ function enterLetterController(letter, index) {
  * Update the controller currentGame variable and save the game.
  * @param {object} append Optional Object to append to game as game.append
  */
-function savePuzzleController(append) {
-  console.log('Hello from savePuzzleController.');
+function savePuzzle(append) {
+  console.log('Hello from savePuzzle.');
   if (append) {
     appendObject(currentGame, append);
   }
@@ -460,13 +460,13 @@ function appendObject(base, append) {
   });
 }
 
-function abandonCurrentGameController() {
-  const abandonObj = {};
-  abandonObj.gameId = currentGameId;
-  abandonObj.opponentUid = currentOpp.uid;
-  abandonObj.playerUid = currentUser.uid;
+function concedeCurrentGame() {
+  const concedeObj = {};
+  concedeObj.gameId = currentGameId;
+  concedeObj.opponentUid = currentOpp.uid;
+  concedeObj.playerUid = currentUser.uid;
   const abandonGame2 = httpsCallable(functions, 'abandonGame2');
-  abandonGame2(abandonObj).catch((err) => {
+  abandonGame2(concedeObj).catch((err) => {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
     console.log('Error details: ', err.details);
@@ -480,8 +480,8 @@ export {
   startNewGame,
   subscribeToGame,
   fetchPuzzle,
-  savePuzzleController,
+  savePuzzle,
   playWordController,
   enterLetterController,
-  abandonCurrentGameController,
+  concedeCurrentGame,
 };

@@ -32,7 +32,14 @@
   color: red;
 }
 
+.dialog__buttons--concede {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+
 .dialog__radios--difficulty {
+  width: 100%;
   margin: 10px;
   display: flex;
   flex-direction: row;

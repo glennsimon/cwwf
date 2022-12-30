@@ -5,6 +5,9 @@ import dialogAddBlockHeaderHtml from './dialogAddBlockHeader.html';
 import dialogAddBlockFooterHtml from './dialogAddBlockFooter.html';
 import dialogAddBlockListItemHtml from './dialogAddBlockListItem.html';
 import dialogInviteHtml from './dialogInvite.html';
+import dialogAbandonHtml from './dialogAbandon.html';
+import dialogGameOverHtml from './dialogGameOver.html';
+import dialogReplayHtml from './dialogReplay.html';
 import './dialogs.css';
 // import { myFriends, populateAllUsers } from '../../pages/games/gamesC';
 import {
@@ -15,7 +18,8 @@ import {
   updateMyFriends,
 } from '../../pages/signin/signinC';
 import { showActivity } from '../activity/activity';
-import { startNewGame } from '../../pages/puzzle/puzzleC';
+import { concedeCurrentGame, startNewGame } from '../../pages/puzzle/puzzleC';
+import { replayOpponent } from '../../pages/games/gamesC';
 
 let adjustedFriendsObject = {};
 
@@ -47,6 +51,66 @@ function showInviteDialog() {
     .addEventListener('click', () => {
       dialogElement.close();
       sendInvitation();
+    });
+}
+
+/**
+ * Opens concede dialog
+ */
+function showConcedeDialog() {
+  resetDialog();
+  const dialogElement = document.querySelector('.dialog__shell');
+  const header = dialogElement.querySelector('.dialog__content--header');
+  header.innerHTML = dialogAbandonHtml;
+  header
+    .querySelector('.dialog__button--no')
+    .addEventListener('click', () => dialogElement.close());
+  header.querySelector('.dialog__button--yes').addEventListener('click', () => {
+    showActivity('.header__activity', 'Working...');
+    dialogElement.close();
+    concedeCurrentGame();
+  });
+  // const textFieldElements = dialogElement.querySelectorAll('.mdl-textfield');
+  // for (const elem of textFieldElements) componentHandler.upgradeElement(elem);
+  document.querySelector('.dialog--close').addEventListener('click', () => {
+    dialogElement.close();
+  });
+  dialogElement.showModal();
+}
+
+/**
+ * Show dialog for user to decide if they want to replay the opponent
+ * @param {Object} game Game that just ended vs. opponent
+ * @param {string} result Message about who won
+ */
+function showReplayDialog(game, result) {
+  resetDialog();
+  const dialogElement = document.querySelector('.dialog__shell');
+  const header = dialogElement.querySelector('.dialog__content--header');
+  header.innerHTML = dialogGameOverHtml;
+  header.innerHTML += dialogDifficultyHtml;
+  let difficulty = game.difficulty;
+  const radioButtons = document.querySelectorAll(
+    '.dialog__radios--difficulty label input'
+  );
+  for (const radioButton of radioButtons) {
+    if (difficulty === radioButton.value) radioButton.checked = true;
+  }
+  dialogElement.querySelector('.dialog__heading--big').innerText = result;
+  dialogElement.querySelector('.dialog__content--footer').innerHTML =
+    dialogReplayHtml;
+  dialogElement.showModal();
+  document.querySelector('.dialog--close').addEventListener('click', () => {
+    dialogElement.close();
+  });
+  document
+    .querySelector('.dialog__button--replay')
+    .addEventListener('click', (event) => {
+      for (const radioButton of radioButtons) {
+        if (radioButton.checked) difficulty = radioButton.value;
+      }
+      replayOpponent(game, difficulty);
+      dialogElement.close();
     });
 }
 
@@ -137,12 +201,44 @@ function showGameStartDialog() {
   document.querySelector('.dialog--close').addEventListener('click', () => {
     dialogElement.close();
   });
+  document.querySelector('.dialog__list').addEventListener('click', (event) => {
+    selectOpponent(event);
+    dialogElement.close();
+  });
   document
     .querySelector('.dialog__button--footer-1')
     .addEventListener('click', () => {
       dialogElement.close();
       showAddBlockDialog();
     });
+}
+
+function selectOpponent(event) {
+  let eventTarget = event.target;
+  while (eventTarget.nodeName.toLowerCase() !== 'li') {
+    eventTarget = eventTarget.parentElement;
+  }
+  const gameStartParameters = {};
+  const myUid = currentUser.uid;
+  gameStartParameters.players = {};
+  gameStartParameters.players[myUid] = {};
+  gameStartParameters.players[myUid].bgColor = 'bg-color__red--translucent';
+  gameStartParameters.viewableBy = [];
+  gameStartParameters.viewableBy.push(myUid);
+  const oppUid = eventTarget.id;
+  gameStartParameters.players[oppUid] = {};
+  gameStartParameters.players[oppUid].bgColor = 'bg-color__blue--translucent';
+  gameStartParameters.viewableBy.push(oppUid);
+  const radioButtons = document.querySelectorAll(
+    '.dialog__radios--difficulty label input'
+  );
+  for (const radioButton of radioButtons) {
+    if (radioButton.checked) {
+      gameStartParameters.difficulty = radioButton.value;
+      break;
+    }
+  }
+  startNewGame(gameStartParameters);
 }
 
 /**
@@ -334,4 +430,9 @@ function showAddBlockDialog() {
     .addEventListener('click', showInviteDialog);
 }
 
-export { showErrorDialog, showGameStartDialog };
+export {
+  showErrorDialog,
+  showGameStartDialog,
+  showConcedeDialog,
+  showReplayDialog,
+};
