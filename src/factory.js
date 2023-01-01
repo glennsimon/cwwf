@@ -43,7 +43,7 @@ function createElementFromHtml(html) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function shellHandler(urlString, htmlPath) {
-  if (auth.currentUser) {
+  if (currentUser) {
     route('/games');
   } else {
     route('/signin');
@@ -57,7 +57,11 @@ function shellHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function gamesHandler(urlString, htmlPath) {
-  populateMyGames(currentUser.uid);
+  if (currentUser && currentUser.uid) {
+    populateMyGames(currentUser.uid);
+    return;
+  }
+  route('/signin');
 }
 
 /**

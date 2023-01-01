@@ -27,14 +27,16 @@ function authChangeView(user) {
     name.textContent = user.prefName || user.displayName;
     avatar.src =
       user.prefAvatarUrl || user.photoURL || 'images/avatar_circle_black.png';
-    route('/games');
+    // TODO: should we change route here?
+    // route('/games');
   } else {
     document.querySelector('.button__auth').innerHTML =
       `sign in<span class='spacer--10px'></span>` +
       `<span class='material-icons'>login </span>`;
     name.textContent = 'N. E. Person';
     avatar.src = '../../images/avatar_circle_black.png';
-    route('/signin');
+    // TODO: should we change route here?
+    // route('/signin');
     activeGamesContainer.innerHTML = `You must sign in to see your active games`;
     pastGamesContainer.innerHTML = `You must sign in to see your completed games`;
     clearPuzzle();

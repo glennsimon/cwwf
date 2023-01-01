@@ -89,8 +89,8 @@ exports.authChange = functions.https.onCall(async (data, context) => {
       .doc(uid)
       .collection('private')
       .doc('data');
-    // User is signed in. Updates every time the user signs in, in case there
-    // are changes to photo or whatever.
+    // User is signed in. User data updates every time the user signs in,
+    // in case there are changes to photo or whatever.
     try {
       return db.runTransaction(async (tx) => {
         let publicData = (await tx.get(publicDataRef)).data();
@@ -119,7 +119,7 @@ exports.authChange = functions.https.onCall(async (data, context) => {
         );
       });
     } catch (error) {
-      functions.logger.error('addFriends transaction failure: ', error);
+      functions.logger.error('authChange transaction failure: ', error);
     }
   }
 });

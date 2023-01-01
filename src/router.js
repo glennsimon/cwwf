@@ -33,14 +33,12 @@ const routes = {
  * Calls an event handler based on the url.  Event handlers
  * are imported for each legitimate route defined in routes. `urlString` is a string
  * supplied by the calling function. This (route) funtion is responsible
- * for changing the url in the browser with the pushState call.
- * The pushState data object contains the urlString,
- * as it will be needed for the popState call on navigation.
+ * for changing the url in the browser with the replaceState call.
  * @param {string} urlString string containing the url to navigate to
  */
 function route(urlString) {
   handleLocation(urlString);
-  window.history.pushState({}, '{Chrome: 😍, Safari: 💩}', urlString);
+  window.history.replaceState({}, '{Chrome: 😍, Safari: 💩}', urlString);
 }
 
 /**
@@ -90,16 +88,16 @@ function checkRoute(urlString) {
   // return url.pathname.toLowerCase();
 }
 
-window.onpopstate = (event) => {
+window.history.onpopstate = (event) => {
   const urlString = event.target.location.href;
   if (urlString) route(urlString);
 };
 
 window.onload = () => {
-  if (!currentUser) {
-    route('/signin');
-    return;
-  }
+  // if (!currentUser) {
+  //   route('/signin');
+  //   return;
+  // }
   if (window.location.pathname === '/puzzle') {
     const gameId = window.location.search.split('=')[1];
     fetchPuzzle(gameId);

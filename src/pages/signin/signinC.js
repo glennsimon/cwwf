@@ -22,6 +22,7 @@ import {
 import { httpsCallable } from 'firebase/functions';
 import { populateMyGames } from '../games/gamesC.js';
 import { disableSettings, enableSettings } from '../../shellV.js';
+import { route } from '../../router.js';
 
 let myFriends = {};
 
@@ -76,15 +77,15 @@ onAuthStateChanged(auth, async (user) => {
   myFriends = {};
   try {
     const authChange = httpsCallable(functions, 'authChange');
-    let authChangeData = await authChange().data;
-    console.log('authChangeData: ', authChangeData);
-    // currentUser.uid = uid;
+    await authChange().data;
     await checkForPendingPlayer();
     authChangeView(currentUser);
     generateMessagingToken();
-    populateMyGames(uid);
+    // TODO: should below be here?  It will load games by default, regardless of location.pathname
+    // populateMyGames(uid);
     await populateMyFriends();
     enableSettings();
+    route(location.href);
   } catch (err) {
     console.log('Error code: ', err.code);
     console.log('Error message: ', err.message);
