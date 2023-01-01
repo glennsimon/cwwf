@@ -1,7 +1,7 @@
 import { route } from './router.js';
+import settingsHtml from './pages/settings/settings.html';
 import signinHtml from './pages/signin/signin.html';
 import splashHtml from './pageFrags/splash/splash.html';
-import settingsHtml from './pages/settings/settings.html';
 // import { uiStart } from './pages/signin/signin.js';
 import { auth, functions } from './firebase-init.js';
 import { authState, currentUser } from './pages/signin/signinC.js';
@@ -81,8 +81,8 @@ function puzzleHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function settingsHandler(urlString, htmlPath) {
-  if (auth.currentUser) {
-    // const uid = auth.currentUser.uid;
+  if (currentUser) {
+    // const uid = currentUser.uid;
     document.querySelector('.container__app').innerHTML = settingsHtml;
     showSettings();
   }
@@ -95,20 +95,10 @@ function settingsHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function signinHandler(urlString, htmlPath) {
-  if (auth.currentUser) {
-    const uid = auth.currentUser.uid;
-    signOut(auth)
-      .then(() => {
-        const statusUpdate = {};
-        statusUpdate.uid = uid;
-        statusUpdate.authState = authState('offline');
-        const userOffline2 = httpsCallable(functions, 'userOffline2');
-        userOffline2(statusUpdate);
-        authChangeView(null);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  if (currentUser) {
+    const uid = currentUser.uid;
+    route('/games');
+    return;
   }
   document.querySelector('.container__app').innerHTML = splashHtml;
   document.querySelector('.container__app').innerHTML += signinHtml;

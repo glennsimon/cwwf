@@ -37,8 +37,8 @@ const routes = {
  * @param {string} urlString string containing the url to navigate to
  */
 function route(urlString) {
-  handleLocation(urlString);
   window.history.replaceState({}, '{Chrome: 😍, Safari: 💩}', urlString);
+  handleLocation(urlString);
 }
 
 /**

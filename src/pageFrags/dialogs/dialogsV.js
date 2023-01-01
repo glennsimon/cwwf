@@ -8,6 +8,7 @@ import dialogInviteHtml from './dialogInvite.html';
 import dialogAbandonHtml from './dialogAbandon.html';
 import dialogGameOverHtml from './dialogGameOver.html';
 import dialogReplayHtml from './dialogReplay.html';
+import dialogErrorHtml from './dialogError.html';
 import './dialogs.css';
 // import { myFriends, populateAllUsers } from '../../pages/games/gamesC';
 import {
@@ -164,17 +165,20 @@ async function sendInvitation() {
 function showErrorDialog(message) {
   resetDialog();
   document.querySelector('.header__activity').innerHTML = '';
+  const dialogShell = document.querySelector('.dialog__shell');
+  const header = dialogShell.querySelector('.dialog__content--header');
+  header.innerHTML = dialogErrorHtml;
   document.querySelector('.dialog__error--message').innerText = message;
   document
     .querySelector('.dialog__button--ok')
     .addEventListener('click', () => {
       // document.querySelector('.mdl-dialog__content').innerHTML = '';
-      document.querySelector('.dialog__shell').close();
+      dialogShell.close();
     });
   document.querySelector('.dialog--close').addEventListener('click', () => {
-    document.querySelector('.dialog__shell').close();
+    dialogShell.close();
   });
-  document.querySelector('.dialog__shell').showModal();
+  dialogShell.showModal();
 }
 
 /**

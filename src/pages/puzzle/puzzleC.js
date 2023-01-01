@@ -92,7 +92,6 @@ function startNewGame(gameStartParameters) {
  * @param {string} gameId game id string
  */
 function subscribeToGame(gameId) {
-  if (!currentUser) route('/signin');
   console.log('Hello from subscribeToGame.');
   // Stop listening for previous puzzle changes
   gameUnsubscribe();
