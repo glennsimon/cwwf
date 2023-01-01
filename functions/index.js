@@ -320,86 +320,88 @@ exports.deleteFailedGame = functions.https.onCall(async (idObj, context) => {
 exports.startGame = functions.https.onCall((gameStartParameters, context) => {
   console.log('Hello from startGame.');
   const viewableBy = Object.keys(gameStartParameters.players);
-  return db
-    .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
-    .get()
-    .then((doc) => {
-      return JSON.parse(doc.data().dates);
-    })
-    .then((library) => {
-      let seedObject = {};
+  return (
+    db
+      .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
+      .get()
+      .then((doc) => {
+        return JSON.parse(doc.data().dates);
+      })
+      .then((library) => {
+        let seedObject = {};
 
-      const years = Object.getOwnPropertyNames(library);
-      const year = years[Math.floor(Math.random() * years.length)];
-      const months = Object.getOwnPropertyNames(library[year]);
-      const month = months[Math.floor(Math.random() * months.length)];
-      const days = library[year][month];
-      const day = days[Math.floor(Math.random() * days.length)];
+        const years = Object.getOwnPropertyNames(library);
+        const year = years[Math.floor(Math.random() * years.length)];
+        const months = Object.getOwnPropertyNames(library[year]);
+        const month = months[Math.floor(Math.random() * months.length)];
+        const days = library[year][month];
+        const day = days[Math.floor(Math.random() * days.length)];
 
-      seedObject.day = day;
-      seedObject.month = month;
-      seedObject.year = year;
-      return seedObject;
-    })
-    .then((seedObject) => {
-      // console.log(seedObject);
-      return newPuzzle(seedObject);
-    })
-    .then(async (gameFromWeb) => {
-      const batch = db.batch();
-      const gamesDocRef = db.collection('games').doc();
-      const gameListDataRef = db.doc(`gameListBuilder/${gamesDocRef.id}`);
-      const gameHiddenAnswersRef = db.doc(
-        `games/${gamesDocRef.id}/hidden/answers/`
-      );
+        seedObject.day = day;
+        seedObject.month = month;
+        seedObject.year = year;
+        return seedObject;
+      })
+      .then((seedObject) => {
+        // console.log(seedObject);
+        return newPuzzle(seedObject);
+      })
+      .then(async (gameFromWeb) => {
+        const batch = db.batch();
+        const gamesDocRef = db.collection('games').doc();
+        const gameListDataRef = db.doc(`gameListBuilder/${gamesDocRef.id}`);
+        const gameHiddenAnswersRef = db.doc(
+          `games/${gamesDocRef.id}/hidden/answers/`
+        );
 
-      const gameListData = {};
-      gameListData.players = gameStartParameters.players;
-      gameListData.viewableBy = viewableBy;
-      gameListData.start = Date.now();
-      gameListData.status = 'started';
-      gameListData.nextTurn = context.auth.uid;
-      batch.set(gameListDataRef, gameListData);
+        const gameListData = {};
+        gameListData.players = gameStartParameters.players;
+        gameListData.viewableBy = viewableBy;
+        gameListData.start = Date.now();
+        gameListData.status = 'started';
+        gameListData.nextTurn = context.auth.uid;
+        batch.set(gameListDataRef, gameListData);
 
-      const answersObj = {};
-      answersObj.answerKey = gameFromWeb.grid;
-      batch.set(gameHiddenAnswersRef, answersObj);
+        const answersObj = {};
+        answersObj.answerKey = gameFromWeb.grid;
+        batch.set(gameHiddenAnswersRef, answersObj);
 
-      const game = parsePuzzle(gameFromWeb);
-      game.players = gameStartParameters.players;
-      const players = Object.keys(game.players);
-      for (const player of players) {
-        game.players[player].score = 0;
-      }
-      game.difficulty = gameStartParameters.difficulty;
-      game.status = 'started';
-      game.winner = null;
-      game.nextTurn = context.auth.uid;
-      game.start = gameListData.start;
-      game.lastTurnCheckObj = { newGame: true };
+        const game = parsePuzzle(gameFromWeb);
+        game.players = gameStartParameters.players;
+        const players = Object.keys(game.players);
+        for (const player of players) {
+          game.players[player].score = 0;
+        }
+        game.difficulty = gameStartParameters.difficulty;
+        game.status = 'started';
+        game.winner = null;
+        game.nextTurn = context.auth.uid;
+        game.start = gameListData.start;
+        game.lastTurnCheckObj = { newGame: true };
 
-      // console.log('New parsed puzzle: ', game);
+        // console.log('New parsed puzzle: ', game);
 
-      const gameId = gamesDocRef.id;
-      batch.set(gamesDocRef, game);
+        const gameId = gamesDocRef.id;
+        batch.set(gamesDocRef, game);
 
-      await batch.commit();
-      return gameId;
-    })
-    .then(async (gameId) => {
-      const opponentUid =
-        context.auth.uid === viewableBy[0] ? viewableBy[1] : viewableBy[0];
-      const opponent = await db.doc(`users/${opponentUid}`).get();
-      const gameObj = {};
-      gameObj.opponent = opponent.data();
-      gameObj.gameId = gameId;
-      console.log('gameObj: ', gameObj);
-      return gameObj;
-    })
-    .catch((error) => {
-      functions.logger.error('Error fetching puzzle date: ', error);
-      // console.error('Error fetching puzzle date: ', error);
-    });
+        await batch.commit();
+        return gameId;
+      })
+      // .then(async (gameId) => {
+      //   const opponentUid =
+      //     context.auth.uid === viewableBy[0] ? viewableBy[1] : viewableBy[0];
+      //   const opponent = await db.doc(`users/${opponentUid}`).get();
+      //   const gameObj = {};
+      //   gameObj.opponent = opponent.data();
+      //   gameObj.gameId = gameId;
+      //   console.log('gameObj: ', gameObj);
+      //   return gameObj;
+      // })
+      .catch((error) => {
+        functions.logger.error('Error fetching puzzle date: ', error);
+        // console.error('Error fetching puzzle date: ', error);
+      })
+  );
 });
 
 /**

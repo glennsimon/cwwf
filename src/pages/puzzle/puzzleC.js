@@ -41,6 +41,7 @@ import {
 } from 'firebase/storage';
 import { showErrorDialog } from '../../pageFrags/dialogs/dialogsV.js';
 import { currentUser } from '../signin/signinC.js';
+import { route } from '../../router.js';
 
 let currentOpp = null;
 let userStatusDatabaseRef = null;
@@ -73,13 +74,10 @@ let myGamesUnsubscribe = () => {};
 function startNewGame(gameStartParameters) {
   console.log('Attempting to start a new game.');
   const startGame = httpsCallable(functions, 'startGame');
-  return startGame(gameStartParameters)
-    .then((gameObjData) => {
-      const gameObj = gameObjData.data;
-      currentOpp = gameObj.opponent;
-      currentGameId = gameObj.gameId;
-      subscribeToGame(currentGameId);
-      return currentGameId; // gameObjData.data.game;
+  startGame(gameStartParameters)
+    .then((gameIdObj) => {
+      const gameId = gameIdObj.data;
+      subscribeToGame(gameId);
     })
     .catch((err) => {
       console.log('Error code: ', err.code);
@@ -89,28 +87,35 @@ function startNewGame(gameStartParameters) {
 }
 
 /**
- * Unsubscribe from listening for changes on previous game, and start listening
- * for changes on gameObj game.
+ * Unsubscribe from listening for changes on previous game, and start
+ * listening for changes on gameObj game.
  * @param {string} gameId game id string
  */
 function subscribeToGame(gameId) {
   console.log('Hello from subscribeToGame.');
   // Stop listening for previous puzzle changes
-  try {
-    gameUnsubscribe();
-  } catch (error) {
-    console.log('INFO: Error thrown trying to unsubscribe from current game.');
-    // do nothing, already unsubscribed
-  }
+  gameUnsubscribe();
 
   // Start listening to current puzzle changes
   gameUnsubscribe = onSnapshot(
     doc(db, 'games', gameId),
     async (gameSnap) => {
+      if (!gameSnap.exists()) {
+        showErrorDialog(
+          `Either that game doesn't exist or you don't have permission ` +
+            `to open it.`
+        );
+        route('/games');
+        return;
+      }
       const prevGameId = currentGameId;
       currentGame = gameSnap.data();
-      // if (currentGame.)
-      if (!currentGame) return;
+      const playerUids = Object.keys(currentGame.players);
+      if (!currentOpp || !playerUids.includes(currentOpp.uid)) {
+        const opponentUid =
+          playerUids[0] === currentUser.uid ? playerUids[1] : playerUids[0];
+        currentOpp = (await getDoc(doc(db, `users/${opponentUid}`))).data();
+      }
       currentGameId = gameId;
       idxArray = [];
       columns = currentGame.puzzle.cols;
@@ -118,7 +123,8 @@ function subscribeToGame(gameId) {
       if (prevGameId === gameId) {
         await animateScoringView(currentGame.lastTurnCheckObj);
       }
-      showPuzzle(currentGame, currentOpp);
+      route(`/puzzle?gameId=${gameId}`);
+      // showPuzzle(currentGame, currentOpp);
     },
     (error) => {
       console.error('Error subscribing to puzzle: ', error);
@@ -325,24 +331,23 @@ function subscribeToGame(gameId) {
 /**
  * This function fetches an active puzzle based on the user's selection
  * and then calls functions to format and display the puzzle
- * @param {object} gameObj Object with gameId and opponentUid
+ * @param {string} gameId gameId string
  */
-async function fetchPuzzle(gameObj) {
+async function fetchPuzzle(gameId) {
   console.log('Hello from fetchPuzzle.');
-  currentOpp = (await getDoc(doc(db, `users/${gameObj.opponentUid}`))).data();
-  if (currentOpp) {
-    subscribeToGame(gameObj.gameId);
-  } else {
-    showErrorDialog(
-      'That game is not accessible. Try another or start a new one.'
-    );
-    const deleteFailedGame = httpsCallable(functions, 'deleteFailedGame');
-    await deleteFailedGame({ gameId: gameObj.gameId }).catch((err) => {
-      console.log('Error code: ', err.code);
-      console.log('Error message: ', err.message);
-      console.log('Error details: ', err.details);
-    });
-  }
+  // currentOpp = (await getDoc(doc(db, `users/${gameObj.opponentUid}`))).data();
+  // if (currentOpp) {
+  subscribeToGame(gameId);
+  // } else {
+  //   showErrorDialog(
+  //     'That game is not accessible. Try another or start a new one.'
+  //   );
+  //   const deleteFailedGame = httpsCallable(functions, 'deleteFailedGame');
+  //   await deleteFailedGame({ gameId: gameObj.gameId }).catch((err) => {
+  //     console.log('Error code: ', err.code);
+  //     console.log('Error message: ', err.message);
+  //     console.log('Error details: ', err.details);
+  //   });
 }
 
 /**

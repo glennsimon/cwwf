@@ -18,23 +18,19 @@ const container__app = document.querySelector('.container__app');
 function loadGame(event) {
   console.log('User selected a game to view.');
   let eventTarget = event.target;
-  while (!eventTarget.id) {
+  while (eventTarget.nodeName.toLowerCase() !== 'li') {
+    if (eventTarget.nodeName.toLowerCase() === 'ul') return;
     eventTarget = eventTarget.parentElement;
   }
-  if (eventTarget.nodeName.toLowerCase() === 'ul') return;
-  if (eventTarget.nodeName.toLowerCase() === 'li') {
-    eventTarget = eventTarget.children[0];
-  }
-  const gameObj = {};
-  if (eventTarget.nodeName.toLowerCase() === 'span') {
-    gameObj.opponentUid = eventTarget.id;
-    eventTarget = eventTarget.parentElement;
-  } else {
-    return;
-  }
-  gameObj.gameId = eventTarget.id;
+  // if (eventTarget.nodeName.toLowerCase() === 'ul') return;
+  // if (eventTarget.nodeName.toLowerCase() === 'li') {
+  //   eventTarget = eventTarget.children[0];
+  // }
+  // const gameObj = {};
+  // gameObj.gameId = eventTarget.id;
+  // gameObj.opponentUid = eventTarget.children[0].id;
   showActivity('.header__activity', 'Fetching your game...');
-  fetchPuzzle(gameObj);
+  fetchPuzzle(eventTarget.id);
 }
 
 /**

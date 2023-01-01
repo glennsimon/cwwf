@@ -269,8 +269,6 @@ function showPuzzle() {
   updateScoreboard(currentGame);
   console.log(currentGame);
   document.querySelector('.header__activity').innerHTML = '';
-  // TODO: should this go here?
-  route('/puzzle');
 }
 
 function addConcedeHtml() {

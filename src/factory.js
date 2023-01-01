@@ -11,6 +11,8 @@ import { authChangeView } from './pages/signin/signinV.js';
 import { uiStart } from './pages/signin/signin.js';
 import { showSettings } from './pages/settings/settingsV.js';
 import { populateMyGames } from './pages/games/gamesC.js';
+import { showPuzzle } from './pages/puzzle/puzzleV.js';
+import { currentGame, currentOpp } from './pages/puzzle/puzzleC.js';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;
@@ -37,7 +39,7 @@ function createElementFromHtml(html) {
 /**
  * Called by the router, fetches resources necessary for the shell
  * and initiates the display of the shell
- * @param {string} urlString route passed to `route` function
+ * @param {string} urlString route passed from `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function shellHandler(urlString, htmlPath) {
@@ -51,7 +53,7 @@ function shellHandler(urlString, htmlPath) {
 /**
  * Called by the router, fetches resources necessary for the games page
  * and initiates the display of the games page
- * @param {string} urlString route passed to `route` function
+ * @param {string} urlString route passed from `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function gamesHandler(urlString, htmlPath) {
@@ -61,15 +63,17 @@ function gamesHandler(urlString, htmlPath) {
 /**
  * Called by the router, fetches resources necessary for the puzzle page
  * and initiates the display of the puzzle page
- * @param {string} urlString route passed to `route` function
+ * @param {string} urlString route passed from `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function puzzleHandler(urlString, htmlPath) {}
+function puzzleHandler(urlString, htmlPath) {
+  showPuzzle();
+}
 
 /**
  * Called by the router, fetches resources necessary for the settings page
  * and initiates the display of the settings page
- * @param {string} urlString route passed to `route` function
+ * @param {string} urlString route passed from `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function settingsHandler(urlString, htmlPath) {
@@ -83,7 +87,7 @@ function settingsHandler(urlString, htmlPath) {
 /**
  * Called by the router, fetches resources necessary for the signin page
  * and initiates the display of the signin page
- * @param {string} urlString route passed to `route` function
+ * @param {string} urlString route passed from `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function signinHandler(urlString, htmlPath) {
@@ -110,7 +114,7 @@ function signinHandler(urlString, htmlPath) {
 /**
  * Called by the router, fetches resources necessary for the privacy page
  * and initiates the display of the privacy page
- * @param {string} urlString route passed to `route` function
+ * @param {string} urlString route passed from `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function privacyHandler(urlString, htmlPath) {}
@@ -118,7 +122,7 @@ function privacyHandler(urlString, htmlPath) {}
 /**
  * Called by the router, fetches resources necessary for the tos page
  * and initiates the display of the tos page
- * @param {string} urlString route passed to `route` function
+ * @param {string} urlString route passed from `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function tosHandler(urlString, htmlPath) {}
@@ -126,7 +130,7 @@ function tosHandler(urlString, htmlPath) {}
 /**
  * Called by the router, fetches resources necessary for the help page
  * and initiates the display of the help page
- * @param {string} urlString * @param {string} urlString route passed to `route` function
+ * @param {string} urlString * @param {string} urlString route passed from `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function helpHandler(urlString, htmlPath) {}

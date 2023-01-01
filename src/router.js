@@ -10,22 +10,9 @@ import {
 } from './factory.js';
 import { currentUser } from './pages/signin/signinC.js';
 import { constants } from './constants.js';
+import { fetchPuzzle } from './pages/puzzle/puzzleC.js';
 
 let regexTester = null;
-
-/**
- * Calls an event handler based on the url.  Event handlers
- * are imported for each legitimate route defined in routes. `urlString` is a string
- * supplied by the calling function. This (route) funtion is responsible
- * for changing the url in the browser with the pushState call.
- * The pushState data object contains the urlString,
- * as it will be needed for the popState call on navigation.
- * @param {string} urlString string containing the url to navigate to
- */
-function route(urlString) {
-  handleLocation(urlString);
-  window.history.pushState({}, '{Chrome: 😍, Safari: 💩}', urlString);
-}
 
 /**
  * Specifies html and handler to be used for any window.location.pathname change. Any
@@ -43,13 +30,28 @@ const routes = {
 };
 
 /**
+ * Calls an event handler based on the url.  Event handlers
+ * are imported for each legitimate route defined in routes. `urlString` is a string
+ * supplied by the calling function. This (route) funtion is responsible
+ * for changing the url in the browser with the pushState call.
+ * The pushState data object contains the urlString,
+ * as it will be needed for the popState call on navigation.
+ * @param {string} urlString string containing the url to navigate to
+ */
+function route(urlString) {
+  handleLocation(urlString);
+  window.history.pushState({}, '{Chrome: 😍, Safari: 💩}', urlString);
+}
+
+/**
  * Checks `urlString` for valid route, then if valid passes it along to the
  * appropriate handler, which must be imported.
  * @param {string} urlString
  */
 function handleLocation(urlString) {
-  const urlStringData = checkRoute(urlString);
-  const routePath = urlStringData ? urlStringData[1] : null;
+  // const urlStringData = checkRoute(urlString);
+  const routePath = checkRoute(urlString);
+  // urlStringData ? urlStringData[1] : null;
   if (routePath) {
     document.cookie =
       `xwwf-last=${
@@ -72,29 +74,37 @@ function handleLocation(urlString) {
 function checkRoute(urlString) {
   const url = new URL(urlString, window.location.origin);
   console.log(url);
-  if (!regexTester) {
-    const routeKeys = Object.keys(routes);
-    let regexString = '(';
-    for (let key of routeKeys) {
-      regexString += key + '|';
-    }
-    regexString = regexString.slice(0, regexString.length - 1) + ')(/.*)?$';
-    console.log('regexString: ', regexString);
-    regexTester = new RegExp(regexString, 'i');
-  }
-  return regexTester.exec(urlString);
+  if (Object.keys(routes).includes(url.pathname.toLowerCase()))
+    return url.pathname.toLowerCase();
+  return null;
+  // if (!regexTester) {
+  //   const routeKeys = Object.keys(routes);
+  //   let regexString = '(';
+  //   for (let key of routeKeys) {
+  //     regexString += key + '|';
+  //   }
+  //   regexString = regexString.slice(0, regexString.length - 1) + ')(.*)?$';
+  //   console.log('regexString: ', regexString);
+  //   regexTester = new RegExp(regexString, 'i');
+  // }
+  // return url.pathname.toLowerCase();
 }
 
 window.onpopstate = (event) => {
-  const urlString = event.target.href;
+  const urlString = event.target.location.href;
   if (urlString) route(urlString);
 };
 
 window.onload = () => {
-  if (currentUser) {
-    route('/games');
-  } else {
+  if (!currentUser) {
     route('/signin');
+    return;
+  }
+  if (window.location.pathname === '/puzzle') {
+    const gameId = window.location.search.split('=')[1];
+    fetchPuzzle(gameId);
+  } else {
+    route(window.location.pathname);
   }
 };
 

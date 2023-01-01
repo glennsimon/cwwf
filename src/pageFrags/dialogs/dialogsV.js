@@ -217,7 +217,9 @@ function selectOpponent(event) {
   let eventTarget = event.target;
   while (eventTarget.nodeName.toLowerCase() !== 'li') {
     eventTarget = eventTarget.parentElement;
+    if (eventTarget.classList.contains('dialog__shell')) return;
   }
+  showActivity('.header__activity', 'Fetching new game...');
   const gameStartParameters = {};
   const myUid = currentUser.uid;
   gameStartParameters.players = {};
