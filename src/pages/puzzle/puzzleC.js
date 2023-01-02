@@ -40,7 +40,7 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { showErrorDialog } from '../../pageFrags/dialogs/dialogsV.js';
-import { currentUser } from '../signin/signinC.js';
+import { currentUser, online } from '../signin/signinC.js';
 import { route } from '../../router.js';
 
 let currentOpp = null;
@@ -54,7 +54,7 @@ let idxArray = [];
 let myTurn = null;
 let gameListParameters = {};
 // TODO: should this be tracked, and what can be done while offline?
-let online = false;
+// let online = false;
 let myFriends = {};
 
 // webpack dynamic imports:
@@ -66,6 +66,17 @@ let myFriends = {};
  */
 let gameUnsubscribe = () => {};
 let myGamesUnsubscribe = () => {};
+
+function cleanGameParameters() {
+  gameUnsubscribe();
+  gameUnsubscribe = () => {};
+  currentOpp = null;
+  currentGame = null;
+  currentGameId = null;
+  acrossWord = true;
+  columns = null;
+  myTurn = null;
+}
 
 /**
  * Exported function that presenter uses to start a new game
@@ -132,55 +143,6 @@ function subscribeToGame(gameId) {
     }
   );
 }
-
-// // Updates user online status only if user is logged in
-// // when connection/disconnection with app is made.
-// // If no user is logged in, this does nothing.
-// onValue(ref(dbRT, '.info/connected'), (snapshot) => {
-//   online = snapshot.val();
-//   console.log('connected notification change fired. Connected: ', `${online}`);
-//   // const uid = auth.currentUser ? auth.currentUser.uid : null;
-//   if (!currentUser) {
-//     return;
-//   }
-//   onDisconnect(userStatusDatabaseRef)
-//     .set(authState('offline'))
-//     .then(() => {
-//       set(userStatusDatabaseRef, authState('online'));
-//     });
-// });
-
-// /**
-//  * Firestore function that monitors auth state.
-//  */
-// onAuthStateChanged(auth, async (user) => {
-//   const uid = user ? user.uid : null;
-//   console.log('Hello from onAuthStateChanged. Current user: ', user);
-//   if (!uid) return;
-//   showHeaderActivityView('Signing in, fetching games...');
-//   let userFirestoreRef = doc(db, `/users/${uid}`);
-//   const snapshot = await getDoc(userFirestoreRef);
-//   if (snapshot.exists()) {
-//     currentUser = snapshot.data();
-//   }
-//   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
-//   myFriends = {};
-//   try {
-//     const authChange = httpsCallable(functions, 'authChange');
-//     let authChangeData = await authChange().data;
-//     console.log('authChangeData: ', authChangeData);
-//     // currentUser.uid = uid;
-//     await checkForPendingPlayer();
-//     authChangeView(currentUser);
-//     generateMessagingToken();
-//     populateMyGames(uid);
-//     await populateMyFriends();
-//   } catch (err) {
-//     console.log('Error code: ', err.code);
-//     console.log('Error message: ', err.message);
-//     console.log('Error details: ', err.details);
-//   }
-// });
 
 // async function checkForPendingPlayer() {
 //   // if there is a 'xwwf_invite' cookie, use it to create a new user from
@@ -461,6 +423,7 @@ export {
   columns,
   currentGame,
   currentOpp,
+  cleanGameParameters,
   startNewGame,
   subscribeToGame,
   savePuzzle,

@@ -10,6 +10,7 @@ import {
 } from './factory.js';
 import { currentUser } from './pages/signin/signinC.js';
 import { constants } from './constants.js';
+import { cleanGameParameters } from './pages/puzzle/puzzleC.js';
 
 let regexTester = null;
 
@@ -36,6 +37,7 @@ const routes = {
  * @param {string} urlString string containing the url to navigate to
  */
 function route(urlString) {
+  cleanGameParameters();
   window.history.replaceState({}, '{Chrome: 😍, Safari: 💩}', urlString);
   handleLocation(urlString);
 }

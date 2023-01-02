@@ -24,6 +24,8 @@ import { replayOpponent } from '../../pages/games/gamesC';
 
 let adjustedFriendsObject = {};
 
+document.querySelector('.dialog--close').addEventListener('click', resetDialog);
+
 function resetDialog() {
   document.querySelector('.dialog__content--header').innerHTML = '';
   document.querySelector('.dialog__list').innerHTML = '';
@@ -44,9 +46,6 @@ function showInviteDialog() {
   for (const elem of textFieldElements) componentHandler.upgradeElement(elem);
   // showActivity('.dialog__activity', 'Doing stuff...');
   dialogElement.showModal();
-  document.querySelector('.dialog--close').addEventListener('click', () => {
-    dialogElement.close();
-  });
   document
     .querySelector('.dialog__button--mail')
     .addEventListener('click', () => {
@@ -73,9 +72,6 @@ function showConcedeDialog() {
   });
   // const textFieldElements = dialogElement.querySelectorAll('.mdl-textfield');
   // for (const elem of textFieldElements) componentHandler.upgradeElement(elem);
-  document.querySelector('.dialog--close').addEventListener('click', () => {
-    dialogElement.close();
-  });
   dialogElement.showModal();
 }
 
@@ -101,9 +97,6 @@ function showReplayDialog(game, result) {
   dialogElement.querySelector('.dialog__content--footer').innerHTML =
     dialogReplayHtml;
   dialogElement.showModal();
-  document.querySelector('.dialog--close').addEventListener('click', () => {
-    dialogElement.close();
-  });
   document
     .querySelector('.dialog__button--replay')
     .addEventListener('click', (event) => {
@@ -175,9 +168,6 @@ function showErrorDialog(message) {
       // document.querySelector('.mdl-dialog__content').innerHTML = '';
       dialogShell.close();
     });
-  document.querySelector('.dialog--close').addEventListener('click', () => {
-    dialogShell.close();
-  });
   dialogShell.showModal();
 }
 
@@ -202,13 +192,12 @@ function showGameStartDialog() {
   list.innerHTML = '';
   list.append(loadFriendsList());
   dialogElement.showModal();
-  document.querySelector('.dialog--close').addEventListener('click', () => {
-    dialogElement.close();
-  });
-  document.querySelector('.dialog__list').addEventListener('click', (event) => {
-    selectOpponent(event);
-    dialogElement.close();
-  });
+  document
+    .querySelector('.dialog__list ul')
+    .addEventListener('click', (event) => {
+      selectOpponent(event);
+      dialogElement.close();
+    });
   document
     .querySelector('.dialog__button--footer-1')
     .addEventListener('click', () => {
@@ -423,9 +412,6 @@ function showAddBlockDialog() {
   loadAddBlockList().then((contents) => list.append(contents));
   // list.append(loadAddBlockList());
   dialogElement.showModal();
-  document
-    .querySelector('.dialog--close')
-    .addEventListener('click', resetDialog);
   document
     .querySelector('.dialog__button--footer-1')
     .addEventListener('click', () => {

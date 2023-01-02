@@ -261,4 +261,5 @@ export {
   populateMyFriends,
   currentUser,
   myFriends,
+  online,
 };
