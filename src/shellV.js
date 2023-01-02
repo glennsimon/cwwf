@@ -39,11 +39,6 @@ document.querySelector('.button__auth').addEventListener('click', (event) => {
       });
   }
   route('/signin');
-  // } else {
-  //   document.querySelector('.container__app').innerHTML = splashHtml;
-  //   document.querySelector('.container__app').innerHTML += signinHtml;
-  //   uiStart();
-  // }
 });
 
 document.querySelector('.logo').addEventListener('click', (event) => {

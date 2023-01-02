@@ -5,7 +5,7 @@ import '../../pageFrags/dialogs/dialogs.css';
 import { showActivity } from '../../pageFrags/activity/activity';
 import { route } from '../../router';
 import { showGameStartDialog } from '../../pageFrags/dialogs/dialogsV';
-import { fetchPuzzle } from '../puzzle/puzzleC';
+import { subscribeToGame } from '../puzzle/puzzleC';
 import { cleanShell } from '../../shellV';
 
 const container__app = document.querySelector('.container__app');
@@ -17,6 +17,7 @@ const container__app = document.querySelector('.container__app');
  */
 function loadGame(event) {
   console.log('User selected a game to view.');
+  cleanShell();
   let eventTarget = event.target;
   while (eventTarget.nodeName.toLowerCase() !== 'li') {
     if (eventTarget.nodeName.toLowerCase() === 'ul') return;
@@ -30,7 +31,8 @@ function loadGame(event) {
   // gameObj.gameId = eventTarget.id;
   // gameObj.opponentUid = eventTarget.children[0].id;
   showActivity('.header__activity', 'Fetching your game...');
-  fetchPuzzle(eventTarget.id);
+  route(`/puzzle?gameId=${eventTarget.id}`);
+  // subscribeToGame(eventTarget.id);
 }
 
 /**

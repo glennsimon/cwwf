@@ -11,7 +11,7 @@ import { route } from '../../router.js';
 import { currentUser } from '../signin/signinC.js';
 import { currentOpp } from '../puzzle/puzzleC.js';
 import scoresHtml from '../../pageFrags/scores/scores.html';
-import { closeDrawer } from '../../shellV.js';
+import { cleanShell, closeDrawer } from '../../shellV.js';
 import puzzleInfoHtml from '../../pageFrags/puzzleInfo/puzzleInfo.html';
 import concedeHtml from '../../pageFrags/concede/concede.html';
 import { showActivity } from '../../pageFrags/activity/activity.js';
@@ -67,6 +67,7 @@ function loadPuzzleInfo() {
  */
 function showPuzzle() {
   console.log('Hello from showPuzzleView.');
+  cleanShell();
   document.querySelector('.container__app').innerHTML = puzzleHtml;
   document.querySelector('.drawer__concede').innerHTML = concedeHtml;
   document.querySelector('.scores').innerHTML = scoresHtml;

@@ -11,11 +11,7 @@ import {
 } from 'firebase/firestore';
 import { currentUser } from '../signin/signinC.js';
 import { showActivity } from '../../pageFrags/activity/activity.js';
-import {
-  currentOpp,
-  startNewGame,
-  subscribeToGame,
-} from '../puzzle/puzzleC.js';
+import { currentOpp, startNewGame } from '../puzzle/puzzleC.js';
 // import { httpsCallable } from 'firebase/functions';
 // import {
 //   getDownloadURL,

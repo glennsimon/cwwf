@@ -10,7 +10,6 @@ import {
 } from './factory.js';
 import { currentUser } from './pages/signin/signinC.js';
 import { constants } from './constants.js';
-import { fetchPuzzle } from './pages/puzzle/puzzleC.js';
 
 let regexTester = null;
 
@@ -75,17 +74,6 @@ function checkRoute(urlString) {
   if (Object.keys(routes).includes(url.pathname.toLowerCase()))
     return url.pathname.toLowerCase();
   return null;
-  // if (!regexTester) {
-  //   const routeKeys = Object.keys(routes);
-  //   let regexString = '(';
-  //   for (let key of routeKeys) {
-  //     regexString += key + '|';
-  //   }
-  //   regexString = regexString.slice(0, regexString.length - 1) + ')(.*)?$';
-  //   console.log('regexString: ', regexString);
-  //   regexTester = new RegExp(regexString, 'i');
-  // }
-  // return url.pathname.toLowerCase();
 }
 
 window.history.onpopstate = (event) => {
@@ -93,17 +81,6 @@ window.history.onpopstate = (event) => {
   if (urlString) route(urlString);
 };
 
-window.onload = () => {
-  // if (!currentUser) {
-  //   route('/signin');
-  //   return;
-  // }
-  if (window.location.pathname === '/puzzle') {
-    const gameId = window.location.search.split('=')[1];
-    fetchPuzzle(gameId);
-  } else {
-    route(window.location.pathname);
-  }
-};
+window.onload = () => route(location.href);
 
 export { route };

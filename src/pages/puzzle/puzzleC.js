@@ -77,7 +77,8 @@ function startNewGame(gameStartParameters) {
   startGame(gameStartParameters)
     .then((gameIdObj) => {
       const gameId = gameIdObj.data;
-      subscribeToGame(gameId);
+      route(`/puzzle?gameId=${gameId}`);
+      // subscribeToGame(gameId);
     })
     .catch((err) => {
       console.log('Error code: ', err.code);
@@ -123,8 +124,8 @@ function subscribeToGame(gameId) {
       if (prevGameId === gameId) {
         await animateScoringView(currentGame.lastTurnCheckObj);
       }
-      route(`/puzzle?gameId=${gameId}`);
-      // showPuzzle(currentGame, currentOpp);
+      // route(`/puzzle?gameId=${gameId}`);
+      showPuzzle();
     },
     (error) => {
       console.error('Error subscribing to puzzle: ', error);
@@ -329,28 +330,6 @@ function subscribeToGame(gameId) {
 // }
 
 /**
- * This function fetches an active puzzle based on the user's selection
- * and then calls functions to format and display the puzzle
- * @param {string} gameId gameId string
- */
-async function fetchPuzzle(gameId) {
-  console.log('Hello from fetchPuzzle.');
-  // currentOpp = (await getDoc(doc(db, `users/${gameObj.opponentUid}`))).data();
-  // if (currentOpp) {
-  subscribeToGame(gameId);
-  // } else {
-  //   showErrorDialog(
-  //     'That game is not accessible. Try another or start a new one.'
-  //   );
-  //   const deleteFailedGame = httpsCallable(functions, 'deleteFailedGame');
-  //   await deleteFailedGame({ gameId: gameObj.gameId }).catch((err) => {
-  //     console.log('Error code: ', err.code);
-  //     console.log('Error message: ', err.message);
-  //     console.log('Error details: ', err.details);
-  //   });
-}
-
-/**
  * Play currentUser's turn. Executed when the player clicks the enter
  * button
  */
@@ -484,7 +463,6 @@ export {
   currentOpp,
   startNewGame,
   subscribeToGame,
-  fetchPuzzle,
   savePuzzle,
   playWordController,
   enterLetterController,
