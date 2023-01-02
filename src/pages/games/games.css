@@ -125,10 +125,6 @@
   color: DarkGray;
 }
 
-.padRight {
-  padding-right: 5px;
-}
-
 .displayFlex {
   display: flex;
 }
@@ -232,10 +228,6 @@
 
 .border2pxRight {
   border-right: 2px solid gold !important;
-}
-
-.highlightBorder {
-  border: 2px solid gold !important;
 }
 
 #highlighter {

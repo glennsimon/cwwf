@@ -212,10 +212,6 @@ select {
   color: DarkGray;
 }
 
-.padRight {
-  padding-right: 5px;
-}
-
 .displayFlex {
   display: flex;
 }

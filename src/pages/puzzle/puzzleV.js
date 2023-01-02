@@ -28,8 +28,13 @@ import {
 //#endregion
 
 let currentCell = null;
+let idxArray = [];
+let acrossWord = true;
 // let currentOpponent = null;
 // let allUsers = null;
+
+let highlighter = document.createElement('div');
+highlighter.className = 'puzzle__highlighter';
 
 // returnToSignin.addEventListener('click', () => route('/signin'));
 
@@ -173,7 +178,7 @@ function showPuzzle() {
 
     const numDiv = document.createElement('div');
     numDiv.appendChild(document.createTextNode(clueRef));
-    numDiv.classList.add('padRight', 'cursor--pointer');
+    numDiv.classList.add('padding__right--5px', 'cursor--pointer');
 
     const textDiv = document.createElement('div');
     // unsafe:
@@ -206,7 +211,7 @@ function showPuzzle() {
 
     const numDiv = document.createElement('div');
     numDiv.appendChild(document.createTextNode(clueRef));
-    numDiv.classList.add('padRight', 'cursor--pointer');
+    numDiv.classList.add('padding__right--5px', 'cursor--pointer');
 
     const textDiv = document.createElement('div');
     // unsafe:
@@ -540,13 +545,6 @@ function cellClicked(event) {
   while (!cell.classList.contains('cell__puzzle')) {
     cell = cell.parentElement;
   }
-  const row = cell.parentElement.rowIndex;
-  const col = cell.cellIndex;
-  let acrossWord = getAcrossWordController();
-  // console.log(cell.cellIndex);
-  // console.log(cell.parentElement.rowIndex);
-  // console.log(event);
-
   if (cell.className === 'black') {
     return;
   }
@@ -556,9 +554,7 @@ function cellClicked(event) {
   // }
   if (currentCell && currentCell === cell) {
     acrossWord = !acrossWord;
-    setAcrossWordController(acrossWord);
   }
-  setIdxArrayController([]);
   currentCell = cell;
   const direction = acrossWord ? 'across' : 'down';
   selectBlock(direction, cell);
@@ -571,18 +567,19 @@ function cellClicked(event) {
  */
 function clueClicked(event, direction) {
   console.log('Hello from clueClicked.');
-  let clueNumberText = event.target.parentElement.firstChild.innerText;
+  let clue = event.target;
+  while (!clue.id) {
+    clue = clue.parentElement;
+  }
+  let clueNumberText = clue.children[0].innerText;
   clueNumberText = clueNumberText.slice(0, clueNumberText.indexOf('.'));
   const cellIndex = currentGame.clueNumIndices[clueNumberText];
   const row = Math.floor(cellIndex / columns);
   const col = cellIndex - row * columns;
-  document.querySelector('.table__puzzle').firstChild.children[row].children[
-    col
-  ];
+  const cell = document.querySelector('.table__puzzle tbody').children[row]
+    .children[col];
   currentCell = cell;
-  let elem = event.target;
-  while (elem.id === '') elem = elem.parentElement;
-  setAcrossWordController(elem.id.includes('across'));
+  acrossWord = clue.id.includes('across');
   selectBlock(direction, cell);
 }
 
@@ -634,7 +631,6 @@ function undoEntry() {
     let row = currentCell.parentElement.rowIndex;
     let col = currentCell.cellIndex;
     const index = row * columns + col;
-    const idxArray = getIdxArrayController();
     // Reverse copy idxArray so we step through backwards instead of forwards
     let idxArrayRev = [...idxArray].reverse();
 
@@ -684,7 +680,6 @@ function getCellDim() {
 /** Clears letters when user changes to a different clue */
 function clearLetters() {
   console.log('Hello from clearLetters.');
-  const idxArray = getIdxArrayController();
   for (const index of idxArray) {
     if (currentGame.puzzle.grid[index].status === 'locked') continue;
     currentGame.puzzle.grid[index].guess = '';
@@ -703,20 +698,16 @@ function clearLetters() {
  * @param {Object} cell Cell the user clicked
  */
 function selectBlock(direction, cell) {
-  // const row = cell.parentElement.rowIndex;
-  // const col = cell.cellIndex;
-  // const rowOffset = row * columns;
-  // const index = row * columns + col;
   const puzTable = document.querySelector('.table__puzzle');
-
   clearHighlights();
-  const idxArray = getWordBlock(cell, direction);
-  setIdxArrayController(idxArray);
+  idxArray = [];
+  // fill idxArray
+  getWordBlock(cell, direction);
   const clue = document.getElementById(
     direction + currentGame.puzzle.grid[idxArray[0]].clueNum
   );
   // for when clue lists are showing (landscape orientation)
-  clue.classList.add('rangeHighlight', 'cluePop');
+  clue.classList.add('puzzle__highlight--cell-range', 'puzzle__clue-pop');
   const clueList =
     direction === 'across'
       ? document.querySelector('.clues--across')
@@ -727,22 +718,22 @@ function selectBlock(direction, cell) {
     behavior: 'smooth',
   });
   // for when only a single clue is showing (portrait orientation)
-  document.querySelector('.clue--single').innerText =
-    clue.children[1].textContent;
+  document.querySelector('.clue--single').innerHTML =
+    clue.children[0].textContent + '&nbsp;' + clue.children[1].innerHTML;
 
-  const highlighter = document.createElement('div');
-  highlighter.id = 'highlighter';
-  highlighter.classList.add('highlightBorder'); //, 'displayFlex');
   const cellDim = getCellDim();
   const clueLength = idxArray.length;
-  if (direction === 'across') {
-    highlighter.style.width = `${clueLength * cellDim}px`;
-    highlighter.style.height = `${cellDim}px`;
-  } else {
-    highlighter.style.width = `${cellDim}px`;
-    highlighter.style.height = `${clueLength * cellDim}px`;
-    // highlighter.classList.add('flexDirCol');
-  }
+  highlighter.style.width =
+    direction === 'across' ? `${clueLength * cellDim}px` : `${cellDim}px`;
+  highlighter.style.height =
+    direction === 'across' ? `${cellDim}px` : `${clueLength * cellDim}px`;
+  // if (direction === 'across') {
+  //   highlighter.style.width = `${clueLength * cellDim}px`;
+  //   highlighter.style.height = `${cellDim}px`;
+  // } else {
+  //   highlighter.style.width = `${cellDim}px`;
+  //   highlighter.style.height = `${clueLength * cellDim}px`;
+  // }
   const firstCellRow = Math.floor(idxArray[0] / columns);
   const firstCellCol = idxArray[0] - firstCellRow * columns;
   highlighter.style.translate = `${cellDim * firstCellCol - 2}px -${
@@ -755,7 +746,9 @@ function selectBlock(direction, cell) {
     const currentCell = puzTable.firstChild.children[idxRow].children[idxCol];
     currentCell.classList.remove('transparent');
     currentCell.classList.add(
-      currentCell === cell ? 'currCellHighlight' : 'rangeHighlight'
+      currentCell === cell
+        ? 'puzzle__highlight--cell-current'
+        : 'puzzle__highlight--cell-range'
     );
   }
   puzTable.appendChild(highlighter);
@@ -773,57 +766,44 @@ function getWordBlock(cell, direction) {
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
   let index = row * columns + col;
-  const indexArray = [];
-  if (direction === 'across') {
-    while (index > row * columns && !currentGame.puzzle.grid[index - 1].black) {
-      index--;
-    }
-    while (
-      index < (row + 1) * columns &&
-      !currentGame.puzzle.grid[index].black
-    ) {
-      indexArray.push(index);
-      index++;
-    }
-  } else {
-    while (
-      index >= columns &&
-      !currentGame.puzzle.grid[index - columns].black
-    ) {
-      index -= columns;
-    }
-    while (
-      index < currentGame.puzzle.rows * columns &&
-      !currentGame.puzzle.grid[index].black
-    ) {
-      indexArray.push(index);
-      index += columns;
-    }
+  const lowLimit = acrossWord ? row * columns : columns;
+  const highLimit = acrossWord ? (row + 1) * columns : columns ** 2;
+  const increment = acrossWord ? 1 : columns;
+  const puzzle = currentGame.puzzle;
+  while (index > lowLimit && !puzzle.grid[index - increment].black)
+    index = index - increment;
+  while (index < highLimit && !puzzle.grid[index].black) {
+    idxArray.push(index);
+    index = index + increment;
   }
-  return indexArray;
 }
 
 /** Removes clue cell highlighting from all cells */
 function clearHighlights() {
   console.log('Hello from clearHighlights.');
-  const highlighter = document.getElementById('highlighter');
-  if (highlighter) highlighter.remove();
-  const rowArray =
-    document.querySelector('.table__puzzle').children[0].children;
-
-  for (const row of rowArray) {
-    for (const cell of row.children) {
-      if (cell.className !== 'black') {
-        cell.classList.remove('rangeHighlight', 'currCellHighlight');
-        cell.classList.add('transparent');
-      }
-    }
+  try {
+    highlighter = document
+      .querySelector('.table__puzzle')
+      .removeChild(highlighter);
+  } catch (err) {
+    console.log('INFO: highlighter not attached: ', err);
+  }
+  for (const idx of idxArray) {
+    const row = Math.floor(idx / columns);
+    const column = idx - row * columns;
+    const cell = document.querySelector('.table__puzzle tbody').children[row]
+      .children[column];
+    cell.classList.remove(
+      'puzzle__highlight--cell-range',
+      'puzzle__highlight--cell-current'
+    );
+    cell.classList.add('transparent');
   }
   for (const clue of document.querySelector('.clues--across').children) {
-    clue.classList.remove('rangeHighlight', 'cluePop');
+    clue.classList.remove('puzzle__highlight--cell-range', 'puzzle__clue-pop');
   }
   for (const clue of document.querySelector('.clues--down').children) {
-    clue.classList.remove('rangeHighlight', 'cluePop');
+    clue.classList.remove('puzzle__highlight--cell-range', 'puzzle__clue-pop');
   }
 }
 
@@ -835,7 +815,6 @@ function clearHighlights() {
  */
 function enterLetter(event) {
   console.log('Hello from enterLetter.');
-  const idxArray = getIdxArrayController();
   if (document.querySelector('.container__keyboard')) {
     if (event.keyCode === 13) {
       showActivity('.header__activity', 'Working...');
@@ -942,7 +921,7 @@ function resizePuzzle() {
   document.querySelector('.grid__svg').remove();
   puzTable.appendChild(generateGridElement(puzWidth, puzHeight));
   if (currentCell) {
-    const direction = getAcrossWordController() ? 'across' : 'down';
+    const direction = acrossWord ? 'across' : 'down';
     selectBlock(direction, currentCell);
   }
 }
@@ -959,4 +938,4 @@ for (const node of keyList) {
 //   playWordController();
 // });
 
-export { showPuzzle, animateScoringView, clearPuzzle };
+export { showPuzzle, animateScoringView, clearPuzzle, idxArray, acrossWord };

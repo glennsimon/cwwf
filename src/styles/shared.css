@@ -52,6 +52,10 @@
   margin: 10px auto;
 }
 
+.padding__right--5px {
+  padding-right: 5px;
+}
+
 .translate--left {
   transform: translate(-100%, 0);
 }

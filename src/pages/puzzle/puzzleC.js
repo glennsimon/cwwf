@@ -11,6 +11,8 @@ import {
   showPuzzle,
   animateScoringView,
   showHeaderActivityView,
+  idxArray,
+  acrossWord,
 } from './puzzleV.js';
 import {
   getDatabase,
@@ -48,9 +50,8 @@ let userStatusDatabaseRef = null;
 let myGames = [];
 let currentGame = null;
 let currentGameId = null;
-let acrossWord = true;
 let columns = null;
-let idxArray = [];
+// let idxArray = [];
 let myTurn = null;
 let gameListParameters = {};
 // TODO: should this be tracked, and what can be done while offline?
@@ -73,7 +74,6 @@ function cleanGameParameters() {
   currentOpp = null;
   currentGame = null;
   currentGameId = null;
-  acrossWord = true;
   columns = null;
   myTurn = null;
 }
@@ -129,7 +129,7 @@ function subscribeToGame(gameId) {
         currentOpp = (await getDoc(doc(db, `users/${opponentUid}`))).data();
       }
       currentGameId = gameId;
-      idxArray = [];
+      // idxArray = [];
       columns = currentGame.puzzle.cols;
       myTurn = currentUser.uid === currentGame.nextTurn;
       if (prevGameId === gameId) {
