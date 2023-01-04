@@ -1,7 +1,7 @@
 import {
   populateAllUsersController,
   playWordController,
-  enterLetterController,
+  enterGuess,
   populateFriendsController,
   columns,
   currentGame,
@@ -73,7 +73,21 @@ function loadPuzzleInfo() {
 function showPuzzle() {
   console.log('Hello from showPuzzleView.');
   cleanShell();
-  document.querySelector('.container__app').innerHTML = puzzleHtml;
+  // if not currently playing a game, load puzzle HTML and initialize
+  if (!document.querySelector('.table__puzzle')) {
+    document.querySelector('.container__app').innerHTML = puzzleHtml;
+    document.addEventListener('keyup', enterLetter);
+    window.addEventListener('resize', resizePuzzle);
+    const keyList = document.getElementsByClassName('button__keyboard');
+    for (const target of keyList) {
+      target.addEventListener('click', enterLetter);
+    }
+    // document.getElementById('enter').addEventListener('click', () => {
+    //   headerSpinner.classList.add('is-active');
+    //   headerMessage.innerText = 'Working...';
+    //   playWordController();
+    // });
+  }
   document.querySelector('.drawer__concede').innerHTML = concedeHtml;
   document.querySelector('.scores').innerHTML = scoresHtml;
   document.querySelector('.drawer__content').innerHTML = puzzleInfoHtml;
@@ -106,7 +120,7 @@ function showPuzzle() {
         const squareDiv = document.createElement('div');
         const letterDiv = document.createElement('div');
         squareDiv.classList.add('square');
-        letterDiv.classList.add('margin--auto');
+        letterDiv.classList.add('puzzle__letter');
         if (squareData.status === 'locked') {
           cell.classList.remove('transparent');
           let bgColor = squareData.bgColor;
@@ -369,7 +383,7 @@ function animateScoringView(scoreObj) {
     clueNum.classList = 'clue-number';
     clueNum.innerText = cell.children[1] ? cell.children[1].textContent : '';
     animatedCell.appendChild(clueNum);
-    document.querySelector('cell__animator').appendChild(animatedCell);
+    document.querySelector('.cell__animator').appendChild(animatedCell);
 
     if (letter.score === 0) {
       const windowHeight = window.innerHeight;
@@ -643,15 +657,14 @@ function undoEntry() {
 
     const letterDiv = document.createElement('div');
     letterDiv.appendChild(document.createTextNode(''));
-    letterDiv.classList.add('marginAuto');
+    letterDiv.classList.add('puzzle__letter');
 
     // Replace letter div in the current cell with new empty letter div
-    currentCell.children[0].replaceChild(
-      letterDiv,
-      currentCell.children[0].children[0]
-    );
-    currentCell.classList.remove('currCellHighlight');
-    currentCell.classList.add('rangeHighlight');
+    currentCell
+      .querySelector('.square')
+      .replaceChild(letterDiv, currentCell.querySelector('.puzzle__letter'));
+    currentCell.classList.remove('puzzle__highlight--cell-current');
+    currentCell.classList.add('puzzle__highlight--cell-range');
     for (const idx of idxArrayRev) {
       if (currentGame.puzzle.grid[idx].status !== 'locked') {
         row = Math.floor(idx / columns);
@@ -659,8 +672,8 @@ function undoEntry() {
         currentCell =
           document.querySelector('.table__puzzle').children[0].children[row]
             .children[col];
-        currentCell.classList.remove('rangeHighlight');
-        currentCell.classList.add('currCellHighlight');
+        currentCell.classList.remove('puzzle__highlight--cell-range');
+        currentCell.classList.add('puzzle__highlight--cell-current');
         break;
       }
     }
@@ -740,16 +753,18 @@ function selectBlock(direction, cell) {
     puzTable.offsetHeight - cellDim * firstCellRow + 2
   }px`;
 
-  for (let idx = 0; idx < clueLength; idx++) {
-    const idxRow = Math.floor(idxArray[idx] / columns);
-    const idxCol = idxArray[idx] - idxRow * columns;
+  for (const index of idxArray) {
+    const idxRow = Math.floor(index / columns);
+    const idxCol = index - idxRow * columns;
     const currentCell = puzTable.firstChild.children[idxRow].children[idxCol];
-    currentCell.classList.remove('transparent');
-    currentCell.classList.add(
-      currentCell === cell
-        ? 'puzzle__highlight--cell-current'
-        : 'puzzle__highlight--cell-range'
-    );
+    if (currentGame.puzzle.grid[index].status !== 'locked') {
+      currentCell.classList.remove('transparent');
+      currentCell.classList.add(
+        currentCell === cell
+          ? 'puzzle__highlight--cell-current'
+          : 'puzzle__highlight--cell-range'
+      );
+    }
   }
   puzTable.appendChild(highlighter);
 }
@@ -815,27 +830,62 @@ function clearHighlights() {
  */
 function enterLetter(event) {
   console.log('Hello from enterLetter.');
+  // check if puzzle HTML is loaded
   if (document.querySelector('.container__keyboard')) {
-    if (event.keyCode === 13) {
+    if (
+      event.keyCode === 13 || // enter keyCode
+      event.target.classList.contains('button__keyboard--enter')
+    ) {
       showActivity('.header__activity', 'Working...');
       playWordController();
       return;
     }
-    let letter;
-    if (event.key) {
-      letter = event.key;
-    } else {
-      let node = event.target;
-      while (!node.classList.contains('button__keyboard')) {
-        node = node.parentNode;
-      }
-      letter = node.children[0].firstChild.data.trim();
-    }
-    if (letter && letter.toLowerCase() === 'backspace') {
+    if (
+      event.keyCode === 8 || // backspace keyCode
+      event.target.classList.contains('button__keyboard--backspace')
+    ) {
       undoEntry();
       return;
     }
-    if (!letter || !letter.match(/^[a-zA-Z]$/)) return;
+    let letter = event.key;
+    if (letter && letter.match(/^[a-zA-Z]$/)) {
+      letter = letter.toUpperCase();
+    } else {
+      let target = event.target;
+      while (!target.classList.contains('button__keyboard--letter')) {
+        target = target.parentNode;
+        if (target.classList.contains('container__keyboard')) return;
+      }
+      letter = target.querySelector('.keyboard__key').innerText.trim();
+      letter = letter.slice(0, 1);
+    }
+
+    // if (event.keyCode === 13) {
+    //   showActivity('.header__activity', 'Working...');
+    //   playWordController();
+    //   return;
+    // }
+    // if (event.key) {
+    //   letter = event.key;
+    //   console.log(letter);
+    // } else {
+    //   let target = event.target;
+    //   while (!target.classList.contains('button__keyboard')) {
+    //     target = target.parentNode;
+    //     if (target.classList.contains('container__keyboard')) return;
+    //   }
+    //   if (target.classList.contains('button__keyboard--backspace')) {
+    //     undoEntry();
+    //     return;
+    //   }
+    //   if (target.classList.contains('button__keyboard--enter')) {
+    //     showActivity('.header__activity', 'Working...');
+    //     playWordController();
+    //     return;
+    //   }
+    //   letter = target.querySelector('.keyboard__key').innerText.trim();
+    // }
+    // if (!letter || !letter.match(/^[a-zA-Z]$/)) return;
     if (currentCell) {
       let row = currentCell.parentElement.rowIndex;
       let col = currentCell.cellIndex;
@@ -852,24 +902,23 @@ function enterLetter(event) {
         // alert('Sorry, that square is locked by a previous answer');
         return;
       }
-      enterLetterController(letter.toUpperCase(), index);
+      enterGuess(letter.toUpperCase(), index);
       letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
-      letterDiv.classList.add('marginAuto');
-      currentCell.children[0].replaceChild(
-        letterDiv,
-        currentCell.children[0].children[0]
-      );
-      currentCell.classList.remove('currCellHighlight');
-      currentCell.classList.add('rangeHighlight');
+      letterDiv.classList.add('puzzle__letter');
+      currentCell
+        .querySelector('.square')
+        .replaceChild(letterDiv, currentCell.querySelector('.puzzle__letter'));
+      currentCell.classList.remove('puzzle__highlight--cell-current');
+      currentCell.classList.add('puzzle__highlight--cell-range');
       for (const idx of localIdxArray) {
         if (currentGame.puzzle.grid[idx].status !== 'locked') {
           row = Math.floor(idx / columns);
           col = idx - row * columns;
-          currentCell =
-            document.querySelector('.table__puzzle').children[0].children[row]
-              .children[col];
-          currentCell.classList.remove('rangeHighlight');
-          currentCell.classList.add('currCellHighlight');
+          currentCell = document.querySelector('.table__puzzle tbody').children[
+            row
+          ].children[col];
+          currentCell.classList.remove('puzzle__highlight--cell-range');
+          currentCell.classList.add('puzzle__highlight--cell-current');
           break;
         }
       }
@@ -925,17 +974,5 @@ function resizePuzzle() {
     selectBlock(direction, currentCell);
   }
 }
-
-document.addEventListener('keyup', enterLetter);
-window.addEventListener('resize', resizePuzzle);
-const keyList = document.getElementsByClassName('button__keyboard');
-for (const node of keyList) {
-  node.addEventListener('click', enterLetter);
-}
-// document.getElementById('enter').addEventListener('click', () => {
-//   headerSpinner.classList.add('is-active');
-//   headerMessage.innerText = 'Working...';
-//   playWordController();
-// });
 
 export { showPuzzle, animateScoringView, clearPuzzle, idxArray, acrossWord };

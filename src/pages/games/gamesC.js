@@ -390,19 +390,6 @@ function replayOpponent(game, difficulty) {
 // }
 
 // /**
-//  * Enter a letter into the currentGame as a guess.
-//  * @param {string} letter Letter to be entered into the square
-//  * @param {number} index Index of square
-//  */
-// function enterLetterController(letter, index) {
-//   if (currentGame.puzzle.grid[index].guessArray) {
-//     currentGame.puzzle.grid[index].guessArray.push(letter);
-//   } else {
-//     currentGame.puzzle.grid[index].guessArray = [letter];
-//   }
-// }
-
-// /**
 //  * Appends the append Object to the base Object.
 //  * @param {object} base Base object to append to
 //  * @param {object} append Object to append to base
@@ -515,7 +502,6 @@ export {
 //   setIdxArrayController,
 //   setCurrentGameController,
 //   setCurrentGameIdController,
-//   enterLetterController,
 //   abandonCurrentGameController,
 //   getAcrossWordController,
 //   setAcrossWordController,

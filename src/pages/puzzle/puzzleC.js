@@ -368,12 +368,15 @@ function incomplete() {
  * @param {string} letter Letter to be entered into the square
  * @param {number} index Index of square
  */
-function enterLetterController(letter, index) {
-  if (currentGame.puzzle.grid[index].guessArray) {
+function enterGuess(letter, index) {
+  if (
+    currentGame.puzzle.grid[index].guessArray &&
+    !currentGame.puzzle.grid[index].guessArray.includes(letter)
+  ) {
     currentGame.puzzle.grid[index].guessArray.push(letter);
-  } else {
-    currentGame.puzzle.grid[index].guessArray = [letter];
+    return;
   }
+  currentGame.puzzle.grid[index].guessArray = [letter];
 }
 
 /**
@@ -428,6 +431,6 @@ export {
   subscribeToGame,
   savePuzzle,
   playWordController,
-  enterLetterController,
+  enterGuess,
   concedeCurrentGame,
 };

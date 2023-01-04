@@ -211,6 +211,10 @@
   font-size: larger;
 }
 
+.puzzle__letter {
+  margin: auto;
+}
+
 @media screen and (min-aspect-ratio: 7/10) {
   .square {
     font-size: 2.5vh;
