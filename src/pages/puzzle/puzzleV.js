@@ -38,16 +38,21 @@ highlighter.className = 'puzzle__highlighter';
 
 // returnToSignin.addEventListener('click', () => route('/signin'));
 
-/** Removes puzzle from DOM */
+/** Removes puzzle and clues from DOM */
 function clearPuzzle() {
   console.log('Hello from clearPuzzle.');
   // clear out old puzzle and clues
   const svgGrid = document.querySelector('.grid__svg');
   if (svgGrid) svgGrid.remove();
   document.querySelector('.drawer__content').innerHTML = '';
+  document.querySelector('.clues--across').innerHTML = '';
+  document.querySelector('.clues--down').innerHTML = '';
   currentCell = null;
 }
 
+/**
+ * Loads drawer info data for current puzzle
+ */
 function loadPuzzleInfo() {
   document.querySelector('.drawer__content').innerHTML = puzzleInfoHtml;
   document.querySelector('.puzzle__title').innerText = currentGame.puzzle.title
@@ -137,27 +142,7 @@ function showPuzzle() {
           cell.appendChild(clueNumDiv);
         }
         if (squareData.circle) {
-          const halfCell = cellDim / 2;
-          const radius = halfCell - 1.5;
-          let svgHtml = `\
-<svg class='circle'>
-  <path d='M ${halfCell} ${halfCell}'/>
-  <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black'
-    fill='transparent' stroke-width='0.5'/>
-</svg>`;
-          if (squareData.clueNum) {
-            // dimA and dimB values below are for 105 degree start point
-            // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 24)) + 1.5;
-            // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 24)) + 1.5;
-            let dimA = radius * 0.03407 + 1.5;
-            let dimB = radius * 0.74118 + 1.5;
-            svgHtml = `\
-<svg height='${cellDim}' width='${cellDim}' class='circle'>
-  <path d='M ${dimA} ${dimB} A ${radius} ${radius} 0 1 0 ${halfCell} 1.5'
-    stroke='black' fill='transparent' stroke-width='0.5'/>
-</svg>`;
-          }
-          cell.innerHTML += svgHtml;
+          cell.innerHTML += circleHtml(cellDim, squareData.clueNum);
         }
       }
       gridIndex += 1;
@@ -168,87 +153,10 @@ function showPuzzle() {
 
   // kbContainer.classList.remove('displayNone');
   // kbContainer.classList.add('displayFlex');
-  document.querySelector('.container__clues').classList.remove('displayNone');
+  // document.querySelector('.container__clues').classList.remove('displayNone');
   addConcedeHtml();
-  // create contents for across clues div
-  const acrossClues = document.querySelector('.clues--across');
-  const downClues = document.querySelector('.clues--down');
-  for (const clue of currentGame.puzzle.clues.across) {
-    const parsedClue = clue.split('.');
-    const clueNumber = parseInt(parsedClue[0]);
-    const clueRef = parsedClue[0] + '.';
-    const clueText = parsedClue.slice(1).join('.');
-    const clueDiv = document.createElement('div');
-    clueDiv.classList.add('clue');
-    clueDiv.id = 'across' + clueNumber;
-    if (currentGame.puzzle.completedClues.across.includes(clueNumber)) {
-      clueDiv.classList.add('color__dark-gray');
-    }
-
-    const numDiv = document.createElement('div');
-    numDiv.appendChild(document.createTextNode(clueRef));
-    numDiv.classList.add('padding__right--5px', 'cursor--pointer');
-
-    const textDiv = document.createElement('div');
-    // unsafe:
-    // textDiv.innerHTML = clueText;
-    // safe: (setHTML sanitizes html) unfortunately, limited availablility, so
-    try {
-      textDiv.setHTML(clueText);
-    } catch (err) {
-      console.log('setHTML is not available in this browser');
-      textDiv.textContent = clueText;
-    }
-    textDiv.classList.add('cursor--pointer');
-    clueDiv.appendChild(numDiv);
-    clueDiv.appendChild(textDiv);
-    acrossClues.appendChild(clueDiv);
-  }
-
-  // create contents for down clues div
-  for (const clue of currentGame.puzzle.clues.down) {
-    const parsedClue = clue.split('.');
-    const clueNumber = parseInt(parsedClue[0]);
-    const clueRef = parsedClue[0] + '.';
-    const clueText = parsedClue.slice(1).join('.');
-    const clueDiv = document.createElement('div');
-    clueDiv.classList.add('clue');
-    clueDiv.id = 'down' + clueNumber;
-    if (currentGame.puzzle.completedClues.down.includes(clueNumber)) {
-      clueDiv.classList.add('color__dark-gray');
-    }
-
-    const numDiv = document.createElement('div');
-    numDiv.appendChild(document.createTextNode(clueRef));
-    numDiv.classList.add('padding__right--5px', 'cursor--pointer');
-
-    const textDiv = document.createElement('div');
-    // unsafe:
-    // textDiv.innerHTML = clueText;
-    // safe: (setHTML sanitizes html) unfortunately, limited availablility
-    try {
-      textDiv.setHTML(clueText);
-    } catch (err) {
-      console.log('setHTML is not available in this browser');
-      textDiv.textContent = clueText;
-    }
-    textDiv.classList.add('cursor--pointer');
-    clueDiv.appendChild(numDiv);
-    clueDiv.appendChild(textDiv);
-    downClues.appendChild(clueDiv);
-  }
-
-  acrossClues.addEventListener('click', (event) => {
-    if (event.target.innerText !== '') {
-      clueClicked(event, 'across');
-    }
-  });
-
-  downClues.addEventListener('click', (event) => {
-    if (event.target.innerText !== '') {
-      clueClicked(event, 'down');
-    }
-  });
+  loadClues('across');
+  loadClues('down');
 
   document.querySelector('.scores').innerHTML = scoresHtml;
   const oppUid = currentOpp.uid;
@@ -286,6 +194,83 @@ function showPuzzle() {
   document.querySelector('.header__activity').innerHTML = '';
 }
 
+/**
+ * Loads clues into direction-specific list for larger displays
+ * @param {string} direction 'across' or 'down'
+ */
+function loadClues(direction) {
+  const clueSelector =
+    direction === 'across' ? '.clues--across' : '.clues--down';
+  const clues = document.querySelector(clueSelector);
+  for (const clue of currentGame.puzzle.clues[direction]) {
+    const parsedClue = clue.split('.');
+    const clueNumber = parseInt(parsedClue[0]);
+    const clueRef = parsedClue[0] + '.';
+    const clueText = parsedClue.slice(1).join('.');
+    const clueDiv = document.createElement('div');
+    clueDiv.classList.add('clue');
+    clueDiv.id = direction + clueNumber;
+    if (currentGame.puzzle.completedClues[direction].includes(clueNumber)) {
+      clueDiv.classList.add('color__dark-gray');
+    }
+
+    const numDiv = document.createElement('div');
+    numDiv.appendChild(document.createTextNode(clueRef));
+    numDiv.classList.add('padding__right--5px', 'cursor--pointer');
+
+    const textDiv = document.createElement('div');
+    // unsafe:
+    // textDiv.innerHTML = clueText;
+    // safe: (setHTML sanitizes html) unfortunately, limited availablility, so
+    try {
+      textDiv.setHTML(clueText);
+    } catch (err) {
+      console.log('setHTML is not available in this browser');
+      textDiv.textContent = clueText;
+    }
+    // textDiv.classList.add('cursor--pointer');
+    clueDiv.appendChild(numDiv);
+    clueDiv.appendChild(textDiv);
+    clues.appendChild(clueDiv);
+    clues.addEventListener('click', (event) => {
+      if (event.target.innerText !== '') {
+        clueClicked(event, direction);
+      }
+    });
+  }
+}
+
+/**
+ * Create and return SVG HTML for cells with circles
+ * @param {Number} cellDim Size of cell width and height in px
+ * @param {Number} clueNum Clue number if clue number is in cell, or null
+ * @returns HTML for circle
+ */
+function circleHtml(cellDim, clueNum) {
+  const halfCell = cellDim / 2;
+  const radius = halfCell - 1.5;
+  let svgHtml = `<svg class='circle'>
+  <path d='M ${halfCell} ${halfCell}'/>
+  <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black'
+    fill='transparent' stroke-width='0.5'/>
+</svg>`;
+  if (clueNum) {
+    // dimA and dimB values below are for 105 degree start point
+    // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 24)) + 1.5;
+    // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 24)) + 1.5;
+    let dimA = radius * 0.03407 + 1.5;
+    let dimB = radius * 0.74118 + 1.5;
+    svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='circle'>
+  <path d='M ${dimA} ${dimB} A ${radius} ${radius} 0 1 0 ${halfCell} 1.5'
+    stroke='black' fill='transparent' stroke-width='0.5'/>
+</svg>`;
+  }
+  return svgHtml;
+}
+
+/**
+ * Adds concede button to drawer with click listener
+ */
 function addConcedeHtml() {
   document.querySelector('.drawer__concede').innerHTML = concedeHtml;
   // Give the user one more chance to decide if they want to abandon the game.

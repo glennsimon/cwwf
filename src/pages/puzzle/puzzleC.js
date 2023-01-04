@@ -327,11 +327,8 @@ async function playWord() {
   // answerObj.playerUid = currentUser.uid;
   // answerObj.opponentUid = currentOpp.uid;
   for (const index of idxArray) {
-    answerObj.guess.push(
-      currentGame.puzzle.grid[index].guessArray[
-        currentGame.puzzle.grid[index].guessArray.length - 1
-      ]
-    );
+    const guessArray = currentGame.puzzle.grid[index].guessArray;
+    answerObj.guess.push(guessArray[guessArray.length - 1]);
   }
   const checkAnswers = httpsCallable(functions, 'checkAnswers');
   await checkAnswers(answerObj)

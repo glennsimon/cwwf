@@ -491,7 +491,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
   const answers = (await answersRef.get()).data();
   const lastTurnCheckObj = { correctAnswer: true };
   try {
-    await db.runTransaction(async (tx) => {
+    return db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
       const gameList = (await tx.get(gameListRef)).data();
       const idxArray = answerObj.idxArray;
@@ -518,10 +518,11 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
         const gridElement = game.puzzle.grid[idxArray[index]];
         const correctValue = answers.answerKey[idxArray[index]];
         const guess = answerObj.guess[index];
-        if (gridElement.guessArray) {
-          gridElement.guessArray.push(guess);
+        const guessArray = gridElement.guessArray;
+        if (guessArray && !guessArray.includes(guess)) {
+          guessArray.push(guess);
         } else {
-          gridElement.guessArray = [guess];
+          guessArray = [guess];
         }
         const cellResult = {};
         cellResult.guess = guess;

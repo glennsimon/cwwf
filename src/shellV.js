@@ -100,6 +100,10 @@ function disableSettings() {
   document.querySelector('.overflow__settings').setAttribute('disabled', '');
 }
 
+/**
+ * Convenience method to remove activity indictor (if present) and all game
+ * meta data (scores, game info, concession button)
+ */
 function cleanShell() {
   document.querySelector('.header__activity').innerHTML = '';
   document.querySelector('.scores').innerHTML = '';
