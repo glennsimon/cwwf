@@ -499,8 +499,8 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
       const player = uid;
       let bgColor = game.players[player].bgColor.match(/blue/i)
-        ? 'rgba(0, 0, 255, 0.5)'
-        : 'rgba(255, 0, 0, 0.5)';
+        ? 'bg-color__blue--translucent'
+        : 'bg-color__red--translucent';
       // console.log('answerObj: ', answerObj);
       for (let index = 0; index < answerObj.guess.length; index++) {
         const correctValue = answers.answerKey[idxArray[index]];

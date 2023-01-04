@@ -380,6 +380,10 @@ function animateScoringView(scoreObj) {
     animatedCell.appendChild(clueNum);
     document.querySelector('.cell__animator').appendChild(animatedCell);
 
+    let animateBgColor = letter.bgColor.match(/blue/i)
+      ? 'rgba(0,0,255,0.5)'
+      : 'rgba(255,0,0,0.5)';
+
     if (letter.score === 0) {
       const windowHeight = window.innerHeight;
       const windowWidth = window.innerWidth;
@@ -464,7 +468,9 @@ function animateScoringView(scoreObj) {
       );
     } else {
       if (!cell.classList.value.match(/(blue|red)/i)) {
-        cell.style.backgroundColor = letter.bgColor;
+        // cell.style.backgroundColor = letter.bgColor;
+        cell.classList.remove('transparent');
+        cell.classList.add(letter.bgColor);
       }
       animatedCell.animate(
         [
@@ -480,7 +486,7 @@ function animateScoringView(scoreObj) {
             transform: 'scale(110%)',
             easing: 'ease-in',
             offset: 0.1,
-            backgroundColor: `${letter.bgColor}`,
+            backgroundColor: `${animateBgColor}`,
           },
           {
             left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
@@ -492,7 +498,7 @@ function animateScoringView(scoreObj) {
             transform: 'scale(10%)',
             left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
             easing: 'linear',
-            backgroundColor: `${letter.bgColor}`,
+            backgroundColor: `${animateBgColor}`,
           },
         ],
         {
