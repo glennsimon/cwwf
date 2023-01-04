@@ -295,8 +295,8 @@ function subscribeToGame(gameId) {
  * Play currentUser's turn. Executed when the player clicks the enter
  * button
  */
-async function playWordController() {
-  console.log('Hello from playWordController.');
+async function playWord() {
+  console.log('Hello from playWord.');
   if (currentGame.status === 'finished') return;
   if (incomplete()) {
     const errorMessage =
@@ -430,7 +430,7 @@ export {
   startNewGame,
   subscribeToGame,
   savePuzzle,
-  playWordController,
+  playWord,
   enterGuess,
   concedeCurrentGame,
 };

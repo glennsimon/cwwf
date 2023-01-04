@@ -1,6 +1,6 @@
 import {
   populateAllUsersController,
-  playWordController,
+  playWord,
   enterGuess,
   populateFriendsController,
   columns,
@@ -82,11 +82,6 @@ function showPuzzle() {
     for (const target of keyList) {
       target.addEventListener('click', enterLetter);
     }
-    // document.getElementById('enter').addEventListener('click', () => {
-    //   headerSpinner.classList.add('is-active');
-    //   headerMessage.innerText = 'Working...';
-    //   playWordController();
-    // });
   }
   document.querySelector('.drawer__concede').innerHTML = concedeHtml;
   document.querySelector('.scores').innerHTML = scoresHtml;
@@ -781,7 +776,7 @@ function getWordBlock(cell, direction) {
   const row = cell.parentElement.rowIndex;
   const col = cell.cellIndex;
   let index = row * columns + col;
-  const lowLimit = acrossWord ? row * columns : columns;
+  const lowLimit = acrossWord ? row * columns : columns - 1;
   const highLimit = acrossWord ? (row + 1) * columns : columns ** 2;
   const increment = acrossWord ? 1 : columns;
   const puzzle = currentGame.puzzle;
@@ -837,7 +832,7 @@ function enterLetter(event) {
       event.target.classList.contains('button__keyboard--enter')
     ) {
       showActivity('.header__activity', 'Working...');
-      playWordController();
+      playWord();
       return;
     }
     if (
@@ -860,32 +855,6 @@ function enterLetter(event) {
       letter = letter.slice(0, 1);
     }
 
-    // if (event.keyCode === 13) {
-    //   showActivity('.header__activity', 'Working...');
-    //   playWordController();
-    //   return;
-    // }
-    // if (event.key) {
-    //   letter = event.key;
-    //   console.log(letter);
-    // } else {
-    //   let target = event.target;
-    //   while (!target.classList.contains('button__keyboard')) {
-    //     target = target.parentNode;
-    //     if (target.classList.contains('container__keyboard')) return;
-    //   }
-    //   if (target.classList.contains('button__keyboard--backspace')) {
-    //     undoEntry();
-    //     return;
-    //   }
-    //   if (target.classList.contains('button__keyboard--enter')) {
-    //     showActivity('.header__activity', 'Working...');
-    //     playWordController();
-    //     return;
-    //   }
-    //   letter = target.querySelector('.keyboard__key').innerText.trim();
-    // }
-    // if (!letter || !letter.match(/^[a-zA-Z]$/)) return;
     if (currentCell) {
       let row = currentCell.parentElement.rowIndex;
       let col = currentCell.cellIndex;

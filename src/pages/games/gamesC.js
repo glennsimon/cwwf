@@ -496,7 +496,6 @@ export {
 //   getCurrentOppController,
 //   populateAllUsersController,
 //   getAllGamesController,
-//   playWordController,
 //   getColumnsController,
 //   getIdxArrayController,
 //   setIdxArrayController,
