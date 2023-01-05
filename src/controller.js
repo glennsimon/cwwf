@@ -265,9 +265,13 @@ async function checkForPendingPlayer() {
           functions,
           'updatePendingPlayer'
         );
-        currentUser = (await updatePendingPlayer(newUserObject)).data;
-        console.log('currentUser: ', currentUser);
-        if (currentUser) document.cookie = 'xwwf_invite=done; max-age=0';
+        const currentUserCheckData = await updatePendingPlayer(newUserObject);
+        if (currentUserCheckData) {
+          currentUser = currentUserCheckData.data;
+          console.log('currentUser: ', currentUser);
+        }
+        window.location.href = location.origin;
+        document.cookie = 'xwwf_invite=done; max-age=0';
         return 'xwwf_invite cookie used and deleted';
       }
     }
