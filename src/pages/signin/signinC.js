@@ -20,7 +20,6 @@ import {
   where,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { populateMyGames } from '../games/gamesC.js';
 import { disableSettings, enableSettings } from '../../shellV.js';
 import { route } from '../../router.js';
 
@@ -81,8 +80,6 @@ onAuthStateChanged(auth, async (user) => {
     await checkForPendingPlayer();
     authChangeView(currentUser);
     generateMessagingToken();
-    // TODO: should below be here?  It will load games by default, regardless of location.pathname
-    // populateMyGames(uid);
     await populateMyFriends();
     enableSettings();
     route(location.href);

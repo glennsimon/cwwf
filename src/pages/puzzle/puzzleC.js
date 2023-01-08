@@ -50,6 +50,7 @@ let userStatusDatabaseRef = null;
 let myGames = [];
 let currentGame = null;
 let currentGameId = null;
+let prevGameId = null;
 let columns = null;
 // let idxArray = [];
 let myTurn = null;
@@ -120,7 +121,7 @@ function subscribeToGame(gameId) {
         route('/games');
         return;
       }
-      const prevGameId = currentGameId;
+      prevGameId = currentGameId;
       currentGame = gameSnap.data();
       const playerUids = Object.keys(currentGame.players);
       if (!currentOpp || !playerUids.includes(currentOpp.uid)) {
@@ -422,6 +423,8 @@ function concedeCurrentGame() {
 export {
   columns,
   currentGame,
+  currentGameId,
+  prevGameId,
   currentOpp,
   cleanGameParameters,
   startNewGame,

@@ -518,7 +518,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
         const gridElement = game.puzzle.grid[idxArray[index]];
         const correctValue = answers.answerKey[idxArray[index]];
         const guess = answerObj.guess[index];
-        const guessArray = gridElement.guessArray;
+        let guessArray = gridElement.guessArray;
         if (guessArray && !guessArray.includes(guess)) {
           guessArray.push(guess);
         } else {

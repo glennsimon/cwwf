@@ -34,6 +34,7 @@
   font-weight: bold;
   pointer-events: none;
   box-sizing: border-box;
+  z-index: inherit;
 }
 
 .clue-number {
@@ -213,6 +214,16 @@
 
 .puzzle__letter {
   margin: auto;
+}
+
+.puzzle--animated-cell {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  justify-content: space-around;
+  border: 1px solid black;
+  background-color: white;
+  text-align: center;
 }
 
 @media screen and (min-aspect-ratio: 7/10) {

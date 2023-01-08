@@ -11,12 +11,12 @@ import { authChangeView } from './pages/signin/signinV.js';
 import { uiStart } from './pages/signin/signin.js';
 import { showSettings } from './pages/settings/settingsV.js';
 import { populateMyGames } from './pages/games/gamesC.js';
-import { showPuzzle } from './pages/puzzle/puzzleV.js';
 import {
   currentGame,
   currentOpp,
   subscribeToGame,
 } from './pages/puzzle/puzzleC.js';
+import { loadGames } from './pages/games/gamesV.js';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;
@@ -62,7 +62,7 @@ function shellHandler(urlString, htmlPath) {
  */
 function gamesHandler(urlString, htmlPath) {
   if (currentUser && currentUser.uid) {
-    populateMyGames(currentUser.uid);
+    populateMyGames(currentUser.uid).then(loadGames);
     return;
   }
   route('/signin');
@@ -75,12 +75,8 @@ function gamesHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function puzzleHandler(urlString, htmlPath) {
-  // const url = new URL(urlString, window.location.origin);
-  // if (window.location.pathname === '/puzzle') {
   const gameId = urlString.split('=')[1];
   subscribeToGame(gameId);
-  //   } else {
-  // showPuzzle();
 }
 
 /**

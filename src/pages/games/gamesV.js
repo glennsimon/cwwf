@@ -1,12 +1,12 @@
 import gamesHtml from './games.html';
-import { currentUser } from '../signin/signinC';
+import { currentUser, myFriends } from '../signin/signinC';
 import './games.css';
 import '../../pageFrags/dialogs/dialogs.css';
 import { showActivity } from '../../pageFrags/activity/activity';
 import { route } from '../../router';
 import { showGameStartDialog } from '../../pageFrags/dialogs/dialogsV';
-import { subscribeToGame } from '../puzzle/puzzleC';
 import { cleanShell } from '../../shellV';
+import { myGames } from './gamesC';
 
 const container__app = document.querySelector('.container__app');
 
@@ -38,10 +38,8 @@ function loadGame(event) {
 /**
  * Load game list with active and past games that the current user has
  * participated in.
- * @param {Array} myGames Object all games viewable by the current user
- * @param {object} userData Object with all public user data for users in myGames
  */
-async function loadGames(myGames, userData) {
+async function loadGames() {
   console.log('Hello from loadGames.');
   cleanShell();
   container__app.innerHTML = gamesHtml;
@@ -96,8 +94,8 @@ async function loadGames(myGames, userData) {
       // displays up to 20 active and 10 past games.
       // Change query limit(30) in populateMyGames if different
       // number is desired.  See else below.
-      const opponentPhotoUrl = userData[oppUid]
-        ? userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL
+      const opponentPhotoUrl = myFriends[oppUid]
+        ? myFriends[oppUid].prefAvatarUrl || myFriends[oppUid].photoURL
         : null;
       if (opponentPhotoUrl) {
         avatar = `<span class='user-photo__crop material-icons mdl-list__item-avatar'>
@@ -108,8 +106,8 @@ async function loadGames(myGames, userData) {
   <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
     <span>${
-      userData[oppUid]
-        ? userData[oppUid].prefName || userData[oppUid].displayName
+      myFriends[oppUid]
+        ? myFriends[oppUid].prefName || myFriends[oppUid].displayName
         : 'NoName'
     }</span>
     <span class='mdl-list__item-sub-title'>
@@ -139,8 +137,8 @@ async function loadGames(myGames, userData) {
       }
       // pastGames[doc.id] = {};
       // pastGames[doc.id].difficulty = game.difficulty;
-      const opponentPhotoUrl = userData[oppUid]
-        ? userData[oppUid].prefAvatarUrl || userData[oppUid].photoURL
+      const opponentPhotoUrl = myFriends[oppUid]
+        ? myFriends[oppUid].prefAvatarUrl || myFriends[oppUid].photoURL
         : null;
       if (opponentPhotoUrl) {
         avatar = `<span class='user-photo__crop material-icons mdl-list__item-avatar'>
@@ -151,8 +149,8 @@ async function loadGames(myGames, userData) {
   <span id='${oppUid}' class='mdl-list__item-primary-content'>
     ${avatar}
     <span>${
-      userData[oppUid]
-        ? userData[oppUid].prefName || userData[oppUid].displayName
+      myFriends[oppUid]
+        ? myFriends[oppUid].prefName || myFriends[oppUid].displayName
         : 'NoName'
     }</span>
     <span class='mdl-list__item-sub-title'>${result}</span>

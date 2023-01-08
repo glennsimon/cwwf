@@ -88,7 +88,6 @@ function showPuzzle() {
       target.addEventListener('click', enterLetter);
     }
   }
-  document.querySelector('.drawer__concede').innerHTML = concedeHtml;
   document.querySelector('.scores').innerHTML = scoresHtml;
   document.querySelector('.drawer__content').innerHTML = puzzleInfoHtml;
   const puzTable = document.querySelector('.table__puzzle');
@@ -154,7 +153,6 @@ function showPuzzle() {
   // kbContainer.classList.remove('displayNone');
   // kbContainer.classList.add('displayFlex');
   // document.querySelector('.container__clues').classList.remove('displayNone');
-  addConcedeHtml();
   loadClues('across');
   loadClues('down');
 
@@ -187,6 +185,7 @@ function showPuzzle() {
     }
     document.querySelector('.drawer__concede').innerHTML = '';
   } else {
+    document.querySelector('.drawer__concede').innerHTML = concedeHtml;
     addConcedeHtml();
   }
   updateScoreboard(currentGame);
@@ -349,11 +348,11 @@ function animateScoringView(scoreObj) {
     animatedCell.style.top = cellY + 'px';
     animatedCell.style.zIndex = (zIndex--).toString();
     // animatedCell.style.backgroundColor = letter.bgColor;
-    animatedCell.classList = `displayFlex posFixed flexDirCol spaceAround animatedCell`;
+    animatedCell.className = 'puzzle--animated-cell';
     const square = document.createElement('div');
-    square.classList = 'square';
+    square.className = 'square';
     const letterBox = document.createElement('div');
-    letterBox.classList = 'marginAuto';
+    letterBox.classList = 'margin--auto';
     const letterContent = letter.guess || letter.correctLetter;
     cell.children[0].children[0].innerText = letterContent;
     letterBox.innerText = letterContent;
@@ -787,7 +786,7 @@ function clearHighlights() {
       .querySelector('.table__puzzle')
       .removeChild(highlighter);
   } catch (err) {
-    console.log('INFO: highlighter not attached: ', err);
+    console.log('INFO: highlighter not previously attached.');
   }
   for (const idx of idxArray) {
     const row = Math.floor(idx / columns);

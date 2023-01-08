@@ -8,6 +8,7 @@ import {
   onSnapshot,
   query,
   where,
+  getDocFromServer,
 } from 'firebase/firestore';
 import { currentUser } from '../signin/signinC.js';
 import { showActivity } from '../../pageFrags/activity/activity.js';
@@ -51,7 +52,6 @@ let myGames = [];
 //  * if not subscribed to any game.
 //  */
 // let gameUnsubscribe = () => {};
-let myGamesUnsubscribe = () => {};
 
 // /**
 //  * Get myFriends. Should be used by all external modules.
@@ -300,7 +300,6 @@ async function populateMyGames(uid) {
   console.log('Hello from populateMyGames.');
   if (!uid) return;
   showActivity('.header__activity', 'Fetching games...');
-  myGamesUnsubscribe();
   // try {
   const q = query(
     collection(db, 'gameListBuilder'),
@@ -308,7 +307,7 @@ async function populateMyGames(uid) {
     // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
     // limit(30)
   );
-  myGamesUnsubscribe = onSnapshot(q, async (snapshot) => {
+  return getDocs(q).then((snapshot) => {
     const myPastGames = [];
     const myActiveGames = [];
     const userIds = [];
@@ -322,9 +321,9 @@ async function populateMyGames(uid) {
       } else {
         myActiveGames.push(gameListItem);
       }
-      for (const uid of gameListItem.viewableBy) {
-        if (!userIds.includes(uid)) userIds.push(uid);
-      }
+      // for (const uid of gameListItem.viewableBy) {
+      //   if (!userIds.includes(uid)) userIds.push(uid);
+      // }
       // if (doc.id === currentGameId) {
       //   currentOpponentUid =
       //     gameListItem.viewableBy[0] === currentUser.uid
@@ -345,17 +344,17 @@ async function populateMyGames(uid) {
     //     if (!userIds.includes(uid)) userIds.push(uid);
     //   }
     // }
-    if (userIds.length !== 0) {
-      const q2 = query(collection(db, 'users'), where('uid', 'in', userIds));
-      const userDocs = await getDocs(q2);
-      const count = userDocs.size;
-      console.log('count: ', count);
-      let userData = {};
-      userDocs.forEach((doc) => {
-        userData[doc.id] = doc.data();
-      });
-      loadGames(myGames, userData);
-    }
+    // if (userIds.length !== 0) {
+    //   const q2 = query(collection(db, 'users'), where(uid, 'in', userIds));
+    //   const userDocs = getDocs(q2);
+    //   // const count = userDocs.size;
+    //   // console.log('count: ', count);
+    //   let userData = {};
+    //   userDocs.forEach((doc) => {
+    //     userData[doc.id] = doc.data();
+    //   });
+    //   // loadGames();
+    // }
     return;
   });
 }
