@@ -595,9 +595,9 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       game.lastTurnCheckObj = lastTurnCheckObj;
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameList);
+      functions.logger.log('checkAnswers transaction success!');
       return notifyPlayer(opponent);
     });
-    functions.logger.log('checkAnswers transaction success!');
   } catch (error) {
     functions.logger.error('checkAnswers transaction failure: ', error);
   }

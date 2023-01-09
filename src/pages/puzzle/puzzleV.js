@@ -78,8 +78,9 @@ function loadPuzzleInfo() {
 function showPuzzle() {
   console.log('Hello from showPuzzleView.');
   cleanShell();
+  const puzzle = document.querySelector('.table__puzzle');
   // if not currently playing a game, load puzzle HTML and initialize
-  if (!document.querySelector('.table__puzzle')) {
+  if (!puzzle) {
     document.querySelector('.container__app').innerHTML = puzzleHtml;
     document.addEventListener('keyup', enterLetter);
     window.addEventListener('resize', resizePuzzle);
@@ -87,6 +88,8 @@ function showPuzzle() {
     for (const target of keyList) {
       target.addEventListener('click', enterLetter);
     }
+  } else {
+    puzzle.innerHTML = '';
   }
   document.querySelector('.scores').innerHTML = scoresHtml;
   document.querySelector('.drawer__content').innerHTML = puzzleInfoHtml;
@@ -127,11 +130,13 @@ function showPuzzle() {
           if (bgColor === 'bgTransBlue')
             bgColor = 'bg-color__blue--translucent';
           cell.classList.add(bgColor);
+          letterDiv.innerText = squareData.value;
+        } else {
+          const guess = squareData.guessArray
+            ? squareData.guessArray[squareData.guessArray.length - 1]
+            : '';
+          letterDiv.innerText = guess;
         }
-        const guess = squareData.guessArray
-          ? squareData.guessArray[squareData.guessArray.length - 1]
-          : '';
-        letterDiv.innerText = guess;
         squareDiv.appendChild(letterDiv);
         cell.appendChild(squareDiv);
         if (clueNumber !== '') {
