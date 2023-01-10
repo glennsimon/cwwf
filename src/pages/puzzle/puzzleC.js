@@ -13,6 +13,7 @@ import {
   showHeaderActivityView,
   idxArray,
   acrossWord,
+  disableEnter,
 } from './puzzleV.js';
 import {
   getDatabase,
@@ -296,30 +297,9 @@ function subscribeToGame(gameId) {
  * Play currentUser's turn. Executed when the player clicks the enter
  * button
  */
-async function playWord() {
+function playWord() {
   console.log('Hello from playWord.');
-  if (currentGame.status === 'finished') return;
-  if (incomplete()) {
-    const errorMessage =
-      `Entry is incomplete. No blank letters ` +
-      `allowed in highlighted range. Try again!`;
-    showErrorDialog(errorMessage);
-    return;
-  }
-  if (location.pathname.startsWith('/puzzle') && !myTurn) {
-    const errorMessage =
-      `Whoa there, Buckaroo... ` +
-      `Your opponent hasn't played their turn yet!`;
-    showErrorDialog(errorMessage);
-    return;
-  }
-  if (!online) {
-    const errorMessage =
-      `You are currently disconnected from the ` +
-      `internet. When connection is restored you may have to ` +
-      `play your turn again`;
-    showErrorDialog(errorMessage);
-  }
+  disableEnter();
   const answerObj = {};
   answerObj.idxArray = idxArray;
   answerObj.gameId = currentGameId;
@@ -332,7 +312,7 @@ async function playWord() {
     answerObj.guess.push(guessArray[guessArray.length - 1]);
   }
   const checkAnswers = httpsCallable(functions, 'checkAnswers');
-  await checkAnswers(answerObj)
+  return checkAnswers(answerObj)
     .then(async (notificationResult) => {
       console.log('notification Result: ', await notificationResult.data);
     })
@@ -341,6 +321,38 @@ async function playWord() {
       console.log('Error message: ', err.message);
       console.log('Error details: ', err.details);
     });
+}
+
+/**
+ * Checks if entry can be played
+ * @returns true if ready to play, false otherwise
+ */
+function checkReadiness() {
+  console.log('Hello from checkForProblems.');
+  if (currentGame.status === 'finished') return false;
+  if (incomplete()) {
+    const errorMessage =
+      `Entry is incomplete. No blank letters ` +
+      `allowed in highlighted range. Try again!`;
+    showErrorDialog(errorMessage);
+    return false;
+  }
+  if (location.pathname.startsWith('/puzzle') && !myTurn) {
+    const errorMessage =
+      `Whoa there, Buckaroo... ` +
+      `Your opponent hasn't played their turn yet!`;
+    showErrorDialog(errorMessage);
+    return false;
+  }
+  if (!online) {
+    const errorMessage =
+      `You are currently disconnected from the ` +
+      `internet. When connection is restored you may have to ` +
+      `play your turn again`;
+    showErrorDialog(errorMessage);
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -433,4 +445,5 @@ export {
   playWord,
   enterGuess,
   concedeCurrentGame,
+  checkReadiness,
 };

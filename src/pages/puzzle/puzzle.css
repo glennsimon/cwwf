@@ -148,6 +148,11 @@
   background-color: rgba(63, 81, 181, 0.6);
 }
 
+.button--disabled {
+  color: gray;
+  pointer-events: none;
+}
+
 .keyboard__key {
   display: flex;
   margin: auto;

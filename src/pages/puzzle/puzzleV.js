@@ -6,6 +6,7 @@ import {
   columns,
   currentGame,
   savePuzzle,
+  checkReadiness,
 } from './puzzleC.js';
 import { route } from '../../router.js';
 import { currentUser } from '../signin/signinC.js';
@@ -30,6 +31,7 @@ import {
 let currentCell = null;
 let idxArray = [];
 let acrossWord = true;
+let turnInProgress = false;
 // let currentOpponent = null;
 // let allUsers = null;
 
@@ -78,33 +80,33 @@ function loadPuzzleInfo() {
 function showPuzzle() {
   console.log('Hello from showPuzzleView.');
   cleanShell();
-  const puzzle = document.querySelector('.table__puzzle');
+  let puzzleGrid = document.querySelector('.table__puzzle');
   // if not currently playing a game, load puzzle HTML and initialize
-  if (!puzzle) {
+  if (!puzzleGrid) {
     document.querySelector('.container__app').innerHTML = puzzleHtml;
-    document.addEventListener('keyup', enterLetter);
+    puzzleGrid = document.querySelector('.table__puzzle');
+    document.addEventListener('keyup', directKeyAction);
     window.addEventListener('resize', resizePuzzle);
-    const keyList = document.getElementsByClassName('button__keyboard');
+    let keyList = document.querySelectorAll('.button__keyboard');
     for (const target of keyList) {
-      target.addEventListener('click', enterLetter);
+      target.addEventListener('click', directKeyAction);
     }
   } else {
-    puzzle.innerHTML = '';
+    puzzleGrid.innerHTML = '';
   }
   document.querySelector('.scores').innerHTML = scoresHtml;
   document.querySelector('.drawer__content').innerHTML = puzzleInfoHtml;
-  const puzTable = document.querySelector('.table__puzzle');
   // clear previous puzzle if it exists
-  if (puzTable) {
+  if (puzzleGrid) {
     clearPuzzle();
   }
   loadPuzzleInfo(currentGame);
 
   const cellDim = getCellDim();
   let gridIndex = 0;
-  const puzWidth = puzTable.offsetWidth;
+  const puzWidth = puzzleGrid.offsetWidth;
   for (let rowIndex = 0; rowIndex < currentGame.puzzle.rows; rowIndex += 1) {
-    const row = puzTable.insertRow(rowIndex);
+    const row = puzzleGrid.insertRow(rowIndex);
     row.style.width = `${puzWidth}px`;
     for (let colIndex = 0; colIndex < currentGame.puzzle.cols; colIndex += 1) {
       const squareData = currentGame.puzzle.grid[gridIndex];
@@ -152,8 +154,8 @@ function showPuzzle() {
       gridIndex += 1;
     }
   }
-  const puzHeight = puzTable.offsetHeight;
-  puzTable.appendChild(generateGridElement(puzWidth, puzHeight));
+  const puzHeight = puzzleGrid.offsetHeight;
+  puzzleGrid.appendChild(generateGridElement(puzWidth, puzHeight));
 
   // kbContainer.classList.remove('displayNone');
   // kbContainer.classList.add('displayFlex');
@@ -196,6 +198,52 @@ function showPuzzle() {
   updateScoreboard(currentGame);
   console.log(currentGame);
   document.querySelector('.header__activity').innerHTML = '';
+  document
+    .querySelector('.button__keyboard--enter')
+    .classList.remove('button--disabled');
+}
+
+/**
+ * Take action based on virtual or physical keyboard
+ * @param {event} event Either a keyboard event or a click event
+ * @returns void
+ */
+async function directKeyAction(event) {
+  if (
+    event.keyCode === 13 || // enter keyCode
+    event.target.classList.contains('button__keyboard--enter')
+  ) {
+    if (turnInProgress) return;
+    if (checkReadiness()) {
+      turnInProgress = true;
+      showActivity('.header__activity', 'Working...');
+      turnInProgress = await playWord().then(() => {
+        return false;
+      });
+    }
+  }
+  if (
+    event.keyCode === 8 || // backspace keyCode
+    event.target.classList.contains('button__keyboard--backspace')
+  ) {
+    undoEntry();
+    return;
+  }
+  let letter = event.key;
+  if (event.type === 'keyup' && !letter.match(/^[a-zA-Z]$/)) {
+    return;
+  }
+  if (event.type === 'click') {
+    let target = event.target;
+    while (!target.classList.contains('button__keyboard--letter')) {
+      target = target.parentNode;
+      if (target.classList.contains('container__keyboard')) return;
+    }
+    letter = target.querySelector('.keyboard__key').innerText.trim();
+    letter = letter.slice(0, 1);
+    if (!letter.match(/^[a-zA-Z]$/)) return;
+  }
+  enterLetter(letter);
 }
 
 /**
@@ -289,7 +337,7 @@ function addConcedeHtml() {
  * to the correct location.
  * @param {number} puzWidth
  * @param {number} puzHeight
- * @returns HTML grid element that can be appended to puzTable
+ * @returns HTML grid element that can be appended to puzzleGrid
  */
 function generateGridElement(puzWidth, puzHeight) {
   const svgGrid = document.createElement('div');
@@ -321,7 +369,7 @@ function generateGridElement(puzWidth, puzHeight) {
 function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
   document.querySelector('.header__activity').innerHTML = '';
-  const puzTable = document.querySelector('.table__puzzle');
+  const puzzleGrid = document.querySelector('.table__puzzle');
   if (scoreObj.newGame || scoreObj.abandoned) return;
   const scores = document.querySelector('.scores');
   const myUid = currentUser.uid;
@@ -335,7 +383,7 @@ function animateScoringView(scoreObj) {
     const index = letter.index;
     const row = Math.floor(index / columns);
     const col = index - row * columns;
-    const cell = puzTable.firstChild.children[row].children[col];
+    const cell = puzzleGrid.firstChild.children[row].children[col];
     const cellBoundingRectangle = cell.getBoundingClientRect();
     const cellWidth = cellBoundingRectangle.width;
     const cellHeight = cellBoundingRectangle.height;
@@ -676,8 +724,8 @@ function undoEntry() {
  */
 function getCellDim() {
   console.log('Hello from getCellDim.');
-  const puzTableWidth = document.querySelector('.table__puzzle').offsetWidth;
-  return puzTableWidth / columns;
+  const puzzleGridWidth = document.querySelector('.table__puzzle').offsetWidth;
+  return puzzleGridWidth / columns;
 }
 
 /** Clears letters when user changes to a different clue */
@@ -701,7 +749,7 @@ function clearLetters() {
  * @param {Object} cell Cell the user clicked
  */
 function selectBlock(direction, cell) {
-  const puzTable = document.querySelector('.table__puzzle');
+  const puzzleGrid = document.querySelector('.table__puzzle');
   clearHighlights();
   idxArray = [];
   // fill idxArray
@@ -740,13 +788,13 @@ function selectBlock(direction, cell) {
   const firstCellRow = Math.floor(idxArray[0] / columns);
   const firstCellCol = idxArray[0] - firstCellRow * columns;
   highlighter.style.translate = `${cellDim * firstCellCol - 2}px -${
-    puzTable.offsetHeight - cellDim * firstCellRow + 2
+    puzzleGrid.offsetHeight - cellDim * firstCellRow + 2
   }px`;
 
   for (const index of idxArray) {
     const idxRow = Math.floor(index / columns);
     const idxCol = index - idxRow * columns;
-    const currentCell = puzTable.firstChild.children[idxRow].children[idxCol];
+    const currentCell = puzzleGrid.firstChild.children[idxRow].children[idxCol];
     if (currentGame.puzzle.grid[index].status !== 'locked') {
       currentCell.classList.remove('transparent');
       currentCell.classList.add(
@@ -756,7 +804,7 @@ function selectBlock(direction, cell) {
       );
     }
   }
-  puzTable.appendChild(highlighter);
+  puzzleGrid.appendChild(highlighter);
 }
 
 /**
@@ -815,91 +863,70 @@ function clearHighlights() {
 /**
  * Adds a letter to the puzzle from physical or virtual keyboard event and
  * moves forward one space
- * @param {Event} event Keyboard or touch event from physical or virtual
+ * @param {string} letter Letter to enter into the grid
  * keyboard
  */
-function enterLetter(event) {
+function enterLetter(letter) {
   console.log('Hello from enterLetter.');
   // check if puzzle HTML is loaded
-  if (document.querySelector('.container__keyboard')) {
-    if (
-      event.keyCode === 13 || // enter keyCode
-      event.target.classList.contains('button__keyboard--enter')
-    ) {
-      showActivity('.header__activity', 'Working...');
-      playWord();
+  if (currentCell) {
+    let row = currentCell.parentElement.rowIndex;
+    let col = currentCell.cellIndex;
+    const index = row * columns + col;
+    const nextCellIndex = idxArray.indexOf(index) + 1;
+    const localIdxArray = idxArray
+      .slice(nextCellIndex)
+      .concat(idxArray.slice(0, nextCellIndex));
+    const letterDiv = document.createElement('div');
+    // console.log(idxArray);
+    // console.log(localIdxArray);
+
+    if (currentGame.puzzle.grid[index].status === 'locked') {
+      // alert('Sorry, that square is locked by a previous answer');
       return;
     }
-    if (
-      event.keyCode === 8 || // backspace keyCode
-      event.target.classList.contains('button__keyboard--backspace')
-    ) {
-      undoEntry();
-      return;
-    }
-    let letter = event.key;
-    if (letter && letter.match(/^[a-zA-Z]$/)) {
-      letter = letter.toUpperCase();
-    } else {
-      let target = event.target;
-      while (!target.classList.contains('button__keyboard--letter')) {
-        target = target.parentNode;
-        if (target.classList.contains('container__keyboard')) return;
-      }
-      letter = target.querySelector('.keyboard__key').innerText.trim();
-      letter = letter.slice(0, 1);
-    }
-
-    if (currentCell) {
-      let row = currentCell.parentElement.rowIndex;
-      let col = currentCell.cellIndex;
-      const index = row * columns + col;
-      const nextCellIndex = idxArray.indexOf(index) + 1;
-      const localIdxArray = idxArray
-        .slice(nextCellIndex)
-        .concat(idxArray.slice(0, nextCellIndex));
-      const letterDiv = document.createElement('div');
-      // console.log(idxArray);
-      // console.log(localIdxArray);
-
-      if (currentGame.puzzle.grid[index].status === 'locked') {
-        // alert('Sorry, that square is locked by a previous answer');
-        return;
-      }
-      enterGuess(letter.toUpperCase(), index);
-      letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
-      letterDiv.classList.add('puzzle__letter');
-      currentCell
-        .querySelector('.square')
-        .replaceChild(letterDiv, currentCell.querySelector('.puzzle__letter'));
-      currentCell.classList.remove('puzzle__highlight--cell-current');
-      currentCell.classList.add('puzzle__highlight--cell-range');
-      for (const idx of localIdxArray) {
-        if (currentGame.puzzle.grid[idx].status !== 'locked') {
-          row = Math.floor(idx / columns);
-          col = idx - row * columns;
-          currentCell = document.querySelector('.table__puzzle tbody').children[
-            row
-          ].children[col];
-          currentCell.classList.remove('puzzle__highlight--cell-range');
-          currentCell.classList.add('puzzle__highlight--cell-current');
-          break;
-        }
+    enterGuess(letter.toUpperCase(), index);
+    letterDiv.appendChild(document.createTextNode(letter.toUpperCase()));
+    letterDiv.classList.add('puzzle__letter');
+    currentCell
+      .querySelector('.square')
+      .replaceChild(letterDiv, currentCell.querySelector('.puzzle__letter'));
+    currentCell.classList.remove('puzzle__highlight--cell-current');
+    currentCell.classList.add('puzzle__highlight--cell-range');
+    for (const idx of localIdxArray) {
+      if (currentGame.puzzle.grid[idx].status !== 'locked') {
+        row = Math.floor(idx / columns);
+        col = idx - row * columns;
+        currentCell = document.querySelector('.table__puzzle tbody').children[
+          row
+        ].children[col];
+        currentCell.classList.remove('puzzle__highlight--cell-range');
+        currentCell.classList.add('puzzle__highlight--cell-current');
+        break;
       }
     }
   }
 }
 
+/**
+ * Disables the enter key to prevent multiple entries on a single turn
+ */
+function disableEnter() {
+  document
+    .querySelector('.button__keyboard--enter')
+    .classList.add('button--disabled');
+}
+
 /** Resizes puzzle based on available space */
 function resizePuzzle() {
   console.log('Hello from resizePuzzle.');
-  const puzTable = document.querySelector('.table__puzzle');
-  if (puzTable.children.length === 0) return;
-  // console.log(puzTable.children[0]);
+  const puzzleGrid = document.querySelector('.table__puzzle');
+  if (puzzleGrid.children.length === 0) return;
+  // console.log(puzzleGrid.children[0]);
   const cellDim = getCellDim();
-  const puzWidth = puzTable.offsetWidth;
+  const puzWidth = puzzleGrid.offsetWidth;
 
-  const cells = puzTable.getElementsByTagName('td');
+  const cells = puzzleGrid.getElementsByTagName('td');
 
   for (const cell of cells) {
     cell.style.width = cellDim + 'px';
@@ -930,13 +957,20 @@ function resizePuzzle() {
       cell.innerHTML += svgHtml;
     }
   }
-  const puzHeight = puzTable.offsetHeight;
+  const puzHeight = puzzleGrid.offsetHeight;
   document.querySelector('.grid__svg').remove();
-  puzTable.appendChild(generateGridElement(puzWidth, puzHeight));
+  puzzleGrid.appendChild(generateGridElement(puzWidth, puzHeight));
   if (currentCell) {
     const direction = acrossWord ? 'across' : 'down';
     selectBlock(direction, currentCell);
   }
 }
 
-export { showPuzzle, animateScoringView, clearPuzzle, idxArray, acrossWord };
+export {
+  showPuzzle,
+  animateScoringView,
+  clearPuzzle,
+  disableEnter,
+  idxArray,
+  acrossWord,
+};

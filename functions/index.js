@@ -517,13 +517,14 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       for (let index = 0; index < answerObj.guess.length; index++) {
         const gridElement = game.puzzle.grid[idxArray[index]];
         const correctValue = answers.answerKey[idxArray[index]];
-        const guess = answerObj.guess[index];
+        let guess = answerObj.guess[index];
         let guessArray = gridElement.guessArray;
         if (guessArray && !guessArray.includes(guess)) {
           guessArray.push(guess);
         } else {
           guessArray = [guess];
         }
+        gridElement.guessArray = guessArray;
         const cellResult = {};
         cellResult.guess = guess;
         cellResult.correctLetter = correctValue;
