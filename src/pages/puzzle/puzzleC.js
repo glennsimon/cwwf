@@ -7,7 +7,6 @@ import {
   storage,
 } from '../../firebase-init.js';
 import {
-  authChangeView,
   showPuzzle,
   animateScoringView,
   showHeaderActivityView,

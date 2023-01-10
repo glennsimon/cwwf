@@ -7,7 +7,6 @@ import { auth, functions } from './firebase-init.js';
 import { authState, currentUser } from './pages/signin/signinC.js';
 import { signOut } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
-import { authChangeView } from './pages/signin/signinV.js';
 import { uiStart } from './pages/signin/signin.js';
 import { showSettings } from './pages/settings/settingsV.js';
 import { populateMyGames } from './pages/games/gamesC.js';
@@ -100,8 +99,9 @@ function settingsHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function signinHandler(urlString, htmlPath) {
-  if (currentUser) {
-    const uid = currentUser.uid;
+  // Leave as auth.currentUser - this may run before currentUser is updated
+  if (auth.currentUser) {
+    // const uid = currentUser.uid;
     route('/games');
     return;
   }

@@ -97,9 +97,9 @@ function showPuzzle() {
   document.querySelector('.scores').innerHTML = scoresHtml;
   document.querySelector('.drawer__content').innerHTML = puzzleInfoHtml;
   // clear previous puzzle if it exists
-  if (puzzleGrid) {
-    clearPuzzle();
-  }
+  // if (puzzleGrid) {
+  //   clearPuzzle();
+  // }
   loadPuzzleInfo(currentGame);
 
   const cellDim = getCellDim();
@@ -254,6 +254,7 @@ function loadClues(direction) {
   const clueSelector =
     direction === 'across' ? '.clues--across' : '.clues--down';
   const clues = document.querySelector(clueSelector);
+  clues.innerHTML = '';
   for (const clue of currentGame.puzzle.clues[direction]) {
     const parsedClue = clue.split('.');
     const clueNumber = parseInt(parsedClue[0]);
@@ -340,7 +341,9 @@ function addConcedeHtml() {
  * @returns HTML grid element that can be appended to puzzleGrid
  */
 function generateGridElement(puzWidth, puzHeight) {
-  const svgGrid = document.createElement('div');
+  let svgGrid = document.querySelector('.grid__svg');
+  if (svgGrid) svgGrid.remove();
+  svgGrid = document.createElement('div');
   svgGrid.className = 'grid__svg';
   svgGrid.style = `translate: 0px -${puzHeight}px;`;
   let innerHTML = `<svg height='${puzHeight}' width='${puzWidth}'>
@@ -958,7 +961,7 @@ function resizePuzzle() {
     }
   }
   const puzHeight = puzzleGrid.offsetHeight;
-  document.querySelector('.grid__svg').remove();
+  // document.querySelector('.grid__svg').remove();
   puzzleGrid.appendChild(generateGridElement(puzWidth, puzHeight));
   if (currentCell) {
     const direction = acrossWord ? 'across' : 'down';

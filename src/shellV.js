@@ -6,11 +6,12 @@ import './styles/shared.css';
 import './pageFrags/splash/splash.css';
 import './pageFrags/dialogs/dialogs.css';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from './firebase-init.js';
+import { auth, functions } from './firebase-init.js';
 import { authChangeView } from './pages/signin/signinV.js';
 import { uiStart } from './pages/signin/signin.js';
 import signinHtml from './pages/signin/signin.html';
 import splashHtml from './pageFrags/splash/splash.html';
+import { signOut } from 'firebase/auth';
 
 //#region HTML element constants
 const headerSignin = document.querySelector('.header__signin');
@@ -23,22 +24,24 @@ const headerSignin = document.querySelector('.header__signin');
  */
 document.querySelector('.button__auth').addEventListener('click', (event) => {
   closeDrawer();
-  clearPuzzle();
+  // clearPuzzle();
   if (currentUser) {
     signOut(auth)
       .then(() => {
+        authChangeView(null);
+        route('/signin');
+      })
+      .then(() => {
         const statusUpdate = {};
-        statusUpdate.uid = uid;
+        statusUpdate.uid = currentUser.uid;
         statusUpdate.authState = authState('offline');
         const userOffline2 = httpsCallable(functions, 'userOffline2');
         userOffline2(statusUpdate);
-        authChangeView(null);
       })
       .catch((error) => {
         console.log(error);
       });
   }
-  route('/signin');
 });
 
 document.querySelector('.logo').addEventListener('click', (event) => {

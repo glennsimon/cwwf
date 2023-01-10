@@ -67,14 +67,13 @@ exports.userStatusChanged = functions.database
 exports.userOffline2 = functions.https.onCall(async (statusUpdate, context) => {
   console.log('Hello from userOffline2.');
   const uid = statusUpdate.uid;
-  await admin
+  return admin
     .database()
     .ref(`/users/${uid}`)
     .set(statusUpdate.authState)
     .catch((error) => {
       functions.logger.log('Error: ', error);
     });
-  return null;
 });
 
 exports.authChange = functions.https.onCall(async (data, context) => {

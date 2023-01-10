@@ -37,9 +37,9 @@ function authChangeView(user) {
     avatar.src = '../../images/avatar_circle_black.png';
     // TODO: should we change route here?
     // route('/signin');
-    activeGamesContainer.innerHTML = `You must sign in to see your active games`;
-    pastGamesContainer.innerHTML = `You must sign in to see your completed games`;
-    clearPuzzle();
+    // activeGamesContainer.innerHTML = `You must sign in to see your active games`;
+    // pastGamesContainer.innerHTML = `You must sign in to see your completed games`;
+    // clearPuzzle();
   }
   closeDrawer();
   // TODO: get rid of local variables - currentUser should be available only

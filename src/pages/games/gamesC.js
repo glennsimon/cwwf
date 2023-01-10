@@ -177,38 +177,6 @@ let myGames = [];
 //     });
 // });
 
-// /**
-//  * Firestore function that monitors auth state.
-//  */
-// onAuthStateChanged(auth, async (user) => {
-//   const uid = user ? user.uid : null;
-//   console.log('Hello from onAuthStateChanged. Current user: ', user);
-//   if (!uid) return;
-//   showHeaderActivityView('Signing in, fetching games...');
-//   let userFirestoreRef = doc(db, `/users/${uid}`);
-//   const snapshot = await getDoc(userFirestoreRef);
-//   if (snapshot.exists()) {
-//     currentUser = snapshot.data();
-//   }
-//   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
-//   myFriends = {};
-//   try {
-//     const authChange = httpsCallable(functions, 'authChange');
-//     let authChangeData = await authChange().data;
-//     console.log('authChangeData: ', authChangeData);
-//     // currentUser.uid = uid;
-//     await checkForPendingPlayer();
-//     authChangeView(currentUser);
-//     generateMessagingToken();
-//     populateMyGames(uid);
-//     await populateMyFriends();
-//   } catch (err) {
-//     console.log('Error code: ', err.code);
-//     console.log('Error message: ', err.message);
-//     console.log('Error details: ', err.details);
-//   }
-// });
-
 // async function checkForPendingPlayer() {
 //   // if there is a 'xwwf_invite' cookie, use it to create a new user from
 //   // the pending player object in Firestore
