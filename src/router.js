@@ -7,6 +7,7 @@ import {
   tosHandler,
   privacyHandler,
   helpHandler,
+  pageNotFoundHandler,
 } from './factory.js';
 import { currentUser } from './pages/signin/signinC.js';
 import { constants } from './constants.js';
@@ -27,6 +28,7 @@ const routes = {
   '/tos': { html: '/pages/tos.html', handler: tosHandler },
   '/privacy': { html: '/pages/privacy.html', handler: privacyHandler },
   '/help': { html: '/pages/help.html', handler: helpHandler },
+  '/404': { html: '/pages/404.html', handler: pageNotFoundHandler },
 };
 
 /**
@@ -47,7 +49,7 @@ function route(urlString) {
  * appropriate handler, which must be imported.
  * @param {string} urlString
  */
-function handleLocation(urlString) {
+async function handleLocation(urlString) {
   // const urlStringData = checkRoute(urlString);
   const routePath = checkRoute(urlString);
   // urlStringData ? urlStringData[1] : null;
@@ -59,7 +61,7 @@ function handleLocation(urlString) {
       `max-age=${constants.COOKIE_MAX_AGE_BOOKMARK}`;
     routes[routePath].handler(urlString, routes[routePath].html);
   } else {
-    fetch('/pages/404.html').then((data) => (document.body.innerHTML = data));
+    routes['/404'].handler(urlString, routes['/404'].html);
   }
 }
 

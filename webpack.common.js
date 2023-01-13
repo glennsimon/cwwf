@@ -74,7 +74,6 @@ module.exports = {
           from: './firebase-messaging-sw.js',
           to: './firebase-messaging-sw.mjs', // needs to change to .mjs so recognized as module
         },
-        { from: './src/404.html', to: './404.html' },
       ],
     }),
     // new BundleAnalyzerPlugin(),  // to be used occassionally

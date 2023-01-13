@@ -1,10 +1,10 @@
 import { route } from './router.js';
 import settingsHtml from './pages/settings/settings.html';
 import signinHtml from './pages/signin/signin.html';
+import pageNotFoundHtml from './pages/404/404.html';
 import splashHtml from './pageFrags/splash/splash.html';
 // import { uiStart } from './pages/signin/signin.js';
 import { auth, functions } from './firebase-init.js';
-import { httpsCallable } from 'firebase/functions';
 import { uiStart } from './pages/signin/signin.js';
 import { showSettings } from './pages/settings/settingsV.js';
 import { populateMyGames } from './pages/games/gamesC.js';
@@ -80,15 +80,19 @@ function gamesHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function puzzleHandler(urlString, htmlPath) {
-  try {
-    const gameId = urlString.split('=')[1];
-    subscribeToGame(gameId);
-    enableGamesOverflow();
-    enableSettingsOverflow();
-  } catch (error) {
-    console.log('Problem loading puzzle: ', error);
-    route('/signin');
+  if (auth.currentUser) {
+    try {
+      const gameId = urlString.split('=')[1];
+      subscribeToGame(gameId);
+      enableGamesOverflow();
+      enableSettingsOverflow();
+    } catch (error) {
+      console.log('Problem loading puzzle: ', error);
+      route('/signin');
+    }
+    return;
   }
+  route('/signin');
 }
 
 /**
@@ -153,7 +157,16 @@ function tosHandler(urlString, htmlPath) {}
  */
 function helpHandler(urlString, htmlPath) {}
 
-// shellHandler();
+/**
+ * Called by the router, fetches resources necessary for the 404 page
+ * and initiates the display of the 404 page
+ * @param {string} urlString * @param {string} urlString route passed from `route` function
+ * @param {string} htmlPath path to html to be fetched and loaded by handler
+ */
+function pageNotFoundHandler(urlString, htmlPath) {
+  document.querySelector('.container__app').innerHTML = splashHtml;
+  document.querySelector('.container__app').innerHTML += pageNotFoundHtml;
+}
 
 export {
   shellHandler,
@@ -164,4 +177,5 @@ export {
   tosHandler,
   privacyHandler,
   helpHandler,
+  pageNotFoundHandler,
 };
