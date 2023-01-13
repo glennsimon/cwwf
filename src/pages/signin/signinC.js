@@ -20,7 +20,12 @@ import {
   where,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { disableSettings, enableSettings } from '../../shellV.js';
+import {
+  disableGamesOverflow,
+  disableSettingsOverflow,
+  enableGamesOverflow,
+  enableSettingsOverflow,
+} from '../../shellV.js';
 import { route } from '../../router.js';
 
 let myFriends = {};
@@ -64,7 +69,8 @@ onAuthStateChanged(auth, async (user) => {
   const uid = user ? user.uid : null;
   console.log('Hello from onAuthStateChanged. Current user: ', user);
   if (!uid) {
-    disableSettings();
+    disableSettingsOverflow();
+    disableGamesOverflow();
     return;
   }
   let userFirestoreRef = doc(db, `/users/${uid}`);
@@ -81,7 +87,8 @@ onAuthStateChanged(auth, async (user) => {
     authChangeView(currentUser);
     generateMessagingToken();
     await populateMyFriends();
-    enableSettings();
+    enableSettingsOverflow();
+    enableGamesOverflow();
     route(location.href);
   } catch (err) {
     console.log('Error code: ', err.code);

@@ -1,4 +1,3 @@
-import { clearPuzzle } from './pages/puzzle/puzzleV.js';
 import { authState, currentUser } from './pages/signin/signinC.js';
 import { route } from './router.js';
 import './styles/shell.css';
@@ -8,9 +7,6 @@ import './pageFrags/dialogs/dialogs.css';
 import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from './firebase-init.js';
 import { authChangeView } from './pages/signin/signinV.js';
-import { uiStart } from './pages/signin/signin.js';
-import signinHtml from './pages/signin/signin.html';
-import splashHtml from './pageFrags/splash/splash.html';
 import { signOut } from 'firebase/auth';
 
 //#region HTML element constants
@@ -24,7 +20,7 @@ const headerSignin = document.querySelector('.header__signin');
  */
 document.querySelector('.button__auth').addEventListener('click', (event) => {
   closeDrawer();
-  // clearPuzzle();
+  cleanShell();
   if (currentUser) {
     signOut(auth)
       .then(() => {
@@ -58,48 +54,33 @@ headerSignin.addEventListener('click', () => {
 
 document.querySelector('.drawer__close').addEventListener('click', closeDrawer);
 
-// document.querySelector('.overflow__list').addEventListener('click', (event) => {
-//   if (event.target.querySelector('i').innerText === 'refresh') {
-//     location.reload();
-//   }
-//   if (event.target.querySelector('i').innerText === 'grid_on') {
-//     route('/games');
-//   }
-//   if (event.target.querySelector('i').innerText === 'settings') {
-//     route('/settings');
-//   }
-// });
-
-document
-  .querySelector('.overflow__refresh')
-  .addEventListener('click', () => location.reload());
-
-document
-  .querySelector('.overflow__games')
-  .addEventListener('click', () => route('/games'));
-
-document
-  .querySelector('.overflow__settings')
-  .addEventListener('click', () => route('/settings'));
+document.querySelector('.overflow__list').addEventListener('click', (event) => {
+  let target = event.target;
+  if (target.classList.contains('overflow__list')) return;
+  while (!target.classList.contains('overflow')) target = target.parentElement;
+  if (target.classList.contains('overflow__refresh')) location.reload();
+  if (target.classList.contains('overflow__games')) route('/games');
+  if (target.classList.contains('overflow__settings')) route('/settings');
+});
 
 function closeDrawer() {
   if (document.querySelector('.drawer.is-visible'))
     document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
 }
 
-function enableGames() {
+function enableGamesOverflow() {
   document.querySelector('.overflow__games').removeAttribute('disabled');
 }
 
-function enableSettings() {
+function enableSettingsOverflow() {
   document.querySelector('.overflow__settings').removeAttribute('disabled');
 }
 
-function disableGames() {
+function disableGamesOverflow() {
   document.querySelector('.overflow__games').setAttribute('disabled', '');
 }
 
-function disableSettings() {
+function disableSettingsOverflow() {
   document.querySelector('.overflow__settings').setAttribute('disabled', '');
 }
 
@@ -116,9 +97,9 @@ function cleanShell() {
 
 export {
   closeDrawer,
-  enableGames,
-  enableSettings,
-  disableSettings,
-  disableGames,
+  enableGamesOverflow,
+  enableSettingsOverflow,
+  disableSettingsOverflow,
+  disableGamesOverflow,
   cleanShell,
 };

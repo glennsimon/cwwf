@@ -4,8 +4,6 @@ import signinHtml from './pages/signin/signin.html';
 import splashHtml from './pageFrags/splash/splash.html';
 // import { uiStart } from './pages/signin/signin.js';
 import { auth, functions } from './firebase-init.js';
-import { authState, currentUser } from './pages/signin/signinC.js';
-import { signOut } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { uiStart } from './pages/signin/signin.js';
 import { showSettings } from './pages/settings/settingsV.js';
@@ -16,6 +14,12 @@ import {
   subscribeToGame,
 } from './pages/puzzle/puzzleC.js';
 import { loadGames } from './pages/games/gamesV.js';
+import {
+  disableGamesOverflow,
+  disableSettingsOverflow,
+  enableGamesOverflow,
+  enableSettingsOverflow,
+} from './shellV.js';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;
@@ -46,9 +50,9 @@ function createElementFromHtml(html) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function shellHandler(urlString, htmlPath) {
-  if (currentUser) {
+  try {
     route('/games');
-  } else {
+  } catch (error) {
     route('/signin');
   }
 }
@@ -60,8 +64,10 @@ function shellHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function gamesHandler(urlString, htmlPath) {
-  if (currentUser && currentUser.uid) {
-    populateMyGames(currentUser.uid).then(loadGames);
+  if (auth.currentUser && auth.currentUser.uid) {
+    populateMyGames(auth.currentUser.uid).then(loadGames);
+    disableGamesOverflow();
+    enableSettingsOverflow();
     return;
   }
   route('/signin');
@@ -74,8 +80,15 @@ function gamesHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function puzzleHandler(urlString, htmlPath) {
-  const gameId = urlString.split('=')[1];
-  subscribeToGame(gameId);
+  try {
+    const gameId = urlString.split('=')[1];
+    subscribeToGame(gameId);
+    enableGamesOverflow();
+    enableSettingsOverflow();
+  } catch (error) {
+    console.log('Problem loading puzzle: ', error);
+    route('/signin');
+  }
 }
 
 /**
@@ -85,10 +98,15 @@ function puzzleHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function settingsHandler(urlString, htmlPath) {
-  if (currentUser) {
-    // const uid = currentUser.uid;
+  try {
+    // const uid = auth.currentUser.uid;
     document.querySelector('.container__app').innerHTML = settingsHtml;
     showSettings();
+    disableSettingsOverflow();
+    enableGamesOverflow();
+  } catch (error) {
+    console.log('Problem loading settings: ', error);
+    route('/signin');
   }
 }
 
@@ -99,15 +117,16 @@ function settingsHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function signinHandler(urlString, htmlPath) {
-  // Leave as auth.currentUser - this may run before currentUser is updated
   if (auth.currentUser) {
-    // const uid = currentUser.uid;
+    // const uid = auth.currentUser.uid;
     route('/games');
     return;
   }
   document.querySelector('.container__app').innerHTML = splashHtml;
   document.querySelector('.container__app').innerHTML += signinHtml;
   uiStart();
+  disableGamesOverflow();
+  disableSettingsOverflow();
 }
 
 /**

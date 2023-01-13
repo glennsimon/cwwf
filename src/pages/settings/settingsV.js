@@ -54,7 +54,7 @@ function showSettings() {
   const buttonCancel = document.querySelector('.button--cancel');
   buttonCancel.addEventListener('click', cancel);
   const buttonAvatar = document.getElementById('button--avatar');
-  buttonAvatar.addEventListener('click', changeAvatar);
+  buttonAvatar.addEventListener('change', changeAvatar);
 }
 
 function checkHandle() {
@@ -120,6 +120,7 @@ function cancel() {
 function updateSettings() {
   const settingsName = document.getElementById('name__input');
   const handleInput = document.getElementById('handle__input');
+  const avatar = document.querySelector('.avatar__settings');
   console.log('settingsName: ', settingsName.value);
   console.log('handleInput: ', handleInput.value);
   const settingsPrefs = {};
@@ -142,42 +143,46 @@ function updateSettings() {
  */
 async function changeAvatar(event) {
   const photo = event.target.files[0];
-  const bitmap = await createImageBitmap(photo);
-  const avatarSettings = document.querySelector('.avatar__settings');
-  if (!photo) {
-    avatarSettings.src = './images/avatar_circle_black.png';
-    return;
+  try {
+    const bitmap = await createImageBitmap(photo);
+    const avatarSettings = document.querySelector('.avatar__settings');
+    if (!photo) {
+      avatarSettings.src = './images/avatar_circle_black.png';
+      return;
+    }
+    // Get size information about raw image file
+    const width = bitmap.width;
+    const height = bitmap.height;
+    const ratio = height / width;
+    let xOffset = 0;
+    let yOffset = 0;
+    let size = 0;
+    if (ratio < 1) {
+      xOffset = (width - height) / 2;
+      size = height;
+    } else {
+      yOffset = (height - width) / 2;
+      size = width;
+    }
+    // Create a correctly sized canvas to hold avatar image
+    const bgCanvas = document.createElement('canvas');
+    bgCanvas.width = 100;
+    bgCanvas.height = 100;
+    const context = bgCanvas.getContext('2d');
+    // Resize and crop image
+    context.drawImage(bitmap, xOffset, yOffset, size, size, 0, 0, 100, 100);
+    // Get data url for updating settings image
+    const url = bgCanvas.toDataURL();
+    // Send image to storage and delete canvas
+    bgCanvas.toBlob((blob) => {
+      prefAvatar = blob;
+      bgCanvas.remove();
+    });
+    avatarSettings.src = url;
+    prefAvatarUrl = url;
+  } catch (error) {
+    console.log('Error while changing avatar photo: ', error);
   }
-  // Get size information about raw image file
-  const width = bitmap.width;
-  const height = bitmap.height;
-  const ratio = height / width;
-  let xOffset = 0;
-  let yOffset = 0;
-  let size = 0;
-  if (ratio < 1) {
-    xOffset = (width - height) / 2;
-    size = height;
-  } else {
-    yOffset = (height - width) / 2;
-    size = width;
-  }
-  // Create a correctly sized canvas to hold avatar image
-  const bgCanvas = document.createElement('canvas');
-  bgCanvas.width = 100;
-  bgCanvas.height = 100;
-  const context = bgCanvas.getContext('2d');
-  // Resize and crop image
-  context.drawImage(bitmap, xOffset, yOffset, size, size, 0, 0, 100, 100);
-  // Get data url for updating settings image
-  const url = bgCanvas.toDataURL();
-  // Send image to storage and delete canvas
-  bgCanvas.toBlob((blob) => {
-    prefAvatar = blob;
-    bgCanvas.remove();
-  });
-  avatarSettings.src = url;
-  prefAvatarUrl = url;
 }
 
 // addFriendsButton.addEventListener('click', async (event) => {
