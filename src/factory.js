@@ -2,6 +2,8 @@ import { route } from './router.js';
 import settingsHtml from './pages/settings/settings.html';
 import signinHtml from './pages/signin/signin.html';
 import pageNotFoundHtml from './pages/404/404.html';
+import tosHtml from './pages/tos/tos.html';
+import privacyHtml from './pages/privacy/privacy.html';
 import splashHtml from './pageFrags/splash/splash.html';
 // import { uiStart } from './pages/signin/signin.js';
 import { auth, functions } from './firebase-init.js';
@@ -21,6 +23,8 @@ import {
   enableSettingsOverflow,
 } from './shellV.js';
 import './pages/404/404.css';
+import './pages/tos/tos.css';
+import './pages/privacy/privacy.css';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;
@@ -140,7 +144,13 @@ function signinHandler(urlString, htmlPath) {
  * @param {string} urlString route passed from `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function privacyHandler(urlString, htmlPath) {}
+function privacyHandler(urlString, htmlPath) {
+  document.querySelector('.container__app').innerHTML = splashHtml;
+  document.querySelector('.container__app').innerHTML += privacyHtml;
+  document.querySelector('.go-to-signin').addEventListener('click', () => {
+    route('/signin');
+  });
+}
 
 /**
  * Called by the router, fetches resources necessary for the tos page
@@ -148,7 +158,13 @@ function privacyHandler(urlString, htmlPath) {}
  * @param {string} urlString route passed from `route` function
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
-function tosHandler(urlString, htmlPath) {}
+function tosHandler(urlString, htmlPath) {
+  document.querySelector('.container__app').innerHTML = splashHtml;
+  document.querySelector('.container__app').innerHTML += tosHtml;
+  document.querySelector('.go-to-signin').addEventListener('click', () => {
+    route('/signin');
+  });
+}
 
 /**
  * Called by the router, fetches resources necessary for the help page
