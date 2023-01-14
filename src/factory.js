@@ -20,6 +20,7 @@ import {
   enableGamesOverflow,
   enableSettingsOverflow,
 } from './shellV.js';
+import './pages/404/404.css';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;
