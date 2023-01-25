@@ -117,7 +117,7 @@ function cancel() {
 /**
  * Capture settings values and initiate save.
  */
-function updateSettings() {
+async function updateSettings() {
   const settingsName = document.getElementById('name__input');
   const handleInput = document.getElementById('handle__input');
   const avatar = document.querySelector('.avatar__settings');
@@ -132,7 +132,7 @@ function updateSettings() {
   settingsPrefs.prefHandle = handleInput.value;
   if (prefAvatarUrl) avatar.src = prefAvatarUrl;
   // myName.innerText = handleInput.value.slice(0, 8);
-  storeSettings(settingsPrefs);
+  storeSettings(settingsPrefs).then(history.back());
   prefAvatarUrl = null;
   prefAvatar = null;
 }

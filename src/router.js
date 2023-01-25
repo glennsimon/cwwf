@@ -40,7 +40,9 @@ const routes = {
  */
 function route(urlString) {
   cleanGameParameters();
-  window.history.replaceState({}, '{Chrome: 😍, Safari: 💩}', urlString);
+  // window.history.replaceState({}, '{Chrome: 😍, Safari: 💩}', urlString);
+  window.history.pushState({}, '{Chrome: 😍, Safari: 💩}', urlString);
+  // window.history.go();
   handleLocation(urlString);
 }
 
@@ -75,8 +77,10 @@ async function handleLocation(urlString) {
 function checkRoute(urlString) {
   const url = new URL(urlString, window.location.origin);
   console.log(url);
-  if (Object.keys(routes).includes(url.pathname.toLowerCase()))
+  if (Object.keys(routes).includes(url.pathname.toLowerCase())) {
+    // window.location.href = url.href;
     return url.pathname.toLowerCase();
+  }
   return null;
 }
 

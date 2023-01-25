@@ -23,6 +23,11 @@ const vapidKey =
   'BJ2DYpKmkCOjApNtK7gzaj5JAAC3ec6SkndGANE5QSavKz-sIzF_Z1IxTw_g7lhrbx6RuJORRfmWzEpcjYda14E';
 // 'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak'
 
+/**
+ * Store settings on Firebase Storage and Firestore
+ * @param {object} settingsPrefs object containing settings keys and values
+ * @returns void Promise
+ */
 async function storeSettings(settingsPrefs) {
   let prefAvatarUrl = null;
   if (settingsPrefs.prefAvatar) {
@@ -40,7 +45,7 @@ async function storeSettings(settingsPrefs) {
   }
   const refUserData = doc(db, 'users', currentUser.uid);
   try {
-    await runTransaction(db, async (transaction) => {
+    return runTransaction(db, async (transaction) => {
       const userDoc = await transaction.get(refUserData);
       if (!userDoc.exists()) throw 'User document does not exist!';
 
