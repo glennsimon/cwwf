@@ -20,7 +20,7 @@ const pastGamesContainer = document.querySelector('.container__games--past');
  */
 function authChangeView(user) {
   if (user) {
-    showActivity('.header__activity', 'Signing in, fetching games...');
+    // showActivity('.header__activity', 'Signing in, fetching games...');
     document.querySelector('.button__auth').innerHTML =
       `sign out<span class='spacer--10px'></span>` +
       `<span class='material-icons'>logout </span>`;

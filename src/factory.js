@@ -25,6 +25,7 @@ import {
 import './pages/404/404.css';
 import './pages/tos/tos.css';
 import './pages/privacy/privacy.css';
+import { showActivity } from './pageFrags/activity/activity.js';
 
 let shellHandlerObj = null;
 let gamesHandlerObj = null;
@@ -123,7 +124,6 @@ function settingsHandler(urlString, htmlPath) {
  */
 function signinHandler(urlString, htmlPath) {
   if (auth.currentUser) {
-    // const uid = auth.currentUser.uid;
     route('/games');
     return;
   }

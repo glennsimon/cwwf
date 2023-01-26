@@ -22,7 +22,7 @@ const uiConfig = {
   // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
   signInFlow: 'popup',
   // Url to redirect to after a successful sign-in.
-  signInSuccessUrl: './',
+  signInSuccessUrl: './games',
   callbacks: {
     signInSuccessWithAuthResult: function (user, credential, redirectUrl) {
       if (window.opener) {
