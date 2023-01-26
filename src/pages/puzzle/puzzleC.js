@@ -124,15 +124,23 @@ function subscribeToGame(gameId) {
       prevGameId = currentGameId;
       currentGame = gameSnap.data();
       const playerUids = Object.keys(currentGame.players);
-      if (!currentOpp || !playerUids.includes(currentOpp.uid)) {
-        const opponentUid =
-          playerUids[0] === currentUser.uid ? playerUids[1] : playerUids[0];
-        currentOpp = (await getDoc(doc(db, `users/${opponentUid}`))).data();
+      try {
+        if (!currentOpp || !playerUids.includes(currentOpp.uid)) {
+          const opponentUid =
+            playerUids[0] === auth.currentUser.uid
+              ? playerUids[1]
+              : playerUids[0];
+          currentOpp = (await getDoc(doc(db, `users/${opponentUid}`))).data();
+        }
+      } catch (err) {
+        console.log('User not logged in: ', err);
+        route('/signin');
+        return;
       }
       currentGameId = gameId;
       // idxArray = [];
       columns = currentGame.puzzle.cols;
-      myTurn = currentUser.uid === currentGame.nextTurn;
+      myTurn = auth.currentUser.uid === currentGame.nextTurn;
       if (prevGameId === gameId) {
         await animateScoringView(currentGame.lastTurnCheckObj);
       }

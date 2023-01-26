@@ -85,19 +85,15 @@ function gamesHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function puzzleHandler(urlString, htmlPath) {
-  if (auth.currentUser) {
-    try {
-      const gameId = urlString.split('=')[1];
-      subscribeToGame(gameId);
-      enableGamesOverflow();
-      enableSettingsOverflow();
-    } catch (error) {
-      console.log('Problem loading puzzle: ', error);
-      route('/signin');
-    }
-    return;
+  try {
+    const gameId = urlString.split('=')[1];
+    subscribeToGame(gameId);
+    enableGamesOverflow();
+    enableSettingsOverflow();
+  } catch (error) {
+    console.log('Problem loading puzzle: ', error);
+    route('/signin');
   }
-  route('/signin');
 }
 
 /**

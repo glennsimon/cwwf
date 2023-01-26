@@ -37,13 +37,13 @@ const routes = {
  * supplied by the calling function. This (route) funtion is responsible
  * for changing the url in the browser with the replaceState call.
  * @param {string} urlString string containing the url to navigate to
+ * @param {boolean} fromHistory true if popped from history
  */
-function route(urlString) {
+function route(urlString, fromHistory) {
   cleanGameParameters();
-  // window.history.replaceState({}, '{Chrome: 😍, Safari: 💩}', urlString);
-  window.history.pushState({}, '{Chrome: 😍, Safari: 💩}', urlString);
-  // window.history.go();
-  handleLocation(urlString);
+  if (!fromHistory)
+    history.pushState({ url: `${location.href}` }, '', urlString);
+  handleLocation();
 }
 
 /**
@@ -51,44 +51,27 @@ function route(urlString) {
  * appropriate handler, which must be imported.
  * @param {string} urlString
  */
-async function handleLocation(urlString) {
-  // const urlStringData = checkRoute(urlString);
-  const routePath = checkRoute(urlString);
-  // urlStringData ? urlStringData[1] : null;
-  if (routePath) {
+function handleLocation() {
+  const path = window.location.pathname;
+  const route = routes[path] || routes[404];
+  if (route !== routes[404]) {
     document.cookie =
-      `xwwf-last=${
-        currentUser ? currentUser.uid : null
-      }&last_loc=${urlString}; ` +
-      `max-age=${constants.COOKIE_MAX_AGE_BOOKMARK}`;
-    routes[routePath].handler(urlString, routes[routePath].html);
-  } else {
-    routes['/404'].handler(urlString, routes['/404'].html);
+      `xwwf-last=${currentUser ? currentUser.uid : null}&last_loc=${
+        window.location.href
+      }; ` + `max-age=${constants.COOKIE_MAX_AGE_BOOKMARK}`;
+  }
+  route.handler(window.location.href, route.html);
+}
+
+window.onpopstate = checkState;
+
+function checkState(e) {
+  if (e.state) {
+    console.log(e.state);
+    route(e.state.url, true);
   }
 }
 
-/**
- * Checks `urlString` for valid route and returns array with the valid route
- * pathname in position 0, or null if the route is not valid.
- * @param {string} urlString url to be fetched
- * @return {array} array containing routes object key in position [1],
- * or null if invalid route
- */
-function checkRoute(urlString) {
-  const url = new URL(urlString, window.location.origin);
-  console.log(url);
-  if (Object.keys(routes).includes(url.pathname.toLowerCase())) {
-    // window.location.href = url.href;
-    return url.pathname.toLowerCase();
-  }
-  return null;
-}
-
-window.history.onpopstate = (event) => {
-  const urlString = event.target.location.href;
-  if (urlString) route(urlString);
-};
-
-window.onload = () => route(location.href);
+handleLocation();
 
 export { route };
