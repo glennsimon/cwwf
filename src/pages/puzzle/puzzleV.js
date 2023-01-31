@@ -209,6 +209,7 @@ function showPuzzle() {
  * @returns void
  */
 async function directKeyAction(event) {
+  if (!document.querySelector('.table__puzzle')) return;
   if (
     event.keyCode === 13 || // enter keyCode
     event.target.classList.contains('button__keyboard--enter')

@@ -2,6 +2,7 @@ import { currentUser } from '../signin/signinC';
 import { showErrorDialog } from '../../pageFrags/dialogs/dialogsV';
 import './settings.css';
 import { handleAvailable, storeSettings } from './settingsC';
+import { cleanShell } from '../../shellV';
 
 // const settingsContainer = document.getElementById('settingsContainer');
 // const avatarButton = document.getElementById('avatarButton');
@@ -30,6 +31,7 @@ let initialHandle = '';
  * Displays settings card for user to personalize settings
  */
 function showSettings() {
+  cleanShell();
   handleCheck = false;
   document.querySelector('.avatar__settings').src =
     currentUser.prefAvatarUrl ||
@@ -133,7 +135,7 @@ async function updateSettings() {
   settingsPrefs.prefHandle = handleInput.value;
   if (prefAvatarUrl) avatar.src = prefAvatarUrl;
   // myName.innerText = handleInput.value.slice(0, 8);
-  document.querySelector('.userphoto').src = prefAvatarUrl;
+  document.querySelector('.user-photo').src = prefAvatarUrl;
   document.querySelector('.user-name').innerText = settingsName.value;
   storeSettings(settingsPrefs).then(history.back());
   // prefAvatarUrl = null;

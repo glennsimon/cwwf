@@ -18,6 +18,7 @@ import {
   query,
   collection,
   where,
+  onSnapshot,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import {
@@ -27,8 +28,10 @@ import {
   enableSettingsOverflow,
 } from '../../shellV.js';
 import { route } from '../../router.js';
+import { showSettings } from '../settings/settingsV.js';
 
 let myFriends = {};
+let currentUserUnsubscribe = () => {};
 
 const dbRT = getDatabase(app);
 let currentUser = null;
@@ -52,9 +55,7 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
   online = snapshot.val();
   console.log('connected notification change fired. Connected: ', `${online}`);
   // const uid = auth.currentUser ? auth.currentUser.uid : null;
-  if (!currentUser) {
-    return;
-  }
+  if (!currentUser) return;
   onDisconnect(userStatusDatabaseRef)
     .set(authState('offline'))
     .then(() => {
@@ -71,31 +72,52 @@ onAuthStateChanged(auth, async (user) => {
   if (!uid) {
     disableSettingsOverflow();
     disableGamesOverflow();
+    currentUserUnsubscribe();
     return;
   }
-  let userFirestoreRef = doc(db, `/users/${uid}`);
-  const snapshot = await getDoc(userFirestoreRef);
-  if (snapshot.exists()) {
-    currentUser = snapshot.data();
-  }
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
-  myFriends = {};
-  try {
-    const authChange = httpsCallable(functions, 'authChange');
-    await authChange().data;
-    await checkForPendingPlayer();
-    authChangeView(currentUser);
-    generateMessagingToken();
-    await populateMyFriends();
-    enableSettingsOverflow();
-    enableGamesOverflow();
-    route(location.href);
-  } catch (err) {
-    console.log('Error code: ', err.code);
-    console.log('Error message: ', err.message);
-    console.log('Error details: ', err.details);
-  }
+  currentUserSubscribe(user);
 });
+
+/**
+ * Listen for changes on current user.
+ * @param {object} user
+ */
+function currentUserSubscribe(user) {
+  console.log('Hello from subscribeToGame.');
+  // Start listening to current user changes
+  currentUserUnsubscribe = onSnapshot(
+    doc(db, 'users', user.uid),
+    async (userSnap) => {
+      if (!userSnap.exists()) {
+        currentUser = null;
+        route('/signin');
+        return;
+      }
+      currentUser = userSnap.data();
+      myFriends = {};
+      try {
+        const authChange = httpsCallable(functions, 'authChange');
+        await authChange().data;
+        await checkForPendingPlayer();
+        authChangeView(currentUser);
+        generateMessagingToken();
+        await populateMyFriends();
+        enableSettingsOverflow();
+        enableGamesOverflow();
+        route(location.href);
+      } catch (err) {
+        console.log('Error code: ', err.code);
+        console.log('Error message: ', err.message);
+        console.log('Error details: ', err.details);
+      }
+      // depending on what is showing, upadate the display
+    },
+    (error) => {
+      console.error('Error subscribing to current user: ', error);
+    }
+  );
+}
 
 async function checkForPendingPlayer() {
   // if there is a 'xwwf_invite' cookie, use it to create a new user from

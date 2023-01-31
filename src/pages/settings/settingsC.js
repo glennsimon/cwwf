@@ -13,7 +13,6 @@ import {
   ref as refStorage,
   uploadBytes,
 } from 'firebase/storage';
-import { settings } from 'firebase/analytics';
 import { currentUser } from '../signin/signinC.js';
 // import { runtime } from 'webpack';
 // import { settings } from 'firebase/analytics';
@@ -25,40 +24,45 @@ const vapidKey =
 
 /**
  * Store settings on Firebase Storage and Firestore
+ * @param {object} prefAvatar object containing settings keys and values
+ * @returns preferred avatar URL
+ */
+function storeAvatar(prefAvatar) {
+  const settingsRef = refStorage(
+    storage,
+    `users/${currentUser.uid}/avatar.png`
+  );
+  const metaData = { contentType: 'image/png' };
+  return uploadBytes(settingsRef, prefAvatar, metaData)
+    .then((result) => {
+      return getDownloadURL(settingsRef);
+    })
+    .catch((error) => {
+      console.log('Error uploading photo to storage: ', error);
+      return null;
+    });
+}
+
+/**
+ * Store settings on Firebase Storage and Firestore
  * @param {object} settingsPrefs object containing settings keys and values
  * @returns void Promise
  */
 async function storeSettings(settingsPrefs) {
   let prefAvatarUrl = null;
   if (settingsPrefs.prefAvatar) {
-    const settingsRef = refStorage(
-      storage,
-      `users/${currentUser.uid}/avatar.png`
-    );
-    const metaData = { contentType: 'image/png' };
-    await uploadBytes(settingsRef, settingsPrefs.prefAvatar, metaData).catch(
-      (error) => {
-        console.log('Error uploading photo to storage: ', error);
-      }
-    );
-    prefAvatarUrl = await getDownloadURL(settingsRef);
+    prefAvatarUrl = await storeAvatar(settingsPrefs.prefAvatar);
   }
   const refUserData = doc(db, 'users', currentUser.uid);
   try {
     return runTransaction(db, async (transaction) => {
       const userDoc = await transaction.get(refUserData);
       if (!userDoc.exists()) throw 'User document does not exist!';
-
-      currentUser.prefName = settingsPrefs.prefName || null;
-      currentUser.prefHandle = settingsPrefs.prefHandle || null;
       const updateData = {
-        prefName: currentUser.prefName,
-        prefHandle: currentUser.prefHandle,
+        prefName: settingsPrefs.prefName || currentUser.prefName || null,
+        prefHandle: settingsPrefs.prefHandle || currentUser.prefHandle || null,
       };
-      if (prefAvatarUrl) {
-        currentUser.prefAvatarUrl = prefAvatarUrl;
-        updateData.prefAvatarUrl = prefAvatarUrl;
-      }
+      if (prefAvatarUrl) updateData.prefAvatarUrl = prefAvatarUrl;
       transaction.update(refUserData, updateData);
     });
   } catch (error) {
