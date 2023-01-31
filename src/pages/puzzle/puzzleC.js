@@ -82,15 +82,17 @@ function cleanGameParameters() {
 /**
  * Exported function that presenter uses to start a new game
  * @param {Object} gameStartParameters Parameters needed to start game
+ * @returns
  */
 function startNewGame(gameStartParameters) {
   console.log('Attempting to start a new game.');
   const startGame = httpsCallable(functions, 'startGame');
-  startGame(gameStartParameters)
+  return startGame(gameStartParameters)
     .then((gameIdObj) => {
       const gameId = gameIdObj.data;
       route(`/puzzle?gameId=${gameId}`);
       // subscribeToGame(gameId);
+      return;
     })
     .catch((err) => {
       console.log('Error code: ', err.code);

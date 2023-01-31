@@ -925,7 +925,7 @@ function disableEnter() {
 function resizePuzzle() {
   console.log('Hello from resizePuzzle.');
   const puzzleGrid = document.querySelector('.table__puzzle');
-  if (puzzleGrid.children.length === 0) return;
+  if (!puzzleGrid) return;
   // console.log(puzzleGrid.children[0]);
   const cellDim = getCellDim();
   const puzWidth = puzzleGrid.offsetWidth;

@@ -129,11 +129,19 @@ async function sendInvitation() {
   // for first game, default to 'easy' game
   gameStartParameters.difficulty = 'easy';
   const gameId = await startNewGame(gameStartParameters);
-  inviteProgressContainer.classList.add('displayNone');
-  inviteProgressContainer.classList.remove('displayFlex');
-  inviteLoadSpinner.classList.remove('is-active');
-  inviteDialog.close();
+  startDefaultMail(oppName, document.location.origin, pendUid, gameId);
+  document.querySelector('.dialog__activity').innerHTML = '';
+}
 
+/**
+ * Navigates to the user's default email app, with a message populated
+ * with the invitation to start a new game with another user.
+ * @param {string} oppName
+ * @param {string} origin
+ * @param {string} pendUid
+ * @param {string} gameId
+ */
+function startDefaultMail(oppName, origin, pendUid, gameId) {
   const encodedSubj = encodeURIComponent(
     `I've invited you to play a Crossword game!`
   );
@@ -141,10 +149,19 @@ async function sendInvitation() {
     `${oppName},\n\nI found a crossword game that two people can play ` +
       `against each other, and I'd like to try playing it with you.\n\n` +
       `Here is the link to the game I started:\n` +
-      `${document.location.origin}?pending=${pendUid}&game=${gameId}#signin` +
+      `${origin}?pending=${pendUid}&game=${gameId}#signin` +
       `\n\nIf you click on the link and sign in, the game will show up in ` +
       `your Active Games list so we can play.\n\nLet's try it!`
   );
+  // const mailbox = document.querySelector('.container__app');
+  // mailbox.innerHTML = '';
+  // const mailFrame = document.createElement('iframe');
+  // const anchor = document.createElement('a');
+  // anchor.href =
+  //   `mailto:${inviteEmail.value}?subject=${encodedSubj}` +
+  //   `&body=${encodedBody}`;
+  // mailFrame.appendChild(anchor);
+  // mailbox.appendChild(mailFrame);
 
   window.location.href =
     `mailto:${inviteEmail.value}?subject=${encodedSubj}` +
