@@ -56,11 +56,12 @@ function createElementFromHtml(html) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function shellHandler(urlString, htmlPath) {
-  try {
-    route('/games');
-  } catch (error) {
-    route('/signin');
-  }
+  route('/signin');
+  // try {
+  //   route('/games');
+  // } catch (error) {
+  //   route('/signin');
+  // }
 }
 
 /**
@@ -70,13 +71,17 @@ function shellHandler(urlString, htmlPath) {
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function gamesHandler(urlString, htmlPath) {
-  if (auth.currentUser && auth.currentUser.uid) {
+  // if (auth.currentUser && auth.currentUser.uid) {
+  try {
     populateMyGames(auth.currentUser.uid).then(loadGames);
     disableGamesOverflow();
     enableSettingsOverflow();
-    return;
+    // return;
+  } catch (err) {
+    console.log('Error fetching games: ', err);
+    route('/signin');
   }
-  route('/signin');
+  // route('/signin');
 }
 
 /**
@@ -177,8 +182,8 @@ function helpHandler(urlString, htmlPath) {}
  * @param {string} htmlPath path to html to be fetched and loaded by handler
  */
 function pageNotFoundHandler(urlString, htmlPath) {
-  document.querySelector('.container__app').innerHTML = splashHtml;
-  document.querySelector('.container__app').innerHTML += pageNotFoundHtml;
+  document.querySelector('.container__app').innerHTML =
+    splashHtml + pageNotFoundHtml;
 }
 
 export {

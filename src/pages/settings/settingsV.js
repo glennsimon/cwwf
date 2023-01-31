@@ -112,6 +112,7 @@ function saveSettings() {
 
 function cancel() {
   document.querySelector('.label--ok').innerText = '';
+  history.back();
 }
 
 /**
@@ -132,9 +133,11 @@ async function updateSettings() {
   settingsPrefs.prefHandle = handleInput.value;
   if (prefAvatarUrl) avatar.src = prefAvatarUrl;
   // myName.innerText = handleInput.value.slice(0, 8);
+  document.querySelector('.userphoto').src = prefAvatarUrl;
+  document.querySelector('.user-name').innerText = settingsName.value;
   storeSettings(settingsPrefs).then(history.back());
-  prefAvatarUrl = null;
-  prefAvatar = null;
+  // prefAvatarUrl = null;
+  // prefAvatar = null;
 }
 
 /**
