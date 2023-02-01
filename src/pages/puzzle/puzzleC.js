@@ -92,7 +92,7 @@ function startNewGame(gameStartParameters) {
       const gameId = gameIdObj.data;
       route(`/puzzle?gameId=${gameId}`);
       // subscribeToGame(gameId);
-      return;
+      return gameId;
     })
     .catch((err) => {
       console.log('Error code: ', err.code);

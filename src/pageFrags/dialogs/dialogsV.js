@@ -49,6 +49,7 @@ function showInviteDialog() {
   document
     .querySelector('.dialog__button--mail')
     .addEventListener('click', () => {
+      showActivity('.header__activity', 'Working...');
       dialogElement.close();
       sendInvitation();
     });

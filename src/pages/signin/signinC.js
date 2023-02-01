@@ -28,7 +28,7 @@ import {
   enableSettingsOverflow,
 } from '../../shellV.js';
 import { route } from '../../router.js';
-import { showSettings } from '../settings/settingsV.js';
+import { showActivity } from '../../pageFrags/activity/activity.js';
 
 let myFriends = {};
 let currentUserUnsubscribe = () => {};
@@ -63,6 +63,8 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
     });
 });
 
+let timeoutId = null;
+
 /**
  * Firestore function that monitors auth state.
  */
@@ -73,8 +75,12 @@ onAuthStateChanged(auth, async (user) => {
     disableSettingsOverflow();
     disableGamesOverflow();
     currentUserUnsubscribe();
+    timeoutId = setTimeout(() => {
+      route('/signin');
+    }, 1000);
     return;
   }
+  await checkForPendingPlayer();
   userStatusDatabaseRef = ref(dbRT, `/users/${uid}`);
   currentUserSubscribe(user);
 });
@@ -85,10 +91,12 @@ onAuthStateChanged(auth, async (user) => {
  */
 function currentUserSubscribe(user) {
   console.log('Hello from subscribeToGame.');
+  clearTimeout(timeoutId);
   // Start listening to current user changes
   currentUserUnsubscribe = onSnapshot(
     doc(db, 'users', user.uid),
     async (userSnap) => {
+      // should never happen
       if (!userSnap.exists()) {
         currentUser = null;
         route('/signin');
@@ -99,7 +107,7 @@ function currentUserSubscribe(user) {
       try {
         const authChange = httpsCallable(functions, 'authChange');
         await authChange().data;
-        await checkForPendingPlayer();
+        // await checkForPendingPlayer();
         authChangeView(currentUser);
         generateMessagingToken();
         await populateMyFriends();
@@ -125,6 +133,7 @@ async function checkForPendingPlayer() {
   console.log('document.cookie: ', document.cookie);
   console.log('auth.currentUser: ', auth.currentUser);
   if (document.cookie.includes('xwwf_invite')) {
+    showActivity('.header__activity', 'Working...');
     const cookies = document.cookie.split(';');
     console.log('cookies array: ', cookies);
     for (const cookie of cookies) {
@@ -140,6 +149,7 @@ async function checkForPendingPlayer() {
           functions,
           'updatePendingPlayer'
         );
+
         currentUser = (await updatePendingPlayer(newUserObject)).data;
         console.log('currentUser: ', currentUser);
         if (currentUser) document.cookie = 'xwwf_invite=done; max-age=0';

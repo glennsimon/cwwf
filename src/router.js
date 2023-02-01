@@ -72,6 +72,10 @@ function checkState(e) {
   }
 }
 
-handleLocation();
+/**
+ * Initializiation of routing happens in signinC.js.  If routing should be initialized
+ * by router.js, uncomment line below.
+ */
+// handleLocation();
 
 export { route };

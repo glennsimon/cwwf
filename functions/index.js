@@ -206,7 +206,7 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
       newUser.uid = uid;
       newUser.photoURL = context.auth.token.picture || null;
       newUser.blocked = [];
-      newUser.prefName = newUser.displayName;
+      newUser.prefName = context.auth.token.name || null;
       newUser.signInProvider =
         context.auth.token.firebase.sign_in_provider || 'none';
       // } else {
@@ -230,7 +230,7 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
 
       tx.update(gameRef, game)
         .update(gameListRef, gameListDoc)
-        .update(newUserRef, newUser)
+        .set(newUserRef, newUser)
         .update(initiatorRef, initiator)
         .delete(pendingRef);
       functions.logger.log('updatePendingPlayer transaction success!');
