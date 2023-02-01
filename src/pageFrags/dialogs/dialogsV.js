@@ -331,7 +331,7 @@ function instantiateAvatar(user) {
 /**
  * Instantiate and return HTML list of all users to be appended in the
  * Add/Block dialog.
- * @return {DocumentFragment} html list of users with Add/Block radio buttons
+ * @returns {Promise} html list of users with Add/Block radio buttons
  */
 async function loadAddBlockList() {
   console.log('Hello from loadAddBlockList.');
@@ -415,29 +415,35 @@ async function loadAddBlockList() {
  * Populates Add/Block dialog and displays it
  */
 function showAddBlockDialog() {
+  showActivity('.header__activity', 'Working...');
   resetDialog();
   // if (!myFriends) return;
-  const dialogElement = document.querySelector('.dialog__shell');
-  const header = dialogElement.querySelector('.dialog__content--header');
-  header.innerHTML = dialogAddBlockHeaderHtml;
-  const footer = dialogElement.querySelector('.dialog__content--footer');
-  footer.innerHTML = dialogAddBlockFooterHtml;
-  const listContainer = dialogElement.querySelector('.dialog__list');
-  const list = document.createElement('ul');
-  list.className = 'mdl-list';
-  listContainer.append(list);
-  list.innerHTML = '';
-  loadAddBlockList().then((contents) => list.append(contents));
+  loadAddBlockList().then((contents) => {
+    const dialogElement = document.querySelector('.dialog__shell');
+    const header = dialogElement.querySelector('.dialog__content--header');
+    header.innerHTML = dialogAddBlockHeaderHtml;
+    const footer = dialogElement.querySelector('.dialog__content--footer');
+    footer.innerHTML = dialogAddBlockFooterHtml;
+    const listContainer = dialogElement.querySelector('.dialog__list');
+    const list = document.createElement('ul');
+    list.className = 'mdl-list';
+    listContainer.append(list);
+    // list.innerHTML = '';
+    list.append(contents);
+    dialogElement.showModal();
+    document.querySelector('.header__activity').innerHTML = '';
+    document
+      .querySelector('.dialog__button--footer-1')
+      .addEventListener('click', () => {
+        updateMyFriends(adjustedFriendsObject).then(() =>
+          showGameStartDialog()
+        );
+      });
+    document
+      .querySelector('.dialog__button--footer-2')
+      .addEventListener('click', showInviteDialog);
+  });
   // list.append(loadAddBlockList());
-  dialogElement.showModal();
-  document
-    .querySelector('.dialog__button--footer-1')
-    .addEventListener('click', () => {
-      updateMyFriends(adjustedFriendsObject).then(() => showGameStartDialog());
-    });
-  document
-    .querySelector('.dialog__button--footer-2')
-    .addEventListener('click', showInviteDialog);
 }
 
 export {
