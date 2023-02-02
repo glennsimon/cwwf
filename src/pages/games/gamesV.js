@@ -5,7 +5,7 @@ import '../../pageFrags/dialogs/dialogs.css';
 import { showActivity } from '../../pageFrags/activity/activity';
 import { route } from '../../router';
 import { showGameStartDialog } from '../../pageFrags/dialogs/dialogsV';
-import { cleanShell } from '../../shellV';
+import { cleanShell, hideActivity } from '../../shellV';
 import { myGames } from './gamesC';
 
 const container__app = document.querySelector('.container__app');
@@ -23,16 +23,8 @@ function loadGame(event) {
     if (eventTarget.nodeName.toLowerCase() === 'ul') return;
     eventTarget = eventTarget.parentElement;
   }
-  // if (eventTarget.nodeName.toLowerCase() === 'ul') return;
-  // if (eventTarget.nodeName.toLowerCase() === 'li') {
-  //   eventTarget = eventTarget.children[0];
-  // }
-  // const gameObj = {};
-  // gameObj.gameId = eventTarget.id;
-  // gameObj.opponentUid = eventTarget.children[0].id;
   showActivity('.header__activity', 'Fetching your game...');
   route(`/puzzle?gameId=${eventTarget.id}`);
-  // subscribeToGame(eventTarget.id);
 }
 
 /**
@@ -80,7 +72,6 @@ async function loadGames() {
     )
       continue;
     const gameId = gameListItem.gameId;
-    // const players = gameListItem.players;
     const startDate = new Date(gameListItem.start).toLocaleDateString('en-us', {
       day: 'numeric',
       month: 'short',
@@ -164,7 +155,7 @@ async function loadGames() {
   }
   activeGamesContainer.innerHTML = activeGamesHtml;
   pastGamesContainer.innerHTML = pastGamesHtml;
-  document.querySelector('.header__activity').innerHTML = '';
+  hideActivity();
   // console.log(dialogList);
   activeGamesContainer.addEventListener('click', loadGame);
   pastGamesContainer.addEventListener('click', loadGame);

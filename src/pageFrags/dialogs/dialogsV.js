@@ -10,10 +10,8 @@ import dialogGameOverHtml from './dialogGameOver.html';
 import dialogReplayHtml from './dialogReplay.html';
 import dialogErrorHtml from './dialogError.html';
 import './dialogs.css';
-// import { myFriends, populateAllUsers } from '../../pages/games/gamesC';
 import {
   currentUser,
-  initPendingPlayer,
   myFriends,
   populateAllUsers,
   updateMyFriends,
@@ -21,6 +19,8 @@ import {
 import { showActivity } from '../activity/activity';
 import { concedeCurrentGame, startNewGame } from '../../pages/puzzle/puzzleC';
 import { replayOpponent } from '../../pages/games/gamesC';
+import { hideActivity } from '../../shellV';
+import { sendInvitation } from './dialogsC';
 
 let adjustedFriendsObject = {};
 
@@ -30,7 +30,7 @@ function resetDialog() {
   document.querySelector('.dialog__content--header').innerHTML = '';
   document.querySelector('.dialog__list').innerHTML = '';
   document.querySelector('.dialog__content--footer').innerHTML = '';
-  document.querySelector('.dialog__activity').innerHTML = '';
+  hideActivity();
   document.querySelector('.dialog__shell').close();
 }
 
@@ -109,73 +109,13 @@ function showReplayDialog(game, result) {
     });
 }
 
-// document.querySelector('.button__send').addEventListener('click', async () => {
-async function sendInvitation() {
-  console.log('Player hit the email send button.');
-  showActivity('.dialog__activity', 'Preparing email and game...');
-  const gameStartParameters = {};
-  const myUid = currentUser.uid;
-  gameStartParameters.players = {};
-  gameStartParameters.players[myUid] = {};
-  gameStartParameters.players[myUid].bgColor = 'bg-color__red--translucent';
-  gameStartParameters.viewableBy = [];
-  gameStartParameters.viewableBy.push(myUid);
-  // opponent - assume never signed in
-  const oppName = firstName.value || 'Friend';
-  const pendUid = await initPendingPlayer({ firstName: oppName });
-  console.log('pendUid: ', pendUid);
-  gameStartParameters.players[pendUid] = {};
-  gameStartParameters.players[pendUid].bgColor = 'bg-color__blue--translucent';
-  gameStartParameters.viewableBy.push(pendUid);
-  // for first game, default to 'easy' game
-  gameStartParameters.difficulty = 'easy';
-  const gameId = await startNewGame(gameStartParameters);
-  startDefaultMail(oppName, document.location.origin, pendUid, gameId);
-  document.querySelector('.dialog__activity').innerHTML = '';
-}
-
-/**
- * Navigates to the user's default email app, with a message populated
- * with the invitation to start a new game with another user.
- * @param {string} oppName
- * @param {string} origin
- * @param {string} pendUid
- * @param {string} gameId
- */
-function startDefaultMail(oppName, origin, pendUid, gameId) {
-  const encodedSubj = encodeURIComponent(
-    `I've invited you to play a Crossword game!`
-  );
-  const encodedBody = encodeURIComponent(
-    `${oppName},\n\nI found a crossword game that two people can play ` +
-      `against each other, and I'd like to try playing it with you.\n\n` +
-      `Here is the link to the game I started:\n` +
-      `${origin}?pending=${pendUid}&game=${gameId}#signin` +
-      `\n\nIf you click on the link and sign in, the game will show up in ` +
-      `your Active Games list so we can play.\n\nLet's try it!`
-  );
-  // const mailbox = document.querySelector('.container__app');
-  // mailbox.innerHTML = '';
-  // const mailFrame = document.createElement('iframe');
-  // const anchor = document.createElement('a');
-  // anchor.href =
-  //   `mailto:${inviteEmail.value}?subject=${encodedSubj}` +
-  //   `&body=${encodedBody}`;
-  // mailFrame.appendChild(anchor);
-  // mailbox.appendChild(mailFrame);
-
-  window.location.href =
-    `mailto:${inviteEmail.value}?subject=${encodedSubj}` +
-    `&body=${encodedBody}`;
-}
-
 /**
  * Shows an error dialog with appropriate messaging
  * @param {string} message Type of error
  */
 function showErrorDialog(message) {
   resetDialog();
-  document.querySelector('.header__activity').innerHTML = '';
+  hideActivity();
   const dialogShell = document.querySelector('.dialog__shell');
   const header = dialogShell.querySelector('.dialog__content--header');
   header.innerHTML = dialogErrorHtml;
@@ -302,7 +242,7 @@ function loadFriendsList() {
     userListItem.innerHTML += dialogFriendsListItemSecondaryHtml;
     userList.append(userListItem);
   }
-  document.querySelector('.dialog__activity').innerHTML = '';
+  hideActivity();
   return userList;
 }
 
@@ -406,7 +346,7 @@ async function loadAddBlockList() {
       userList.append(userListItem);
       itemNumber++;
     }
-    document.querySelector('.dialog__activity').innerHTML = '';
+    hideActivity();
     return userList;
   });
 }
@@ -431,7 +371,7 @@ function showAddBlockDialog() {
     // list.innerHTML = '';
     list.append(contents);
     dialogElement.showModal();
-    document.querySelector('.header__activity').innerHTML = '';
+    hideActivity();
     document
       .querySelector('.dialog__button--footer-1')
       .addEventListener('click', () => {

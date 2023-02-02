@@ -1,5 +1,4 @@
-import { db, app, storage } from '../../firebase-init.js';
-import { getDatabase } from 'firebase/database';
+import { db, storage } from '../../firebase-init.js';
 import {
   collection,
   getDocs,
@@ -14,13 +13,6 @@ import {
   uploadBytes,
 } from 'firebase/storage';
 import { currentUser } from '../signin/signinC.js';
-// import { runtime } from 'webpack';
-// import { settings } from 'firebase/analytics';
-
-const dbRT = getDatabase(app);
-const vapidKey =
-  'BJ2DYpKmkCOjApNtK7gzaj5JAAC3ec6SkndGANE5QSavKz-sIzF_Z1IxTw_g7lhrbx6RuJORRfmWzEpcjYda14E';
-// 'BBMmrZ44HmQylOh0idHo1FCn_Kbr7jP45Pe6LHVVVj4wB4x-IiPks_QRLLz-dZTL099Z2LKVZKYTJGfEMR4R0Ak'
 
 /**
  * Store settings on Firebase Storage and Firestore

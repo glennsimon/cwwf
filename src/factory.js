@@ -6,15 +6,11 @@ import tosHtml from './pages/tos/tos.html';
 import privacyHtml from './pages/privacy/privacy.html';
 import splashHtml from './pageFrags/splash/splash.html';
 // import { uiStart } from './pages/signin/signin.js';
-import { auth, functions } from './firebase-init.js';
+import { auth } from './firebase-init.js';
 import { uiStart } from './pages/signin/signin.js';
 import { showSettings } from './pages/settings/settingsV.js';
 import { populateMyGames } from './pages/games/gamesC.js';
-import {
-  currentGame,
-  currentOpp,
-  subscribeToGame,
-} from './pages/puzzle/puzzleC.js';
+import { subscribeToGame } from './pages/puzzle/puzzleC.js';
 import { loadGames } from './pages/games/gamesV.js';
 import {
   disableGamesOverflow,
@@ -25,29 +21,6 @@ import {
 import './pages/404/404.css';
 import './pages/tos/tos.css';
 import './pages/privacy/privacy.css';
-import { showActivity } from './pageFrags/activity/activity.js';
-
-let shellHandlerObj = null;
-let gamesHandlerObj = null;
-let puzzleHandlerObj = null;
-let settingsHandlerObj = null;
-let signinHandlerObj = null;
-let tosHandlerObj = null;
-let privacyHandlerObj = null;
-let helpHandlerObj = null;
-// let user = null;
-
-/**
- * Creates a new HTML element from the string `html`
- * @param {string} html String of innerHTML
- * @returns HTML element
- */
-function createElementFromHtml(html) {
-  let temp = document.createElement('template');
-  html = html.trim();
-  temp.innerHTML = html;
-  return temp.content.firstChild;
-}
 
 /**
  * Called by the router, fetches resources necessary for the shell
@@ -57,11 +30,6 @@ function createElementFromHtml(html) {
  */
 function shellHandler(urlString, htmlPath) {
   route('/signin');
-  // try {
-  //   route('/games');
-  // } catch (error) {
-  //   route('/signin');
-  // }
 }
 
 /**
@@ -76,12 +44,10 @@ function gamesHandler(urlString, htmlPath) {
     populateMyGames(auth.currentUser.uid).then(loadGames);
     disableGamesOverflow();
     enableSettingsOverflow();
-    // return;
   } catch (err) {
     console.log('Error fetching games: ', err);
     route('/signin');
   }
-  // route('/signin');
 }
 
 /**

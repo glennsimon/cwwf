@@ -9,9 +9,7 @@ import { auth, functions } from './firebase-init.js';
 import { authChangeView } from './pages/signin/signinV.js';
 import { signOut } from 'firebase/auth';
 
-//#region HTML element constants
 const headerSignin = document.querySelector('.header__signin');
-//#endregion
 
 /**
  * Clicking the sign in / sign out button on the drawer calls
@@ -89,10 +87,15 @@ function disableSettingsOverflow() {
  * meta data (scores, game info, concession button)
  */
 function cleanShell() {
-  document.querySelector('.header__activity').innerHTML = '';
+  hideActivity();
   document.querySelector('.scores').innerHTML = '';
   document.querySelector('.drawer__content').innerHTML = '';
   document.querySelector('.drawer__concede').innerHTML = '';
+}
+
+function hideActivity() {
+  document.querySelector('.header__activity').innerHTML = '';
+  document.querySelector('.dialog__activity').innerHTML = '';
 }
 
 export {
@@ -102,4 +105,5 @@ export {
   disableSettingsOverflow,
   disableGamesOverflow,
   cleanShell,
+  hideActivity,
 };

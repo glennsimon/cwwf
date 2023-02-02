@@ -4,28 +4,10 @@ import './settings.css';
 import { handleAvailable, storeSettings } from './settingsC';
 import { cleanShell } from '../../shellV';
 
-// const settingsContainer = document.getElementById('settingsContainer');
-// const avatarButton = document.getElementById('avatarButton');
-// const avatar = document.getElementById('avatar');
-// const checkAvailability = document.getElementById('checkAvailability');
-// const saveSettings = document.getElementById('saveSettings');
-// const cancelButton = document.getElementById('cancelButton');
-// const avatarSettings = document.getElementById('avatarSettings');
-// const settingsName = document.getElementById('settingsName');
-// const settingsHandle = document.getElementById('settingsHandle');
-// const handleEntry = document.getElementById('handleEntry');
-// const okLabel = document.getElementById('okLabel');
-// const addFriendsButton = document.getElementById('addFriendsButton');
-// const friendsProgressContainer = document.getElementById(
-//   'friendsProgressContainer'
-// );
-// const firstName = document.getElementById('firstName');
-
 let prefAvatar = null;
 let prefAvatarUrl = null;
 let handleCheck = false;
 let initialHandle = '';
-// let adjustedFriendsObject = {};
 
 /**
  * Displays settings card for user to personalize settings
@@ -129,17 +111,11 @@ async function updateSettings() {
   const settingsPrefs = {};
   settingsPrefs.prefAvatar = prefAvatar;
   settingsPrefs.prefName = settingsName.value;
-  // let nickname = handleInput.value || 'NoName';
-  // nickname = nickname.length > 8 ? nickname.slice(0, 8) : nickname;
-  // myName.innerText = nickname;
   settingsPrefs.prefHandle = handleInput.value;
   if (prefAvatarUrl) avatar.src = prefAvatarUrl;
-  // myName.innerText = handleInput.value.slice(0, 8);
   document.querySelector('.user-photo').src = prefAvatarUrl;
   document.querySelector('.user-name').innerText = settingsName.value;
   storeSettings(settingsPrefs).then(history.back());
-  // prefAvatarUrl = null;
-  // prefAvatar = null;
 }
 
 /**
@@ -189,145 +165,5 @@ async function changeAvatar(event) {
     console.log('Error while changing avatar photo: ', error);
   }
 }
-
-// addFriendsButton.addEventListener('click', async (event) => {
-//   gamesDialog.close();
-//   friendsDialog.showModal();
-//   initFriendsList();
-//   const usersObj = await populateAllUsersController();
-//   loadUserSelectionList(usersObj);
-// });
-
-// /**
-//  * Initializes `adjustedFriendsObject` with only the friends currently has
-//  */
-// function initFriendsList() {
-//   const currentUser = getCurrentUserController();
-//   adjustedFriendsObject.friends = currentUser.friends || [];
-//   adjustedFriendsObject.blocked = currentUser.blocked || [];
-// }
-
-// /**
-//  * Load list of potential opponents with list of all firebase users.
-//  */
-// function loadUserSelectionList(usersObj) {
-//   console.log('Hello from loadUserSelectionList.');
-//   let userList = '';
-//   let uids = Object.keys(usersObj);
-//   if (uids.length === 0) {
-//     console.warn('No users yet.');
-//     return;
-//   }
-//   let itemNumber = 0;
-//   for (const uid of uids) {
-//     if (!(uid && usersObj[uid])) continue;
-//     const friend = adjustedFriendsObject.friends.includes(uid);
-//     const block = adjustedFriendsObject.blocked.includes(uid);
-//     const user = usersObj[uid];
-//     let avatar = `<i class='material-icons mdl-list__item-avatar'>person</i>`;
-//     if (user.prefAvatarUrl || user.photoURL) {
-//       avatar = `<span class='picContainer material-icons mdl-list__item-avatar'>
-//   <img src='${user.prefAvatarUrl || user.photoURL}' alt='profile picture'>
-// </span>`;
-//     }
-//     let friendChecked = friend ? 'checked' : ' ';
-//     let blockChecked = block ? 'checked' : ' ';
-//     userList += `<li id='${uid}'
-//       class='mdl-list__item mdl-list__item--two-line'
-//       style='background-color: inherit'>
-//   <span class='mdl-list__item-primary-content whiteSpaceNowrap'>
-//     ${avatar}
-//     <div class='overflowHidden' style='width: 115px;'>${user.displayName}</div>
-//     <span class='mdl-list__item-sub-title'>
-//       ${user.signInProvider ? user.signInProvider.split('.')[0] : 'none'}
-//     </span>
-//   </span>
-//   <span class='mdl-list__item-secondary-action'>
-//     <div class="displayFlex flexDirCol">
-//       <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
-//           for="addFriend${itemNumber}"
-//           style="font-size: 12px;display: flex;align-items: center;">
-//         <input type="radio" id="addFriend${itemNumber}"
-//             class="mdl-radio__button" name='friends${itemNumber}'
-//             value='friend' ${friendChecked}>
-//         <div class="margin5px"></div>
-//         <span class="material-icons" style="font-size: 20px;">add</span>
-//       </label>
-//       <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect"
-//           for="blockPest${itemNumber}"
-//           style="font-size: 12px;display: flex;align-items: center;">
-//         <input type="radio" id="blockPest${itemNumber}"
-//             class="mdl-radio__button" name='friends${itemNumber}'
-//             value='block' ${blockChecked}>
-//         <div class="margin5px"></div>
-//         <span class="material-icons" style="font-size: 20px;">block</span>
-//       </label>
-//     </div>
-//   </span>
-// </li>`;
-//     itemNumber++;
-//   }
-//   friendsDialogList.innerHTML = userList;
-//   const radioButtons = friendsDialogList.querySelectorAll('label input');
-//   for (const radioButton of radioButtons) {
-//     radioButton.addEventListener('change', adjustFriendsList);
-//   }
-// }
-
-// /**
-//  * Adds or removes ids from
-//  * @param {Event} changeEvent event on one of the checkboxes
-//  */
-// function adjustFriendsList(changeEvent) {
-//   let target = changeEvent.target;
-//   const radioId = target.id;
-//   do {
-//     target = target.parentElement;
-//   } while (!target.id);
-//   const uid = target.id;
-//   if (changeEvent.target.checked && radioId.includes('addFriend')) {
-//     if (!adjustedFriendsObject.friends.includes(uid)) {
-//       adjustedFriendsObject.friends.push(uid);
-//     }
-//     if (adjustedFriendsObject.blocked.includes(uid)) {
-//       const index = adjustedFriendsObject.blocked.indexOf(uid);
-//       adjustedFriendsObject.blocked.splice(index, 1);
-//     }
-//   }
-//   if (changeEvent.target.checked && radioId.includes('blockPest')) {
-//     if (!adjustedFriendsObject.blocked.includes(uid)) {
-//       adjustedFriendsObject.blocked.push(uid);
-//     }
-//     if (adjustedFriendsObject.friends.includes(uid)) {
-//       const index = adjustedFriendsObject.friends.indexOf(uid);
-//       adjustedFriendsObject.friends.splice(index, 1);
-//     }
-//   }
-//   console.log('friends: ', adjustedFriendsObject.friends);
-//   console.log('blocked: ', adjustedFriendsObject.blocked);
-// }
-
-// doneButton.addEventListener('click', () => {
-//   friendsDialog.close();
-//   gamesDialog.showModal();
-//   updateFriendsController(adjustedFriendsObject);
-// });
-
-// friendsDialog.querySelector('.close').addEventListener('click', () => {
-//   friendsDialog.close();
-// });
-
-// inviteDialog.querySelector('.close').addEventListener('click', () => {
-//   inviteDialog.close();
-// });
-
-// inviteFriendButton.addEventListener('click', (event) => {
-//   friendsDialog.close();
-//   inviteDialog.showModal();
-// });
-
-// inviteEmail.addEventListener('focusout', (event) => {
-//   // TODO: optionally validate email address format
-// });
 
 export { showSettings };

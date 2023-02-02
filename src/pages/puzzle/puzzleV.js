@@ -1,18 +1,15 @@
 import {
-  populateAllUsersController,
   playWord,
   enterGuess,
-  populateFriendsController,
   columns,
   currentGame,
   savePuzzle,
   checkReadiness,
 } from './puzzleC.js';
-import { route } from '../../router.js';
 import { currentUser } from '../signin/signinC.js';
 import { currentOpp } from '../puzzle/puzzleC.js';
 import scoresHtml from '../../pageFrags/scores/scores.html';
-import { cleanShell, closeDrawer, enableGamesOverflow } from '../../shellV.js';
+import { cleanShell, closeDrawer, hideActivity } from '../../shellV.js';
 import puzzleInfoHtml from '../../pageFrags/puzzleInfo/puzzleInfo.html';
 import concedeHtml from '../../pageFrags/concede/concede.html';
 import { showActivity } from '../../pageFrags/activity/activity.js';
@@ -24,21 +21,13 @@ import {
   showReplayDialog,
 } from '../../pageFrags/dialogs/dialogsV.js';
 
-//#region HTML element constants
-// let abandonDialog = document.getElementById('abandonDialog');
-//#endregion
-
 let currentCell = null;
 let idxArray = [];
 let acrossWord = true;
 let turnInProgress = false;
-// let currentOpponent = null;
-// let allUsers = null;
 
 let highlighter = document.createElement('div');
 highlighter.className = 'puzzle__highlighter';
-
-// returnToSignin.addEventListener('click', () => route('/signin'));
 
 /** Removes puzzle and clues from DOM */
 function clearPuzzle() {
@@ -96,10 +85,6 @@ function showPuzzle() {
   }
   document.querySelector('.scores').innerHTML = scoresHtml;
   document.querySelector('.drawer__content').innerHTML = puzzleInfoHtml;
-  // clear previous puzzle if it exists
-  // if (puzzleGrid) {
-  //   clearPuzzle();
-  // }
   loadPuzzleInfo(currentGame);
 
   const cellDim = getCellDim();
@@ -157,9 +142,6 @@ function showPuzzle() {
   const puzHeight = puzzleGrid.offsetHeight;
   puzzleGrid.appendChild(generateGridElement(puzWidth, puzHeight));
 
-  // kbContainer.classList.remove('displayNone');
-  // kbContainer.classList.add('displayFlex');
-  // document.querySelector('.container__clues').classList.remove('displayNone');
   loadClues('across');
   loadClues('down');
 
@@ -197,7 +179,7 @@ function showPuzzle() {
   }
   updateScoreboard(currentGame);
   console.log(currentGame);
-  document.querySelector('.header__activity').innerHTML = '';
+  hideActivity();
   document
     .querySelector('.button__keyboard--enter')
     .classList.remove('button--disabled');
@@ -372,7 +354,7 @@ function generateGridElement(puzWidth, puzHeight) {
  */
 function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
-  document.querySelector('.header__activity').innerHTML = '';
+  hideActivity();
   const puzzleGrid = document.querySelector('.table__puzzle');
   if (scoreObj.newGame || scoreObj.abandoned) return;
   const scores = document.querySelector('.scores');
@@ -404,7 +386,6 @@ function animateScoringView(scoreObj) {
     animatedCell.style.left = cellX + 'px';
     animatedCell.style.top = cellY + 'px';
     animatedCell.style.zIndex = (zIndex--).toString();
-    // animatedCell.style.backgroundColor = letter.bgColor;
     animatedCell.className = 'puzzle--animated-cell';
     const square = document.createElement('div');
     square.className = 'square';
@@ -509,7 +490,6 @@ function animateScoringView(scoreObj) {
       );
     } else {
       if (!cell.classList.value.match(/(blue|red)/i)) {
-        // cell.style.backgroundColor = letter.bgColor;
         cell.classList.remove('transparent');
         cell.classList.add(letter.bgColor);
       }
@@ -534,7 +514,6 @@ function animateScoringView(scoreObj) {
             transform: 'scale(110%)',
             offset: 0.9,
           },
-          // { transform: 'scale(130%)', easing: 'linear', offset: 0.95 },
           {
             transform: 'scale(10%)',
             left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
@@ -604,10 +583,6 @@ function cellClicked(event) {
   if (cell.className === 'black') {
     return;
   }
-  // TODO: uncomment below if clearing all letters from previous selection is desired
-  // if (!getIdxArrayController().includes(index)) {
-  //   clearLetters();
-  // }
   if (currentCell && currentCell === cell) {
     acrossWord = !acrossWord;
   }
@@ -732,20 +707,6 @@ function getCellDim() {
   return puzzleGridWidth / columns;
 }
 
-/** Clears letters when user changes to a different clue */
-function clearLetters() {
-  console.log('Hello from clearLetters.');
-  for (const index of idxArray) {
-    if (currentGame.puzzle.grid[index].status === 'locked') continue;
-    currentGame.puzzle.grid[index].guess = '';
-    const row = Math.floor(index / columns);
-    const col = index - row * columns;
-    document.querySelector('.table__puzzle').firstChild.children[row].children[
-      col
-    ].firstChild.firstChild.innerText = '';
-  }
-}
-
 /**
  * Highlights a clue and location in puzzle based on which cell
  * the user clicks
@@ -782,13 +743,6 @@ function selectBlock(direction, cell) {
     direction === 'across' ? `${clueLength * cellDim}px` : `${cellDim}px`;
   highlighter.style.height =
     direction === 'across' ? `${cellDim}px` : `${clueLength * cellDim}px`;
-  // if (direction === 'across') {
-  //   highlighter.style.width = `${clueLength * cellDim}px`;
-  //   highlighter.style.height = `${cellDim}px`;
-  // } else {
-  //   highlighter.style.width = `${cellDim}px`;
-  //   highlighter.style.height = `${clueLength * cellDim}px`;
-  // }
   const firstCellRow = Math.floor(idxArray[0] / columns);
   const firstCellCol = idxArray[0] - firstCellRow * columns;
   highlighter.style.translate = `${cellDim * firstCellCol - 2}px -${
@@ -821,6 +775,7 @@ function selectBlock(direction, cell) {
 function getWordBlock(cell, direction) {
   console.log('Hello from getWordBlock.');
   const row = cell.parentElement.rowIndex;
+  if (row < 0) return;
   const col = cell.cellIndex;
   let index = row * columns + col;
   const lowLimit = acrossWord ? row * columns : columns - 1;
@@ -962,7 +917,6 @@ function resizePuzzle() {
     }
   }
   const puzHeight = puzzleGrid.offsetHeight;
-  // document.querySelector('.grid__svg').remove();
   puzzleGrid.appendChild(generateGridElement(puzWidth, puzHeight));
   if (currentCell) {
     const direction = acrossWord ? 'across' : 'down';
