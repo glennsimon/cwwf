@@ -205,7 +205,7 @@ async function sendTokenToServer(messagingToken) {
   console.log('Messaging permission granted. Token: ', messagingToken);
   if (currentUser.uid) {
     await setDoc(
-      doc(db, `/users/${currentUser.uid}/`),
+      doc(db, `/users/${currentUser.uid}/private/data/`),
       { msgToken: messagingToken },
       { merge: true }
     );

@@ -256,7 +256,7 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
 function notifyPlayer(uid, gameId) {
   console.log('Hello from notifyPlayer.');
   return db
-    .doc(`users/${uid}`)
+    .doc(`users/${uid}/private/data`)
     .get()
     .then(async (doc) => {
       // console.log('msgToken: ', doc.data().msgToken);
