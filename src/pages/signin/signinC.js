@@ -29,6 +29,7 @@ import {
 } from '../../shellV.js';
 import { route } from '../../router.js';
 import { showActivity } from '../../pageFrags/activity/activity.js';
+import { constants } from '../../constants.js';
 
 let myFriends = {};
 let currentUserUnsubscribe = () => {};
@@ -163,17 +164,21 @@ async function checkForPendingPlayer() {
 /**
  * Configure messaging credentials
  */
-async function generateMessagingToken() {
+function generateMessagingToken() {
+  console.log('Hello from generateMessagingToken');
   try {
-    const messagingToken = await getToken(messaging);
-    if (messagingToken) {
-      sendTokenToServer(messagingToken);
-      onMessage(messaging, (message) => {
-        console.log('New message from FCM: ', message.notification);
-      });
-    } else {
-      requestNotificationsPermissions();
-    }
+    getToken(messaging, {
+      vapidKey: constants.VAPID_KEY,
+    }).then((currentToken) => {
+      if (currentToken) {
+        sendTokenToServer(currentToken);
+        onMessage(messaging, (message) => {
+          console.log('New message from FCM: ', message.notification);
+        });
+      } else {
+        requestNotificationsPermissions();
+      }
+    });
   } catch (err) {
     console.log('An error occurred while retrieving token: ', err);
   }
@@ -182,15 +187,15 @@ async function generateMessagingToken() {
 // Requests permissions to show notifications.
 async function requestNotificationsPermissions() {
   console.log('Requesting notifications permission...');
-  const permission = await Notification.requestPermission();
-
-  if (permission === 'granted') {
-    console.log('Notification permission granted.');
-    // Notification permission granted.
-    await generateMessagingToken();
-  } else {
-    console.log('Unable to get permission to notify.');
-  }
+  Notification.requestPermission().then((permission) => {
+    if (permission === 'granted') {
+      console.log('Notification permission granted.');
+      // Notification permission granted.
+      generateMessagingToken();
+    } else {
+      console.log('Unable to get permission to notify.');
+    }
+  });
 }
 
 /**

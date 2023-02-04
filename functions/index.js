@@ -245,8 +245,9 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
 /**
  * Sends FCM message to player to notify them that it is their turn.
  * @param {string} uid uid of player
+ * @param {string} gameId game id
  */
-function notifyPlayer(uid) {
+function notifyPlayer(uid, gameId) {
   console.log('Hello from notifyPlayer.');
   return db
     .doc(`users/${uid}`)
@@ -264,7 +265,7 @@ function notifyPlayer(uid) {
             title: 'Your turn!',
             body: 'Your opponent has played their turn',
             icon: 'images/favicon.ico',
-            clickAction: 'https://xwordswf.web.app',
+            clickAction: `https://xwordswf.web.app/puzzle?gameId=${gameId}`,
           },
         };
 
@@ -596,7 +597,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameList);
       functions.logger.log('checkAnswers transaction success!');
-      return notifyPlayer(opponent);
+      return notifyPlayer(opponent, answerObj.gameId);
     });
   } catch (error) {
     functions.logger.error('checkAnswers transaction failure: ', error);

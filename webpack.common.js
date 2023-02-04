@@ -71,8 +71,8 @@ module.exports = {
         },
         { from: './src/images', to: './images' },
         {
-          from: './firebase-messaging-sw.js',
-          to: './firebase-messaging-sw.mjs', // needs to change to .mjs so recognized as module
+          from: './src/firebase-messaging-sw.js',
+          to: './firebase-messaging-sw.js', // needs to change to .mjs so recognized as module
         },
       ],
     }),
