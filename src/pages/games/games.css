@@ -1,0 +1,31 @@
+.panel__games {
+  position: absolute;
+  height: 100%;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(0, 0);
+  transition: transform 0.3s ease;
+}
+
+.gamesHeading {
+  padding: 10px 20px 0;
+}
+
+.panel__games--list {
+  display: flex;
+  flex-direction: column;
+  max-height: 85%;
+  width: 90%;
+}
+
+.button__games--start {
+  margin: 10px auto;
+}
+
+@media screen and (min-width: 420px) {
+  .panel__games--list {
+    width: 400px;
+  }
+}

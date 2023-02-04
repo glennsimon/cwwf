@@ -1,0 +1,104 @@
+html {
+  box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+body {
+  font-family: 'Roboto', 'Helvetica', 'Arial', Sans-Serif;
+  background-color: #f6f6f6;
+  font-size: 16px;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.header__activity {
+  display: flex;
+  align-items: center;
+}
+
+.container__app {
+  display: flex;
+  flex-wrap: wrap;
+  height: 100%;
+  position: absolute;
+  width: 100vw;
+}
+
+.overflow {
+  display: flex;
+  align-items: center;
+}
+
+.drawer {
+  height: 100%;
+  justify-content: space-between;
+}
+
+.drawer__player {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer__close {
+  align-self: flex-end;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.drawer__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer__concede {
+  text-align: center;
+  margin: 5px auto;
+}
+
+.user-photo__crop {
+  display: flex;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  align-self: center;
+}
+
+.user-name {
+  margin: 5px auto;
+}
+
+.button__auth {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: auto;
+}
+
+.container__activity {
+  translate: 100vw;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+@media screen and (min-aspect-ratio: 5/4) {
+  .header__title {
+    display: block;
+    content: 'CrosSwords';
+  }
+}
+
+@media screen and (min-aspect-ratio: 3/2) {
+  .container__app {
+    display: flex;
+    flex-direction: column;
+  }
+}

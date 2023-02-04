@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="">
+  <!-- This page of sample code is intended to demonstrate how to use the JSON puzzle format described at www.xwordinfo.com.
+  It can be freely used but please credit Jim Horne and xwordinfo.com and let me know if you end up using it.
+  Email info {at} xwordinfo.com  -->
+
+  <head>
+    <meta charset="utf-8" />
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge" /> -->
+    <meta name="description" content="Mockup of Crosswords With Friends" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crosswords WF</title>
+    <!-- Web Application Manifest -->
+    <!-- webpackIgnore: true -->
+    <link rel="manifest" href="./app.webmanifest" />
+    <!-- Add to homescreen for Chrome on Android -->
+    <link rel="icon" sizes="192x192" href="images/chrome-touch-icon-192.png" />
+    <!-- Add to homescreen for Safari on iOS -->
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png" />
+    <!-- SEO: If your mobile URL is different from the desktop URL, add a canonical link to the desktop page https://developers.google.com/webmasters/smartphone-sites/feature-phones -->
+    <!--
+    <link rel='canonical' href='http://www.example.com/'>
+    -->
+    <!-- Material Design icons -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+    />
+    <!-- Material Design Lite page styles:
+    You can choose other color schemes from the CDN, more info here http://www.getmdl.io/customize/index.html
+    Format: material.color1-color2.min.css, some examples:
+    material.red-teal.min.css
+    material.blue-orange.min.css
+    material.purple-indigo.min.css
+    -->
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css"
+    />
+    <!-- Roboto font -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Roboto"
+    />
+    <!-- webpack code will be added below -->
+  </head>
+
+  <body>
+    <!-- The drawer is always open in large screens(?). The header is always shown,
+      even in small screens. -->
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <img
+            src="./images/xswordsLogo.png"
+            alt="Crossed swords logo"
+            height="40"
+            width="40"
+            class="logo cursor--pointer"
+          />
+          <div class="spacer--20px"></div>
+          <span class="mdl-layout-title header__title"></span>
+          <div class="mdl-layout-spacer"></div>
+          <div class="header__activity"></div>
+          <div class="mdl-layout-spacer"></div>
+          <span class="material-icons notification__wifi--bad">
+            <!-- signal_wifi_bad -->
+          </span>
+          <div class="spacer--10px"></div>
+          <div class="scores"></div>
+          <button
+            class="header__signin mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"
+          >
+            <i class="material-icons">
+              <!-- login  -->
+            </i>
+          </button>
+          <button
+            class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--icon"
+            id="button__overflow"
+          >
+            <i class="material-icons">more_vert</i>
+          </button>
+          <ul
+            class="overflow__list mdl-menu mdl-js-menu mdl-js-ripple-effect mdl-menu--bottom-right"
+            for="button__overflow"
+          >
+            <li class="overflow overflow__refresh mdl-menu__item">
+              <i class="material-icons">refresh</i>
+              <div class="spacer--10px"></div>
+              Refresh
+            </li>
+            <li disabled class="overflow overflow__games mdl-menu__item">
+              <i class="material-icons">grid_on</i>
+              <div class="spacer--10px"></div>
+              Games
+            </li>
+            <li disabled class="overflow overflow__settings mdl-menu__item">
+              <i class="material-icons">settings</i>
+              <div class="spacer--10px"></div>
+              Settings
+            </li>
+          </ul>
+        </div>
+      </header>
+      <div
+        class="drawer mdl-layout__drawer mdl-color--blue-grey-800 mdl-color-text--blue-grey-50"
+      >
+        <div>
+          <header class="drawer__player">
+            <div class="drawer__close">
+              <i class="material-icons height24px mdl-color-text--white"
+                >arrow_back</i
+              >
+            </div>
+            <div class="user-photo__crop">
+              <img
+                class="user-photo"
+                src="./images/avatar_circle_black.png"
+                alt="profile picture"
+              />
+            </div>
+            <span class="user-name">N. E. Person</span>
+            <div class="margin--5px-auto">
+              <button
+                class="button__auth mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+              >
+                sign in<span class="spacer--10px"></span>
+                <span class="material-icons">login </span>
+              </button>
+            </div>
+          </header>
+          <div class="drawer__content"></div>
+        </div>
+        <div class="drawer__concede"></div>
+      </div>
+      <main class="mdl-layout__content mdl-color--grey-100">
+        <div class="container__app"></div>
+      </main>
+    </div>
+    <dialog class="dialog__shell mdl-dialog" style="width: 400px">
+      <header>
+        <div class="dialog--close">
+          <i class="material-icons">close</i>
+        </div>
+        <div class="dialog__content--header"></div>
+      </header>
+      <div class="dialog__list"></div>
+      <footer class="dialog__footer">
+        <div class="dialog__content--footer"></div>
+        <div class="dialog__activity"></div>
+      </footer>
+    </dialog>
+    <!-- Placeholder div for animated cell -->
+    <div class="cell__animator"></div>
+  </body>
+</html>

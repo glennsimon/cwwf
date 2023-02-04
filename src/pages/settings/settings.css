@@ -1,0 +1,43 @@
+.panel__settings {
+  height: 100%;
+}
+
+.card__settings {
+  align-items: center;
+  height: 100%;
+  width: 100vw;
+}
+
+.section__avatar {
+  display: flex;
+  flex-direction: column;
+  width: 90%;
+}
+
+.textfield {
+  width: 100%;
+  text-align: center;
+}
+
+.container__handle {
+  display: flex;
+  align-items: center;
+  width: 300px;
+  justify-content: space-between;
+}
+
+.handle__entry {
+  width: auto;
+}
+
+.container__buttons--settings {
+  width: 300px;
+  display: flex;
+  justify-content: space-between;
+}
+
+@media screen and (min-width: 420px) {
+  .section__avatar {
+    width: 400px;
+  }
+}

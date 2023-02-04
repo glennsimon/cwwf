@@ -1,0 +1,10 @@
+.activity__spinner {
+  margin: 0;
+}
+
+.activity {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin: 10px auto;
+}

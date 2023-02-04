@@ -1,4 +1,4 @@
-import { auth } from './firebase-init.js';
+import { auth } from '../../firebase-init.js';
 
 /** Note: FirebaseUI is not compatible with the v9 modular SDK.
  * The v9 compatibility layer (specifically, the app-compat and
@@ -10,6 +10,7 @@ import { auth } from './firebase-init.js';
 import firebase from 'firebase/compat/app';
 import * as firebaseui from 'firebaseui';
 import 'firebaseui/dist/firebaseui.css';
+import { route } from '../../router.js';
 
 const CLIENT_ID =
   '38205810024-ldpgeahe0cq1kt6r0am848qjqqu61fpd.apps.' +
@@ -21,7 +22,7 @@ const uiConfig = {
   // Will use popup for IDP Providers sign-in flow instead of the default, redirect.
   signInFlow: 'popup',
   // Url to redirect to after a successful sign-in.
-  signInSuccessUrl: './',
+  signInSuccessUrl: './games',
   callbacks: {
     signInSuccessWithAuthResult: function (user, credential, redirectUrl) {
       if (window.opener) {
@@ -46,13 +47,7 @@ const uiConfig = {
     // firebase.auth.FacebookAuthProvider.PROVIDER_ID,
     // firebase.auth.TwitterAuthProvider.PROVIDER_ID,
     // firebase.auth.GithubAuthProvider.PROVIDER_ID,
-    {
-      provider: firebase.auth.EmailAuthProvider.PROVIDER_ID,
-      signInMethod: getEmailSignInMethod(),
-      // disableSignUp: {
-      //   status: getDisableSignUpStatus(),
-      // },
-    },
+    firebase.auth.EmailAuthProvider.PROVIDER_ID,
     // // To add phone signin, uncomment the object below and
     // // prompt the user for a unique name in the onAuthStateChanged
     // // function in controller.js.  Phone signin returns nothing but the
@@ -74,19 +69,10 @@ const uiConfig = {
     // firebaseui.auth.AnonymousAuthProvider.PROVIDER_ID,
   ],
   // Terms of service url.
-  tosUrl: () => (location.hash = '#tos'),
+  tosUrl: () => route('/tos'),
   // Privacy policy url.
-  privacyPolicyUrl: () => (location.hash = '#privacy'),
+  privacyPolicyUrl: () => route('/privacy'),
 };
-
-/**
- * @return {string} The email signInMethod from the configuration.
- */
-function getEmailSignInMethod() {
-  console.log('getEmailSignInMethod');
-  var config = parseQueryString(location.hash);
-  return config['emailSignInMethod'] === 'password' ? 'password' : 'emailLink';
-}
 
 /**
  * @return {string} The reCAPTCHA rendering mode from the configuration.
@@ -127,13 +113,13 @@ function parseQueryString(queryString) {
   return config;
 }
 
-let uiStarted = false;
+// let uiStarted = false;
 
 const uiStart = () => {
-  if (uiStarted) return;
+  // if (uiStarted) return;
   // The start method will wait until the DOM is loaded.
-  ui.start('#firebaseuiAuthContainer', uiConfig);
-  uiStarted = true;
+  ui.start('.container__firebase-auth', uiConfig);
+  // uiStarted = true;
 };
 
 export { uiStart };

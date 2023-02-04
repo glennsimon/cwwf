@@ -67,14 +67,13 @@ exports.userStatusChanged = functions.database
 exports.userOffline2 = functions.https.onCall(async (statusUpdate, context) => {
   console.log('Hello from userOffline2.');
   const uid = statusUpdate.uid;
-  await admin
+  return admin
     .database()
     .ref(`/users/${uid}`)
     .set(statusUpdate.authState)
     .catch((error) => {
       functions.logger.log('Error: ', error);
     });
-  return null;
 });
 
 exports.authChange = functions.https.onCall(async (data, context) => {
@@ -89,8 +88,8 @@ exports.authChange = functions.https.onCall(async (data, context) => {
       .doc(uid)
       .collection('private')
       .doc('data');
-    // User is signed in. Updates every time the user signs in, in case there
-    // are changes to photo or whatever.
+    // User is signed in. User data updates every time the user signs in,
+    // in case there are changes to photo or whatever.
     try {
       return db.runTransaction(async (tx) => {
         let publicData = (await tx.get(publicDataRef)).data();
@@ -119,7 +118,7 @@ exports.authChange = functions.https.onCall(async (data, context) => {
         );
       });
     } catch (error) {
-      functions.logger.error('addFriends transaction failure: ', error);
+      functions.logger.error('authChange transaction failure: ', error);
     }
   }
 });
@@ -188,7 +187,7 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
       newUser.uid = uid;
       newUser.photoURL = context.auth.token.picture || null;
       newUser.blocked = [];
-      newUser.prefName = newUser.displayName;
+      newUser.prefName = context.auth.token.name || null;
       newUser.signInProvider =
         context.auth.token.firebase.sign_in_provider || 'none';
 
@@ -237,7 +236,7 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
 
       tx.update(gameRef, game)
         .update(gameListRef, gameListDoc)
-        .update(newUserRef, newUser)
+        .set(newUserRef, newUser)
         .update(initiatorRef, initiator)
         .delete(pendingRef);
       functions.logger.log('updatePendingPlayer transaction success!');
@@ -252,8 +251,9 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
 /**
  * Sends FCM message to player to notify them that it is their turn.
  * @param {string} uid uid of player
+ * @param {string} gameId game id
  */
-function notifyPlayer(uid) {
+function notifyPlayer(uid, gameId) {
   console.log('Hello from notifyPlayer.');
   return db
     .doc(`users/${uid}`)
@@ -271,7 +271,7 @@ function notifyPlayer(uid) {
             title: 'Your turn!',
             body: 'Your opponent has played their turn',
             icon: 'images/favicon.ico',
-            clickAction: 'https://xwordswf.web.app',
+            clickAction: `https://xwordswf.web.app/puzzle?gameId=${gameId}`,
           },
         };
 
@@ -326,86 +326,88 @@ exports.deleteFailedGame = functions.https.onCall(async (idObj, context) => {
 exports.startGame = functions.https.onCall((gameStartParameters, context) => {
   console.log('Hello from startGame.');
   const viewableBy = Object.keys(gameStartParameters.players);
-  return db
-    .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
-    .get()
-    .then((doc) => {
-      return JSON.parse(doc.data().dates);
-    })
-    .then((library) => {
-      let seedObject = {};
+  return (
+    db
+      .doc(`/gameCategories/${gameStartParameters.difficulty}/`)
+      .get()
+      .then((doc) => {
+        return JSON.parse(doc.data().dates);
+      })
+      .then((library) => {
+        let seedObject = {};
 
-      const years = Object.getOwnPropertyNames(library);
-      const year = years[Math.floor(Math.random() * years.length)];
-      const months = Object.getOwnPropertyNames(library[year]);
-      const month = months[Math.floor(Math.random() * months.length)];
-      const days = library[year][month];
-      const day = days[Math.floor(Math.random() * days.length)];
+        const years = Object.getOwnPropertyNames(library);
+        const year = years[Math.floor(Math.random() * years.length)];
+        const months = Object.getOwnPropertyNames(library[year]);
+        const month = months[Math.floor(Math.random() * months.length)];
+        const days = library[year][month];
+        const day = days[Math.floor(Math.random() * days.length)];
 
-      seedObject.day = day;
-      seedObject.month = month;
-      seedObject.year = year;
-      return seedObject;
-    })
-    .then((seedObject) => {
-      // console.log(seedObject);
-      return newPuzzle(seedObject);
-    })
-    .then(async (gameFromWeb) => {
-      const batch = db.batch();
-      const gamesDocRef = db.collection('games').doc();
-      const gameListDataRef = db.doc(`gameListBuilder/${gamesDocRef.id}`);
-      const gameHiddenAnswersRef = db.doc(
-        `games/${gamesDocRef.id}/hidden/answers/`
-      );
+        seedObject.day = day;
+        seedObject.month = month;
+        seedObject.year = year;
+        return seedObject;
+      })
+      .then((seedObject) => {
+        // console.log(seedObject);
+        return newPuzzle(seedObject);
+      })
+      .then(async (gameFromWeb) => {
+        const batch = db.batch();
+        const gamesDocRef = db.collection('games').doc();
+        const gameListDataRef = db.doc(`gameListBuilder/${gamesDocRef.id}`);
+        const gameHiddenAnswersRef = db.doc(
+          `games/${gamesDocRef.id}/hidden/answers/`
+        );
 
-      const gameListData = {};
-      gameListData.players = gameStartParameters.players;
-      gameListData.viewableBy = viewableBy;
-      gameListData.start = Date.now();
-      gameListData.status = 'started';
-      gameListData.nextTurn = context.auth.uid;
-      batch.set(gameListDataRef, gameListData);
+        const gameListData = {};
+        gameListData.players = gameStartParameters.players;
+        gameListData.viewableBy = viewableBy;
+        gameListData.start = Date.now();
+        gameListData.status = 'started';
+        gameListData.nextTurn = context.auth.uid;
+        batch.set(gameListDataRef, gameListData);
 
-      const answersObj = {};
-      answersObj.answerKey = gameFromWeb.grid;
-      batch.set(gameHiddenAnswersRef, answersObj);
+        const answersObj = {};
+        answersObj.answerKey = gameFromWeb.grid;
+        batch.set(gameHiddenAnswersRef, answersObj);
 
-      const game = parsePuzzle(gameFromWeb);
-      game.players = gameStartParameters.players;
-      const players = Object.keys(game.players);
-      for (const player of players) {
-        game.players[player].score = 0;
-      }
-      game.difficulty = gameStartParameters.difficulty;
-      game.status = 'started';
-      game.winner = null;
-      game.nextTurn = context.auth.uid;
-      game.start = gameListData.start;
-      game.lastTurnCheckObj = { newGame: true };
+        const game = parsePuzzle(gameFromWeb);
+        game.players = gameStartParameters.players;
+        const players = Object.keys(game.players);
+        for (const player of players) {
+          game.players[player].score = 0;
+        }
+        game.difficulty = gameStartParameters.difficulty;
+        game.status = 'started';
+        game.winner = null;
+        game.nextTurn = context.auth.uid;
+        game.start = gameListData.start;
+        game.lastTurnCheckObj = { newGame: true };
 
-      // console.log('New parsed puzzle: ', game);
+        // console.log('New parsed puzzle: ', game);
 
-      const gameId = gamesDocRef.id;
-      batch.set(gamesDocRef, game);
+        const gameId = gamesDocRef.id;
+        batch.set(gamesDocRef, game);
 
-      await batch.commit();
-      return gameId;
-    })
-    .then(async (gameId) => {
-      const opponentUid =
-        context.auth.uid === viewableBy[0] ? viewableBy[1] : viewableBy[0];
-      const opponent = await db.doc(`users/${opponentUid}`).get();
-      const gameObj = {};
-      gameObj.opponent = opponent.data();
-      gameObj.gameId = gameId;
-      console.log('gameObj: ', gameObj);
-      return gameObj;
-    })
-    .catch((error) => {
-      functions.logger.error('Error fetching puzzle date: ', error);
-      // console.error('Error fetching puzzle date: ', error);
-    });
+        await batch.commit();
+        return gameId;
+      })
+      // .then(async (gameId) => {
+      //   const opponentUid =
+      //     context.auth.uid === viewableBy[0] ? viewableBy[1] : viewableBy[0];
+      //   const opponent = await db.doc(`users/${opponentUid}`).get();
+      //   const gameObj = {};
+      //   gameObj.opponent = opponent.data();
+      //   gameObj.gameId = gameId;
+      //   console.log('gameObj: ', gameObj);
+      //   return gameObj;
+      // })
+      .catch((error) => {
+        functions.logger.error('Error fetching puzzle date: ', error);
+        // console.error('Error fetching puzzle date: ', error);
+      })
+  );
 });
 
 /**
@@ -495,16 +497,16 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
   const answers = (await answersRef.get()).data();
   const lastTurnCheckObj = { correctAnswer: true };
   try {
-    await db.runTransaction(async (tx) => {
+    return db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
       const gameList = (await tx.get(gameListRef)).data();
       const idxArray = answerObj.idxArray;
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
       const player = uid;
-      const bgColor = game.players[player].bgColor.match(/blue/i)
-        ? 'rgba(0, 0, 255, 0.5)'
-        : 'rgba(255, 0, 0, 0.5)';
+      let bgColor = game.players[player].bgColor.match(/blue/i)
+        ? 'bg-color__blue--translucent'
+        : 'bg-color__red--translucent';
       // console.log('answerObj: ', answerObj);
       for (let index = 0; index < answerObj.guess.length; index++) {
         const correctValue = answers.answerKey[idxArray[index]];
@@ -521,12 +523,14 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       for (let index = 0; index < answerObj.guess.length; index++) {
         const gridElement = game.puzzle.grid[idxArray[index]];
         const correctValue = answers.answerKey[idxArray[index]];
-        const guess = answerObj.guess[index];
-        if (gridElement.guessArray) {
-          gridElement.guessArray.push(guess);
+        let guess = answerObj.guess[index];
+        let guessArray = gridElement.guessArray;
+        if (guessArray && !guessArray.includes(guess)) {
+          guessArray.push(guess);
         } else {
-          gridElement.guessArray = [guess];
+          guessArray = [guess];
         }
+        gridElement.guessArray = guessArray;
         const cellResult = {};
         cellResult.guess = guess;
         cellResult.correctLetter = correctValue;
@@ -563,7 +567,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
             //   scoreCell(game, direction, idxArray[index])
             // );
             game.emptySquares--;
-            gridElement.bgColor = game.players[player].bgColor;
+            gridElement.bgColor = bgColor;
             gridElement.status = 'locked';
           }
         } else {
@@ -598,9 +602,9 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       game.lastTurnCheckObj = lastTurnCheckObj;
       // save the modified game and the gameListBuilder doc
       tx.update(gameRef, game).update(gameListRef, gameList);
-      return notifyPlayer(opponent);
+      functions.logger.log('checkAnswers transaction success!');
+      return notifyPlayer(opponent, answerObj.gameId);
     });
-    functions.logger.log('checkAnswers transaction success!');
   } catch (error) {
     functions.logger.error('checkAnswers transaction failure: ', error);
   }
@@ -718,7 +722,10 @@ exports.abandonGame2 = functions.https.onCall(async (abandonObj, context) => {
           game.puzzle.grid[index].guessArray = [answers[index]];
         }
         game.puzzle.grid[index].status = 'locked';
-        game.puzzle.grid[index].bgColor = game.players[oppUid].bgColor;
+        let bgColor = game.players[oppUid].bgColor;
+        if (bgColor === 'bgTransRed') bgColor = 'bg-color__red--translucent';
+        if (bgColor === 'bgTransBlue') bgColor = 'bg-color__blue--translucent';
+        game.puzzle.grid[index].bgColor = bgColor;
         game.players[oppUid].score += scoreValues[letter];
       }
       game.status = 'finished';

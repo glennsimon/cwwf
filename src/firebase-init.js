@@ -2,13 +2,10 @@ import { initializeApp } from 'firebase/app';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getMessaging } from 'firebase/messaging';
-import {
-  getFunctions,
-  connectFunctionsEmulator,
-  httpsCallable,
-} from 'firebase/functions';
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import { getAnalytics } from 'firebase/analytics';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
+import { constants } from './constants';
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDNheDAGRrSjCgic20dgnuawMILWBrTNUk',
@@ -52,10 +49,9 @@ if (
   document.location.search.includes('game')
 ) {
   // cookie will only last one week max
-  const timeInSeconds = 60 * 60 * 24 * 7;
   document.cookie =
     `xwwf_invite=${document.location.search}; ` +
-    `max-age=${timeInSeconds}; path=/`;
+    `max-age=${constants.COOKIE_MAX_AGE_INVITE}; path=/`;
 }
 
 // Check to make sure service workers are supported in the current browser,
