@@ -11,7 +11,6 @@ import {
 import { onAuthStateChanged, signOut } from 'firebase/auth'; //, signOut } from 'firebase/auth';
 import { getToken, onMessage } from 'firebase/messaging';
 import {
-  getDoc,
   setDoc,
   doc,
   getDocs,
@@ -56,7 +55,7 @@ onValue(ref(dbRT, '.info/connected'), (snapshot) => {
   online = snapshot.val();
   console.log('connected notification change fired. Connected: ', `${online}`);
   // const uid = auth.currentUser ? auth.currentUser.uid : null;
-  if (!currentUser) return;
+  if (!auth.currentUser) return;
   onDisconnect(userStatusDatabaseRef)
     .set(authState('offline'))
     .then(() => {

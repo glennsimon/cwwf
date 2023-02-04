@@ -192,9 +192,16 @@ function showPuzzle() {
  */
 async function directKeyAction(event) {
   if (!document.querySelector('.table__puzzle')) return;
+  let target = event.target;
+  if (event.type === 'click') {
+    while (!target.classList.contains('button__keyboard')) {
+      target = target.parentNode;
+      if (target.classList.contains('container__keyboard')) return;
+    }
+  }
   if (
-    event.keyCode === 13 || // enter keyCode
-    event.target.classList.contains('button__keyboard--enter')
+    event.key === 'Enter' ||
+    target.classList.contains('button__keyboard--enter')
   ) {
     if (turnInProgress) return;
     if (checkReadiness()) {
@@ -206,8 +213,8 @@ async function directKeyAction(event) {
     }
   }
   if (
-    event.keyCode === 8 || // backspace keyCode
-    event.target.classList.contains('button__keyboard--backspace')
+    event.key === 'Backspace' ||
+    target.classList.contains('button__keyboard--backspace')
   ) {
     undoEntry();
     return;
@@ -217,11 +224,6 @@ async function directKeyAction(event) {
     return;
   }
   if (event.type === 'click') {
-    let target = event.target;
-    while (!target.classList.contains('button__keyboard--letter')) {
-      target = target.parentNode;
-      if (target.classList.contains('container__keyboard')) return;
-    }
     letter = target.querySelector('.keyboard__key').innerText.trim();
     letter = letter.slice(0, 1);
     if (!letter.match(/^[a-zA-Z]$/)) return;
@@ -828,7 +830,7 @@ function clearHighlights() {
 function enterLetter(letter) {
   console.log('Hello from enterLetter.');
   // check if puzzle HTML is loaded
-  if (currentCell) {
+  if (idxArray.length !== 0) {
     let row = currentCell.parentElement.rowIndex;
     let col = currentCell.cellIndex;
     const index = row * columns + col;
