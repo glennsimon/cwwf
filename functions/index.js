@@ -270,15 +270,19 @@ function notifyPlayer(uid, gameId) {
           notification: {
             title: 'Your turn!',
             body: 'Your opponent has played their turn',
-            icon: 'images/favicon.ico',
-            clickAction: `https://xwordswf.web.app/puzzle?gameId=${gameId}`,
+            icon: 'images/icon-128.png',
+          },
+          webpush: {
+            fcm_options: {
+              link: `https://xwordswf.web.app/puzzle?gameId=${gameId}`,
+            },
           },
         };
 
         const messagingResponse = await admin
           .messaging()
           .sendToDevice(toKey, payload, {
-            collapseKey: 'your-turn',
+            collapseKey: 'xwwf',
             timeToLive: 86400,
           });
         console.log(`messagingResponse.results: ${messagingResponse.results}`);

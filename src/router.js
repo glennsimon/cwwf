@@ -21,6 +21,7 @@ let regexTester = null;
  */
 const routes = {
   '/': { html: '/shell.html', handler: shellHandler },
+  '/index.html': { html: '/shell.html', handler: shellHandler },
   '/games': { html: '/pages/games.html', handler: gamesHandler },
   '/puzzle': { html: '/pages/puzzle.html', handler: puzzleHandler },
   '/settings': { html: '/pages/settings.html', handler: settingsHandler },
