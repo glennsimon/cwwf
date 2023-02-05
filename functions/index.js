@@ -259,12 +259,12 @@ function notifyPlayer(uid, gameId) {
     .doc(`users/${uid}/private/data`)
     .get()
     .then(async (doc) => {
-      // console.log('msgToken: ', doc.data().msgToken);
-      return await doc.data().msgToken;
+      // console.log('msgTokens: ', doc.data().msgTokens);
+      return await doc.data().msgTokens;
     })
-    .then(async (toKey) => {
-      if (toKey) {
-        console.log('got users messagetoken: ', toKey);
+    .then(async (toKeys) => {
+      if (toKeys) {
+        console.log('got users messagetoken(s): ', toKeys);
 
         const payload = {
           notification: {
@@ -272,16 +272,11 @@ function notifyPlayer(uid, gameId) {
             body: 'Your opponent has played their turn',
             icon: 'images/icon-128.png',
           },
-          webpush: {
-            fcm_options: {
-              link: `https://xwordswf.web.app/puzzle?gameId=${gameId}`,
-            },
-          },
         };
 
         const messagingResponse = await admin
           .messaging()
-          .sendToDevice(toKey, payload, {
+          .sendToDevice(toKeys, payload, {
             collapseKey: 'xwwf',
             timeToLive: 86400,
           });
@@ -651,17 +646,6 @@ function scoreCell(game, direction, index, bgColor) {
     addedResults.push(cellResult);
   }
   checkAnswerResult = checkAnswerResult.concat(addedResults);
-  // console.log('game.puzzle.grid[index].value: ', game.puzzle.grid[index].value);
-  // console.log(
-  //   'scoreValues[game.puzzle.grid[index].value]: ',
-  //   scoreValues[game.puzzle.grid[index].value]
-  // );
-  // console.log('added score: ', addedScore);
-  // console.log('addedResults: ', addedResults);
-  // console.log(
-  //   'returned score: ',
-  //   addedScore + scoreValues[game.puzzle.grid[index].value]
-  // );
   return {
     scoreChange: addedScore + scoreValues[game.puzzle.grid[index].value],
     pushClue: clueNum,

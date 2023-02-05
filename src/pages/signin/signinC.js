@@ -18,6 +18,7 @@ import {
   collection,
   where,
   onSnapshot,
+  runTransaction,
 } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import {
@@ -203,13 +204,25 @@ async function requestNotificationsPermissions() {
  */
 async function sendTokenToServer(messagingToken) {
   console.log('Messaging permission granted. Token: ', messagingToken);
-  if (currentUser.uid) {
-    await setDoc(
-      doc(db, `/users/${currentUser.uid}/private/data/`),
-      { msgToken: messagingToken },
-      { merge: true }
-    );
-    return;
+  const refUserPrivateData = doc(db, `/users/${currentUser.uid}/private/data/`);
+  try {
+    return runTransaction(db, async (transaction) => {
+      const userData = await transaction.get(refUserPrivateData);
+      if (!userData.exists()) throw 'User document does not exist!';
+      const privateData = userData.data();
+      let tokens = privateData.msgTokens || [];
+      for (const token of tokens) {
+        if (token.split(':')[0] === messagingToken.split(':')[0]) {
+          tokens.splice(tokens.indexOf(token), 1);
+        }
+      }
+      tokens.push(messagingToken);
+      const updateData = {};
+      updateData.msgTokens = tokens;
+      transaction.update(refUserPrivateData, updateData);
+    });
+  } catch (error) {
+    console.log('UserData update transaction failed: ', error);
   }
 }
 
