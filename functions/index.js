@@ -145,18 +145,33 @@ exports.pendingPlayer = functions.https.onCall(async (data, context) => {
     // console.log('auth token: ', context.auth.token);
     const uid = context.auth.token.uid;
     // Split data into two nested collections for public and private data
-    const publicDataRef = db.collection('users').doc();
-    const user = {
-      initiator: uid,
-      uid: publicDataRef.id,
-      friends: [uid],
-      photoURL: null,
-      signInProvider: 'none',
-      displayName: data.firstName + ' (pending)',
-    };
-    return await publicDataRef.set(user).then(() => {
-      return publicDataRef.id;
-    });
+    const inviterRef = db.doc(`users/${uid}`);
+    const inviteeRef = db.collection('users').doc();
+    try {
+      let inviteeId = inviteeRef.id;
+      return db.runTransaction(async (tx) => {
+        const inviter = (await tx.get(inviterRef)).data();
+        if (inviter.friends) {
+          inviter.friends.push(inviteeId);
+        } else {
+          inviter.friends = [inviteeId];
+        }
+        const invitee = {
+          initiator: uid,
+          uid: inviteeId,
+          friends: [uid],
+          photoURL: null,
+          signInProvider: 'none',
+          displayName: data.firstName + ' (pending)',
+        };
+        tx.update(inviterRef, inviter).set(inviteeRef, invitee);
+        functions.logger.log('pendingPlayer transaction success!');
+        return inviteeId;
+      });
+    } catch (error) {
+      functions.logger.error('pendingPlayer transaction failure: ', error);
+      return null;
+    }
   }
   return null;
 });
@@ -221,18 +236,17 @@ exports.updatePendingPlayer = functions.https.onCall(async (data, context) => {
       // console.log('newUser after: ', newUser);
       const initiatorRef = db.doc(`users/${initiatorUid}`);
       const initiator = (await tx.get(initiatorRef)).data();
-      if (initiator.friends && initiator.friends.includes(data.pendingUid))
+      if (!initiator.friends) {
+        initiator.friends = [uid];
+      } else if (initiator.friends.includes(data.pendingUid)) {
         initiator.friends.splice(
           initiator.friends.indexOf(data.pendingUid),
           1,
           uid
         );
-      if (initiator.blocked && initiator.blocked.includes(data.pendingUid))
-        initiator.blocked.splice(
-          initiator.blocked.indexOf(data.pendingUid),
-          1,
-          uid
-        );
+      } else {
+        initiator.friends.push(uid);
+      }
 
       tx.update(gameRef, game)
         .update(gameListRef, gameListDoc)
