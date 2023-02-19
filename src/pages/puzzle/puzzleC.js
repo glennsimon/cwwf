@@ -27,7 +27,7 @@ let myTurn = null;
  */
 let gameUnsubscribe = () => {};
 
-function cleanGameParameters() {
+function clearGameParameters() {
   gameUnsubscribe();
   gameUnsubscribe = () => {};
   currentOpp = null;
@@ -254,7 +254,7 @@ export {
   currentGameId,
   prevGameId,
   currentOpp,
-  cleanGameParameters,
+  clearGameParameters,
   startNewGame,
   subscribeToGame,
   savePuzzle,

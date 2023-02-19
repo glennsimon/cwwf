@@ -11,7 +11,8 @@ import {
 } from './factory.js';
 import { currentUser } from './pages/signin/signinC.js';
 import { constants } from './constants.js';
-import { cleanGameParameters } from './pages/puzzle/puzzleC.js';
+import { clearGameParameters } from './pages/puzzle/puzzleC.js';
+import { clearGameList } from './pages/games/gamesC.js';
 
 let regexTester = null;
 
@@ -41,7 +42,8 @@ const routes = {
  * @param {boolean} fromHistory true if popped from history
  */
 function route(urlString, fromHistory) {
-  cleanGameParameters();
+  clearGameParameters();
+  clearGameList();
   if (!fromHistory)
     history.pushState({ url: `${location.href}` }, '', urlString);
   handleLocation();

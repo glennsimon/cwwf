@@ -1,9 +1,17 @@
 import { db } from '../../firebase-init.js';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  onSnapshot,
+  query,
+  where,
+} from 'firebase/firestore';
 import { showActivity } from '../../pageFrags/activity/activity.js';
 import { startNewGame } from '../puzzle/puzzleC.js';
+import { loadGames } from './gamesV.js';
 
 let myGames = [];
+let gameListUnsubscribe = () => {};
 
 /**
  * Populate list of all games that is viewable to the current user
@@ -14,14 +22,23 @@ async function populateMyGames(uid) {
   console.log('Hello from populateMyGames.');
   if (!uid) return;
   showActivity('.header__activity', 'Fetching games...');
-  // try {
+  subscribeToGameList(uid);
+}
+
+function subscribeToGameList(uid) {
+  console.log('Hello from subscribeToGame.');
+  // Stop listening for previous puzzle changes
+  gameListUnsubscribe();
+
   const q = query(
     collection(db, 'gameListBuilder'),
     where('viewableBy', 'array-contains', `${uid}`)
     // TODO: add later when bug is fixed (soon): orderBy('start', 'desc'),
     // limit(30)
   );
-  return getDocs(q).then((snapshot) => {
+
+  // Start listening to current puzzle changes
+  gameListUnsubscribe = onSnapshot(q, (snapshot) => {
     const myPastGames = [];
     const myActiveGames = [];
     const userIds = [];
@@ -43,8 +60,14 @@ async function populateMyGames(uid) {
       return b.start - a.start;
     });
     myGames = myActiveGames.concat(myPastGames);
+    loadGames();
     return;
   });
+}
+
+function clearGameList() {
+  gameListUnsubscribe();
+  gameListUnsubscribe = () => {};
 }
 
 /** Load game based on user selection */
@@ -58,4 +81,4 @@ function replayOpponent(game, difficulty) {
   startNewGame(gameStartParameters);
 }
 
-export { populateMyGames, replayOpponent, myGames };
+export { populateMyGames, replayOpponent, clearGameList, myGames };

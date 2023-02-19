@@ -11,7 +11,6 @@ import { uiStart } from './pages/signin/signin.js';
 import { showSettings } from './pages/settings/settingsV.js';
 import { populateMyGames } from './pages/games/gamesC.js';
 import { subscribeToGame } from './pages/puzzle/puzzleC.js';
-import { loadGames } from './pages/games/gamesV.js';
 import {
   disableGamesOverflow,
   disableSettingsOverflow,
@@ -41,7 +40,7 @@ function shellHandler(urlString, htmlPath) {
 function gamesHandler(urlString, htmlPath) {
   // if (auth.currentUser && auth.currentUser.uid) {
   try {
-    populateMyGames(auth.currentUser.uid).then(loadGames);
+    populateMyGames(auth.currentUser.uid);
     disableGamesOverflow();
     enableSettingsOverflow();
   } catch (err) {
