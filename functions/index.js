@@ -536,14 +536,10 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       for (let index = 0; index < answerObj.guess.length; index++) {
         const gridElement = game.puzzle.grid[idxArray[index]];
         const correctValue = answers.answerKey[idxArray[index]];
-        let guess = answerObj.guess[index];
-        let guessArray = gridElement.guessArray;
-        if (guessArray && !guessArray.includes(guess)) {
-          guessArray.push(guess);
-        } else {
-          guessArray = [guess];
-        }
-        gridElement.guessArray = guessArray;
+        const guess = answerObj.guess[index];
+        if (!gridElement.guessArray) gridElement.guessArray = [];
+        if (!gridElement.guessArray.includes(guess))
+          gridElement.guessArray.push(guess);
         const cellResult = {};
         cellResult.guess = guess;
         cellResult.correctLetter = correctValue;
@@ -714,20 +710,18 @@ exports.abandonGame2 = functions.https.onCall(async (abandonObj, context) => {
       const oppUid = abandonObj.opponentUid;
       gameListDoc.status = 'finished';
       for (let index = 0; index < answers.length; index++) {
-        if (answers[index] === '.') continue;
-        if (game.puzzle.grid[index].status === 'locked') continue;
         const letter = answers[index];
-        game.puzzle.grid[index].value = answers[index];
-        if (game.puzzle.grid[index].guessArray) {
-          game.puzzle.grid[index].guessArray.push(answers[index]);
-        } else {
-          game.puzzle.grid[index].guessArray = [answers[index]];
-        }
-        game.puzzle.grid[index].status = 'locked';
+        if (letter === '.') continue;
+        const square = game.puzzle.grid[index];
+        if (square.status === 'locked') continue;
+        square.value = letter;
+        if (!square.guessArray) square.guessArray = [];
+        if (!square.guessArray.includes(letter)) square.guessArray.push(letter);
+        square.status = 'locked';
         let bgColor = game.players[oppUid].bgColor;
         if (bgColor === 'bgTransRed') bgColor = 'bg-color__red--translucent';
         if (bgColor === 'bgTransBlue') bgColor = 'bg-color__blue--translucent';
-        game.puzzle.grid[index].bgColor = bgColor;
+        square.bgColor = bgColor;
         game.players[oppUid].score += scoreValues[letter];
       }
       game.status = 'finished';
