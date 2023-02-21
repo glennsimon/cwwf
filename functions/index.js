@@ -281,20 +281,25 @@ function notifyPlayer(uid, gameId) {
         console.log('got users messagetoken(s): ', toKeys);
 
         const payload = {
+          topic: 'xwwf',
           notification: {
             title: 'Your turn!',
             body: 'Your opponent has played their turn',
             icon: 'images/icon-128.png',
           },
+          webpush: {
+            fcmOptions: {
+              link: `puzzle?gameId=${gameId}`,
+            },
+          },
+          tokens: toKeys,
         };
 
         const messagingResponse = await admin
           .messaging()
-          .sendToDevice(toKeys, payload, {
-            collapseKey: 'xwwf',
-            timeToLive: 86400,
-          });
-        console.log(`messagingResponse.results: ${messagingResponse.results}`);
+          .sendMulticast(payload);
+        // .sendToDevice(toKeys, payload);
+        console.log(`messagingResponse: ${messagingResponse}`);
         // TODO: handle failed notifications
         // (see https://firebase.google.com/codelabs/firebase-cloud-functions#9)
         return messagingResponse;
