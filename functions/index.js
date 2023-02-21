@@ -285,11 +285,19 @@ function notifyPlayer(uid, gameId) {
           notification: {
             title: 'Your turn!',
             body: 'Your opponent has played their turn',
-            icon: 'images/icon-128.png',
+            // icon: './images/icon-128.png',
           },
           webpush: {
             fcmOptions: {
               link: `puzzle?gameId=${gameId}`,
+            },
+          },
+          android: {
+            collapseKey: 'android-xwwf',
+            ttl: 3600000,
+            notification: {
+              icon: './images/icon-128.png',
+              tag: 'android-xwwf-tag',
             },
           },
           tokens: toKeys,
