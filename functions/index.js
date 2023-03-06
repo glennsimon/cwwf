@@ -517,6 +517,7 @@ let checkAnswerResult = [];
 exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
   // console.log('Hello from checkAnswers. answerObj: ', answerObj);
   const uid = context.auth.uid;
+  const privateDataRef = db.doc(`users/${uid}/private/data`);
   const gameRef = db.doc(`games/${answerObj.gameId}`);
   const answersRef = db.doc(`games/${answerObj.gameId}/hidden/answers`);
   const gameListRef = db.doc(`gameListBuilder/${answerObj.gameId}`);
@@ -526,6 +527,8 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
     return db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
       const gameList = (await tx.get(gameListRef)).data();
+      const privateData = (await tx.get(privateDataRef)).data();
+      privateData.myGuesses = answerObj.myGuesses;
       const idxArray = answerObj.idxArray;
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
@@ -623,7 +626,9 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       lastTurnCheckObj.playerUid = uid;
       game.lastTurnCheckObj = lastTurnCheckObj;
       // save the modified game and the gameListBuilder doc
-      tx.update(gameRef, game).update(gameListRef, gameList);
+      tx.update(gameRef, game)
+        .update(gameListRef, gameList)
+        .set(privateDataRef, privateData);
       functions.logger.log('checkAnswers transaction success!');
       return notifyPlayer(opponent, answerObj.gameId);
     });

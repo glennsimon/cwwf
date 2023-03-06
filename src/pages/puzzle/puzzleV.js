@@ -5,6 +5,7 @@ import {
   currentGame,
   savePuzzle,
   checkReadiness,
+  myGuesses,
 } from './puzzleC.js';
 import { currentUser } from '../signin/signinC.js';
 import { currentOpp } from '../puzzle/puzzleC.js';
@@ -118,11 +119,14 @@ function showPuzzle() {
             bgColor = 'bg-color__blue--translucent';
           cell.classList.add(bgColor);
           letterDiv.innerText = squareData.value;
-        } else {
+        } else if (squareData.guessArray) {
           const guess = squareData.guessArray
             ? squareData.guessArray[squareData.guessArray.length - 1]
             : '';
           letterDiv.innerText = guess;
+        } else if (myGuesses[gridIndex]) {
+          letterDiv.innerText = myGuesses[gridIndex];
+          letterDiv.classList.add('color__dark-gray');
         }
         squareDiv.appendChild(letterDiv);
         cell.appendChild(squareDiv);

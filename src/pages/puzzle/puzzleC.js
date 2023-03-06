@@ -18,6 +18,7 @@ let currentGameId = null;
 let prevGameId = null;
 let columns = null;
 let myTurn = null;
+let myGuesses = {};
 // TODO: should this be tracked, and what can be done while offline?
 // let online = false;
 
@@ -98,6 +99,10 @@ function subscribeToGame(gameId) {
         return;
       }
       currentGameId = gameId;
+      const privateData = (
+        await getDoc(doc(db, `users/${auth.currentUser.uid}/private/data`))
+      ).data();
+      myGuesses = privateData.myGuesses || {};
       columns = currentGame.puzzle.cols;
       myTurn = auth.currentUser.uid === currentGame.nextTurn;
       if (prevGameId === gameId) {
@@ -119,6 +124,7 @@ function playWord() {
   console.log('Hello from playWord.');
   disableEnter();
   const answerObj = {};
+  answerObj.myGuesses = myGuesses;
   answerObj.idxArray = idxArray;
   answerObj.gameId = currentGameId;
   answerObj.acrossWord = acrossWord;
@@ -195,6 +201,7 @@ function incomplete() {
  * @param {number} index Index of square
  */
 function enterGuess(letter, index) {
+  myGuesses[index] = letter;
   if (
     currentGame.puzzle.grid[index].guessArray &&
     !currentGame.puzzle.grid[index].guessArray.includes(letter)
@@ -254,6 +261,7 @@ export {
   currentGameId,
   prevGameId,
   currentOpp,
+  myGuesses,
   clearGameParameters,
   startNewGame,
   subscribeToGame,
