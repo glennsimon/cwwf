@@ -6,6 +6,7 @@ import {
   savePuzzle,
   checkReadiness,
   myGuesses,
+  currentGameId,
 } from './puzzleC.js';
 import { currentUser } from '../signin/signinC.js';
 import { currentOpp } from '../puzzle/puzzleC.js';

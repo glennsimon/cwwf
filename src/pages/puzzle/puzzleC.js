@@ -102,7 +102,8 @@ function subscribeToGame(gameId) {
       const privateData = (
         await getDoc(doc(db, `users/${auth.currentUser.uid}/private/data`))
       ).data();
-      myGuesses = privateData.myGuesses || {};
+      myGuesses =
+        (privateData.myGuesses && privateData.myGuesses[gameId]) || {};
       columns = currentGame.puzzle.cols;
       myTurn = auth.currentUser.uid === currentGame.nextTurn;
       if (prevGameId === gameId) {

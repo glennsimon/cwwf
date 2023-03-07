@@ -528,7 +528,8 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
       const game = (await tx.get(gameRef)).data();
       const gameList = (await tx.get(gameListRef)).data();
       const privateData = (await tx.get(privateDataRef)).data();
-      privateData.myGuesses = answerObj.myGuesses;
+      if (!privateData.myGuesses) privateData.myGuesses = {};
+      privateData.myGuesses[answerObj.gameId] = answerObj.myGuesses;
       const idxArray = answerObj.idxArray;
       const direction = answerObj.acrossWord ? 'across' : 'down';
       const clueNumber = game.puzzle.grid[idxArray[0]].clueNum;
@@ -621,6 +622,8 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
         game.finish = finishDate;
         gameList.status = 'finished';
         gameList.finish = finishDate;
+        if (privateData.myGuesses[answerObj.gameId])
+          delete privateData.myGuesses[answerObj.gameId];
       }
       lastTurnCheckObj.checkAnswerResult = checkAnswerResult;
       lastTurnCheckObj.playerUid = uid;
@@ -724,6 +727,22 @@ exports.abandonGame2 = functions.https.onCall(async (abandonObj, context) => {
     await db.runTransaction(async (tx) => {
       const game = (await tx.get(gameRef)).data();
       const gameListDoc = (await tx.get(gameListRef)).data();
+      const playerOne = gameListDoc.viewableBy[0];
+      const playerTwo = gameListDoc.viewableBy[1];
+      const playerOneRef = db.doc(`users/${playerOne}/private/data`);
+      const playerTwoRef = db.doc(`users/${playerTwo}/private/data`);
+      const playerOnePrivateData = (await tx.get(playerOneRef)).data();
+      const playerTwoPrivateData = (await tx.get(playerTwoRef)).data();
+      if (
+        playerOnePrivateData.myGuesses &&
+        playerOnePrivateData.myGuesses[abandonObj.gameId]
+      )
+        delete playerOnePrivateData.myGuesses[abandonObj.gameId];
+      if (
+        playerTwoPrivateData.myGuesses &&
+        playerTwoPrivateData.myGuesses[abandonObj.gameId]
+      )
+        delete playerTwoPrivateData.myGuesses[abandonObj.gameId];
       const myUid = context.auth.uid;
       const oppUid = abandonObj.opponentUid;
       gameListDoc.status = 'finished';
@@ -756,7 +775,10 @@ exports.abandonGame2 = functions.https.onCall(async (abandonObj, context) => {
       gameListDoc.finish = finishDate;
       game.lastTurnCheckObj = { abandoned: true };
       // save the modified game and the gameListBuilder doc
-      tx.update(gameRef, game).update(gameListRef, gameListDoc);
+      tx.update(gameRef, game)
+        .update(gameListRef, gameListDoc)
+        .set(playerOneRef, playerOnePrivateData)
+        .set(playerTwoRef, playerTwoPrivateData);
     });
     functions.logger.log('abandonGame2 transaction success!');
   } catch (error) {
