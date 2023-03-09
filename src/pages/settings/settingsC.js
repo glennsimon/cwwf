@@ -53,6 +53,7 @@ async function storeSettings(settingsPrefs) {
       const updateData = {
         prefName: settingsPrefs.prefName || currentUser.prefName || null,
         prefHandle: settingsPrefs.prefHandle || currentUser.prefHandle || null,
+        prefScoring: settingsPrefs.scoring,
       };
       if (prefAvatarUrl) updateData.prefAvatarUrl = prefAvatarUrl;
       transaction.update(refUserData, updateData);

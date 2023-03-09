@@ -23,7 +23,10 @@ function showSettings() {
   buttonAvatar.addEventListener('change', changeAvatar);
   const scrabbleScoring = document.getElementById('scrabble-scoring');
   const coverageScoring = document.getElementById('coverage-scoring');
-  if (!currentUser.scoring || currentUser.scoring === 'scrabble-like') {
+  if (
+    !currentUser.prefScoring ||
+    currentUser.prefScoring === 'scrabble-scoring'
+  ) {
     scrabbleScoring.setAttribute('checked', '');
   } else {
     coverageScoring.setAttribute('checked', '');
@@ -121,6 +124,7 @@ async function updateSettings() {
   const settingsName = document.getElementById('name__input');
   const handleInput = document.getElementById('handle__input');
   const avatar = document.querySelector('.avatar__settings');
+  const scrabbleScoring = document.getElementById('scrabble-scoring');
   console.log('settingsName: ', settingsName.value);
   console.log('handleInput: ', handleInput.value);
   const settingsPrefs = {};
@@ -128,6 +132,10 @@ async function updateSettings() {
   settingsPrefs.prefName = settingsName.value;
   settingsPrefs.prefHandle = handleInput.value;
   if (prefAvatarUrl) avatar.src = prefAvatarUrl;
+  settingsPrefs.scoring =
+    scrabbleScoring.getAttribute('checked') === ''
+      ? 'scrabble-scoring'
+      : 'coverage-scoring';
   document.querySelector('.user-photo').src = prefAvatarUrl;
   document.querySelector('.user-name').innerText = settingsName.value;
   storeSettings(settingsPrefs).then(history.back());
