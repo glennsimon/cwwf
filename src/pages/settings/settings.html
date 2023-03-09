@@ -27,9 +27,47 @@
         </div>
       </div>
     </div>
+    <hr />
+    <div class="settings__scoring">
+      <div class="font--large padding__right--5px">SCORING PREFERENCE:</div>
+      <div class="font--small">
+        Games you initiate will use this scoring method
+      </div>
+      <div class="settings__radios--scoring">
+        <label
+          class="mdl-radio mdl-js-radio mdl-js-ripple-effect display__flex"
+          for="scrabble-scoring"
+        >
+          <input
+            type="radio"
+            id="scrabble-scoring"
+            class="mdl-radio__button"
+            name="scoring-options"
+            value="scrabble-like"
+          />
+          <span class="mdl-radio__label">Similar to Scrabble</span>
+        </label>
+        <label
+          class="mdl-radio mdl-js-radio mdl-js-ripple-effect display__flex"
+          for="coverage-scoring"
+        >
+          <input
+            type="radio"
+            id="coverage-scoring"
+            class="mdl-radio__button"
+            name="scoring-options"
+            value="coverage"
+          />
+          <span class="mdl-radio__label">Coverage Percentage</span>
+        </label>
+      </div>
+    </div>
+    <hr />
     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
       <input class="mdl-textfield__input" type="text" id="name__input" />
-      <label class="mdl-textfield__label" for="name__input">Full Name</label>
+      <label class="mdl-textfield__label" for="name__input"
+        >Full Name (help friends find you)</label
+      >
     </div>
     <div class="container__handle">
       <div
@@ -37,7 +75,7 @@
       >
         <input class="mdl-textfield__input" type="text" id="handle__input" />
         <label class="mdl-textfield__label" for="handle__input"
-          >Game Persona</label
+          >Game Persona (&#x2713; availability)</label
         >
         <span class="mdl-textfield__error">Sorry, that's taken. Try again</span>
       </div>
@@ -48,9 +86,8 @@
       </button>
       <div class="label--ok"></div>
     </div>
-    <div
-      class="container__buttons--settings mdl-card__actions mdl-card--border"
-    >
+    <hr />
+    <div class="container__buttons--settings mdl-card__actions">
       <button
         class="button--cancel mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
       >

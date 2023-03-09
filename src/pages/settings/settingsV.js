@@ -19,6 +19,23 @@ function showSettings() {
     currentUser.prefAvatarUrl ||
     currentUser.photoURL ||
     './images/avatar_circle_black.png';
+  const buttonAvatar = document.getElementById('button--avatar');
+  buttonAvatar.addEventListener('change', changeAvatar);
+  const scrabbleScoring = document.getElementById('scrabble-scoring');
+  const coverageScoring = document.getElementById('coverage-scoring');
+  if (!currentUser.scoring || currentUser.scoring === 'scrabble-like') {
+    scrabbleScoring.setAttribute('checked', '');
+  } else {
+    coverageScoring.setAttribute('checked', '');
+  }
+  scrabbleScoring.addEventListener('click', () => {
+    scrabbleScoring.setAttribute('checked', '');
+    coverageScoring.removeAttribute('checked');
+  });
+  coverageScoring.addEventListener('click', () => {
+    coverageScoring.setAttribute('checked', '');
+    scrabbleScoring.removeAttribute('checked');
+  });
   const nameInput = document.getElementById('name__input');
   nameInput.value = currentUser.prefName || currentUser.displayName;
   nameInput.parentElement.classList.add('is-dirty');
@@ -37,8 +54,6 @@ function showSettings() {
   buttonSave.addEventListener('click', saveSettings);
   const buttonCancel = document.querySelector('.button--cancel');
   buttonCancel.addEventListener('click', cancel);
-  const buttonAvatar = document.getElementById('button--avatar');
-  buttonAvatar.addEventListener('change', changeAvatar);
 }
 
 function checkHandle() {
