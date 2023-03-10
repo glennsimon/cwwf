@@ -16,12 +16,14 @@ import puzzleInfoHtml from '../../pageFrags/puzzleInfo/puzzleInfo.html';
 import concedeHtml from '../../pageFrags/concede/concede.html';
 import { showActivity } from '../../pageFrags/activity/activity.js';
 import puzzleHtml from './puzzle.html';
+import keyFragHtml from './keyFrag.html';
 import './puzzle.css';
 import '../../pageFrags/scores/scores.css';
 import {
   showConcedeDialog,
   showReplayDialog,
 } from '../../pageFrags/dialogs/dialogsV.js';
+import { constants } from '../../constants.js';
 
 let currentCell = null;
 let idxArray = [];
@@ -75,9 +77,10 @@ function showPuzzle() {
   // if not currently playing a game, load puzzle HTML and initialize
   if (!puzzleGrid) {
     document.querySelector('.container__app').innerHTML = puzzleHtml;
+    buildKeyboard();
     puzzleGrid = document.querySelector('.table__puzzle');
     document.addEventListener('keyup', directKeyAction);
-    window.addEventListener('resize', resizePuzzle);
+    window.addEventListener('resize', showPuzzle);
     let keyList = document.querySelectorAll('.button__keyboard');
     for (const target of keyList) {
       target.addEventListener('click', directKeyAction);
@@ -190,6 +193,44 @@ function showPuzzle() {
     .classList.remove('button--disabled');
 }
 
+function buildKeyboard() {
+  const coverageScoring =
+    currentGame.prefScoring === 'coverage-scoring' ? true : false;
+  const containerKeyboard = document.querySelector('.container__keyboard');
+  for (const row of constants.KEYBOARD) {
+    const keyboardRow = document.createElement('div');
+    keyboardRow.className = 'keyboard__row';
+    for (const key of row) {
+      const isLetter = key !== 'ENTER' && key !== 'BACKSPACE';
+      const keyButton = document.createElement('div');
+      const keyboardKey = document.createElement('div');
+      keyboardKey.className = 'keyboard__key';
+      if (isLetter) {
+        keyButton.className = 'button__keyboard button__keyboard--letter';
+        keyboardKey.innerText = key;
+        if (!coverageScoring) {
+          const subscript = document.createElement('div');
+          subscript.className = 'subscript';
+          subscript.innerText = constants.SCORE_VALUES[key];
+          keyboardKey.appendChild(subscript);
+        }
+      } else if (key === 'ENTER') {
+        keyButton.className = 'button__keyboard button__keyboard--enter';
+        keyboardKey.innerText = 'ENTER';
+      } else {
+        keyButton.className = 'button__keyboard button__keyboard--backspace';
+        const backspaceElement = document.createElement('i');
+        backspaceElement.className = 'material-icons';
+        backspaceElement.innerText = 'backspace';
+        keyboardKey.appendChild(backspaceElement);
+      }
+      keyButton.appendChild(keyboardKey);
+      keyboardRow.appendChild(keyButton);
+    }
+    containerKeyboard.appendChild(keyboardRow);
+  }
+}
+
 /**
  * Take action based on virtual or physical keyboard
  * @param {event} event Either a keyboard event or a click event
@@ -216,6 +257,7 @@ async function directKeyAction(event) {
         return false;
       });
     }
+    return;
   }
   if (
     event.key === 'Backspace' ||
@@ -292,7 +334,7 @@ function loadClues(direction) {
 function circleHtml(cellDim, clueNum) {
   const halfCell = cellDim / 2;
   const radius = halfCell - 1.5;
-  let svgHtml = `<svg class='circle'>
+  let svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='circle'>
   <path d='M ${halfCell} ${halfCell}'/>
   <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black'
     fill='transparent' stroke-width='0.5'/>
@@ -881,54 +923,6 @@ function disableEnter() {
   document
     .querySelector('.button__keyboard--enter')
     .classList.add('button--disabled');
-}
-
-/** Resizes puzzle based on available space */
-function resizePuzzle() {
-  console.log('Hello from resizePuzzle.');
-  const puzzleGrid = document.querySelector('.table__puzzle');
-  if (!puzzleGrid) return;
-  // console.log(puzzleGrid.children[0]);
-  const cellDim = getCellDim();
-  const puzWidth = puzzleGrid.offsetWidth;
-
-  const cells = puzzleGrid.getElementsByTagName('td');
-
-  for (const cell of cells) {
-    cell.style.width = cellDim + 'px';
-    cell.style.height = cellDim + 'px';
-    // The only svg that could be in the cell is a circle, so this
-    // Tests for a circle and resizes it
-    const svgElements = cell.getElementsByTagName('svg');
-    if (svgElements.length === 1) {
-      const halfCell = cellDim / 2;
-      const radius = halfCell - 1.5;
-      let svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
-        <path d='M ${halfCell} ${halfCell}'/>
-        <circle cx='${halfCell}' cy='${halfCell}' r='${radius}' stroke='black' fill='transparent'/>
-        </svg>`;
-      const clueNumbers = cell.querySelector('.clue-number');
-      if (clueNumbers.length === 1) {
-        // dimA = (halfCell) * (1 - Math.cos((2 * Math.PI) / 24)) + 1.5; // 30 deg each direction
-        // dimB = (halfCell) * (1 - Math.sin((2 * Math.PI) / 24)) + 1.5; // from 135deg
-        let dimA = radius * 0.03407 + 1.5;
-        let dimB = radius * 0.74118 + 1.5;
-        svgHtml = `<svg height='${cellDim}' width='${cellDim}' class='posAbsolute upperLeft'>
-          <path d='M ${dimA} ${dimB}
-          A ${radius} ${radius} 0 1 0 ${halfCell} 1.5'
-          stroke='black' fill='transparent'/>
-          </svg>`;
-      }
-      cell.removeChild(svgElements[0]);
-      cell.innerHTML += svgHtml;
-    }
-  }
-  const puzHeight = puzzleGrid.offsetHeight;
-  puzzleGrid.appendChild(generateGridElement(puzWidth, puzHeight));
-  if (currentCell) {
-    const direction = acrossWord ? 'across' : 'down';
-    selectBlock(direction, currentCell);
-  }
 }
 
 export {
