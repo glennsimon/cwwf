@@ -195,7 +195,9 @@ function showPuzzle() {
 
 function buildKeyboard() {
   const coverageScoring =
-    currentGame.scoring === 'coverage-scoring' ? true : false;
+    currentGame.scoring && currentGame.scoring === 'coverage-scoring'
+      ? true
+      : false;
   const containerKeyboard = document.querySelector('.container__keyboard');
   for (const row of constants.KEYBOARD) {
     const keyboardRow = document.createElement('div');
