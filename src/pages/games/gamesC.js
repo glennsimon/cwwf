@@ -7,7 +7,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { showActivity } from '../../pageFrags/activity/activity.js';
-import { startNewGame } from '../puzzle/puzzleC.js';
+import { scoring, startNewGame } from '../puzzle/puzzleC.js';
 import { loadGames } from './gamesV.js';
 
 let myGames = [];
@@ -78,6 +78,7 @@ function replayOpponent(game, difficulty) {
   gameStartParameters.difficulty = difficulty;
   gameStartParameters.players = game.players;
   gameStartParameters.viewableBy = Object.keys(game.players);
+  gameStartParameters.scoring = scoring;
   startNewGame(gameStartParameters);
 }
 

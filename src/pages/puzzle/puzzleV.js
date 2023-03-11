@@ -195,7 +195,7 @@ function showPuzzle() {
 
 function buildKeyboard() {
   const coverageScoring =
-    currentGame.prefScoring === 'coverage-scoring' ? true : false;
+    currentGame.scoring === 'coverage-scoring' ? true : false;
   const containerKeyboard = document.querySelector('.container__keyboard');
   for (const row of constants.KEYBOARD) {
     const keyboardRow = document.createElement('div');
@@ -818,10 +818,9 @@ function selectBlock(direction, cell) {
  * Returns an array of indices of cells that make up a word block in
  * the current puzzle.
  * @param {Object} cell Cell in puzzle
- * @param {string} direction Direction (across or down)
  * @return {array} Array of indices that make up a word block
  */
-function getWordBlock(cell, direction) {
+function getWordBlock(cell) {
   console.log('Hello from getWordBlock.');
   const row = cell.parentElement.rowIndex;
   if (row < 0) return;

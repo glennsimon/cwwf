@@ -191,6 +191,7 @@ function selectOpponent(event) {
       break;
     }
   }
+  gameStartParameters.scoring = currentUser.prefScoring;
   startNewGame(gameStartParameters);
 }
 

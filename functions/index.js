@@ -410,6 +410,7 @@ exports.startGame = functions.https.onCall((gameStartParameters, context) => {
         game.nextTurn = context.auth.uid;
         game.start = gameListData.start;
         game.lastTurnCheckObj = { newGame: true };
+        game.scoring = gameStartParameters.scoring;
 
         // console.log('New parsed puzzle: ', game);
 
@@ -525,7 +526,7 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
   const lastTurnCheckObj = { correctAnswer: true };
   try {
     return db.runTransaction(async (tx) => {
-      const game = (await tx.get(gameRef)).data();
+      let game = (await tx.get(gameRef)).data();
       const gameList = (await tx.get(gameListRef)).data();
       const privateData = (await tx.get(privateDataRef)).data();
       if (!privateData.myGuesses) privateData.myGuesses = {};
@@ -546,10 +547,12 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
         }
       }
       // console.log('lastTurnCheckObj: ', lastTurnCheckObj);
-      if (lastTurnCheckObj.correctAnswer) {
+      const correctAnswer = lastTurnCheckObj.correctAnswer;
+      if (correctAnswer) {
         game.puzzle.completedClues[direction].push(parseInt(clueNumber));
       }
       checkAnswerResult = [];
+      if (!game.scoring) game.scoring = 'scrabble-scoring';
       for (let index = 0; index < answerObj.guess.length; index++) {
         const gridElement = game.puzzle.grid[idxArray[index]];
         const correctValue = answers.answerKey[idxArray[index]];
@@ -561,45 +564,21 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
         cellResult.guess = guess;
         cellResult.correctLetter = correctValue;
         cellResult.index = idxArray[index];
+        cellResult.bgColor = bgColor;
         // console.log('Correct letter: ', correctValue);
         // console.log('Guess: ', guess);
-        if (correctValue === guess) {
-          gridElement.value = guess;
-          cellResult.bgColor = bgColor;
-          if (
-            gridElement.status === 'locked' &&
-            lastTurnCheckObj.correctAnswer
-          ) {
-            game.players[player].score += scoreValues[guess];
-            cellResult.score = scoreValues[guess];
-            checkAnswerResult.push(cellResult);
-            // console.log('letter score: ', scoreValues[guess]);
-          } else if (gridElement.status !== 'locked') {
-            const scoreObj = scoreCell(
-              game,
-              direction,
-              idxArray[index],
-              bgColor
-            );
-            game.players[player].score += scoreObj.scoreChange;
-            if (scoreObj.pushClue)
-              game.puzzle.completedClues[scoreObj.dir].push(
-                parseInt(scoreObj.pushClue)
-              );
-            cellResult.score = scoreValues[guess];
-            checkAnswerResult.push(cellResult);
-            // console.log(
-            //   'letter score: ',
-            //   scoreCell(game, direction, idxArray[index])
-            // );
-            game.emptySquares--;
-            gridElement.bgColor = bgColor;
-            gridElement.status = 'locked';
-          }
+
+        // DIFFERENTIATE HERE for scoring method:
+        if (game.scoring === 'scrabble-scoring') {
+          game = scrabbleScore(
+            cellResult,
+            correctAnswer,
+            game,
+            direction,
+            player
+          );
         } else {
-          cellResult.bgColor = 'red';
-          cellResult.score = 0;
-          checkAnswerResult.push(cellResult);
+          game = coverageScore(cellResult, game, player);
         }
       }
       const opponent =
@@ -640,6 +619,74 @@ exports.checkAnswers = functions.https.onCall(async (answerObj, context) => {
   }
   return null;
 });
+
+/**
+ * Calculates the score of the users guess for a single cell, based on
+ * scrabble-like scoring.
+ * @param {object} cellResult Contains parameters for cell based on player's guess
+ * @param {boolean} correctAnswer Whether the player's entire guess was correct
+ * @param {object} game Complete game object to be updated with score information
+ * @param {string} direction 'across' or 'down'
+ * @param {string} player Player's UID
+ * @returns updated game object
+ */
+function scrabbleScore(cellResult, correctAnswer, game, direction, player) {
+  const gridElement = game.puzzle.grid[cellResult.index];
+  if (cellResult.correctLetter === cellResult.guess) {
+    gridElement.value = cellResult.guess;
+    if (gridElement.status === 'locked' && correctAnswer) {
+      game.players[player].score += scoreValues[cellResult.guess];
+      cellResult.score = scoreValues[cellResult.guess];
+      checkAnswerResult.push(cellResult);
+    } else if (gridElement.status !== 'locked') {
+      const scoreObj = scoreCell(
+        game,
+        direction,
+        cellResult.index,
+        cellResult.bgColor
+      );
+      game.players[player].score += scoreObj.scoreChange;
+      if (scoreObj.pushClue)
+        game.puzzle.completedClues[scoreObj.dir].push(
+          parseInt(scoreObj.pushClue)
+        );
+      cellResult.score = scoreValues[cellResult.guess];
+      checkAnswerResult.push(cellResult);
+      // console.log(
+      //   'letter score: ',
+      //   scoreCell(game, direction, cellResult.index)
+      // );
+      game.emptySquares--;
+      gridElement.bgColor = cellResult.bgColor;
+      gridElement.status = 'locked';
+    }
+  } else {
+    cellResult.bgColor = 'red';
+    cellResult.score = 0;
+    checkAnswerResult.push(cellResult);
+  }
+  return game;
+}
+
+function coverageScore(cellResult, game, player) {
+  const gridElement = game.puzzle.grid[cellResult.index];
+  if (cellResult.correctLetter === cellResult.guess) {
+    gridElement.value = cellResult.guess;
+    if (gridElement.status !== 'locked') {
+      game.players[player].score++;
+      cellResult.score = 1;
+      checkAnswerResult.push(cellResult);
+      game.emptySquares--;
+      gridElement.bgColor = cellResult.bgColor;
+      gridElement.status = 'locked';
+    }
+  } else {
+    cellResult.bgColor = 'red';
+    cellResult.score = 0;
+    checkAnswerResult.push(cellResult);
+  }
+  return game;
+}
 
 /**
  * Adds score for current cell and adds to score if orthogonal word is completed by

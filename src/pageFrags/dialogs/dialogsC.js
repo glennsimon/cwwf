@@ -20,6 +20,7 @@ async function sendInvitation() {
   gameStartParameters.viewableBy.push(pendUid);
   // for first game, default to 'easy' game
   gameStartParameters.difficulty = 'easy';
+  gameStartParameters.scoring = currentUser.prefScoring;
   const gameId = await startNewGame(gameStartParameters);
   startDefaultMail(oppName, document.location.origin, pendUid, gameId);
   hideActivity();

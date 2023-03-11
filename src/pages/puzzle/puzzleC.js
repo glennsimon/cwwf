@@ -19,6 +19,7 @@ let prevGameId = null;
 let columns = null;
 let myTurn = null;
 let myGuesses = {};
+let scoring = 'scrabble-scoring';
 // TODO: should this be tracked, and what can be done while offline?
 // let online = false;
 
@@ -263,6 +264,7 @@ export {
   prevGameId,
   currentOpp,
   myGuesses,
+  scoring,
   clearGameParameters,
   startNewGame,
   subscribeToGame,
