@@ -43,8 +43,8 @@ function showSettings() {
     coverageScoring.setAttribute('checked', '');
     scrabbleScoring.removeAttribute('checked');
   });
-  componentHandler.upgradeElement(scrabbleScoring);
-  componentHandler.upgradeElement(coverageScoring);
+  componentHandler.upgradeElement(scrabbleScoring.parentElement);
+  componentHandler.upgradeElement(coverageScoring.parentElement);
   const nameInput = document.getElementById('name__input');
   nameInput.value = currentUser.prefName || currentUser.displayName;
   nameInput.parentElement.classList.add('is-dirty');
