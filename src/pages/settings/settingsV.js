@@ -3,17 +3,21 @@ import { showErrorDialog } from '../../pageFrags/dialogs/dialogsV';
 import './settings.css';
 import { handleAvailable, storeSettings } from './settingsC';
 import { cleanShell } from '../../shellV';
+import settingsHtml from './settings.html';
 
 let prefAvatar = null;
 let prefAvatarUrl = null;
 let handleCheck = false;
 let initialHandle = '';
 
+const containerApp = document.querySelector('.container__app');
+
 /**
  * Displays settings card for user to personalize settings
  */
 function showSettings() {
   cleanShell();
+  containerApp.innerHTML = settingsHtml;
   handleCheck = false;
   document.querySelector('.avatar__settings').src =
     currentUser.prefAvatarUrl ||
@@ -53,10 +57,13 @@ function showSettings() {
   componentHandler.upgradeElement(handleInput.parentElement);
   const buttonAvailability = document.querySelector('.button--availability');
   buttonAvailability.addEventListener('click', checkAvailability);
+  componentHandler.upgradeElement(buttonAvailability);
   const buttonSave = document.querySelector('.button--save');
   buttonSave.addEventListener('click', saveSettings);
+  componentHandler.upgradeElement(buttonSave);
   const buttonCancel = document.querySelector('.button--cancel');
   buttonCancel.addEventListener('click', cancel);
+  componentHandler.upgradeElement(buttonCancel);
 }
 
 function checkHandle() {

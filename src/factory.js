@@ -1,5 +1,4 @@
 import { route } from './router.js';
-import settingsHtml from './pages/settings/settings.html';
 import signinHtml from './pages/signin/signin.html';
 import pageNotFoundHtml from './pages/404/404.html';
 import tosHtml from './pages/tos/tos.html';
@@ -76,7 +75,6 @@ function puzzleHandler(urlString, htmlPath) {
 function settingsHandler(urlString, htmlPath) {
   try {
     // const uid = auth.currentUser.uid;
-    document.querySelector('.container__app').innerHTML = settingsHtml;
     showSettings();
     disableSettingsOverflow();
     enableGamesOverflow();
