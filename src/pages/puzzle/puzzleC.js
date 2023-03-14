@@ -1,10 +1,11 @@
 import { db, auth, functions } from '../../firebase-init.js';
 import {
-  showPuzzle,
-  animateScoringView,
   idxArray,
   acrossWord,
   disableEnter,
+  stopAnimations,
+  displayGame,
+  clearPuzzle,
 } from './puzzleV.js';
 import { getDoc, setDoc, doc, onSnapshot } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
@@ -30,6 +31,8 @@ let scoring = 'scrabble-scoring';
 let gameUnsubscribe = () => {};
 
 function clearGameParameters() {
+  clearPuzzle();
+  stopAnimations();
   gameUnsubscribe();
   gameUnsubscribe = () => {};
   currentOpp = null;
@@ -107,10 +110,14 @@ function subscribeToGame(gameId) {
         (privateData.myGuesses && privateData.myGuesses[gameId]) || {};
       columns = currentGame.puzzle.cols;
       myTurn = auth.currentUser.uid === currentGame.nextTurn;
-      if (prevGameId === gameId) {
-        await animateScoringView(currentGame.lastTurnCheckObj);
-      }
-      showPuzzle();
+      // if (prevGameId === gameId) {
+      //   setTimeout(
+      //     showPuzzle,
+      //     animateScoringView(currentGame.lastTurnCheckObj)
+      //   );
+      //   // await animateScoringView(currentGame.lastTurnCheckObj);
+      // } else showPuzzle();
+      displayGame();
     },
     (error) => {
       console.error('Error subscribing to puzzle: ', error);

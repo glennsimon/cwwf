@@ -7,6 +7,7 @@ import {
   checkReadiness,
   myGuesses,
   currentGameId,
+  prevGameId,
 } from './puzzleC.js';
 import { currentUser } from '../signin/signinC.js';
 import { currentOpp } from '../puzzle/puzzleC.js';
@@ -29,6 +30,7 @@ let currentCell = null;
 let idxArray = [];
 let acrossWord = true;
 let turnInProgress = false;
+const animationsObj = {};
 
 let highlighter = document.createElement('div');
 highlighter.className = 'puzzle__highlighter';
@@ -36,13 +38,16 @@ highlighter.className = 'puzzle__highlighter';
 /** Removes puzzle and clues from DOM */
 function clearPuzzle() {
   console.log('Hello from clearPuzzle.');
+  window.removeEventListener('resize', showPuzzle);
   // clear out old puzzle and clues
   const svgGrid = document.querySelector('.grid__svg');
-  if (svgGrid) svgGrid.remove();
-  document.querySelector('.drawer__content').innerHTML = '';
-  document.querySelector('.clues--across').innerHTML = '';
-  document.querySelector('.clues--down').innerHTML = '';
-  currentCell = null;
+  if (svgGrid) {
+    svgGrid.remove();
+    document.querySelector('.drawer__content').innerHTML = '';
+    document.querySelector('.clues--across').innerHTML = '';
+    document.querySelector('.clues--down').innerHTML = '';
+    currentCell = null;
+  }
 }
 
 /**
@@ -400,8 +405,9 @@ function generateGridElement(puzWidth, puzHeight) {
 }
 
 /**
- * Animate scoring with
- * @param {*} scoreObj
+ * Animate scoring with results from player's turn
+ * @param {object} scoreObj
+ * @returns number of milliseconds animation will run
  */
 function animateScoringView(scoreObj) {
   console.log('scoreObj: ', scoreObj);
@@ -457,169 +463,211 @@ function animateScoringView(scoreObj) {
       ? 'rgba(0,0,255,0.5)'
       : 'rgba(255,0,0,0.5)';
 
+    const animations = [];
     if (letter.score === 0) {
       const windowHeight = window.innerHeight;
       const windowWidth = window.innerWidth;
       const horizontalBounce = windowWidth * (0.5 - Math.random());
-      animatedCell.animate(
-        [
-          { backgroundColor: 'white' },
+      animations.push(
+        animatedCell.animate(
+          [
+            { backgroundColor: 'white' },
+            {
+              transform: 'scale(130%)',
+              easing: 'linear',
+              offset: 0.05,
+              backgroundColor: 'white',
+            },
+            {
+              top: `${cellY}px`,
+              transform: 'scale(110%) rotate(0deg)',
+              easing: 'ease-in',
+              offset: 0.1,
+              backgroundColor: 'red',
+            },
+            {
+              top: `${windowHeight - cellHeight}px`,
+              transform: 'scale(110%) rotate(720deg)',
+              offset: 0.9,
+            },
+            {
+              top: `${windowHeight - cellHeight}px`,
+              transform: 'scale(110%)',
+              offset: 1,
+              backgroundColor: 'red',
+            },
+          ],
           {
-            transform: 'scale(130%)',
-            easing: 'linear',
-            offset: 0.05,
-            backgroundColor: 'white',
-          },
-          {
-            top: `${cellY}px`,
-            transform: 'scale(110%) rotate(0deg)',
-            easing: 'ease-in',
-            offset: 0.1,
-            backgroundColor: 'red',
-          },
-          {
-            top: `${windowHeight - cellHeight}px`,
-            transform: 'scale(110%) rotate(720deg)',
-            offset: 0.9,
-          },
-          {
-            top: `${windowHeight - cellHeight}px`,
-            transform: 'scale(110%)',
-            offset: 1,
-            backgroundColor: 'red',
-          },
-        ],
-        {
-          delay: delay,
-          duration: 1000,
-          fill: 'forwards',
-        }
+            delay: delay,
+            duration: 1000,
+            fill: 'forwards',
+          }
+        )
       );
-      animatedCell.animate(
-        [
+      animations.push(
+        animatedCell.animate(
+          [
+            {
+              backgroundColor: 'red',
+              top: `${windowHeight - cellHeight}px`,
+              transform: 'scale(110%)',
+              easing: 'ease-out',
+            },
+            {
+              top: `${cellHeight + (windowHeight - cellHeight) / 2}px`,
+              transform: 'scale(110%)',
+              offset: 0.5,
+              easing: 'ease-in',
+            },
+            {
+              backgroundColor: 'red',
+              top: `${windowHeight}px`,
+              transform: 'scale(110%)',
+              offset: 1,
+            },
+          ],
           {
-            backgroundColor: 'red',
-            top: `${windowHeight - cellHeight}px`,
-            transform: 'scale(110%)',
-            easing: 'ease-out',
-          },
-          {
-            top: `${cellHeight + (windowHeight - cellHeight) / 2}px`,
-            transform: 'scale(110%)',
-            offset: 0.5,
-            easing: 'ease-in',
-          },
-          {
-            backgroundColor: 'red',
-            top: `${windowHeight}px`,
-            transform: 'scale(110%)',
-            offset: 1,
-          },
-        ],
-        {
-          delay: delay + 1000,
-          duration: 1000,
-          fill: 'forwards',
-        }
+            delay: delay + 1000,
+            duration: 1000,
+            fill: 'forwards',
+          }
+        )
       );
-      animatedCell.animate(
-        [
+      animations.push(
+        animatedCell.animate(
+          [
+            {
+              left: `${cellX}px`,
+              transform: 'rotate(0deg)',
+            },
+            {
+              left: `${cellX + horizontalBounce}px`,
+              transform: 'rotate(720deg)',
+            },
+          ],
           {
-            left: `${cellX}px`,
-            transform: 'rotate(0deg)',
-          },
-          {
-            left: `${cellX + horizontalBounce}px`,
-            transform: 'rotate(720deg)',
-          },
-        ],
-        {
-          delay: delay + 1000,
-          duration: 1000,
-          fill: 'forwards',
-        }
+            delay: delay + 1000,
+            duration: 1000,
+            fill: 'forwards',
+          }
+        )
       );
     } else {
       if (!cell.classList.value.match(/(blue|red)/i)) {
         cell.classList.remove('transparent');
         cell.classList.add(letter.bgColor);
       }
-      animatedCell.animate(
-        [
-          { backgroundColor: 'white' },
+      animations.push(
+        animatedCell.animate(
+          [
+            { backgroundColor: 'white' },
+            {
+              transform: 'scale(130%)',
+              easing: 'linear',
+              offset: 0.05,
+              backgroundColor: 'white',
+            },
+            {
+              left: `${cellX}px`,
+              transform: 'scale(110%)',
+              easing: 'ease-in',
+              offset: 0.1,
+              backgroundColor: `${animateBgColor}`,
+            },
+            {
+              left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
+              transform: 'scale(110%)',
+              offset: 0.9,
+            },
+            {
+              transform: 'scale(10%)',
+              left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
+              easing: 'linear',
+              backgroundColor: `${animateBgColor}`,
+            },
+          ],
           {
-            transform: 'scale(130%)',
-            easing: 'linear',
-            offset: 0.05,
-            backgroundColor: 'white',
-          },
-          {
-            left: `${cellX}px`,
-            transform: 'scale(110%)',
-            easing: 'ease-in',
-            offset: 0.1,
-            backgroundColor: `${animateBgColor}`,
-          },
-          {
-            left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
-            transform: 'scale(110%)',
-            offset: 0.9,
-          },
-          {
-            transform: 'scale(10%)',
-            left: `${scoreX + (scoreWidth - cellWidth) / 2}px`,
-            easing: 'linear',
-            backgroundColor: `${animateBgColor}`,
-          },
-        ],
-        {
-          delay: delay,
-          duration: 2000,
-          fill: 'forwards',
-        }
+            delay: delay,
+            duration: 2000,
+            fill: 'forwards',
+          }
+        )
       );
-      animatedCell.animate(
-        [
+      animations.push(
+        animatedCell.animate(
+          [
+            {
+              top: `${cellY}px`,
+              easing: 'ease-out',
+              offset: 0.1,
+            },
+            {
+              top: `${scoreY + (scoreHeight - cellHeight) / 2}px`,
+              offset: 0.9,
+            },
+            {
+              top: `${scoreY + (scoreHeight - cellHeight) / 2}px`,
+            },
+          ],
           {
-            top: `${cellY}px`,
-            easing: 'ease-out',
-            offset: 0.1,
-          },
-          {
-            top: `${scoreY + (scoreHeight - cellHeight) / 2}px`,
-            offset: 0.9,
-          },
-          {
-            top: `${scoreY + (scoreHeight - cellHeight) / 2}px`,
-          },
-        ],
-        {
-          delay: delay,
-          duration: 2000,
-          fill: 'forwards',
-        }
+            delay: delay,
+            duration: 2000,
+            fill: 'forwards',
+          }
+        )
       );
     }
-    setTimeout(() => {
+    const timeoutID = setTimeout(() => {
       animatedCell.remove();
       animatedScore += letter.score;
       playerScore.innerText = '' + animatedScore;
     }, 2000 + delay);
+    animationsObj[timeoutID] = {};
+    animationsObj[timeoutID].cell = animatedCell;
+    animationsObj[timeoutID].animations = animations;
     delay += 500;
   }
-  return wait(1500 + delay);
+  return 1500 + delay;
+  // return wait(1500 + delay);
 }
 
 /**
- * Promisify setTimeout so it can be used in a .then statement
- * @param {number} time Time in milliseconds
- * @returns Promise that resolves in `time`
+ * Stops all animations currently running
  */
-function wait(time) {
-  return new Promise((resolve) => {
-    setTimeout(resolve.bind(null), time);
-  });
+function stopAnimations() {
+  clearTimeout(animationsObj.animatorID);
+  delete animationsObj.animatorID;
+  const keys = Object.keys(animationsObj);
+  for (const timeoutID of keys) {
+    for (const animation of animationsObj[timeoutID].animations) {
+      animation.cancel();
+    }
+    animationsObj[timeoutID].cell.remove();
+    clearTimeout(timeoutID);
+    delete animationsObj[timeoutID];
+  }
 }
+
+function displayGame() {
+  if (prevGameId === currentGameId) {
+    animationsObj.animatorID = setTimeout(
+      showPuzzle,
+      animateScoringView(currentGame.lastTurnCheckObj)
+    );
+    // await animateScoringView(currentGame.lastTurnCheckObj);
+  } else showPuzzle();
+}
+
+// /**
+//  * Promisify setTimeout so it can be used in a .then statement
+//  * @param {number} time Time in milliseconds
+//  * @returns Promise that resolves in `time`
+//  */
+// function wait(time) {
+//   return new Promise((resolve) => {
+//     setTimeout(resolve.bind(null), time);
+//   });
+// }
 
 /**
  * Sets the variable currentCell to the cell the user clicked in
@@ -931,6 +979,8 @@ export {
   animateScoringView,
   clearPuzzle,
   disableEnter,
+  stopAnimations,
+  displayGame,
   idxArray,
   acrossWord,
 };
