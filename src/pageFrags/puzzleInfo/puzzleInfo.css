@@ -1,29 +1,35 @@
 .puzzle__info {
-  text-align: center;
+  display: flex;
   flex-direction: column;
 }
 
 .puzzle__title {
   font-weight: bold;
   color: white;
+  text-align: center;
 }
 
 .puzzle__author {
-  padding: 2px 10px;
   color: white;
+  text-align: center;
 }
 
 .puzzle__copyright {
   font-size: small;
   color: lightgray;
   font-style: italic;
-  padding: 2px 10px;
+  text-align: center;
+}
+
+.puzzle__difficulty {
+  color: white;
+  text-align: center;
 }
 
 .puzzle__notepad {
+  color: darkslategray;
   background-color: #ffffe0;
   padding: 4px;
   border: 1px solid #808080;
   margin: 10px;
-  color: black;
 }

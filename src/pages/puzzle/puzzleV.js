@@ -14,10 +14,10 @@ import { currentOpp } from '../puzzle/puzzleC.js';
 import scoresHtml from '../../pageFrags/scores/scores.html';
 import { cleanShell, closeDrawer, hideActivity } from '../../shellV.js';
 import puzzleInfoHtml from '../../pageFrags/puzzleInfo/puzzleInfo.html';
+import '../../pageFrags/puzzleInfo/puzzleInfo.css';
 import concedeHtml from '../../pageFrags/concede/concede.html';
 import { showActivity } from '../../pageFrags/activity/activity.js';
 import puzzleHtml from './puzzle.html';
-import keyFragHtml from './keyFrag.html';
 import './puzzle.css';
 import '../../pageFrags/scores/scores.css';
 import {
@@ -65,6 +65,8 @@ function loadPuzzleInfo() {
     .copyright
     ? `&copy; ${currentGame.puzzle.copyright}`
     : '';
+  document.querySelector('.puzzle__difficulty').innerHTML =
+    'Difficulty: ' + currentGame.difficulty.toUpperCase();
   if (currentGame.puzzle.notepad) {
     document.querySelector(
       '.puzzle__notepad'
