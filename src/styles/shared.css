@@ -24,6 +24,10 @@
   display: flex;
 }
 
+.display__none {
+  display: none;
+}
+
 .flex-direction--column {
   flex-direction: column;
 }

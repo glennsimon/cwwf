@@ -12,7 +12,12 @@ import {
 import { currentUser } from '../signin/signinC.js';
 import { currentOpp } from '../puzzle/puzzleC.js';
 import scoresHtml from '../../pageFrags/scores/scores.html';
-import { cleanShell, closeDrawer, hideActivity } from '../../shellV.js';
+import {
+  cleanShell,
+  closeDrawer,
+  enableGamesOverflow,
+  hideActivity,
+} from '../../shellV.js';
 import puzzleInfoHtml from '../../pageFrags/puzzleInfo/puzzleInfo.html';
 import '../../pageFrags/puzzleInfo/puzzleInfo.css';
 import concedeHtml from '../../pageFrags/concede/concede.html';
@@ -408,23 +413,28 @@ function generateGridElement(puzWidth, puzHeight) {
 
 /**
  * Animate scoring with results from player's turn
- * @param {object} scoreObj
  * @returns number of milliseconds animation will run
  */
-function animateScoringView(scoreObj) {
-  console.log('scoreObj: ', scoreObj);
+function animateScoringView() {
+  console.log('lastTurnCheckObj: ', currentGame.lastTurnCheckObj);
   hideActivity();
   const puzzleGrid = document.querySelector('.table__puzzle');
-  if (scoreObj.newGame || scoreObj.abandoned) return;
+  if (
+    currentGame.lastTurnCheckObj.newGame ||
+    currentGame.lastTurnCheckObj.abandoned
+  )
+    return;
   const scores = document.querySelector('.scores');
   const myUid = currentUser.uid;
   const scoreElem =
-    myUid === scoreObj.playerUid ? scores.children[0] : scores.children[2];
+    myUid === currentGame.lastTurnCheckObj.playerUid
+      ? scores.children[0]
+      : scores.children[2];
   const playerScore = scoreElem.children[1];
   let animatedScore = parseInt(playerScore.textContent);
   let delay = 0;
   let zIndex = 99;
-  for (const letter of scoreObj.checkAnswerResult) {
+  for (const letter of currentGame.lastTurnCheckObj.checkAnswerResult) {
     const index = letter.index;
     const row = Math.floor(index / columns);
     const col = index - row * columns;
@@ -634,6 +644,28 @@ function animateScoringView(scoreObj) {
 }
 
 /**
+ * Replays last animation
+ */
+function replayAnimation() {
+  console.log('Hello from replayAnimation');
+  document.querySelector('.overflow__replay').setAttribute('disabled', '');
+  const answerObject = currentGame.lastTurnCheckObj.checkAnswerResult;
+  let turnScore = 0;
+  for (const cell of answerObject) {
+    turnScore += cell.score;
+  }
+  const playerUid = currentGame.lastTurnCheckObj.playerUid;
+  const playerScore =
+    currentUser.uid === playerUid
+      ? document.querySelector('.score--me')
+      : document.querySelector('.score--opponent');
+  const scoreBefore = parseInt(playerScore.innerText);
+  playerScore.innerText = '' + scoreBefore - turnScore;
+  const waitTime = animateScoringView();
+  setTimeout(enableGamesOverflow, waitTime);
+}
+
+/**
  * Stops all animations currently running
  */
 function stopAnimations() {
@@ -652,10 +684,7 @@ function stopAnimations() {
 
 function displayGame() {
   if (prevGameId === currentGameId) {
-    animationsObj.animatorID = setTimeout(
-      showPuzzle,
-      animateScoringView(currentGame.lastTurnCheckObj)
-    );
+    animationsObj.animatorID = setTimeout(showPuzzle, animateScoringView());
     // await animateScoringView(currentGame.lastTurnCheckObj);
   } else showPuzzle();
 }
@@ -978,7 +1007,7 @@ function disableEnter() {
 
 export {
   showPuzzle,
-  animateScoringView,
+  replayAnimation,
   clearPuzzle,
   disableEnter,
   stopAnimations,

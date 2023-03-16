@@ -8,6 +8,7 @@ import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from './firebase-init.js';
 import { authChangeView } from './pages/signin/signinV.js';
 import { signOut } from 'firebase/auth';
+import { replayAnimation } from './pages/puzzle/puzzleV.js';
 
 const headerSignin = document.querySelector('.header__signin');
 
@@ -56,8 +57,10 @@ document.querySelector('.overflow__list').addEventListener('click', (event) => {
   let target = event.target;
   if (target.classList.contains('overflow__list')) return;
   while (!target.classList.contains('overflow')) target = target.parentElement;
+  if (target.classList.contains('overflow__back')) history.back();
   if (target.classList.contains('overflow__refresh')) location.reload();
   if (target.classList.contains('overflow__games')) route('/games');
+  if (target.classList.contains('overflow__replay')) replayAnimation();
   if (target.classList.contains('overflow__settings')) route('/settings');
 });
 
@@ -68,6 +71,7 @@ function closeDrawer() {
 
 function enableGamesOverflow() {
   document.querySelector('.overflow__games').removeAttribute('disabled');
+  document.querySelector('.overflow__replay').removeAttribute('disabled');
 }
 
 function enableSettingsOverflow() {
@@ -76,6 +80,7 @@ function enableSettingsOverflow() {
 
 function disableGamesOverflow() {
   document.querySelector('.overflow__games').setAttribute('disabled', '');
+  document.querySelector('.overflow__replay').setAttribute('disabled', '');
 }
 
 function disableSettingsOverflow() {
