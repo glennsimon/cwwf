@@ -39,17 +39,18 @@ function resetDialog() {
  */
 function showInviteDialog() {
   resetDialog();
+  showActivity('.header__activity', 'Working...');
   const dialogElement = document.querySelector('.dialog__shell');
   const header = dialogElement.querySelector('.dialog__content--header');
   header.innerHTML = dialogInviteHtml;
   const textFieldElements = dialogElement.querySelectorAll('.mdl-textfield');
   for (const elem of textFieldElements) componentHandler.upgradeElement(elem);
-  // showActivity('.dialog__activity', 'Doing stuff...');
+  hideActivity();
   dialogElement.showModal();
   document
     .querySelector('.dialog__button--mail')
     .addEventListener('click', () => {
-      showActivity('.header__activity', 'Working...');
+      // showActivity('.header__activity', 'Working...');
       dialogElement.close();
       sendInvitation();
     });
@@ -60,6 +61,7 @@ function showInviteDialog() {
  */
 function showConcedeDialog() {
   resetDialog();
+  showActivity('.header__activity', 'Working...');
   const dialogElement = document.querySelector('.dialog__shell');
   const header = dialogElement.querySelector('.dialog__content--header');
   header.innerHTML = dialogAbandonHtml;
@@ -67,7 +69,7 @@ function showConcedeDialog() {
     .querySelector('.dialog__button--no')
     .addEventListener('click', () => dialogElement.close());
   header.querySelector('.dialog__button--yes').addEventListener('click', () => {
-    showActivity('.header__activity', 'Working...');
+    // showActivity('.header__activity', 'Working...');
     dialogElement.close();
     concedeCurrentGame();
   });
@@ -134,6 +136,7 @@ function showErrorDialog(message) {
  */
 function showGameStartDialog() {
   resetDialog();
+  showActivity('.header__activity', 'Working...');
   // if (!myFriends) return;
   const dialogElement = document.querySelector('.dialog__shell');
   const header = dialogElement.querySelector('.dialog__content--header');
@@ -150,6 +153,7 @@ function showGameStartDialog() {
   list.innerHTML = '';
   list.append(loadFriendsList());
   dialogElement.showModal();
+  hideActivity();
   document
     .querySelector('.dialog__list ul')
     .addEventListener('click', (event) => {
@@ -232,7 +236,7 @@ function loadFriendsList() {
       'mdl-list__item-primary-content white-space--nowrap';
     const nameElement = document.createElement('div');
     nameElement.className = 'container__name--list';
-    nameElement.append(`${user.prefName || user.displayName}`);
+    nameElement.append(`${user.prefName || user.displayName || 'Anonymous'}`);
     const providerElement = document.createElement('span');
     providerElement.className = 'mdl-list__item-sub-title';
     providerElement.innerText = user.signInProvider
@@ -243,7 +247,7 @@ function loadFriendsList() {
     userListItem.innerHTML += dialogFriendsListItemSecondaryHtml;
     userList.append(userListItem);
   }
-  hideActivity();
+  // hideActivity();
   return userList;
 }
 
@@ -272,9 +276,9 @@ function instantiateAvatar(user) {
 /**
  * Instantiate and return HTML list of all users to be appended in the
  * Add/Block dialog.
- * @returns {Promise} html list of users with Add/Block radio buttons
+ * @returns {Promise<DocumentFragment>} html list of users with Add/Block radio buttons
  */
-async function loadAddBlockList() {
+function loadAddBlockList() {
   console.log('Hello from loadAddBlockList.');
   adjustedFriendsObject = {};
   adjustedFriendsObject.friends = currentUser.friends || [];
@@ -284,7 +288,7 @@ async function loadAddBlockList() {
     let userList = new DocumentFragment();
     if (uids.length === 0) {
       console.warn('No users exist.');
-      return;
+      return null;
     }
     let itemNumber = 0;
     for (const uid of uids) {
@@ -304,7 +308,7 @@ async function loadAddBlockList() {
           userListItem.querySelector('.container__name--list')
         );
       userListItem.querySelector('.container__name--list').innerText =
-        user.displayName;
+        user.prefName || user.displayName || 'Anonymous';
       userListItem.querySelector('.mdl-list__item-sub-title').innerText =
         user.signInProvider ? user.signInProvider.split('.')[0] : 'none';
       const dialogRadioElements = userListItem.querySelector(
@@ -347,7 +351,6 @@ async function loadAddBlockList() {
       userList.append(userListItem);
       itemNumber++;
     }
-    hideActivity();
     return userList;
   });
 }
@@ -356,8 +359,8 @@ async function loadAddBlockList() {
  * Populates Add/Block dialog and displays it
  */
 function showAddBlockDialog() {
-  showActivity('.header__activity', 'Working...');
   resetDialog();
+  showActivity('.header__activity', 'Working...');
   // if (!myFriends) return;
   loadAddBlockList().then((contents) => {
     const dialogElement = document.querySelector('.dialog__shell');
@@ -376,9 +379,10 @@ function showAddBlockDialog() {
     document
       .querySelector('.dialog__button--footer-1')
       .addEventListener('click', () => {
-        updateMyFriends(adjustedFriendsObject).then(() =>
-          showGameStartDialog()
-        );
+        showActivity('.header__activity', 'Working...');
+        updateMyFriends(adjustedFriendsObject).then(() => {
+          showGameStartDialog();
+        });
       });
     document
       .querySelector('.dialog__button--footer-2')

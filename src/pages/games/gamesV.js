@@ -99,7 +99,7 @@ async function loadGames() {
     <span>${
       myFriends[oppUid]
         ? myFriends[oppUid].prefName || myFriends[oppUid].displayName
-        : 'NoName'
+        : 'Anonymous'
     }</span>
     <span class='mdl-list__item-sub-title'>
       ${myUid === gameListItem.nextTurn ? 'Your' : 'Their'} turn
@@ -142,7 +142,7 @@ async function loadGames() {
     <span>${
       myFriends[oppUid]
         ? myFriends[oppUid].prefName || myFriends[oppUid].displayName
-        : 'NoName'
+        : 'Anonymous'
     }</span>
     <span class='mdl-list__item-sub-title'>${result}</span>
   </span>

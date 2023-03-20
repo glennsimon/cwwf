@@ -91,15 +91,17 @@ exports.authChange = functions.https.onCall(async (data, context) => {
     // User is signed in. User data updates every time the user signs in,
     // in case there are changes to photo or whatever.
     try {
-      return db.runTransaction(async (tx) => {
-        let publicData = (await tx.get(publicDataRef)).data();
+      let publicData = null;
+      db.runTransaction(async (tx) => {
+        publicData = (await tx.get(publicDataRef)).data();
         let privateData = (await tx.get(privateDataRef)).data();
         if (!publicData)
           publicData = { friends: ['3eoDltvYiwYfjPviYRRQ2agbsAz1'] };
         publicData.blocked = publicData.blocked || [];
         publicData.displayName =
           context.auth.token.name || publicData.displayName || null;
-        publicData.prefName = publicData.prefName || publicData.displayName;
+        publicData.prefName =
+          publicData.prefName || publicData.displayName || 'Anonymous';
         publicData.photoURL = context.auth.token.picture || null;
         publicData.signInProvider =
           context.auth.token.firebase.sign_in_provider || 'none';
@@ -117,8 +119,10 @@ exports.authChange = functions.https.onCall(async (data, context) => {
           { merge: true }
         );
       });
+      return publicData;
     } catch (error) {
       functions.logger.error('authChange transaction failure: ', error);
+      return;
     }
   }
 });

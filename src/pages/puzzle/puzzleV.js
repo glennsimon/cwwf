@@ -173,10 +173,10 @@ function showPuzzle() {
   let oppNickname =
     currentOpp.prefHandle || currentOpp.prefName || currentOpp.displayName;
 
-  myNickname = myNickname ? myNickname.split(' ')[0] : 'NoName';
+  myNickname = myNickname ? myNickname.split(' ')[0] : 'Anonymous';
   myNickname = myNickname.length > 8 ? myNickname.slice(0, 8) : myNickname;
   document.querySelector('.name--me').innerText = myNickname;
-  oppNickname = oppNickname ? oppNickname.split(' ')[0] : 'NoName';
+  oppNickname = oppNickname ? oppNickname.split(' ')[0] : 'Anonymous';
   oppNickname = oppNickname.length > 8 ? oppNickname.slice(0, 8) : oppNickname;
   document.querySelector('.name--opponent').innerText = oppNickname;
   if (currentGame.emptySquares === 0) {

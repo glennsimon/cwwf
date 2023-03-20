@@ -51,7 +51,7 @@ async function storeSettings(settingsPrefs) {
       const userDoc = await transaction.get(refUserData);
       if (!userDoc.exists()) throw 'User document does not exist!';
       const updateData = {
-        prefName: settingsPrefs.prefName || currentUser.prefName || null,
+        prefName: settingsPrefs.prefName || currentUser.prefName || 'Anonymous',
         prefHandle: settingsPrefs.prefHandle || currentUser.prefHandle || null,
         prefScoring: settingsPrefs.scoring,
       };

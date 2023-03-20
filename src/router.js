@@ -44,26 +44,38 @@ const routes = {
 function route(urlString, fromHistory) {
   clearGameParameters();
   clearGameList();
-  if (!fromHistory)
-    history.pushState({ url: `${location.href}` }, '', urlString);
-  handleLocation();
+  const oldUrl = history.state ? new URL(history.state.url) : null;
+  const newUrl = new URL(
+    urlString.match(/http/i) ? urlString : location.origin + urlString
+  );
+  if (!oldUrl || oldUrl.pathname === '/signin' || oldUrl.pathname === '') {
+    history.replaceState({ url: newUrl.href }, '', newUrl.href);
+  } else if (
+    !fromHistory &&
+    oldUrl &&
+    oldUrl.pathname !== newUrl.pathname &&
+    oldUrl.search !== newUrl.search
+  ) {
+    history.pushState({ url: newUrl.href }, '', newUrl.href);
+  }
+  handleLocation(newUrl);
 }
 
 /**
  * Checks `urlString` for valid route, then if valid passes it along to the
  * appropriate handler, which must be imported.
- * @param {string} urlString
+ * @param {object} newUrl
  */
-function handleLocation() {
-  const path = window.location.pathname;
+function handleLocation(newUrl) {
+  const path = newUrl.pathname;
   const route = routes[path] || routes[404];
   if (route !== routes[404]) {
     document.cookie =
       `xwwf-last=${currentUser ? currentUser.uid : null}&last_loc=${
-        window.location.href
+        newUrl.href
       }; ` + `max-age=${constants.COOKIE_MAX_AGE_BOOKMARK}`;
   }
-  route.handler(window.location.href, route.html);
+  route.handler(newUrl.href, route.html);
 }
 
 window.onpopstate = checkState;

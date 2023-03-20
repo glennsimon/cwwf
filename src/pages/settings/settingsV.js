@@ -49,7 +49,7 @@ function showSettings() {
   nameInput.value = currentUser.prefName || currentUser.displayName;
   nameInput.parentElement.classList.add('is-dirty');
   componentHandler.upgradeElement(nameInput.parentElement);
-  let nickname = currentUser.prefName || currentUser.displayName || 'NoName';
+  let nickname = currentUser.prefName || currentUser.displayName || 'Anonymous';
   nickname = nickname.split(' ')[0];
   const handleInput = document.getElementById('handle__input');
   handleInput.value = currentUser.prefHandle || nickname;
