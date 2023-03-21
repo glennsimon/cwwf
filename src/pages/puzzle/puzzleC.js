@@ -1,12 +1,5 @@
 import { db, auth, functions } from '../../firebase-init.js';
-import {
-  idxArray,
-  acrossWord,
-  disableEnter,
-  stopAnimations,
-  displayGame,
-  clearPuzzle,
-} from './puzzleV.js';
+import { idxArray, acrossWord, disableEnter, displayGame } from './puzzleV.js';
 import { getDoc, setDoc, doc, onSnapshot } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { showErrorDialog } from '../../pageFrags/dialogs/dialogsV.js';
@@ -30,9 +23,10 @@ let scoring = 'scrabble-scoring';
  */
 let gameUnsubscribe = () => {};
 
+/**
+ * Resets local variables when leaving a game
+ */
 function clearGameParameters() {
-  clearPuzzle();
-  stopAnimations();
   gameUnsubscribe();
   gameUnsubscribe = () => {};
   currentOpp = null;

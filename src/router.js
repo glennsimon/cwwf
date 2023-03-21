@@ -11,10 +11,6 @@ import {
 } from './factory.js';
 import { currentUser } from './pages/signin/signinC.js';
 import { constants } from './constants.js';
-import { clearGameParameters } from './pages/puzzle/puzzleC.js';
-import { clearGameList } from './pages/games/gamesC.js';
-
-let regexTester = null;
 
 /**
  * Specifies html and handler to be used for any window.location.pathname change. Any
@@ -42,8 +38,6 @@ const routes = {
  * @param {boolean} fromHistory true if popped from history
  */
 function route(urlString, fromHistory) {
-  clearGameParameters();
-  clearGameList();
   const oldUrl = history.state ? new URL(history.state.url) : null;
   const newUrl = new URL(
     urlString.match(/http/i) ? urlString : location.origin + urlString

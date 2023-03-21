@@ -1,6 +1,5 @@
 import './signin.css';
-import { clearPuzzle } from '../puzzle/puzzleV.js';
-import { closeDrawer } from '../../shellV.js';
+import { cleanShell, closeDrawer } from '../../shellV.js';
 
 const name = document.querySelector('.user-name');
 const avatar = document.querySelector('.user-photo');
@@ -32,15 +31,4 @@ function authChangeView(user) {
   closeDrawer();
 }
 
-/**
- * Called by the controller, updates the view
- * when user has signed out.
- */
-function signedOutView() {
-  activeGamesContainer.innerHTML = 'You must sign in to see your active games';
-  pastGamesContainer.innerHTML = 'You must sign in to see your completed games';
-  closeDrawer();
-  clearPuzzle();
-}
-
-export { authChangeView, signedOutView };
+export { authChangeView };

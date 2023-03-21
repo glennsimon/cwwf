@@ -8,7 +8,13 @@ import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from './firebase-init.js';
 import { authChangeView } from './pages/signin/signinV.js';
 import { signOut } from 'firebase/auth';
-import { replayAnimation } from './pages/puzzle/puzzleV.js';
+import {
+  replayAnimation,
+  showPuzzle,
+  stopAnimations,
+} from './pages/puzzle/puzzleV.js';
+import { clearGameParameters } from './pages/puzzle/puzzleC.js';
+import { clearGameList } from './pages/games/gamesC.js';
 
 const headerSignin = document.querySelector('.header__signin');
 
@@ -92,10 +98,19 @@ function disableSettingsOverflow() {
  * meta data (scores, game info, concession button)
  */
 function cleanShell() {
-  hideActivity();
+  console.log('Hello from cleanShell.');
+  // hideActivity();
+  stopAnimations();
+  window.removeEventListener('resize', showPuzzle);
   document.querySelector('.scores').innerHTML = '';
   document.querySelector('.drawer__content').innerHTML = '';
   document.querySelector('.drawer__concede').innerHTML = '';
+  document.querySelector('.container__app').innerHTML = '';
+  // clear out old puzzle and clues
+  const svgGrid = document.querySelector('.grid__svg');
+  if (svgGrid) svgGrid.remove();
+  clearGameParameters();
+  clearGameList();
 }
 
 function hideActivity() {

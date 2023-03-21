@@ -8,8 +8,11 @@ import splashHtml from './pageFrags/splash/splash.html';
 import { auth } from './firebase-init.js';
 import { uiStart } from './pages/signin/signin.js';
 import { showSettings } from './pages/settings/settingsV.js';
-import { populateMyGames } from './pages/games/gamesC.js';
-import { subscribeToGame } from './pages/puzzle/puzzleC.js';
+import { clearGameList, populateMyGames } from './pages/games/gamesC.js';
+import {
+  clearGameParameters,
+  subscribeToGame,
+} from './pages/puzzle/puzzleC.js';
 import {
   disableGamesOverflow,
   disableSettingsOverflow,
@@ -39,6 +42,8 @@ function shellHandler(urlString, htmlPath) {
 function gamesHandler(urlString, htmlPath) {
   // if (auth.currentUser && auth.currentUser.uid) {
   try {
+    // clearGameParameters();
+    // clearGameList();
     populateMyGames(auth.currentUser.uid);
     disableGamesOverflow();
     enableSettingsOverflow();

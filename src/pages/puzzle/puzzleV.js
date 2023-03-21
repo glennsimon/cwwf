@@ -13,7 +13,6 @@ import { currentUser } from '../signin/signinC.js';
 import { currentOpp } from '../puzzle/puzzleC.js';
 import scoresHtml from '../../pageFrags/scores/scores.html';
 import {
-  cleanShell,
   closeDrawer,
   enableGamesOverflow,
   hideActivity,
@@ -39,21 +38,6 @@ const animationsObj = {};
 
 let highlighter = document.createElement('div');
 highlighter.className = 'puzzle__highlighter';
-
-/** Removes puzzle and clues from DOM */
-function clearPuzzle() {
-  console.log('Hello from clearPuzzle.');
-  window.removeEventListener('resize', showPuzzle);
-  // clear out old puzzle and clues
-  const svgGrid = document.querySelector('.grid__svg');
-  if (svgGrid) {
-    svgGrid.remove();
-    document.querySelector('.drawer__content').innerHTML = '';
-    document.querySelector('.clues--across').innerHTML = '';
-    document.querySelector('.clues--down').innerHTML = '';
-    currentCell = null;
-  }
-}
 
 /**
  * Loads drawer info data for current puzzle
@@ -84,7 +68,6 @@ function loadPuzzleInfo() {
  */
 function showPuzzle() {
   console.log('Hello from showPuzzleView.');
-  cleanShell();
   let puzzleGrid = document.querySelector('.table__puzzle');
   // if not currently playing a game, load puzzle HTML and initialize
   if (!puzzleGrid) {
@@ -689,17 +672,6 @@ function displayGame() {
   } else showPuzzle();
 }
 
-// /**
-//  * Promisify setTimeout so it can be used in a .then statement
-//  * @param {number} time Time in milliseconds
-//  * @returns Promise that resolves in `time`
-//  */
-// function wait(time) {
-//   return new Promise((resolve) => {
-//     setTimeout(resolve.bind(null), time);
-//   });
-// }
-
 /**
  * Sets the variable currentCell to the cell the user clicked in
  * @param {Event} event Mouse click or screen touch event
@@ -1008,7 +980,6 @@ function disableEnter() {
 export {
   showPuzzle,
   replayAnimation,
-  clearPuzzle,
   disableEnter,
   stopAnimations,
   displayGame,
