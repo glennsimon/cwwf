@@ -667,8 +667,8 @@ function stopAnimations() {
 
 function displayGame() {
   if (prevGameId === currentGameId) {
-    animationsObj.animatorID = setTimeout(showPuzzle, animateScoringView());
-    // await animateScoringView(currentGame.lastTurnCheckObj);
+    const waitTime = animateScoringView();
+    animationsObj.animatorID = setTimeout(showPuzzle, waitTime);
   } else showPuzzle();
 }
 

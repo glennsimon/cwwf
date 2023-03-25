@@ -104,13 +104,6 @@ function subscribeToGame(gameId) {
         (privateData.myGuesses && privateData.myGuesses[gameId]) || {};
       columns = currentGame.puzzle.cols;
       myTurn = auth.currentUser.uid === currentGame.nextTurn;
-      // if (prevGameId === gameId) {
-      //   setTimeout(
-      //     showPuzzle,
-      //     animateScoringView(currentGame.lastTurnCheckObj)
-      //   );
-      //   // await animateScoringView(currentGame.lastTurnCheckObj);
-      // } else showPuzzle();
       displayGame();
     },
     (error) => {
