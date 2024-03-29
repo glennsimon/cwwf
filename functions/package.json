@@ -9,15 +9,15 @@
     "logs": "firebase functions:log"
   },
   "dependencies": {
-    "@google-cloud/firestore": "^4.15.1",
+    "@google-cloud/firestore": "^7.5.0",
     "@google-cloud/storage": "^5.20.5",
     "firebase": "^9.14.0",
     "firebase-admin": "^11.2.1",
-    "firebase-functions": "^4.2.1",
+    "firebase-functions": "^4.8.1",
     "gaxios": "^5.0.2"
   },
   "private": true,
   "engines": {
-    "node": "16"
+    "node": "20"
   }
 }

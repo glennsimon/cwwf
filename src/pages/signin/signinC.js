@@ -286,8 +286,9 @@ function populateMyFriends() {
   myFriends = {};
   if (currentUser.friends.length === 0) return;
   const q = query(
-    collection(db, 'users'),
-    where('uid', 'in', currentUser.friends)
+    // TODO: Should this query be done as a function on the server side?
+    collection(db, 'users')
+    // , where('uid', 'in', currentUser.friends)
   );
   return getDocs(q).then((snapshot) => {
     if (snapshot.empty) {
@@ -297,7 +298,9 @@ function populateMyFriends() {
     snapshot.docs.forEach((doc) => {
       // console.log(doc.data());
       const user = doc.data();
-      if (doc.id !== currentUser.uid) myFriends[doc.id] = user;
+      if (doc.id !== currentUser.uid && currentUser.friends.includes(doc.id)) {
+        myFriends[doc.id] = user;
+      }
     });
     for (const key of Object.keys(myFriends)) {
       if (!currentUser.friends.includes(key)) delete myFriends[key];
