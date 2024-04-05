@@ -295,6 +295,10 @@ function notifyPlayer(uid, gameId) {
             fcmOptions: {
               link: `puzzle?gameId=${gameId}`,
             },
+            notification: {
+              body: 'Your opponent has played their turn',
+              badge: './images/icon-128.png',
+            },
           },
           android: {
             collapseKey: 'android-xwwf',
