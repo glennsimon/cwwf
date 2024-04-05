@@ -296,16 +296,25 @@ function notifyPlayer(uid, gameId) {
               link: `puzzle?gameId=${gameId}`,
             },
             notification: {
-              body: 'Your opponent has played their turn',
-              badge: './images/icon-128.png',
+              headers: './images/icon-128.png',
             },
           },
           android: {
             collapseKey: 'android-xwwf',
             ttl: 3600000,
             notification: {
-              icon: './images/icon-128.png',
+              imageUrl: './images/icon-128.png',
               tag: 'android-xwwf-tag',
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                'mutable-content': 1,
+              },
+            },
+            fcm_options: {
+              image: './images/icon-128.png',
             },
           },
           tokens: toKeys,
