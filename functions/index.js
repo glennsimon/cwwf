@@ -296,14 +296,14 @@ function notifyPlayer(uid, gameId) {
               link: `puzzle?gameId=${gameId}`,
             },
             notification: {
-              headers: './images/icon-128.png',
+              headers: 'https://xwordswf.web.app/images/icon-128.png',
             },
           },
           android: {
             collapseKey: 'android-xwwf',
             ttl: 3600000,
             notification: {
-              imageUrl: './images/icon-128.png',
+              imageUrl: 'https://xwordswf.web.app/images/icon-128.png',
               tag: 'android-xwwf-tag',
             },
           },
@@ -314,7 +314,7 @@ function notifyPlayer(uid, gameId) {
               },
             },
             fcm_options: {
-              image: './images/icon-128.png',
+              image: 'https://xwordswf.web.app/images/icon-128.png',
             },
           },
           tokens: toKeys,
